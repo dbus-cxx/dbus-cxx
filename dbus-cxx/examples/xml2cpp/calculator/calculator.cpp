@@ -113,7 +113,7 @@ namespace Examples
     if ( n > 6 ) return 0;
     uint64_t result, prev, neg, current, mask;
     prev = compute_thue_morse( n-1 );
-    mask = ~( 0xFFFFFFFFFFFFFFFF << (int)pow(2,n-1) );
+    mask = ~( 0xFFFFFFFFFFFFFFFFULL << (int)pow(2,n-1) );
     neg = ( ~prev ) & mask;
     prev = prev << (int)pow(2,n-1);
     result = prev | neg;

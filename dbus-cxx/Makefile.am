@@ -52,7 +52,6 @@ spec:
 
 changelog:
 	svn2cl --authors=svn2cl.authors -r HEAD:1 --group-by-day -a
-	cat ChangeLog.old >> ChangeLog
 
 rpm: spec dist-bzip2
 	cp $(PACKAGE)-$(VERSION).tar.bz2 ~/rpmbuild/SOURCES/

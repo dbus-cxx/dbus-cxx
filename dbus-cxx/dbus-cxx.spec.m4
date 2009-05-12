@@ -12,6 +12,7 @@ BuildRequires:    libsigc++20-devel >= 2.0.0
 BuildRequires:    pkgconfig
 BuildRequires:    m4
 BuildRequires:    expat-devel
+BuildRequires:    popt-devel
 
 %description
 C++ wrapper for the DBus C reference implementation.
