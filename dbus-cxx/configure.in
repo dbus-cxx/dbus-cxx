@@ -104,6 +104,7 @@ AC_CHECK_HEADERS(popt.h)
 AC_CHECK_LIB(popt, main)
 AC_CHECK_LIB(rt, main)
 AC_CHECK_LIB(thread, main)
+AC_CHECK_LIB(pthread, main)
 
 AC_CHECK_HEADERS(expat.h)
 AC_CHECK_LIB(expat,main)
