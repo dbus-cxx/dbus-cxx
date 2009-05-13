@@ -8,7 +8,7 @@
 <xsl:param name="reference_prefix">reference/html/</xsl:param>
 
 <xsl:template match="/">
-  <book title="dbus-cxx Library 0.1.0 Reference Manual"
+  <book title="dbus-cxx Library 0.1.1 Reference Manual"
         name="dbus-cxx"
         link="{$reference_prefix}index.html">
   <chapters>

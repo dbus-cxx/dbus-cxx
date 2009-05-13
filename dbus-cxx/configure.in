@@ -22,7 +22,7 @@
 #########################################################################
 pushdef([PACKAGE_MAJOR_VERSION], [0])
 pushdef([PACKAGE_MINOR_VERSION], [1])
-pushdef([PACKAGE_MICRO_VERSION], [0])
+pushdef([PACKAGE_MICRO_VERSION], [1])
 pushdef([PKG_VERSION], PACKAGE_MAJOR_VERSION.PACKAGE_MINOR_VERSION.PACKAGE_MICRO_VERSION)
 
 AC_INIT([dbus-cxx], PKG_VERSION, [rvinyard@cs.nmsu.edu])
@@ -75,7 +75,7 @@ AC_SUBST(DOXYGEN_HTML_HEADER)
 AC_SUBST(DOXYGEN_HTML_FOOTER)
 AC_SUBST(DOXYGEN_HTML_STYLESHEET)
 
-AM_INIT_AUTOMAKE([1.9 tar-ustar dist-bzip2])
+AM_INIT_AUTOMAKE([1.9 tar-ustar dist-bzip2 dist-zip])
 AM_CONFIG_HEADER([config.h])
 AX_PREFIX_CONFIG_H([$PACKAGE/$PACKAGE-config.h],[DBUS_CXX],[config.h])
 
