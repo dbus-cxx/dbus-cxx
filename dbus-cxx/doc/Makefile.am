@@ -60,12 +60,12 @@ dist-hook: docs
 	rm -rf `find $(distdir)/reference -name *.map`
 	rm -rf `find $(distdir)/reference -name *.dot`
 
-PACKAGE_WWWHOST="web.sourceforge.net:/home/groups/d/db/dbus-cxx/htdocs/"
+PACKAGE_WWWHOST="${USER},dbus-cxx@web.sourceforge.net:htdocs/"
 
 upload-docs: docs
-	rsync -avu --delete --cvs-exclude reference/html/* $(PACKAGE_WWWHOST)
+	rsync -avu --delete reference/html/ $(PACKAGE_WWWHOST)
 
 upload-docs-only:
-	rsync -avu --delete --cvs-exclude reference/html/* $(PACKAGE_WWWHOST)
+	rsync -avu --delete reference/html/ $(PACKAGE_WWWHOST)
 
 endif
