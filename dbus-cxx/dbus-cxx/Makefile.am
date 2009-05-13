@@ -44,7 +44,7 @@ library_include_HEADERS = accumulators.h callmessage.h connection.h \
 	messageiterator.h method.h method_impl.h methodbase.h methodproxy.h methodproxybase.h \
 	object.h objectpathhandler.h objectproxy.h pendingcall.h pointer.h \
 	returnmessage.h signal_base.h signal_proxy.h signal_proxy_base.h signalmessage.h \
-	signalreceiver.h signature.h signatureiterator.h timeout.h types.h utility.h watch.h
+	signalreceiver.h signature.h signatureiterator.h timeout.h utility.h watch.h
 
 libdbus_cxx_la_SOURCES = callmessage.cpp connection.cpp dispatcher.cpp \
 	error.cpp errormessage.cpp interface.cpp interfaceproxy.cpp message.cpp \
