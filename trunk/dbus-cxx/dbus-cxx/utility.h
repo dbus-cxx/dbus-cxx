@@ -27,7 +27,6 @@
 
 #include <dbus-cxx/dbus-cxx-config.h>
 #include <dbus-cxx/enums.h>
-#include <dbus-cxx/types.h>
 #include <dbus-cxx/pointer.h>
 #include <dbus-cxx/signature.h>
 
