@@ -19,7 +19,7 @@
 
 EXTRA_DIST = dbus-cxx.spec
 
-SUBDIRS = dbus-cxx tools dbus-cxx-hal doc examples unit-tests
+SUBDIRS = dbus-cxx tools doc examples unit-tests
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = dbus-cxx-$(PKGCONFIG_VERSION).pc
