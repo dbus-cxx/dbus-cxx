@@ -23,7 +23,6 @@
 #include <deque>
 
 #include <dbus-cxx/pointer.h>
-#include <dbus-cxx/types.h>
 #include <dbus-cxx/message.h>
 #include <dbus-cxx/returnmessage.h>
 #include <dbus-cxx/pendingcall.h>
