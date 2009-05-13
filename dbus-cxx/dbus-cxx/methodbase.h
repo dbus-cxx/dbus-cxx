@@ -105,7 +105,7 @@ namespace DBus
    *   <ul>
    *     <li> @c caller_c.cpp - Calling a proxy method with the dbus C API
    *     <li> @c caller_raw.cpp - Calling a proxy method with a manual loop similar to the C API example
-   *     <li> @c caller_dispatcher.cpp - Calling a proxy method using a dispatcher
+   *     <li> @c caller_dispatched.cpp - Calling a proxy method using a dispatcher
    *     <li> @c caller_object.cpp - Calling a proxy method of a class derived from ObjectProxy
    *   </ul>
    * </ul>
@@ -136,7 +136,7 @@ namespace DBus
    *   <ul>
    *     <li> @c caller_c.cpp - Calling a proxy method with the dbus C API
    *     <li> @c caller_raw.cpp - Calling a proxy method with a manual loop similar to the C API example
-   *     <li> @c caller_dispatcher.cpp - Calling a proxy method using a dispatcher
+   *     <li> @c caller_dispatched.cpp - Calling a proxy method using a dispatcher
    *     <li> @c caller_object.cpp - Calling a proxy method of a class derived from ObjectProxy
    *   </ul>
    * </ul>
@@ -167,7 +167,7 @@ namespace DBus
    *   <ul>
    *     <li> @c caller_c.cpp - Calling a proxy method with the dbus C API
    *     <li> @c caller_raw.cpp - Calling a proxy method with a manual loop similar to the C API example
-   *     <li> @c caller_dispatcher.cpp - Calling a proxy method using a dispatcher
+   *     <li> @c caller_dispatched.cpp - Calling a proxy method using a dispatcher
    *     <li> @c caller_object.cpp - Calling a proxy method of a class derived from ObjectProxy
    *   </ul>
    * </ul>
@@ -198,7 +198,7 @@ namespace DBus
    *   <ul>
    *     <li> @c caller_c.cpp - Calling a proxy method with the dbus C API
    *     <li> @c caller_raw.cpp - Calling a proxy method with a manual loop similar to the C API example
-   *     <li> @c caller_dispatcher.cpp - Calling a proxy method using a dispatcher
+   *     <li> @c caller_dispatched.cpp - Calling a proxy method using a dispatcher
    *     <li> @c caller_object.cpp - Calling a proxy method of a class derived from ObjectProxy
    *   </ul>
    * </ul>
@@ -229,7 +229,7 @@ namespace DBus
    *   <ul>
    *     <li> @c caller_c.cpp - Calling a proxy method with the dbus C API
    *     <li> @c caller_raw.cpp - Calling a proxy method with a manual loop similar to the C API example
-   *     <li> @c caller_dispatcher.cpp - Calling a proxy method using a dispatcher
+   *     <li> @c caller_dispatched.cpp - Calling a proxy method using a dispatcher
    *     <li> @c caller_object.cpp - Calling a proxy method of a class derived from ObjectProxy
    *   </ul>
    * </ul>
@@ -260,7 +260,7 @@ namespace DBus
    *   <ul>
    *     <li> @c caller_c.cpp - Calling a proxy method with the dbus C API
    *     <li> @c caller_raw.cpp - Calling a proxy method with a manual loop similar to the C API example
-   *     <li> @c caller_dispatcher.cpp - Calling a proxy method using a dispatcher
+   *     <li> @c caller_dispatched.cpp - Calling a proxy method using a dispatcher
    *     <li> @c caller_object.cpp - Calling a proxy method of a class derived from ObjectProxy
    *   </ul>
    * </ul>
@@ -291,7 +291,7 @@ namespace DBus
    *   <ul>
    *     <li> @c caller_c.cpp - Calling a proxy method with the dbus C API
    *     <li> @c caller_raw.cpp - Calling a proxy method with a manual loop similar to the C API example
-   *     <li> @c caller_dispatcher.cpp - Calling a proxy method using a dispatcher
+   *     <li> @c caller_dispatched.cpp - Calling a proxy method using a dispatcher
    *     <li> @c caller_object.cpp - Calling a proxy method of a class derived from ObjectProxy
    *   </ul>
    * </ul>
@@ -322,7 +322,7 @@ namespace DBus
    *   <ul>
    *     <li> @c caller_c.cpp - Calling a proxy method with the dbus C API
    *     <li> @c caller_raw.cpp - Calling a proxy method with a manual loop similar to the C API example
-   *     <li> @c caller_dispatcher.cpp - Calling a proxy method using a dispatcher
+   *     <li> @c caller_dispatched.cpp - Calling a proxy method using a dispatcher
    *     <li> @c caller_object.cpp - Calling a proxy method of a class derived from ObjectProxy
    *   </ul>
    * </ul>
@@ -353,7 +353,7 @@ namespace DBus
    *   <ul>
    *     <li> @c caller_c.cpp - Calling a proxy method with the dbus C API
    *     <li> @c caller_raw.cpp - Calling a proxy method with a manual loop similar to the C API example
-   *     <li> @c caller_dispatcher.cpp - Calling a proxy method using a dispatcher
+   *     <li> @c caller_dispatched.cpp - Calling a proxy method using a dispatcher
    *     <li> @c caller_object.cpp - Calling a proxy method of a class derived from ObjectProxy
    *   </ul>
    * </ul>
@@ -363,7 +363,7 @@ namespace DBus
    */
 
   /**
-   * @example caller_dispatcher.cpp
+   * @example caller_dispatched.cpp
    *
    * This example is part of a series of examples that demonstrate method
    * proxy calls and adapter stubs.
@@ -384,7 +384,7 @@ namespace DBus
    *   <ul>
    *     <li> @c caller_c.cpp - Calling a proxy method with the dbus C API
    *     <li> @c caller_raw.cpp - Calling a proxy method with a manual loop similar to the C API example
-   *     <li> @c caller_dispatcher.cpp - Calling a proxy method using a dispatcher
+   *     <li> @c caller_dispatched.cpp - Calling a proxy method using a dispatcher
    *     <li> @c caller_object.cpp - Calling a proxy method of a class derived from ObjectProxy
    *   </ul>
    * </ul>
@@ -415,7 +415,7 @@ namespace DBus
    *   <ul>
    *     <li> @c caller_c.cpp - Calling a proxy method with the dbus C API
    *     <li> @c caller_raw.cpp - Calling a proxy method with a manual loop similar to the C API example
-   *     <li> @c caller_dispatcher.cpp - Calling a proxy method using a dispatcher
+   *     <li> @c caller_dispatched.cpp - Calling a proxy method using a dispatcher
    *     <li> @c caller_object.cpp - Calling a proxy method of a class derived from ObjectProxy
    *   </ul>
    * </ul>
