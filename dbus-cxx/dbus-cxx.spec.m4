@@ -32,6 +32,23 @@ developing dbus-cxx applications.
 
 dbus-cxx provides C++ bindings for the DBus library.
 
+%package          doc
+Summary:          Developer's documentation for the dbus-cxx library
+Group:            Documentation
+Requires:         gtk-doc
+Requires:         devhelp
+
+%description      doc
+This package contains developer's documentation for the dbus-cxx
+library. dbus-cxx provides C++ based bindings for the C based
+dbus library.
+
+The documentation can be viewed either through the devhelp
+documentation browser or through a web browser. 
+
+If using a web browser the documentation is installed in the gtk-doc
+hierarchy and can be found at /usr/share/gtk-doc/html/dbus-cxx-API_VERSION
+
 %package          tools
 Summary:          Tools to support dbus-cxx application development
 Group:            Development/Tools
@@ -81,8 +98,11 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 %{_libdir}/libdbus-cxx.so
 %{_libdir}/pkgconfig/dbus-cxx-PKGCONFIG_VERSION.pc
 %{_includedir}/dbus-cxx-PACKAGE_RELEASE/
-%doc %{_datadir}/gtk-doc/html/dbus-cxx-API_VERSION/
 %doc ChangeLog
+
+%files doc
+%defattr(-,root,root,-)
+%doc %{_datadir}/gtk-doc/html/dbus-cxx-API_VERSION/
 
 %files tools
 %defattr(-,root,root,-)
@@ -90,6 +110,10 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 %{_bindir}/dbus-cxx-introspect
 
 %changelog
+* Thu May 14 2009 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.1.1-1
+- New release
+- Added doc subpackage
+
 * Tue May 12 2009 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.1.0-1
 - Initial release
 
