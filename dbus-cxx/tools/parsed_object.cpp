@@ -84,8 +84,8 @@ std::string Method::strfmt( int depth )
   std::ostringstream sout;
   out_tabs( sout, depth );
   sout << "Method: " << name << std::endl;
-  for ( int i=0; i < in_args.size(); i++ ) sout << in_args[i].strfmt( depth+1 );
-  for ( int i=0; i < out_args.size(); i++ ) sout << out_args[i].strfmt( depth+1 );
+  for ( unsigned int i=0; i < in_args.size(); i++ ) sout << in_args[i].strfmt( depth+1 );
+  for ( unsigned int i=0; i < out_args.size(); i++ ) sout << out_args[i].strfmt( depth+1 );
   return sout.str();
 }
 
@@ -98,7 +98,7 @@ std::string Method::cpp_creation()
       s += "void";
     else
       s += out_args[0].cpp_type();
-    for ( int i = 0; i < in_args.size(); i++ )
+    for ( unsigned int i = 0; i < in_args.size(); i++ )
       s += "," + in_args[i].cpp_type();
     s += ">( ";
     if ( interface != NULL )
@@ -117,10 +117,10 @@ std::string Method::cpp_proto()
     else
       sout << out_args[0].cpp_type();
     sout << " " << name << "(";
-    for ( int i = 0; i < in_args.size(); i++ )
+    for ( unsigned int i = 0; i < in_args.size(); i++ )
       sout << (( i==0 )?" ":", " ) << in_args[i].cpp_type() << " " << in_args[i].name();
     sout << " ) { return (*" << varname() << ")(";
-    for ( int i = 0; i < in_args.size(); i++ )
+    for ( unsigned int i = 0; i < in_args.size(); i++ )
       sout << (( i==0 )?" ":", " ) << in_args[i].name();
     sout << "); }";
   }
@@ -139,7 +139,7 @@ std::string Method::cpp_decl()
       s += "void";
     else
       s += out_args[0].cpp_type();
-    for ( int i = 0; i < in_args.size(); i++ )
+    for ( unsigned int i = 0; i < in_args.size(); i++ )
       s += "," + in_args[i].cpp_type();
     s += ">::pointer " + varname() + ";";
   }
@@ -155,7 +155,7 @@ std::string Method::cpp_adapter_creation()
       sout << "void";
     else
       sout << out_args[0].cpp_type();
-    for ( int i = 0; i < in_args.size(); i++ )
+    for ( unsigned int i = 0; i < in_args.size(); i++ )
       sout << "," << in_args[i].cpp_type();
     sout << ">( ";
     if ( interface != NULL )
@@ -174,7 +174,7 @@ std::string Method::cpp_adapter_stub()
     else
       sout << out_args[0].cpp_type();
     sout << " " << stubname() << "(";
-    for ( int i = 0; i < in_args.size(); i++ )
+    for ( unsigned int i = 0; i < in_args.size(); i++ )
       sout << (( i==0 )?" ":", " ) << in_args[i].cpp_type() << " " << in_args[i].name();
     sout << " ) { this->check_adaptee(); ";
     if (out_args.size() != 0 ) sout << "return ";
@@ -182,7 +182,7 @@ std::string Method::cpp_adapter_stub()
     if ( cppname.empty() ) sout << name;
     else sout << cppname;
     sout << "(";
-    for ( int i = 0; i < in_args.size(); i++ )
+    for ( unsigned int i = 0; i < in_args.size(); i++ )
       sout << (( i==0 )?" ":", " ) << in_args[i].name();
     sout << "); }";
   }
@@ -196,10 +196,10 @@ bool Method::args_valid()
 {
   if ( in_args.size() > 7 ) return false;
 
-  for ( int i=0; i < in_args.size(); i++ )
+  for ( unsigned int i=0; i < in_args.size(); i++ )
     if ( in_args[i].type() == DBus::TYPE_INVALID ) return false;
 
-  for ( int i=0; i < out_args.size(); i++ )
+  for ( unsigned int i=0; i < out_args.size(); i++ )
     if ( out_args[i].type() == DBus::TYPE_INVALID ) return false;
 
   if ( out_args.size() > 1 ) return false;
@@ -212,7 +212,7 @@ std::string Signal::cpp_creation()
   std::string s;
   if ( args_valid() ) {
     s = varname() + " = this->create_signal<void";
-    for ( int i = 0; i < args.size(); i++ ) s += "," + args[i].cpp_type();
+    for ( unsigned int i = 0; i < args.size(); i++ ) s += "," + args[i].cpp_type();
     s += ">( ";
     if ( interface == NULL ) throw("bad signal interface");
     s += "\"" + interface->name() + "\", ";
@@ -226,7 +226,7 @@ std::string Signal::cpp_proto()
   std::ostringstream sout;
   if ( args_valid() ) {
     sout << "DBus::signal_proxy<void";
-    for ( int i = 0; i < args.size(); i++ )
+    for ( unsigned int i = 0; i < args.size(); i++ )
       sout << "," << args[i].cpp_type();
     sout << " >& signal_" << name << "() { return *" << varname() << "; }";
   }
@@ -241,7 +241,7 @@ std::string Signal::cpp_decl()
   std::string s;
   if ( args_valid() ) {
     s = "DBus::signal_proxy<void";
-    for ( int i = 0; i < args.size(); i++ )
+    for ( unsigned int i = 0; i < args.size(); i++ )
       s += "," + args[i].cpp_type();
     s += ">::pointer " + varname() + ";";
   }
@@ -252,7 +252,7 @@ bool Signal::args_valid()
 {
   if ( args.size() > 7 ) return false;
 
-  for ( int i=0; i < args.size(); i++ )
+  for ( unsigned int i=0; i < args.size(); i++ )
     if ( args[i].type() == DBus::TYPE_INVALID ) return false;
 
   return true;
@@ -263,7 +263,7 @@ std::string Signal::strfmt( int depth )
   std::ostringstream sout;
   out_tabs( sout, depth );
   sout << "Signal: " << name << std::endl;
-  for ( int i=0; i < args.size(); i++ ) sout << args[i].strfmt( depth+1 );
+  for ( unsigned int i=0; i < args.size(); i++ ) sout << args[i].strfmt( depth+1 );
   return sout.str();
 }
 
@@ -272,7 +272,7 @@ std::string Signal::adapter_signal_create()
   std::ostringstream sout;
   if ( args_valid() ) {
     sout << adapter_name() << " = this->create_signal<void";
-    for ( int i=0; i < args.size(); i++ ) sout << "," << args[i].cpp_type();
+    for ( unsigned int i=0; i < args.size(); i++ ) sout << "," << args[i].cpp_type();
     sout << ">(\"" << interface->name() << "\",\"" << name << "\");";
   }
   return sout.str();
@@ -283,7 +283,7 @@ std::string Signal::adapter_signal_declare()
   std::ostringstream sout;
   if ( args_valid() ) {
     sout << "DBus::signal<void";
-    for ( int i = 0; i < args.size(); i++ ) sout << "," << args[i].cpp_type();
+    for ( unsigned int i = 0; i < args.size(); i++ ) sout << "," << args[i].cpp_type();
     sout << ">::pointer " << adapter_name() << ";";
   }
   return sout.str();
@@ -302,20 +302,20 @@ std::string Interface::strfmt( int depth )
   std::ostringstream sout;
   out_tabs( sout, depth );
   sout << "Interface: " << dbus_name << "  prefix=" << cppprefix << "  " << ( ignored?" [ignored]":" [built]" ) << std::endl;
-  for ( int i=0; i < methods.size(); i++ ) sout << methods[i].strfmt( depth+1 );
-  for ( int i=0; i < signals.size(); i++ ) sout << signals[i].strfmt( depth+1 );
+  for ( unsigned int i=0; i < methods.size(); i++ ) sout << methods[i].strfmt( depth+1 );
+  for ( unsigned int i=0; i < signals.size(); i++ ) sout << signals[i].strfmt( depth+1 );
   return sout.str();
 }
 
 std::vector< std::string > Interface::cpp_method_creation()
 {
   std::vector<std::string> strings;
-  for ( int i = 0; i < methods.size(); i++ ) {
+  for ( unsigned int i = 0; i < methods.size(); i++ ) {
     methods[i].interface = this;
     if ( methods[i].args_valid() )
       strings.push_back( methods[i].cpp_creation() );
   }
-  for ( int i = 0; i < signals.size(); i++ ) {
+  for ( unsigned int i = 0; i < signals.size(); i++ ) {
     signals[i].interface = this;
     if ( signals[i].args_valid() )
       strings.push_back( signals[i].cpp_creation() );
@@ -326,11 +326,11 @@ std::vector< std::string > Interface::cpp_method_creation()
 std::vector< std::string > Interface::cpp_method_proto()
 {
   std::vector<std::string> strings;
-  for ( int i = 0; i < methods.size(); i++ ) {
+  for ( unsigned int i = 0; i < methods.size(); i++ ) {
     methods[i].interface = this;
     strings.push_back( methods[i].cpp_proto() );
   }
-  for ( int i = 0; i < signals.size(); i++ ) {
+  for ( unsigned int i = 0; i < signals.size(); i++ ) {
     signals[i].interface = this;
     strings.push_back( signals[i].cpp_proto() );
   }
@@ -340,12 +340,12 @@ std::vector< std::string > Interface::cpp_method_proto()
 std::vector< std::string > Interface::cpp_method_decl()
 {
   std::vector<std::string> strings;
-  for ( int i = 0; i < methods.size(); i++ ) {
+  for ( unsigned int i = 0; i < methods.size(); i++ ) {
     methods[i].interface = this;
     if ( methods[i].args_valid() )
       strings.push_back( methods[i].cpp_decl() );
   }
-  for ( int i = 0; i < signals.size(); i++ ) {
+  for ( unsigned int i = 0; i < signals.size(); i++ ) {
     signals[i].interface = this;
     if ( signals[i].args_valid() )
       strings.push_back( signals[i].cpp_decl() );
@@ -356,12 +356,12 @@ std::vector< std::string > Interface::cpp_method_decl()
 std::vector< std::string > Interface::cpp_adapter_creation()
 {
   std::vector<std::string> strings;
-  for ( int i = 0; i < methods.size(); i++ ) {
+  for ( unsigned int i = 0; i < methods.size(); i++ ) {
     methods[i].interface = this;
     if ( methods[i].args_valid() )
       strings.push_back( methods[i].cpp_adapter_creation() );
   }
-  for ( int i = 0; i < signals.size(); i++ ) {
+  for ( unsigned int i = 0; i < signals.size(); i++ ) {
     signals[i].interface = this;
     if ( signals[i].args_valid() )
     {
@@ -375,12 +375,12 @@ std::vector< std::string > Interface::cpp_adapter_creation()
 std::vector< std::string > Interface::cpp_adapter_stubs()
 {
   std::vector<std::string> strings;
-  for ( int i = 0; i < methods.size(); i++ ) {
+  for ( unsigned int i = 0; i < methods.size(); i++ ) {
     methods[i].interface = this;
     if ( methods[i].args_valid() )
       strings.push_back( methods[i].cpp_adapter_stub() );
   }
-  for ( int i = 0; i < signals.size(); i++ ) {
+  for ( unsigned int i = 0; i < signals.size(); i++ ) {
     signals[i].interface = this;
     if ( signals[i].args_valid() and not signals[i].ignored )
     {
@@ -394,7 +394,7 @@ std::vector< std::string > Interface::cpp_adapter_stubs()
 std::vector<std::string> Node::namespaces()
 {
   const char* current = gen_namespace.c_str();
-  char* nsseparator;
+  const char* nsseparator;
   std::vector<std::string> ns;
   while (( nsseparator = strstr( current,"::" ) ) != NULL ) {
     ns.push_back( std::string( current, nsseparator-current ) );
@@ -417,7 +417,7 @@ std::string Node::cppname_upper()
 std::vector< std::string > Node::namespaces_upper()
 {
   std::vector<std::string> ns = this->namespaces();
-  for ( int i = 0; i < ns.size(); i++ )
+  for ( unsigned int i = 0; i < ns.size(); i++ )
     std::transform( ns[i].begin(), ns[i].end(), ns[i].begin(), upper );
   return ns;
 }
@@ -430,12 +430,12 @@ std::string Node::strfmt( int depth )
   out_tabs( sout,depth+1 );
   sout << "Namespaces: ";
   std::vector<std::string> ns = namespaces();
-  for ( int i = 0; i < ns.size(); i++ ) sout << ns[i] << " ";
+  for ( unsigned int i = 0; i < ns.size(); i++ ) sout << ns[i] << " ";
   sout << std::endl;
-  for ( int i=0; i < methods.size(); i++ ) sout << methods[i].strfmt( depth+1 );
-  for ( int i=0; i < signals.size(); i++ ) sout << signals[i].strfmt( depth+1 );
-  for ( int i=0; i < interfaces.size(); i++ ) sout << interfaces[i].strfmt( depth+1 );
-  for ( int i=0; i < children.size(); i++ ) sout << children[i].strfmt( depth+1 );
+  for ( unsigned int i=0; i < methods.size(); i++ ) sout << methods[i].strfmt( depth+1 );
+  for ( unsigned int i=0; i < signals.size(); i++ ) sout << signals[i].strfmt( depth+1 );
+  for ( unsigned int i=0; i < interfaces.size(); i++ ) sout << interfaces[i].strfmt( depth+1 );
+  for ( unsigned int i=0; i < children.size(); i++ ) sout << children[i].strfmt( depth+1 );
   return sout.str();
 }
 
@@ -445,7 +445,7 @@ std::string Node::cpp_namespace_begin( const std::string& tab )
   std::string indent;
   std::vector<std::string> ns = this->namespaces();
   if ( ns.size() == 0 ) return "";
-  for ( int i = 0; i < ns.size(); i++ ) {
+  for ( unsigned int i = 0; i < ns.size(); i++ ) {
     result += indent;
     result += "namespace " + ns[i] + " {\n";
     indent += tab;
@@ -459,7 +459,7 @@ std::string Node::cpp_namespace_end( const std::string& tab )
   std::string indent;
   std::vector<std::string> ns = this->namespaces();
   if ( ns.size() == 0 ) return "";
-  for ( int i = 0; i < ns.size(); i++ ) {
+  for ( unsigned int i = 0; i < ns.size(); i++ ) {
     result = "}\n" + result;
     result = indent + result;
     indent += tab;
