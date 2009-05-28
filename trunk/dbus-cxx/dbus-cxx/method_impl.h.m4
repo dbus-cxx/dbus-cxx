@@ -46,6 +46,7 @@ define([METHOD_VOID],[dnl
       FOR(1, $1,[
       T_arg%1 _val_%1;])
 
+      ifelse(eval($1>0),1,[
       try {
         Message::iterator i = message->begin();
         i FOR(1, $1,[ >> _val_%1]);
@@ -53,6 +54,7 @@ define([METHOD_VOID],[dnl
       catch ( ErrorInvalidTypecast& e ) {
           return NOT_HANDLED;
       }
+      ],[])
 
       m_slot(LIST(LOOP(_val_%1, $1)));
 

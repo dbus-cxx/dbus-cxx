@@ -92,8 +92,10 @@ class signal_proxy ifelse($1, $2,,[<LIST(T_return, LOOP(T_arg%1,$1), LOOP(nil, C
       T_arg%1 _val_%1;])
 
       try {
+        ifelse(eval($1>0),1,[
         Message::iterator i = msg->begin();
         i FOR(1, $1,[ >> _val_%1]);
+        ],[])
         this->emit(LIST(LOOP(_val_%1, $1)));
       }
       catch ( ErrorInvalidTypecast& e ) {
