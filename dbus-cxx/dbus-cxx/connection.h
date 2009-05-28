@@ -505,7 +505,7 @@ namespace DBus
    * 
    * \htmlonly
    * <script type="text/javascript" src="http://www.ohloh.net/p/330958/widgets/project_users.js?style=red"></script><br>
-   * <script type="text/javascript" src="http://www.ohloh.net/p/330958/widgets/project_thin_badge.js"></script>
+   * <script type="text/javascript" src="http://www.ohloh.net/p/330958/widgets/project_partner_badge.js"></script>
    * \endhtmlonly
    *
    * <br><hr>
@@ -526,15 +526,13 @@ namespace DBus
    * 
    * \htmlonly <img src="fedora-logo-tiny.png" alt="Fedora"/> \endhtmlonly
    * \par
-   * In time, I will submit dbus-cxx for inclusion in Fedora. Until then, you can get rpms from here:
-   * \par
-   * \htmlonly <img src="download-small.png" alt=""/> \endhtmlonly
-   * <a href="http://sourceforge.net/project/showfiles.php?group_id=259994">Fedora rpms</a>
+   * dbus-cxx is available in Fedora 9 and higher.
    *
    * \par
    * Fedora package description
    * - \b dbus-cxx - Libraries needed to run applications
    * - \b dbus-cxx-devel - Headers, libraries and documentation for developing applications with dbus-cxx
+   * - \b dbus-cxx-doc - Developer's documentation including devhelp docs
    * - \b dbus-cxx-tools - Development tools, et. al. such as \c dbus-cxx-xml2cpp
    *
    * \htmlonly <img src="sourcecode-small.png" alt=""/> \endhtmlonly
@@ -547,7 +545,7 @@ namespace DBus
    * - You can browse the subversion repository at this url:
    *   - <a href="http://dbus-cxx.svn.sourceforge.net/viewvc/dbus-cxx/trunk/dbus-cxx">http://dbus-cxx.svn.sourceforge.net/viewvc/dbus-cxx/trunk/dbus-cxx</a>
    * - You can also check out a copy of the repository with this command:
-   *   - \verbatim svn co https://dbus-cxx.svn.sourceforge.net/svnroot/dbus-cxx dbus-cxx/trunk/dbus-cxx \endverbatim
+   *   - \verbatim svn co https://dbus-cxx.svn.sourceforge.net/svnroot/dbus-cxx/trunk/dbus-cxx \endverbatim
    *
    * <br><hr>
    *
@@ -558,6 +556,10 @@ namespace DBus
    *
    * \htmlonly <img src="documents-small.png" alt=""/> \endhtmlonly
    * \par Documentation, Tutorials, Guides, Quick Start, et. al.
+   *
+   * \par dbus-cxx-xml2cpp Reference
+   * Documentation on using \ref dbus-cxx-xml2cpp to convert DBus XML introspection
+   * documents into C++ proxies and adapters.
    * 
    * \par API Reference
    * The API documentation (including the pages you are reading now) have been generated
@@ -565,7 +567,7 @@ namespace DBus
    *
    * \par devhelp
    * The built documentation also includes a devhelp index. The index is installed
-   * automatically in the dbus-cxx-devel RPM and can be browsed simply by starting
+   * automatically in the dbus-cxx-doc RPM and can be browsed simply by starting
    * devhelp.
    *
    * \par
@@ -630,4 +632,42 @@ namespace DBus
    * \par License
    * dbus-cxx is released under the \htmlonly <a href="http://www.gnu.org/licenses/gpl-3.0-standalone.html"><img src="gplv3.png" alt="GPLv3"/></a> \endhtmlonly
    *
+   */
+
+  /**
+   * \page xml2cpp dbus-cxx-xml2cpp
+   *
+   * \par Summary
+   * \c dbus-cxx-xml2cpp generates proxy and adapter interfaces from modified DBus
+   * XML introspection documents.
+   *
+   * \par Commands
+   * - \c -x \c --xml : The xml file to process
+   * - \c -p \c --prefix : A prefix to prepend to all output files
+   * - \c -f \c --file : Send output to files with naming <i>class</i>_proxy.h and <i>class</i>_adapter.h
+   * - \c --proxy : Generate a proxy interface
+   * - \c --adapter : Generate an adapter interface
+   * - \c --verbose : Generate verbose processing info
+   *
+   * \par Extended DBus XML attributes
+   * \c dbus-cxx-xml2cpp in some cases needs information above and beyond that provided
+   * in a dbus introspection document. This information can be supplied by adding
+   * additional attributes to key nodes.
+   *
+   * \par
+   * The extended attributes per XML element are:
+   * - \b node
+   *   - \b cppname - The base name of the c++ class adapter and proxy
+   *   - \b gen-namespace - The namespace the c++ adapter and proxy will be generated into
+   *   - \b orig-namespace - The namespace of the object being adapted
+   *   - \b dest - Used to create a default value for the \c dest parameter of a proxy
+   *   - \b path - Used to create a default value for the \c path parameter of both proxies and adapters
+   *   - \b cppinclude - A free form string that will follow a \c #include line in the adapter
+   * - \b interface
+   *   - \b ignored - If set to "1" this interface will not be built for the proxy or adapter
+   * - \b signal
+   *   - \b accessor - The accessor method used to obtain the adaptee's signal
+   *   - \b ignored - If set to "1" this signal will not be built for the proxy or adapter
+   * - \b method
+   *   - \b cppname - Renames the DBus method to the provided name in the proxy and adapter
    */
