@@ -1,0 +1,169 @@
+2009-05-28  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* dbus-cxx/utility.h:
+	* dbus-cxx/dbus_signal.h.m4, dbus-cxx/method.h.m4,
+	  dbus-cxx/method_impl.h.m4, dbus-cxx/methodproxy.h.m4,
+	  dbus-cxx/signal_proxy.h.m4: Added m4 ifelse statements to prevent
+	  null code from being generated (thus causing warnings to be
+	  emitted) on signals and methods with no parameters
+	* dbus-cxx/connection.h: Updated documentation to reflect that
+	  dbus-cxx is now in Fedora and added basic info on
+	  dbus-cxx-xml2cpp
+	* examples/xml2cpp/calculator/Makefile.am,
+	  examples/xml2cpp/hal-proxy/Makefile.am:
+	* tools/Makefile.am, tools/generate_adapter.cpp,
+	  tools/generate_proxy.cpp, tools/parsed_object.cpp: Changed
+	  generated namespace from DBus to ::DBus when referencing dbus-cxx
+	  classes to avoid nested namespaces that include DBus in their
+	  hierarchy
+	* Makefile.am:
+	* m4, m4/ac_cxx_compile_stdcxx_0x.m4, m4/ax_prefix_config_h.m4:
+	* configure.in:
+	* ax_dbus_cxx_xml2cpp.m4:
+	* autogen.sh:
+	* acinclude.m4[DEL]:
+
+2009-05-14  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* dbus-cxx.spec.m4: Added doc subpackage
+	* tools/parsed_object.cpp: Fix warnings on unsigned/signed int
+	  comparison
+
+2009-05-13  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* debug/doc, debug/examples/basics, debug/examples/basics/methods,
+	  debug/examples/basics/signals, debug/examples/hal, debug/tools,
+	  debug/unit-tests:
+	* ., TODO, dbuscxx.kdevelop:
+	* doc:
+	* unit-tests:
+	* tools:
+	* dbus-cxx:
+	* examples, examples/basics, examples/basics/methods,
+	  examples/basics/signals, examples/xml2cpp,
+	  examples/xml2cpp/calculator, examples/xml2cpp/hal-proxy:
+	* debug, debug/dbus-cxx, debug/dbus-cxx/template.macros.m4,
+	  debug/examples, debug/examples/xml2cpp,
+	  debug/examples/xml2cpp/calculator,
+	  debug/examples/xml2cpp/calculator/calculator.xml,
+	  debug/examples/xml2cpp/hal-proxy,
+	  debug/examples/xml2cpp/hal-proxy/hal_manager_introspection.xml:
+	* .folder.png:
+	* Makefile.am:
+	* README:
+	* NEWS:
+	* doc/doxygen_to_devhelp.xsl[DEL]: Remove from version control
+	  since this is built
+	* doc/Makefile.am: Fix dox upload URL
+	* dbus-cxx/methodbase.h: Fix example docs
+	* dbus-cxx/connection.h: Add ohloh badge to docs
+	* configure.in:
+	* configure.in, doc/doxygen_to_devhelp.xsl:
+	* dbus-cxx/Makefile.am, examples/Makefile.am:
+	* dbus-cxx/connection.h: Removed types.h include
+	* dbus-cxx/utility.h: Removed types.h include
+	* ChangeLog, NEWS, README:
+	* Makefile.am, configure.in:
+
+2009-05-12  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* Makefile.am, dbus-cxx.spec.m4, doc/doxygen.css,
+	  doc/doxygen_footer.html, doc/doxygen_header.html,
+	  doc/doxygen_to_devhelp.xsl, doc/doxygen_to_devhelp.xsl.m4,
+	  examples/xml2cpp/calculator/calculator.cpp, svn2cl.authors:
+	* AUTHORS, COPYING, Makefile.am, acinclude.m4, autogen.sh,
+	  configure.in, dbus-cxx, dbus-cxx-1.0.pc.in, dbus-cxx.h,
+	  dbus-cxx.spec.m4, dbus-cxx/Makefile.am, dbus-cxx/accumulators.h,
+	  dbus-cxx/callmessage.cpp, dbus-cxx/callmessage.h,
+	  dbus-cxx/connection.cpp, dbus-cxx/connection.h,
+	  dbus-cxx/dbus_signal.h.m4, dbus-cxx/dispatcher.cpp,
+	  dbus-cxx/dispatcher.h, dbus-cxx/enums.h, dbus-cxx/error.cpp,
+	  dbus-cxx/error.h, dbus-cxx/errormessage.cpp,
+	  dbus-cxx/errormessage.h, dbus-cxx/interface.cpp,
+	  dbus-cxx/interface.h.m4, dbus-cxx/interfaceproxy.cpp,
+	  dbus-cxx/interfaceproxy.h, dbus-cxx/message.cpp,
+	  dbus-cxx/message.h, dbus-cxx/messageappenditerator.cpp,
+	  dbus-cxx/messageappenditerator.h, dbus-cxx/messagefilter.cpp,
+	  dbus-cxx/messagefilter.h, dbus-cxx/messagehandler.cpp,
+	  dbus-cxx/messagehandler.h, dbus-cxx/messageiterator.cpp,
+	  dbus-cxx/messageiterator.h, dbus-cxx/method.h.m4,
+	  dbus-cxx/method_impl.h.m4, dbus-cxx/methodbase.cpp,
+	  dbus-cxx/methodbase.h, dbus-cxx/methodproxy.h.m4,
+	  dbus-cxx/methodproxybase.cpp, dbus-cxx/methodproxybase.h.m4,
+	  dbus-cxx/object.cpp, dbus-cxx/object.h.m4,
+	  dbus-cxx/objectpathhandler.cpp, dbus-cxx/objectpathhandler.h,
+	  dbus-cxx/objectproxy.cpp, dbus-cxx/objectproxy.h.m4,
+	  dbus-cxx/pendingcall.cpp, dbus-cxx/pendingcall.h,
+	  dbus-cxx/pointer.h, dbus-cxx/returnmessage.cpp,
+	  dbus-cxx/returnmessage.h, dbus-cxx/signal_base.cpp,
+	  dbus-cxx/signal_base.h, dbus-cxx/signal_proxy.h.m4,
+	  dbus-cxx/signal_proxy_base.cpp, dbus-cxx/signal_proxy_base.h,
+	  dbus-cxx/signalmessage.cpp, dbus-cxx/signalmessage.h,
+	  dbus-cxx/signalreceiver.cpp, dbus-cxx/signalreceiver.h,
+	  dbus-cxx/signature.cpp, dbus-cxx/signature.h,
+	  dbus-cxx/signatureiterator.cpp, dbus-cxx/signatureiterator.h,
+	  dbus-cxx/template.macros.m4, dbus-cxx/timeout.cpp,
+	  dbus-cxx/timeout.h, dbus-cxx/utility.cpp, dbus-cxx/utility.h,
+	  dbus-cxx/watch.cpp, dbus-cxx/watch.h, doc, doc/Doxyfile,
+	  doc/Makefile.am, doc/images, doc/images/bug-small.png,
+	  doc/images/bugs-small.png, doc/images/dbus-cxx-logo-med.png,
+	  doc/images/dbus-cxx-logo.png, doc/images/dbus-cxx-logo.svg,
+	  doc/images/documents-small.png, doc/images/download-small.png,
+	  doc/images/fedora-logo-tiny.png, doc/images/gplv3.png,
+	  doc/images/sourcecode-small.png, examples, examples/Makefile.am,
+	  examples/basics, examples/basics/Makefile.am,
+	  examples/basics/methods, examples/basics/methods/Makefile.am,
+	  examples/basics/methods/callee.cpp,
+	  examples/basics/methods/callee_2.cpp,
+	  examples/basics/methods/callee_c.cpp,
+	  examples/basics/methods/callee_dispatched.cpp,
+	  examples/basics/methods/callee_object.cpp,
+	  examples/basics/methods/callee_object_inherited.cpp,
+	  examples/basics/methods/callee_raw.cpp,
+	  examples/basics/methods/caller.cpp,
+	  examples/basics/methods/caller_c.cpp,
+	  examples/basics/methods/caller_dispatched.cpp,
+	  examples/basics/methods/caller_object.cpp,
+	  examples/basics/methods/caller_popt.h,
+	  examples/basics/methods/caller_raw.cpp, examples/basics/signals,
+	  examples/basics/signals/Makefile.am,
+	  examples/basics/signals/signal_emitter.cpp,
+	  examples/basics/signals/signal_emitter_2.cpp,
+	  examples/basics/signals/signal_emitter_3.cpp,
+	  examples/basics/signals/signal_emitter_c.cpp,
+	  examples/basics/signals/signal_emitter_object.cpp,
+	  examples/basics/signals/signal_emitter_raw.cpp,
+	  examples/basics/signals/signal_receiver.cpp,
+	  examples/basics/signals/signal_receiver_2.cpp,
+	  examples/basics/signals/signal_receiver_c.cpp,
+	  examples/basics/signals/signal_receiver_object.cpp,
+	  examples/basics/signals/signal_receiver_raw.cpp, examples/hal,
+	  examples/xml2cpp, examples/xml2cpp/Makefile.am,
+	  examples/xml2cpp/calculator,
+	  examples/xml2cpp/calculator/Makefile.am,
+	  examples/xml2cpp/calculator/calculator.cpp,
+	  examples/xml2cpp/calculator/calculator.h,
+	  examples/xml2cpp/calculator/calculator.xml,
+	  examples/xml2cpp/calculator/calculator_client.cpp,
+	  examples/xml2cpp/calculator/calculator_server.cpp,
+	  examples/xml2cpp/calculator/calculator_watcher.cpp,
+	  examples/xml2cpp/calculator/client_popt.h,
+	  examples/xml2cpp/hal-proxy,
+	  examples/xml2cpp/hal-proxy/Makefile.am,
+	  examples/xml2cpp/hal-proxy/hal_manager_introspection.xml,
+	  examples/xml2cpp/hal-proxy/hal_proxy.cpp, templates,
+	  templates/cpp, templates/h, tools, tools/Makefile.am,
+	  tools/generate_adapter.cpp, tools/generate_adapter.h,
+	  tools/generate_proxy.cpp, tools/generate_proxy.h,
+	  tools/introspect.cpp, tools/parsed_object.cpp,
+	  tools/parsed_object.h, tools/xml2cpp.cpp, tools/xml_parser.cpp,
+	  tools/xml_parser.h, unit-tests, unit-tests/Makefile.am,
+	  unit-tests/callmessagetests.cpp, unit-tests/callmessagetests.h,
+	  unit-tests/dbus_cxx_unit_tests.cpp,
+	  unit-tests/messageiteratortests.cpp,
+	  unit-tests/messageiteratortests.h:
+
+2009-05-04  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* .:
+
