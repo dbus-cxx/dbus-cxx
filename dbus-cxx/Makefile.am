@@ -17,7 +17,10 @@
 ##   along with this software. If not see <http://www.gnu.org/licenses/>.  ##
 #############################################################################
 
-EXTRA_DIST = dbus-cxx.spec
+EXTRA_DIST = dbus-cxx.spec \
+	m4/ac_cxx_compile_stdcxx_0x.m4 \
+	m4/ax_prefix_config_h.m4 \
+	ax_dbus_cxx_xml2cpp.m4
 
 SUBDIRS = dbus-cxx tools doc examples unit-tests
 
