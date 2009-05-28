@@ -51,7 +51,7 @@ std::string Arg::cpp_type()
     case DBus::TYPE_DOUBLE:      return "double";
     case DBus::TYPE_STRING:      return "std::string";
     case DBus::TYPE_OBJECT_PATH: return "std::string";
-    case DBus::TYPE_SIGNATURE:   return "DBus::Signature";
+    case DBus::TYPE_SIGNATURE:   return "::DBus::Signature";
     case DBus::TYPE_ARRAY:       throw DBus::ErrorInvalidMessageType();
     case DBus::TYPE_VARIANT:     throw DBus::ErrorInvalidMessageType();
     case DBus::TYPE_STRUCT:      throw DBus::ErrorInvalidMessageType();
@@ -134,7 +134,7 @@ std::string Method::cpp_decl()
 {
   std::string s;
   if ( args_valid() ) {
-    s = "DBus::MethodProxy<";
+    s = "::DBus::MethodProxy<";
     if ( out_args.size() == 0 )
       s += "void";
     else
@@ -225,7 +225,7 @@ std::string Signal::cpp_proto()
 {
   std::ostringstream sout;
   if ( args_valid() ) {
-    sout << "DBus::signal_proxy<void";
+    sout << "::DBus::signal_proxy<void";
     for ( unsigned int i = 0; i < args.size(); i++ )
       sout << "," << args[i].cpp_type();
     sout << " >& signal_" << name << "() { return *" << varname() << "; }";
@@ -240,7 +240,7 @@ std::string Signal::cpp_decl()
 {
   std::string s;
   if ( args_valid() ) {
-    s = "DBus::signal_proxy<void";
+    s = "::DBus::signal_proxy<void";
     for ( unsigned int i = 0; i < args.size(); i++ )
       s += "," + args[i].cpp_type();
     s += ">::pointer " + varname() + ";";
@@ -282,7 +282,7 @@ std::string Signal::adapter_signal_declare()
 {
   std::ostringstream sout;
   if ( args_valid() ) {
-    sout << "DBus::signal<void";
+    sout << "::DBus::signal<void";
     for ( unsigned int i = 0; i < args.size(); i++ ) sout << "," << args[i].cpp_type();
     sout << ">::pointer " << adapter_name() << ";";
   }
