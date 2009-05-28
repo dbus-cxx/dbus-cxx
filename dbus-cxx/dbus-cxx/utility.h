@@ -220,6 +220,8 @@ namespace DBus
         return "Struct";
       case TYPE_DICT_ENTRY:
         return "Dict Entry";
+      default:
+        break;
     }
     return std::string("Invalid");
   }
