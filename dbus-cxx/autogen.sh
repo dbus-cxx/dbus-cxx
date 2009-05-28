@@ -45,7 +45,7 @@ do_cmd() {
     $@
 }
 
-do_cmd $ACLOCAL
+do_cmd $ACLOCAL -I m4
 do_cmd $LIBTOOLIZE -c --force
 do_cmd $AUTOHEADER
 do_cmd $AUTOCONF
