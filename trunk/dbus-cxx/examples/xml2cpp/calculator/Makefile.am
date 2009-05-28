@@ -49,6 +49,6 @@ calculator_watcher_LDADD = $(top_builddir)/dbus-cxx/libdbus-cxx.la \
 
 noinst_HEADERS = calculator.h client_popt.h
 
-EXTRA_DIST = calculator.xml
+noinst_DATA = calculator.xml
 
 endif

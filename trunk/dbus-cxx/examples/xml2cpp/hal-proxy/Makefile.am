@@ -38,6 +38,6 @@ hal_proxy_SOURCES = hal_manager_proxy.h hal_proxy.cpp
 hal_proxy_LDADD = $(top_builddir)/dbus-cxx/libdbus-cxx.la \
 	$(PROJECT_LIBS)
 
-EXTRA_DIST = hal_manager_introspection.xml
+noinst_DATA = hal_manager_introspection.xml
 
 endif
