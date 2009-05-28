@@ -46,12 +46,12 @@ std::string generate_proxy_h(Node n)
   
   sout << n.cpp_namespace_begin(tab) + "\n";
 
-  sout << class_indent << "class " << n.proxy_name() << " : public DBus::ObjectProxy\n"
+  sout << class_indent << "class " << n.proxy_name() << " : public ::DBus::ObjectProxy\n"
        << class_indent << "{\n"
        << class_indent << tab << "protected:\n"
-       << decl_indent << n.proxy_name() << "( DBus::Connection::pointer conn, const std::string& dest=\""
+       << decl_indent << n.proxy_name() << "( ::DBus::Connection::pointer conn, const std::string& dest=\""
        << n.dbus_destination << "\", const std::string& path=\"" << n.dbus_path << "\"):\n"
-       << decl_indent << tab << "DBus::ObjectProxy(conn, dest, path)\n"
+       << decl_indent << tab << "::DBus::ObjectProxy(conn, dest, path)\n"
        << decl_indent << "{\n";
 
   for ( int i=0; i < n.interfaces.size(); i++ )
@@ -66,7 +66,7 @@ std::string generate_proxy_h(Node n)
 
   sout << "\n" << class_indent << tab << "public:\n\n"
        << decl_indent << "typedef DBusCxxPointer<" << n.proxy_name() << "> pointer;\n\n"
-       << decl_indent << "static pointer create( DBus::Connection::pointer conn,\n"
+       << decl_indent << "static pointer create( ::DBus::Connection::pointer conn,\n"
        << decl_indent << "                       const std::string& dest=\"" << n.dbus_destination << "\",\n"
        << decl_indent << "                       const std::string& path=\"" << n.dbus_path << "\"\n"
        << decl_indent << "                     )\n"

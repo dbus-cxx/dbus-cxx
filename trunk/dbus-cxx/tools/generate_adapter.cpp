@@ -51,11 +51,11 @@ std::string generate_adapter_h(Node n)
   
   sout << n.cpp_namespace_begin(tab) + "\n";
 
-  sout << class_indent << "class " << n.adapter_name() << " : public DBus::Object\n"
+  sout << class_indent << "class " << n.adapter_name() << " : public ::DBus::Object\n"
        << class_indent << "{\n"
        << class_indent << tab << "protected:\n"
        << decl_indent << n.adapter_name() << "( " << n.adaptee_fqn() << "* adaptee=NULL, const std::string& path=\"" << n.dbus_path << "\"):\n"
-       << decl_indent << tab << "DBus::Object(path),\n"
+       << decl_indent << tab << "::DBus::Object(path),\n"
        << decl_indent << tab << "m_adaptee(adaptee)\n"
        << decl_indent << "{\n";
 
@@ -79,7 +79,7 @@ std::string generate_adapter_h(Node n)
 
   sout << "\n" << class_indent << tab << "protected:\n\n"
        << decl_indent << n.adaptee_fqn() << "* m_adaptee;\n\n"
-       << decl_indent << "void check_adaptee() { if ( not m_adaptee) throw DBus::ErrorInvalidAdaptee(); }\n\n";
+       << decl_indent << "void check_adaptee() { if ( not m_adaptee) throw ::DBus::ErrorInvalidAdaptee(); }\n\n";
 
   for ( int i=0; i < n.interfaces.size(); i++ )
   {

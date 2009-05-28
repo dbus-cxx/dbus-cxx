@@ -42,4 +42,5 @@ hal_manager.h: hal_manager_introspection.xml dbus-cxx-xml2cpp
 NOINST_HEADER = generate_adapter.h generate_proxy.h parsed_object.h xml_parser.h
 EXTRA_DIST = generate_adapter.h generate_proxy.h parsed_object.h xml_parser.h
 
+
 endif
