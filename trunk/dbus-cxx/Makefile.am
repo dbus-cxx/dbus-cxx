@@ -49,6 +49,10 @@ upload-release: dist
 upload-release-only:
 	scp $(PACKAGE)-$(VERSION).tar.bz2 $(PACKAGE)-$(VERSION).tar.gz $(PACKAGE)-$(VERSION).zip $(PACKAGE_RELEASEHOST)
 
+upload-all: dist
+	make upload-docs-only
+	make upload-release-only
+
 spec:
 	m4 -D PACKAGE_VERSION=$(PACKAGE_VERSION) \
 		-D PACKAGE_RELEASE=$(PACKAGE_RELEASE) \
