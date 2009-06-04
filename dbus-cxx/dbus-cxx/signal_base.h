@@ -69,23 +69,23 @@ namespace DBus
 
       void set_connection(DBusCxxPointer<Connection> connection);
 
-      const std::string& sender();
+      const std::string& sender() const;
 
       void set_sender(const std::string& s);
 
-      const std::string& interface();
+      const std::string& interface() const;
 
       void set_interface(const std::string& i);
 
-      const std::string& name();
+      const std::string& name() const;
 
       void set_name( const std::string& n );
 
-      const std::string& path();
+      const Path& path() const;
 
       void set_path(const std::string& s);
 
-      const std::string& destination();
+      const std::string& destination() const;
 
       void set_destination(const std::string& s);
 
@@ -94,6 +94,13 @@ namespace DBus
        * capable of parsing their specific template type message.
        */
       virtual pointer clone() = 0;
+
+      /** Returns a DBus XML description of this interface */
+      virtual std::string introspect(int space_depth=0) const { }
+
+      virtual std::string arg_name(size_t i) { return std::string(); }
+
+      virtual void set_arg_name(size_t i, const std::string& name) { }
 
     protected:
 
@@ -105,7 +112,7 @@ namespace DBus
 
       std::string m_name;
 
-      std::string m_path;
+      Path m_path;
 
       std::string m_destination;
 

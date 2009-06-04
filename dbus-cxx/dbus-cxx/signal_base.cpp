@@ -76,7 +76,7 @@ namespace DBus
     m_connection = connection;
   }
 
-  const std::string & signal_base::sender()
+  const std::string & signal_base::sender() const
   {
     return m_sender;
   }
@@ -86,7 +86,7 @@ namespace DBus
     m_sender = s;
   }
 
-  const std::string & signal_base::interface()
+  const std::string & signal_base::interface() const
   {
     return m_interface;
   }
@@ -96,7 +96,7 @@ namespace DBus
     m_interface = i;
   }
 
-  const std::string & signal_base::name()
+  const std::string & signal_base::name() const
   {
     return m_name;
   }
@@ -106,7 +106,7 @@ namespace DBus
     m_name = n;
   }
 
-  const std::string & signal_base::path()
+  const Path& signal_base::path() const
   {
     return m_path;
   }
@@ -116,7 +116,7 @@ namespace DBus
     m_path = s;
   }
 
-  const std::string & signal_base::destination()
+  const std::string & signal_base::destination() const
   {
     return m_destination;
   }
