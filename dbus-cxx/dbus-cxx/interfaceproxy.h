@@ -58,7 +58,7 @@ namespace DBus {
 
       ObjectProxy* object() const;
 
-      std::string path() const;
+      Path path() const;
 
       DBusCxxPointer<Connection> connection() const;
 
