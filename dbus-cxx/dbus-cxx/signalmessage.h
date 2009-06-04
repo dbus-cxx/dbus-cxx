@@ -69,7 +69,7 @@ namespace DBus
 
       bool set_path( const std::string& p );
 
-      const char* path() const;
+      Path path() const;
 
       bool has_path( const std::string& p ) const;
 

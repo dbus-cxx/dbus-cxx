@@ -280,6 +280,7 @@ namespace DBus
       MessageIterator& operator>>( const char*& v );
       MessageIterator& operator>>( std::string& v );
       MessageIterator& operator>>( Signature& v );
+      MessageIterator& operator>>( Path& v );
       
       template <typename T>
       void value( T& temp ) {

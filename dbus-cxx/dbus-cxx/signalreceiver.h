@@ -71,7 +71,7 @@ namespace DBus
 
       void set_member(const std::string& s);
 
-      const std::string& path();
+      const Path& path();
 
       void set_path(const std::string& s);
 
@@ -101,7 +101,7 @@ namespace DBus
 
       std::string m_member;
 
-      std::string m_path;
+      Path m_path;
 
       std::string m_destination;
 

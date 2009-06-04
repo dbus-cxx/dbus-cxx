@@ -128,7 +128,7 @@ namespace DBus
     return dbus_message_set_path( m_cobj, p.c_str() );
   }
 
-  const char* CallMessage::path() const
+  Path CallMessage::path() const
   {
     return dbus_message_get_path( m_cobj );
   }
