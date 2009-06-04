@@ -113,30 +113,33 @@ int main( int argc, const char** argv )
 
       if ( output_to_file )
       {
+        std::string full_file_prefix = file_prefix;
+        full_file_prefix += nodes[i].file_prefix;
+        
         if ( not proxy_h.empty() )
         {
-          filename = file_prefix + nodes[i].name_lower() + "_proxy.h";
+          filename = full_file_prefix + nodes[i].name_lower() + "_proxy.h";
           fout.open( filename.c_str(), std::ios_base::trunc );
           fout << proxy_h;
           fout.close();
         }
         if ( not proxy_cpp.empty() )
         {
-          filename = file_prefix + nodes[i].name_lower() + "_proxy.cpp";
+          filename = full_file_prefix + nodes[i].name_lower() + "_proxy.cpp";
           fout.open( filename.c_str(), std::ios_base::trunc );
           fout << proxy_cpp;
           fout.close();
         }
         if ( not adapter_h.empty() )
         {
-          filename = file_prefix + nodes[i].name_lower() + "_adapter.h";
+          filename = full_file_prefix + nodes[i].name_lower() + "_adapter.h";
           fout.open( filename.c_str(), std::ios_base::trunc );
           fout << adapter_h;
           fout.close();
         }
         if ( not adapter_cpp.empty() )
         {
-          filename = file_prefix + nodes[i].name_lower() + "_adapter.cpp";
+          filename = full_file_prefix + nodes[i].name_lower() + "_adapter.cpp";
           fout.open( filename.c_str(), std::ios_base::trunc );
           fout << adapter_cpp;
           fout.close();

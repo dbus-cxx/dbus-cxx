@@ -50,12 +50,37 @@ std::string Arg::cpp_type()
     case DBus::TYPE_UINT64:      return "uint64_t";
     case DBus::TYPE_DOUBLE:      return "double";
     case DBus::TYPE_STRING:      return "std::string";
-    case DBus::TYPE_OBJECT_PATH: return "std::string";
+    case DBus::TYPE_OBJECT_PATH: return "::DBus::Path";
     case DBus::TYPE_SIGNATURE:   return "::DBus::Signature";
     case DBus::TYPE_ARRAY:       throw DBus::ErrorInvalidMessageType();
     case DBus::TYPE_VARIANT:     throw DBus::ErrorInvalidMessageType();
     case DBus::TYPE_STRUCT:      throw DBus::ErrorInvalidMessageType();
     case DBus::TYPE_DICT_ENTRY:  throw DBus::ErrorInvalidMessageType();
+  }
+
+  throw DBus::ErrorInvalidMessageType();
+}
+
+std::string Arg::stubsignature()
+{
+  switch ( type() ) {
+    case DBus::TYPE_INVALID:     throw  DBus::ErrorInvalidMessageType();
+    case DBus::TYPE_BYTE:        return DBus::signature<uint8_t>();
+    case DBus::TYPE_BOOLEAN:     return DBus::signature<bool>();
+    case DBus::TYPE_INT16:       return DBus::signature<int16_t>();
+    case DBus::TYPE_UINT16:      return DBus::signature<uint16_t>();
+    case DBus::TYPE_INT32:       return DBus::signature<int32_t>();
+    case DBus::TYPE_UINT32:      return DBus::signature<uint32_t>();
+    case DBus::TYPE_INT64:       return DBus::signature<int64_t>();
+    case DBus::TYPE_UINT64:      return DBus::signature<uint64_t>();
+    case DBus::TYPE_DOUBLE:      return DBus::signature<double>();
+    case DBus::TYPE_STRING:      return DBus::signature<std::string>();
+    case DBus::TYPE_OBJECT_PATH: return DBus::signature<DBus::Path>();
+    case DBus::TYPE_SIGNATURE:   return DBus::signature<DBus::Signature>();
+    case DBus::TYPE_ARRAY:       throw  DBus::ErrorInvalidMessageType();
+    case DBus::TYPE_VARIANT:     throw  DBus::ErrorInvalidMessageType();
+    case DBus::TYPE_STRUCT:      throw  DBus::ErrorInvalidMessageType();
+    case DBus::TYPE_DICT_ENTRY:  throw  DBus::ErrorInvalidMessageType();
   }
 
   throw DBus::ErrorInvalidMessageType();
@@ -146,11 +171,21 @@ std::string Method::cpp_decl()
   return s;
 }
 
+std::string Method::stubsignature()
+{
+  std::string ss;
+  if ( out_args.size() == 0 ) ss += 'v';
+  else ss += out_args[0].stubsignature();
+  for ( size_t i = 0; i < in_args.size(); i++ )
+    ss += in_args[i].stubsignature();
+  return ss;
+}
+
 std::string Method::cpp_adapter_creation()
 {
   std::ostringstream sout;
   if ( args_valid() ) {
-    sout << "this->create_method<";
+    sout << "temp_method = this->create_method<";
     if ( out_args.size() == 0 )
       sout << "void";
     else
@@ -164,6 +199,26 @@ std::string Method::cpp_adapter_creation()
   }
   return sout.str();
 }
+
+std::vector<std::string> Method::adapter_arg_names()
+{
+  std::vector<std::string> decls;
+  std::ostringstream sout;
+  if ( out_args.size() > 0 )
+  {
+    sout << "temp_method->set_arg_name( " << 0 << ", \"" << out_args[0].dbus_name << "\" );";
+    decls.push_back(sout.str());
+    sout.str("");
+  }
+  for ( size_t i = 0; i < in_args.size(); i++ )
+  {
+    sout << "temp_method->set_arg_name( " << i+1 << ", \"" << in_args[i].dbus_name << "\" );";
+    decls.push_back(sout.str());
+    sout.str("");
+  }
+  return decls;
+}
+
 
 std::string Method::cpp_adapter_stub()
 {
@@ -209,16 +264,30 @@ bool Method::args_valid()
 
 std::string Signal::cpp_creation()
 {
-  std::string s;
+  std::ostringstream sout;
   if ( args_valid() ) {
-    s = varname() + " = this->create_signal<void";
-    for ( unsigned int i = 0; i < args.size(); i++ ) s += "," + args[i].cpp_type();
-    s += ">( ";
+    sout << varname() << " = this->create_signal<void";
+    for ( size_t i = 0; i < args.size(); i++ )
+      sout << "," << args[i].cpp_type();
+    sout << ">( ";
     if ( interface == NULL ) throw("bad signal interface");
-    s += "\"" + interface->name() + "\", ";
-    s += "\"" + name + "\" );";
+    sout << "\"" << interface->name() << "\", ";
+    sout << "\"" << name << "\" );";
   }
-  return s;
+  return sout.str();
+}
+
+std::vector<std::string> Signal::proxy_arg_names()
+{
+  std::vector<std::string> decls;
+  std::ostringstream sout;
+  for ( size_t i = 0; i < args.size(); i++ )
+  {
+    sout << varname() << "->set_arg_name( " << i << ", \"" << args[i].dbus_name << "\" );";
+    decls.push_back(sout.str());
+    sout.str("");
+  }
+  return decls;
 }
 
 std::string Signal::cpp_proto()
@@ -276,6 +345,19 @@ std::string Signal::adapter_signal_create()
     sout << ">(\"" << interface->name() << "\",\"" << name << "\");";
   }
   return sout.str();
+}
+
+std::vector<std::string> Signal::adapter_arg_names()
+{
+  std::vector<std::string> decls;
+  std::ostringstream sout;
+  for ( size_t i = 0; i < args.size(); i++ )
+  {
+    sout << adapter_name() << "->set_arg_name( " << i << ", \"" << args[i].dbus_name << "\" );";
+    decls.push_back(sout.str());
+    sout.str("");
+  }
+  return decls;
 }
 
 std::string Signal::adapter_signal_declare()
@@ -359,16 +441,44 @@ std::vector< std::string > Interface::cpp_adapter_creation()
   for ( unsigned int i = 0; i < methods.size(); i++ ) {
     methods[i].interface = this;
     if ( methods[i].args_valid() )
+    {
       strings.push_back( methods[i].cpp_adapter_creation() );
+      std::vector<std::string> names = methods[i].adapter_arg_names();
+      strings.insert(strings.end(), names.begin(), names.end());
+    }
   }
   for ( unsigned int i = 0; i < signals.size(); i++ ) {
     signals[i].interface = this;
     if ( signals[i].args_valid() )
     {
       strings.push_back( signals[i].adapter_signal_create() );
+      std::vector<std::string> names = signals[i].adapter_arg_names();
+      strings.insert(strings.end(), names.begin(), names.end());
       strings.push_back( signals[i].adapter_signal_connect() );
     }
-    }
+  }
+  return strings;
+}
+
+std::vector< std::string > Interface::cpp_adapter_signal_connection()
+{
+  std::vector<std::string> strings;
+  for ( size_t i = 0; i < signals.size(); i++ ) {
+    signals[i].interface = this;
+    if ( signals[i].args_valid() )
+      strings.push_back( signals[i].adapter_signal_connect() );
+  }
+  return strings;
+}
+
+std::vector< std::string > Interface::cpp_adapter_signal_disconnection()
+{
+  std::vector<std::string> strings;
+  for ( size_t i = 0; i < signals.size(); i++ ) {
+    signals[i].interface = this;
+    if ( signals[i].args_valid() )
+      strings.push_back( signals[i].adapter_signal_disconnect() );
+  }
   return strings;
 }
 
