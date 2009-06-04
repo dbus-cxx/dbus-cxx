@@ -21,7 +21,10 @@
 
 namespace DBus
 {
-  struct DBusObjectPathVTable ObjectPathHandler::m_dbus_vtable = { path_unregister_callback, message_handler_callback };
+  struct DBusObjectPathVTable ObjectPathHandler::m_dbus_vtable = {
+    path_unregister_callback,
+    message_handler_callback
+  };
   
   ObjectPathHandler::ObjectPathHandler(const std::string& path, PrimaryFallback pf):
       m_path(path),
@@ -39,7 +42,7 @@ namespace DBus
     return pointer( new ObjectPathHandler(path, pf) );
   }
 
-  const std::string & ObjectPathHandler::path()
+  const Path& ObjectPathHandler::path() const
   {
     return m_path;
   }
@@ -105,7 +108,8 @@ namespace DBus
     if ( user_data == NULL ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     ObjectPathHandler* handler = static_cast<ObjectPathHandler*>(user_data);
     result = handler->handle_message(Connection::self(connection), Message::create(message));
-    if ( result ) return DBUS_HANDLER_RESULT_HANDLED;
+    DBUS_CXX_DEBUG("ObjectPathHandler::message_handler_callback: result = " << result );
+    if ( result == HANDLED ) return DBUS_HANDLER_RESULT_HANDLED;
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
 
