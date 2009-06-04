@@ -32,10 +32,10 @@ CLEANFILES =  $(PROXIES) $(ADAPTERS)
 
 gen:  $(PROXIES) $(ADAPTERS)
 
-%_adapter.h : %.xml
+%_adapter.h : %.xml $(top_builddir)/tools/dbus-cxx-xml2cpp
 	$(top_builddir)/tools/dbus-cxx-xml2cpp --xml $(top_srcdir)/examples/xml2cpp/calculator/$*.xml --adapter -f
 
-%_proxy.h : %.xml
+%_proxy.h : %.xml $(top_builddir)/tools/dbus-cxx-xml2cpp
 	$(top_builddir)/tools/dbus-cxx-xml2cpp --xml $(top_srcdir)/examples/xml2cpp/calculator/$*.xml --proxy -f
 
 calculator_client_SOURCES = $(PROXIES) calculator_client.cpp
@@ -53,5 +53,7 @@ calculator_watcher_LDADD = $(top_builddir)/dbus-cxx/libdbus-cxx.la \
 noinst_HEADERS = calculator.h client_popt.h
 
 noinst_DATA = calculator.xml
+
+EXTRA_DIST = $(noinst_HEADERS) $(noinst_DATA) $(PROXIES) $(ADAPTERS)
 
 endif
