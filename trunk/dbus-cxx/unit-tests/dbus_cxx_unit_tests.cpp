@@ -28,9 +28,11 @@
 
 #include "messageiteratortests.h"
 #include "callmessagetests.h"
+#include "pathclasstests.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION( MessageIteratorTests );
 CPPUNIT_TEST_SUITE_REGISTRATION( CallMessageTests );
+CPPUNIT_TEST_SUITE_REGISTRATION( PathClassTests );
 
 int main() {
   // Create the event manager and test controller

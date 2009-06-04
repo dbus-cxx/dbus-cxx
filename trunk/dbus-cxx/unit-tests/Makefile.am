@@ -26,7 +26,7 @@ noinst_PROGRAMS = dbus-cxx-unit-tests
 dbus_cxx_unit_tests_LDADD = $(top_builddir)/dbus-cxx/libdbus-cxx.la \
 	$(PROJECT_LIBS) $(UNIT_TEST_LIBS)
 dbus_cxx_unit_tests_SOURCES = callmessagetests.cpp dbus_cxx_unit_tests.cpp \
-	messageiteratortests.cpp
-noinst_HEADERS = callmessagetests.h messageiteratortests.h
+	messageiteratortests.cpp pathclasstests.cpp
+noinst_HEADERS = callmessagetests.h messageiteratortests.h pathclasstests.h
 
 endif
