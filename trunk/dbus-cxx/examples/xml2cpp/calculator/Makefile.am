@@ -24,26 +24,29 @@ if DBUS_CXX_TOOLS
 
 noinst_PROGRAMS = calculator-client calculator-server calculator-watcher
 
-BUILT_SOURCES = calculator_proxy.h calculator_adapter.h
-CLEANFILES = calculator_proxy.h calculator_adapter.h
+PROXIES = calculator_proxy.h
+ADAPTERS = calculator_adapter.h
 
-# Rule to generate proxy and adapter
-calculator_proxy.h: calculator.xml $(top_builddir)/tools/dbus-cxx-xml2cpp
-	        $(top_builddir)/tools/dbus-cxx-xml2cpp --xml calculator.xml --proxy -f
-calculator_adapter.h: calculator.xml $(top_builddir)/tools/dbus-cxx-xml2cpp
-	        $(top_builddir)/tools/dbus-cxx-xml2cpp --xml calculator.xml --adapter -f
+BUILT_SOURCES = $(PROXIES) $(ADAPTERS)
+CLEANFILES =  $(PROXIES) $(ADAPTERS)
 
-gen: calculator_proxy.h calculator_adapter.h
+gen:  $(PROXIES) $(ADAPTERS)
 
-calculator_client_SOURCES = calculator_proxy.h calculator_client.cpp
+%_adapter.h : %.xml
+	$(top_builddir)/tools/dbus-cxx-xml2cpp --xml $(top_srcdir)/examples/xml2cpp/calculator/$*.xml --adapter -f
+
+%_proxy.h : %.xml
+	$(top_builddir)/tools/dbus-cxx-xml2cpp --xml $(top_srcdir)/examples/xml2cpp/calculator/$*.xml --proxy -f
+
+calculator_client_SOURCES = $(PROXIES) calculator_client.cpp
 calculator_client_LDADD = $(top_builddir)/dbus-cxx/libdbus-cxx.la \
 	$(PROJECT_LIBS)
 
-calculator_server_SOURCES = calculator_adapter.h calculator_server.cpp calculator.cpp
+calculator_server_SOURCES = $(ADAPTERS) calculator_server.cpp calculator.cpp
 calculator_server_LDADD = $(top_builddir)/dbus-cxx/libdbus-cxx.la \
 	$(PROJECT_LIBS)
 
-calculator_watcher_SOURCES = calculator_proxy.h calculator_watcher.cpp
+calculator_watcher_SOURCES = $(PROXIES) calculator_watcher.cpp
 calculator_watcher_LDADD = $(top_builddir)/dbus-cxx/libdbus-cxx.la \
 	$(PROJECT_LIBS)
 

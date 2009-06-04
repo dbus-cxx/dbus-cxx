@@ -21,7 +21,7 @@ INCLUDES = -I$(top_srcdir)/. $(PROJECT_CFLAGS)
 
 if DBUS_CXX_TOOLS
 
-SUBDIRS = hal-proxy calculator
+SUBDIRS = calculator computer-hasa computer-isa hal-proxy
 
 MAINTAINERCLEANFILES = \
 	Makefile.in
