@@ -27,7 +27,10 @@ namespace DBus
   class Connection;
 
   /**
-   * This class provides an object that handles messages for a given object path on a connection.
+   * Provides an object that handles messages for a given object path on a connection.
+   *
+   * This class doesn't know anything of methods or signals. It simply knows how
+   * to register with a connection as an object on a path.
    *
    * @ingroup local
    * @ingroup objects
@@ -50,7 +53,7 @@ namespace DBus
       ~ObjectPathHandler();
 
       /** Returns the path this handler is associated with */
-      const std::string& path();
+      const Path& path() const;
 
       /** Returns the mechanism this handler will use to register with a connection */
       PrimaryFallback is_primary_or_fallback();
@@ -76,7 +79,7 @@ namespace DBus
 
       DBusCxxPointer<Connection> m_connection;
 
-      std::string m_path;
+      Path m_path;
 
       PrimaryFallback m_primary_fallback;
 
