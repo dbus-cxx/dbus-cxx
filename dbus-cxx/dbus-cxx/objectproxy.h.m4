@@ -246,7 +246,7 @@ namespace DBus
 
       void set_destination( const std::string& destination );
 
-      const std::string& path() const;
+      const Path& path() const;
 
       void set_path( const std::string& path );
 
@@ -338,7 +338,7 @@ dnl           ]])
 
       std::string m_destination;
 
-      std::string m_path;
+      Path m_path;
       
       mutable pthread_rwlock_t m_interfaces_rwlock;
 
