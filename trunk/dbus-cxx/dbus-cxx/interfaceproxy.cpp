@@ -49,16 +49,16 @@ namespace DBus
     return m_object;
   }
 
-  std::string InterfaceProxy::path() const
+  Path InterfaceProxy::path() const
   {
-    if ( m_object == NULL ) return std::string();
-    return m_object->path();
+    if ( m_object ) return m_object->path();
+    return Path();
   }
 
   Connection::pointer InterfaceProxy::connection() const
   {
-    if ( m_object == NULL ) return Connection::pointer();
-    return m_object->connection();
+    if ( m_object ) return m_object->connection();
+    return Connection::pointer();
   }
 
   const std::string & InterfaceProxy::name() const
