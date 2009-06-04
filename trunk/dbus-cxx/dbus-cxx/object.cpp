@@ -21,6 +21,8 @@
 #include "interface.h"
 
 #include <map>
+#include <sstream>
+#include <cstring>
 #include <dbus/dbus.h>
 
 namespace DBus
@@ -47,6 +49,9 @@ namespace DBus
 
     for (Interfaces::iterator i = m_interfaces.begin(); i != m_interfaces.end(); i++)
       i->second->set_connection(conn);
+
+    for (Children::iterator c = m_children.begin(); c != m_children.end(); c++)
+      c->second->register_with_connection(conn);
 
     return true;
   }
@@ -224,6 +229,61 @@ namespace DBus
     m_signal_default_interface_changed.emit( old_default, m_default_interface );
   }
 
+  const Object::Children& Object::children() const
+  {
+    return m_children;
+  }
+
+  Object::pointer Object::child(const std::string& name) const
+  {
+    Children::const_iterator i = m_children.find(name);
+    if ( i == m_children.end() ) return Object::pointer();
+    return i->second;
+  }
+
+  bool Object::add_child(const std::string& name, Object::pointer child)
+  {
+    if ( not child ) return false;
+    if ( this->has_child(name) ) return false;
+    m_children[name] = child;
+    if ( m_connection ) child->register_with_connection(m_connection);
+    return true;
+  }
+
+  bool Object::remove_child(const std::string& name)
+  {
+    Children::iterator i = m_children.find(name);
+    if ( i == m_children.end() ) return false;
+    m_children.erase(i);
+    return true;
+  }
+
+  bool Object::has_child(const std::string& name) const
+  {
+    return m_children.find(name) != m_children.end();
+  }
+
+  std::string Object::introspect(int space_depth) const
+  {
+    std::ostringstream sout;
+    std::string spaces;
+    Interfaces::const_iterator i;
+    Children::const_iterator c;
+    for (int i=0; i < space_depth; i++ ) spaces += " ";
+    sout << spaces << "<node name=\"" << this->path() << "\">\n"
+         << spaces << "  <interface name=\"" << DBUS_CXX_INTROSPECTABLE_INTERFACE << "\">\n"
+         << spaces << "    <method name=\"Introspect\">\n"
+         << spaces << "      <arg name=\"data\" type=\"s\" direction=\"out\"/>\n"
+         << spaces << "    </method>\n"
+         << spaces << "  </interface>\n";
+    for ( i = m_interfaces.begin(); i != m_interfaces.end(); i++ )
+      sout << i->second->introspect(space_depth+2);
+    for ( c = m_children.begin(); c != m_children.end(); c++ )
+      sout << spaces << "  <node name=\"" << c->first << "\"/>\n";
+    sout << spaces << "</node>\n";
+    return sout.str();
+  }
+
   sigc::signal< void, Interface::pointer > Object::signal_interface_added()
   {
     return m_signal_interface_added;
@@ -252,6 +312,18 @@ namespace DBus
     if ( not callmessage ) return NOT_HANDLED;
 
     DBUS_CXX_DEBUG("Object::handle_message: message is good (it's a call message) for interface '" << callmessage->interface() << "'");
+
+    // Handle the introspection interface
+    if ( strcmp(callmessage->interface(), DBUS_CXX_INTROSPECTABLE_INTERFACE) == 0 )
+    {
+      DBUS_CXX_DEBUG("Object::handle_message: introspection interface called");
+      ReturnMessage::pointer return_message = callmessage->create_reply();
+      std::string introspection = DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE;
+      introspection += this->introspect();
+      return_message << introspection;
+      connection << return_message;
+      return HANDLED;
+    }
 
     // ========== READ LOCK ==========
     pthread_rwlock_rdlock( &m_interfaces_rwlock );

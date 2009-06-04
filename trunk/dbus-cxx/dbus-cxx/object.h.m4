@@ -151,6 +151,8 @@ namespace DBus
 
       typedef std::multimap<std::string, Interface::pointer> Interfaces;
 
+      typedef std::map<std::string, Object::pointer> Children;
+
       static pointer create( const std::string& path = std::string(), PrimaryFallback pf=PRIMARY );
 
       virtual ~Object();
@@ -211,7 +213,18 @@ FOR(0, eval(CALL_SIZE),[[CREATE_INTERFACE_METHOD(%1)
         return sig;
       }
 
+      const Children& children() const;
 
+      Object::pointer child(const std::string& name) const;
+
+      bool add_child(const std::string& name, Object::pointer child);
+
+      bool remove_child(const std::string& name);
+
+      bool has_child(const std::string& name) const;
+
+      /** Returns a DBus XML description of this interface */
+      std::string introspect(int space_depth=0) const;
 
       sigc::signal<void,Interface::pointer> signal_interface_added();
 
@@ -222,6 +235,9 @@ FOR(0, eval(CALL_SIZE),[[CREATE_INTERFACE_METHOD(%1)
       virtual HandlerResult handle_message( DBusCxxPointer<Connection>, Message::const_pointer );
 
     protected:
+
+      Children m_children;
+      
       mutable pthread_rwlock_t m_interfaces_rwlock;
 
       pthread_mutex_t m_name_mutex;
