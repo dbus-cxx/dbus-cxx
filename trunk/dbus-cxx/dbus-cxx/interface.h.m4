@@ -90,7 +90,7 @@ namespace DBus {
       Object* object() const;
 
       /** Returns the path of the object associated with this interface or a null string if no object is associated */
-      std::string path() const;
+      Path path() const;
 
       /** Returns the connection associated with this interface's object or a null pointer if no object is associated */
       DBusCxxPointer<Connection> connection() const;
@@ -181,6 +181,9 @@ FOR(0, eval(CALL_SIZE),[[CREATE_METHOD(%1)
 
       /** Signal emitted when a method of the given name is removed */
       sigc::signal<void,MethodBase::pointer> signal_method_removed();
+
+      /** Returns a DBus XML description of this interface */
+      std::string introspect(int space_depth=0) const;
 
     private:
 

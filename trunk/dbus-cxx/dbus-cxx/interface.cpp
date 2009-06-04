@@ -20,6 +20,7 @@
 #include "connection.h"
 #include "object.h"
 
+#include <sstream>
 #include <map>
 #include <dbus/dbus.h>
 
@@ -49,10 +50,10 @@ namespace DBus
     return m_object;
   }
 
-  std::string Interface::path() const
+  Path Interface::path() const
   {
     if ( m_object ) return m_object->path();
-    return std::string();
+    return Path();
   }
 
   Connection::pointer Interface::connection() const
@@ -339,6 +340,22 @@ namespace DBus
   sigc::signal< void, MethodBase::pointer > Interface::signal_method_removed()
   {
     return m_signal_method_removed;
+  }
+
+  std::string Interface::introspect(int space_depth) const
+  {
+    std::ostringstream sout;
+    std::string spaces;
+    Methods::const_iterator miter;
+    Signals::const_iterator siter;
+    for ( int i=0; i < space_depth; i++) spaces += " ";
+    sout << spaces << "<interface name=\"" << this->name() << "\">\n";
+    for ( miter = m_methods.begin(); miter != m_methods.end(); miter++ )
+      sout << miter->second->introspect(space_depth+2);
+    for ( siter = m_signals.begin(); siter != m_signals.end(); siter++ )
+      sout << (*siter)->introspect(space_depth+2);
+    sout << spaces << "</interface>\n";
+    return sout.str();
   }
 
   HandlerResult Interface::handle_call_message( Connection::pointer connection, CallMessage::const_pointer message )
