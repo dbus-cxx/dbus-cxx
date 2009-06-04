@@ -16,7 +16,7 @@
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>examples/xml2cpp/calculator/calculator-server</activetarget>
+      <activetarget>examples/xml2cpp/computer-hasa/computer-server</activetarget>
       <useconfiguration>default</useconfiguration>
     </general>
     <run>

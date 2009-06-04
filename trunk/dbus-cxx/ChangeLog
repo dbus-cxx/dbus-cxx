@@ -1,5 +1,72 @@
+2009-06-04  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* configure.in:
+	* examples/xml2cpp/Makefile.am,
+	  examples/xml2cpp/calculator/Makefile.am:
+	* examples/xml2cpp/computer-isa,
+	  examples/xml2cpp/computer-isa/Makefile.am,
+	  examples/xml2cpp/computer-isa/calculator.cpp,
+	  examples/xml2cpp/computer-isa/calculator.h,
+	  examples/xml2cpp/computer-isa/calculator.xml,
+	  examples/xml2cpp/computer-isa/client_popt.h,
+	  examples/xml2cpp/computer-isa/computer.cpp,
+	  examples/xml2cpp/computer-isa/computer.h,
+	  examples/xml2cpp/computer-isa/computer.xml,
+	  examples/xml2cpp/computer-isa/computer_client.cpp,
+	  examples/xml2cpp/computer-isa/computer_server.cpp,
+	  examples/xml2cpp/computer-isa/computer_watcher.cpp: Added example
+	  demonstrating is-a relationships with dbus-cxx-xml2cpp
+	* examples/xml2cpp/computer-hasa,
+	  examples/xml2cpp/computer-hasa/Makefile.am,
+	  examples/xml2cpp/computer-hasa/calculator.cpp,
+	  examples/xml2cpp/computer-hasa/calculator.h,
+	  examples/xml2cpp/computer-hasa/calculator.xml,
+	  examples/xml2cpp/computer-hasa/client_popt.h,
+	  examples/xml2cpp/computer-hasa/computer.cpp,
+	  examples/xml2cpp/computer-hasa/computer.h,
+	  examples/xml2cpp/computer-hasa/computer.xml,
+	  examples/xml2cpp/computer-hasa/computer_client.cpp,
+	  examples/xml2cpp/computer-hasa/computer_server.cpp,
+	  examples/xml2cpp/computer-hasa/computer_watcher.cpp: Added
+	  example demonstrating has-a relationships with dbus-cxx-xml2cpp
+	* tools/generate_adapter.cpp, tools/generate_proxy.cpp,
+	  tools/parsed_object.cpp, tools/parsed_object.h,
+	  tools/xml2cpp.cpp, tools/xml_parser.cpp: Added support for node
+	  inheritance and containment
+	* unit-tests/Makefile.am, unit-tests/dbus_cxx_unit_tests.cpp,
+	  unit-tests/pathclasstests.cpp, unit-tests/pathclasstests.h: Added
+	  unit tests for DBus::Path
+	* dbus-cxx/dbus_signal.h.m4: Added support for introspection
+	* dbus-cxx/interface.cpp, dbus-cxx/interface.h.m4: Added support
+	  for introspection and DBus::Path
+	* dbus-cxx/interfaceproxy.cpp, dbus-cxx/interfaceproxy.h: Added
+	  support for dbus paths with a dedicated DBus::Path class
+	* dbus-cxx/method.h.m4, dbus-cxx/method_impl.h.m4,
+	  dbus-cxx/methodbase.h: Added support for introspection
+	* dbus-cxx/objectproxy.h.m4: Added support for dbus paths with a
+	  dedicated DBus::Path class
+	* dbus-cxx/object.cpp, dbus-cxx/object.h.m4: Added support for
+	  child nodes of objects and introspection
+	* dbus-cxx/objectpathhandler.cpp, dbus-cxx/objectpathhandler.h:
+	  Added support for dbus paths with a dedicated DBus::Path class
+	* dbus-cxx/objectproxy.cpp: Cleaup old commented out code
+	* dbus-cxx/signal_base.cpp, dbus-cxx/signal_base.h: Added support
+	  for introspection and converted some accessors to const
+	* dbus-cxx/path.cpp, dbus-cxx/path.h: Added support for dbus paths
+	  with a dedicated DBus::Path class
+	* dbus-cxx/callmessage.cpp, dbus-cxx/callmessage.h,
+	  dbus-cxx/messageappenditerator.cpp,
+	  dbus-cxx/messageappenditerator.h, dbus-cxx/messageiterator.cpp,
+	  dbus-cxx/messageiterator.h, dbus-cxx/signalmessage.cpp,
+	  dbus-cxx/signalmessage.h, dbus-cxx/signalreceiver.cpp,
+	  dbus-cxx/signalreceiver.h, dbus-cxx/utility.h: Added support for
+	  dbus paths with a dedicated DBus::Path class
+	* dbus-cxx/Makefile.am:
+	* dbus-cxx/connection.h:
+
 2009-05-28  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
+	* ChangeLog, Makefile.am, dbus-cxx.spec.m4: 0.1.2
 	* dbus-cxx/utility.h:
 	* dbus-cxx/dbus_signal.h.m4, dbus-cxx/method.h.m4,
 	  dbus-cxx/method_impl.h.m4, dbus-cxx/methodproxy.h.m4,
