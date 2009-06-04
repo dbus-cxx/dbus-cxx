@@ -48,6 +48,7 @@ struct Arg {
   std::string name() { if ( cxx_name.empty() ) return dbus_name; return cxx_name; }
   Direction direction();
   std::string cpp_type();
+  std::string stubsignature();
   DBus::Type type();
   std::string strfmt(int depth=0);
 
@@ -66,8 +67,11 @@ struct Method {
 
   std::string strfmt(int depth=0);
 
-  std::string stubname() { return name + "_adapter_stub"; }
-  std::string varname()  { return "m_method_" + name; }
+  std::vector<std::string> adapter_arg_names();
+
+  std::string stubsignature();
+  std::string stubname() { return name + "_adapter_stub_" + stubsignature(); }
+  std::string varname()  { return "m_method_" + name + "_" + stubsignature(); }
   std::string cpp_creation();
   std::string cpp_proto();
   std::string cpp_decl();
@@ -90,6 +94,8 @@ struct Signal {
   std::string adapter_name() { return "m_signal_adapter_" + name; }
   std::string adapter_conn_name() { return "m_signal_adapter_connection_" + name; }
   std::string cpp_creation();
+  std::vector<std::string> proxy_arg_names();
+  std::vector<std::string> adapter_arg_names();
   std::string cpp_proto();
   std::string cpp_decl();
   std::string adapter_signal_create();
@@ -122,17 +128,35 @@ struct Interface {
   std::vector<std::string> cpp_method_decl();
   std::vector<std::string> cpp_adapter_creation();
   std::vector<std::string> cpp_adapter_stubs();
+  std::vector<std::string> cpp_adapter_signal_connection();
+  std::vector<std::string> cpp_adapter_signal_disconnection();
 };
 
 struct Node {
+  Node(): ignored(false) { }
+  
   std::string dbus_name;
   std::string cppname;
   std::string dbus_destination;
   std::string dbus_path;
+  bool ignored;
 
   std::string gen_namespace;
   std::string orig_namespace;
   std::string cppinclude;
+  std::string file_prefix;
+
+  std::string adapter_parent;
+  std::string adapter_parent_include;
+  std::string proxy_parent;
+  std::string proxy_parent_include;
+
+  std::string adapter_include;
+  std::string adapter;
+  std::string proxy_include;
+  std::string proxy;
+  std::string accessor;
+  std::string adaptee_accessor;
 
   std::vector<Interface> interfaces;
   std::vector<Node> children;

@@ -32,6 +32,8 @@ std::string generate_adapter_h(Node n)
   
   std::vector<std::string> nsu = n.namespaces_upper();
 
+  bool inherit_from_dbus_object = n.adapter_parent.empty();
+
   for ( int i=0; i < n.interfaces.size(); i++ ) n.interfaces[i].node = &n;
 
   for ( int i = 0; i < nsu.size(); i++ ) class_indent += tab;
@@ -48,16 +50,42 @@ std::string generate_adapter_h(Node n)
 
   if ( not n.cppinclude.empty() )
     sout << "#include " << n.cppinclude << "\n\n";
+
+  if ( not n.adapter_parent_include.empty() )
+    sout << "#include " << n.adapter_parent_include << "\n\n";
+
+  for ( std::vector<Node>::iterator i = n.children.begin(); i != n.children.end(); i++ )
+  {
+    if ( not i->adapter_include.empty() )
+      sout << "#include " << i->adapter_include << "\n";
+  }
+
+  sout << "\n";
   
   sout << n.cpp_namespace_begin(tab) + "\n";
 
-  sout << class_indent << "class " << n.adapter_name() << " : public ::DBus::Object\n"
-       << class_indent << "{\n"
+  // Class declaration
+  // if there is no specific parent we'll inherit from DBus::Object
+  if ( inherit_from_dbus_object )
+    sout << class_indent << "class " << n.adapter_name() << " : public ::DBus::Object\n";
+  // Otherwise we'll inherit from the explicit parent
+  else
+    sout << class_indent << "class " << n.adapter_name() << " : public " << n.adapter_parent << "\n";
+
+  sout << class_indent << "{\n"
        << class_indent << tab << "protected:\n"
-       << decl_indent << n.adapter_name() << "( " << n.adaptee_fqn() << "* adaptee=NULL, const std::string& path=\"" << n.dbus_path << "\"):\n"
-       << decl_indent << tab << "::DBus::Object(path),\n"
-       << decl_indent << tab << "m_adaptee(adaptee)\n"
-       << decl_indent << "{\n";
+       << decl_indent << n.adapter_name() << "( " << n.adaptee_fqn() << "* adaptee=NULL, const std::string& path=\"" << n.dbus_path << "\"):\n";
+
+  // We need to instantiate DBus::Object unless we have a parent
+  if ( inherit_from_dbus_object )
+    sout << decl_indent << tab << "::DBus::Object(path),\n";
+  // Otherwise we need to instantiate the parent with the path and adaptee
+  else
+    sout << decl_indent << tab << n.adapter_parent << "(adaptee, path),\n";
+  
+  sout << decl_indent << tab << "m_adaptee(adaptee)\n"
+       << decl_indent << "{\n\n"
+       << decl_indent << tab << "::DBus::MethodBase::pointer temp_method;\n\n";
 
   for ( int i=0; i < n.interfaces.size(); i++ )
   {
@@ -65,6 +93,20 @@ std::string generate_adapter_h(Node n)
     std::vector<std::string> decls = n.interfaces[i].cpp_adapter_creation();
     for ( int k=0; k < decls.size(); k++ )
       sout << decl_indent << tab << decls[k] << "\n";
+  }
+
+  if ( n.children.size() > 0 )
+    sout << "\n" << decl_indent << tab << "::DBus::Path child_path;\n";
+
+  for ( std::vector<Node>::iterator i=n.children.begin(); i != n.children.end(); i++ )
+  {
+    sout << decl_indent << tab << "\n"
+         << decl_indent << tab << "child_path = path;\n"
+         << decl_indent << tab << "child_path.append_element(\"" << i->name() << "\");\n"
+         << decl_indent << tab << "DBUS_CXX_DEBUG( \"" << i->name() << ":constructor: child path = \" << child_path);\n"
+         << decl_indent << tab << "m_" << i->name() << " = " << i->adapter << "::create(NULL, child_path);"
+         << decl_indent << tab << "this->add_child(\"" << i->name() << "\", m_" << i->name() << ");\n"
+         << decl_indent << tab << "if ( adaptee ) m_" << i->name() << "->set_adaptee(&(adaptee->" << i->adaptee_accessor << "));\n";
   }
 
   sout << decl_indent << "}\n";
@@ -75,11 +117,55 @@ std::string generate_adapter_h(Node n)
       << decl_indent << tab << "{ return pointer( new " << n.adapter_name() << "(adaptee, path)); }\n\n";
 
   sout << decl_indent << n.adaptee_fqn() << "* adaptee() { return m_adaptee; }\n\n"
-       << decl_indent << "void set_adaptee( " << n.adaptee_fqn() << "* adaptee ) { m_adaptee = adaptee; }\n\n";
+       << decl_indent << "void set_adaptee( " << n.adaptee_fqn() << "* adaptee ) {\n"
+       << decl_indent << tab << "m_adaptee = adaptee;\n";
 
-  sout << "\n" << class_indent << tab << "protected:\n\n"
-       << decl_indent << n.adaptee_fqn() << "* m_adaptee;\n\n"
-       << decl_indent << "void check_adaptee() { if ( not m_adaptee) throw ::DBus::ErrorInvalidAdaptee(); }\n\n";
+  for ( size_t i=0; i < n.interfaces.size(); i++ )
+  {
+    if ( n.interfaces[i].ignored ) continue;
+    std::vector<std::string> decls;
+    decls = n.interfaces[i].cpp_adapter_signal_disconnection();
+    for ( size_t k=0; k < decls.size(); k++ )
+      sout << decl_indent << tab << decls[k] << "\n";
+    decls = n.interfaces[i].cpp_adapter_signal_connection();
+    for ( size_t k=0; k < decls.size(); k++ )
+      sout << decl_indent << tab << decls[k] << "\n";
+  }
+
+  if ( n.children.size() > 0 )
+  {
+    sout << decl_indent << tab << "if ( m_adaptee ) {\n";
+    for ( std::vector<Node>::iterator i=n.children.begin(); i != n.children.end(); i++ )
+      sout << decl_indent << tab << tab << "m_" << i->name() << "->set_adaptee( m_adaptee->" << i->adaptee_accessor << " );\n";
+    sout << decl_indent << tab << "}\n"
+         << decl_indent << tab << "else {\n";
+    for ( std::vector<Node>::iterator i=n.children.begin(); i != n.children.end(); i++ )
+      sout << decl_indent << tab << tab << "m_" << i->name() << "->set_adaptee( NULL );\n";
+    sout << decl_indent << tab << "}\n";
+    sout << decl_indent << "}\n\n";
+
+    for ( std::vector<Node>::iterator i=n.children.begin(); i != n.children.end(); i++ )
+      sout << decl_indent << i->adapter << "::pointer " << i->accessor << "() { return m_" << i->name() << "; }\n\n";
+  }
+  else
+  {
+    sout << decl_indent << "}\n\n";
+  }
+
+  sout << decl_indent << "void set_adaptee( " << n.adaptee_fqn() << "& adaptee ) {\n"
+       << decl_indent << tab << "this->set_adaptee(&adaptee);\n"
+       << decl_indent << "}\n\n";
+
+  // Start of private section
+  // These need to be private so children can use the same names without conflict
+  sout << "\n" << class_indent << tab << "private:\n\n";
+
+  sout << decl_indent << n.adaptee_fqn() << "* m_adaptee;\n\n";
+
+  for ( std::vector<Node>::iterator i = n.children.begin(); i != n.children.end(); i++ )
+    sout << decl_indent << i->adapter << "::pointer m_" << i->name() << ";\n";
+
+  sout << "\n" << decl_indent << "void check_adaptee() { if ( not m_adaptee) throw ::DBus::ErrorInvalidAdaptee(); }\n\n";
 
   for ( int i=0; i < n.interfaces.size(); i++ )
   {

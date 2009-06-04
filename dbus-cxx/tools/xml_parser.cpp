@@ -22,6 +22,8 @@
 
 #include <cstring>
 
+// TODO fix parser bug when node is part of an interface
+
 typedef enum XMLTag {
   TAG_ARG,
   TAG_METHOD,
@@ -82,8 +84,31 @@ XMLInterfaceAttr xml_interface_attr( const char* name )
   return INTERFACE_UNKNOWN;
 }
 
-typedef enum XMLNodeAttr { NODE_NAME, NODE_CPPNAME, NODE_GEN_NAMESPACE, NODE_ORIG_NAMESPACE, NODE_DBUS_DEST, NODE_DBUS_PATH, NODE_CPPINCLUDE, NODE_UNKNOWN } XMLNodeAttr;
-const char* xml_node_strings[] = { "name", "cppname" /*extended*/, "gen-namespace"  /*extended*/, "orig-namespace" /*extended*/, "dest" /*extended*/, "path" /*extended*/, "cppinclude" /*extended*/ };
+typedef enum XMLNodeAttr {
+  NODE_NAME, NODE_CPPNAME,
+  NODE_GEN_NAMESPACE, NODE_ORIG_NAMESPACE,
+  NODE_DBUS_DEST, NODE_DBUS_PATH,
+  NODE_CPPINCLUDE, NODE_FILE_PREFIX, NODE_IGNORED,
+  NODE_ADAPTER_PARENT, NODE_ADAPTER_PARENT_INCLUDE,
+  NODE_PROXY_PARENT, NODE_PROXY_PARENT_INCLUDE,
+  CHILDNODE_ADAPTER_INCLUDE, CHILDNODE_ADAPTER,
+  CHILDNODE_PROXY_INCLUDE, CHILDNODE_PROXY,
+  CHILDNODE_ACCESSOR, CHILDNODE_ADAPTEE_ACCESSOR,
+  NODE_UNKNOWN
+} XMLNodeAttr;
+
+const char* xml_node_strings[] = {
+  "name", "cppname" /*extended*/,
+  "gen-namespace"  /*extended*/, "orig-namespace" /*extended*/,
+  "dest" /*extended*/, "path" /*extended*/,
+  "cppinclude" /*extended*/, "file-prefix" /*extended*/, "ignored" /*extended*/,
+  "adapter-parent" /*extended*/, "adapter-parent-include" /*extended*/,
+  "proxy-parent" /*extended*/, "proxy-parent-include" /*extended*/,
+  "adapter-include" /*extended*/, "adapter" /*extended*/,
+  "proxy-include" /*extended*/, "proxy" /*extended*/,
+  "accessor" /*extended*/, "adaptee-accessor" /*extended*/
+};
+
 XMLNodeAttr xml_node_attr( const char* name )
 {
   for ( int i=0; i < NODE_UNKNOWN; i++ )
@@ -185,14 +210,26 @@ void start_element_handler( void* userData, const XML_Char* name, const XML_Char
         ptrvaluestring = *(ptr+1);
         switch ( xml_node_attr( *ptr ) )
         {
-          case NODE_NAME:           node_stack.front().dbus_name = ptrvaluestring;         break;
-          case NODE_CPPNAME:        node_stack.front().cppname = ptrvaluestring;           break;
-          case NODE_GEN_NAMESPACE:  node_stack.front().gen_namespace = ptrvaluestring;     break;
-          case NODE_ORIG_NAMESPACE: node_stack.front().orig_namespace = ptrvaluestring;    break;
-          case NODE_DBUS_DEST:      node_stack.front().dbus_destination = ptrvaluestring;  break;
-          case NODE_DBUS_PATH:      node_stack.front().dbus_path = ptrvaluestring;         break;
-          case NODE_CPPINCLUDE:     node_stack.front().cppinclude = ptrvaluestring;        break;
-          default:                                                                         break;
+          case NODE_NAME:                   node_stack.front().dbus_name = ptrvaluestring;              break;
+          case NODE_CPPNAME:                node_stack.front().cppname = ptrvaluestring;                break;
+          case NODE_GEN_NAMESPACE:          node_stack.front().gen_namespace = ptrvaluestring;          break;
+          case NODE_ORIG_NAMESPACE:         node_stack.front().orig_namespace = ptrvaluestring;         break;
+          case NODE_DBUS_DEST:              node_stack.front().dbus_destination = ptrvaluestring;       break;
+          case NODE_DBUS_PATH:              node_stack.front().dbus_path = ptrvaluestring;              break;
+          case NODE_CPPINCLUDE:             node_stack.front().cppinclude = ptrvaluestring;             break;
+          case NODE_FILE_PREFIX:            node_stack.front().file_prefix = ptrvaluestring;            break;
+          case NODE_IGNORED:                node_stack.front().ignored = atoi(ptrvaluestring);          break;
+          case NODE_ADAPTER_PARENT:         node_stack.front().adapter_parent = ptrvaluestring;         break;
+          case NODE_ADAPTER_PARENT_INCLUDE: node_stack.front().adapter_parent_include = ptrvaluestring; break;
+          case NODE_PROXY_PARENT:           node_stack.front().proxy_parent = ptrvaluestring;           break;
+          case NODE_PROXY_PARENT_INCLUDE:   node_stack.front().proxy_parent_include = ptrvaluestring;   break;
+          case CHILDNODE_ADAPTER_INCLUDE:   node_stack.front().adapter_include = ptrvaluestring;        break;
+          case CHILDNODE_ADAPTER:           node_stack.front().adapter = ptrvaluestring;                break;
+          case CHILDNODE_PROXY_INCLUDE:     node_stack.front().proxy_include = ptrvaluestring;          break;
+          case CHILDNODE_PROXY:             node_stack.front().proxy = ptrvaluestring;                  break;
+          case CHILDNODE_ACCESSOR:          node_stack.front().accessor = ptrvaluestring;               break;
+          case CHILDNODE_ADAPTEE_ACCESSOR:  node_stack.front().adaptee_accessor = ptrvaluestring;       break;
+          default:                                                                                      break;
         }
         ptr += 2;
       }

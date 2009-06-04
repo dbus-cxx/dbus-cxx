@@ -32,6 +32,8 @@ std::string generate_proxy_h(Node n)
   
   std::vector<std::string> nsu = n.namespaces_upper();
 
+  bool inherit_from_dbus_objectproxy = n.proxy_parent.empty();
+
   for ( int i = 0; i < nsu.size(); i++ ) class_indent += tab;
 
   decl_indent = class_indent + tab + tab;
@@ -43,16 +45,46 @@ std::string generate_proxy_h(Node n)
   sout << "#ifndef " << definestr << "\n"
        << "#define " << definestr << "\n\n"
        << "#include <dbus-cxx.h>\n\n";
-  
-  sout << n.cpp_namespace_begin(tab) + "\n";
 
-  sout << class_indent << "class " << n.proxy_name() << " : public ::DBus::ObjectProxy\n"
-       << class_indent << "{\n"
+  if ( not n.proxy_parent_include.empty() )
+    sout << "#include " << n.proxy_parent_include << "\n\n";
+  
+  for ( std::vector<Node>::iterator i = n.children.begin(); i != n.children.end(); i++ )
+  {
+    if ( not i->proxy_include.empty() )
+      sout << "#include " << i->proxy_include << "\n";
+  }
+
+  sout << "\n" << n.cpp_namespace_begin(tab) + "\n";
+
+  // Class declaration
+  if ( inherit_from_dbus_objectproxy )
+    sout << class_indent << "class " << n.proxy_name() << " : public ::DBus::ObjectProxy\n";
+  else
+    sout << class_indent << "class " << n.proxy_name() << " : public " << n.proxy_parent << "\n";
+
+  sout << class_indent << "{\n"
        << class_indent << tab << "protected:\n"
        << decl_indent << n.proxy_name() << "( ::DBus::Connection::pointer conn, const std::string& dest=\""
-       << n.dbus_destination << "\", const std::string& path=\"" << n.dbus_path << "\"):\n"
-       << decl_indent << tab << "::DBus::ObjectProxy(conn, dest, path)\n"
-       << decl_indent << "{\n";
+       << n.dbus_destination << "\", const std::string& path=\"" << n.dbus_path << "\"):\n";
+
+  // Parent instantiation
+  if ( inherit_from_dbus_objectproxy )
+    sout << decl_indent << tab << "::DBus::ObjectProxy(conn, dest, path)\n";
+  else
+    sout << decl_indent << tab << n.proxy_parent << "(conn, dest, path)\n";
+
+  sout << decl_indent << "{\n";
+
+  sout << decl_indent << tab << "::DBus::Path child_path;\n";
+  for ( std::vector<Node>::iterator i = n.children.begin(); i != n.children.end(); i++ )
+  {
+    sout << decl_indent << tab << "child_path = path; \n"
+         << decl_indent << tab << "child_path.append_element(\"" << i->name() << "\");\n"
+         << decl_indent << tab << "m_" << i->name() << " = " << i->proxy << "::create(conn, dest, child_path);\n";
+  }
+
+  sout << "\n";
 
   for ( int i=0; i < n.interfaces.size(); i++ )
   {
@@ -72,6 +104,11 @@ std::string generate_proxy_h(Node n)
        << decl_indent << "                     )\n"
        << decl_indent << "{ return pointer( new " << n.proxy_name() << "(conn, dest, path)); }\n\n";
 
+  for ( std::vector<Node>::iterator i = n.children.begin(); i != n.children.end(); i++ )
+    sout << decl_indent << i->proxy << "::pointer " << i->accessor << "() { return m_" << i->name() << "; }\n";
+
+  sout << "\n";
+  
   for ( int i=0; i < n.interfaces.size(); i++ )
   {
     if ( n.interfaces[i].ignored ) continue;
@@ -82,7 +119,12 @@ std::string generate_proxy_h(Node n)
 
   sout << "\n" << class_indent << tab << "protected:\n\n";
 
-  for ( int i=0; i < n.interfaces.size(); i++ )
+  for ( std::vector<Node>::iterator i=n.children.begin(); i != n.children.end(); i++ )
+    sout << decl_indent << i->proxy << "::pointer m_" << i->name() << ";\n";
+
+  sout << "\n";
+
+  for ( size_t i=0; i < n.interfaces.size(); i++ )
   {
     if ( n.interfaces[i].ignored ) continue;
     std::vector<std::string> decls = n.interfaces[i].cpp_method_decl();
