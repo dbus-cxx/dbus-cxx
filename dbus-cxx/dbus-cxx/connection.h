@@ -663,6 +663,7 @@ namespace DBus
    *   - \b dest - Used to create a default value for the \c dest parameter of a proxy
    *   - \b path - Used to create a default value for the \c path parameter of both proxies and adapters
    *   - \b cppinclude - A free form string that will follow a \c #include line in the adapter
+   *   - \b file-prefix - A per-node filename prefix prepended to the class name on output
    * - \b interface
    *   - \b ignored - If set to "1" this interface will not be built for the proxy or adapter
    * - \b signal
