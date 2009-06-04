@@ -80,7 +80,31 @@ define([METHOD_VOID],[dnl
     virtual MethodBase::pointer clone()
     { return MethodBase::pointer( new Method(this->name()) ); }
 
+    /** Returns a DBus XML description of this interface */
+    virtual std::string introspect(int space_depth=0) const
+    {
+      std::ostringstream sout;
+      std::string spaces;
+      for (int i=0; i < space_depth; i++ ) spaces += " ";
+      sout << spaces << "<method name=\"" << name() << "\">\n";
+      FOR(1,$1,[
+          sout << spaces << "  <arg name=\"" << m_arg_names[[[%1]]] << "\" type=\"" << signature<T_arg%1>() << "\" direction=\"in\"/>\n";],[])
+          sout << spaces << "</method>\n";
+      return sout.str();
+    }
+
+    virtual std::string arg_name(size_t i) {
+      if ( i < $1+1 ) return m_arg_names[[i]];
+      return std::string();
+    }
+
+    virtual void set_arg_name(size_t i, const std::string& name) {
+      if ( i < $1+1 ) m_arg_names[[i]] = name;
+    }
+
   protected:
+
+    std::string m_arg_names[[$1+1]];
 
     sigc::slot$1<LIST(void, LOOP(T_arg%1, $1))> m_slot;
 

@@ -72,6 +72,13 @@ namespace DBus
 
       sigc::signal<void,const std::string&/*old name*/, const std::string&/*new name*/> signal_name_changed();
 
+      /** Returns a DBus XML description of this interface */
+      virtual std::string introspect(int space_depth=0) const { }
+
+      virtual std::string arg_name(size_t i) { return std::string(); }
+
+      virtual void set_arg_name(size_t i, const std::string& name) { }
+
     protected:
 
       std::string m_name;
