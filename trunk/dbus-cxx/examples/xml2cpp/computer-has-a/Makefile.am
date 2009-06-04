@@ -32,11 +32,11 @@ CLEANFILES =  $(PROXIES) $(ADAPTERS)
 
 gen:  $(PROXIES) $(ADAPTERS)
 
-%_adapter.h : %.xml
-	$(top_builddir)/tools/dbus-cxx-xml2cpp --xml $(top_srcdir)/examples/xml2cpp/computer-hasa/$*.xml --adapter -f
+%_adapter.h : %.xml $(top_builddir)/tools/dbus-cxx-xml2cpp
+	$(top_builddir)/tools/dbus-cxx-xml2cpp --xml $(top_srcdir)/examples/xml2cpp/computer-has-a/$*.xml --adapter -f
 
-%_proxy.h : %.xml
-	$(top_builddir)/tools/dbus-cxx-xml2cpp --xml $(top_srcdir)/examples/xml2cpp/computer-hasa/$*.xml --proxy -f
+%_proxy.h : %.xml $(top_builddir)/tools/dbus-cxx-xml2cpp
+	$(top_builddir)/tools/dbus-cxx-xml2cpp --xml $(top_srcdir)/examples/xml2cpp/computer-has-a/$*.xml --proxy -f
 
 computer_client_SOURCES = $(PROXIES) computer_client.cpp
 computer_client_LDADD = $(top_builddir)/dbus-cxx/libdbus-cxx.la \
@@ -53,5 +53,8 @@ computer_watcher_LDADD = $(top_builddir)/dbus-cxx/libdbus-cxx.la \
 noinst_HEADERS = computer.h calculator.h client_popt.h
 
 noinst_DATA = computer.xml calculator.xml
+
+EXTRA_DIST = $(noinst_HEADERS) $(noinst_DATA) $(PROXIES) $(ADAPTERS)
+
 
 endif

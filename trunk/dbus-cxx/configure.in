@@ -211,6 +211,6 @@ AC_ARG_ENABLE([debug-output],[AS_HELP_STRING([--enable-debug-output],[Enable deb
 AC_OUTPUT(Makefile dbus-cxx-1.0.pc dbus-cxx/Makefile doc/Makefile examples/Makefile \
 	examples/basics/Makefile examples/basics/methods/Makefile examples/basics/signals/Makefile \
 	examples/xml2cpp/Makefile examples/xml2cpp/calculator/Makefile \
-	examples/xml2cpp/computer-isa/Makefile examples/xml2cpp/computer-hasa/Makefile examples/xml2cpp/hal-proxy/Makefile \
+	examples/xml2cpp/computer-is-a/Makefile examples/xml2cpp/computer-has-a/Makefile examples/xml2cpp/hal-proxy/Makefile \
 	tools/Makefile unit-tests/Makefile)
 
