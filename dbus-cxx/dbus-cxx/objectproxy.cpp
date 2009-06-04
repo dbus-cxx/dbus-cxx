@@ -80,7 +80,7 @@ namespace DBus
     m_destination = destination;
   }
 
-  const std::string& ObjectProxy::path() const
+  const Path& ObjectProxy::path() const
   {
     return m_path;
   }
@@ -502,77 +502,6 @@ namespace DBus
     // ========== UNLOCK ==========
     pthread_rwlock_unlock( &m_interfaces_rwlock );
   }
-
-
-
-  
-// #########################  OLD  #######################################################3
-//   ObjectProxy::ObjectProxy( const std::string & path ):
-//       m_path( path )
-//   {}
-// 
-//   ObjectProxy::ObjectProxy( const std::string & destination, const std::string & path ):
-//       m_destination( destination ),
-//       m_path( path )
-//   {}
-// 
-//   ObjectProxy::ObjectProxy( Connection conn, const std::string& destination, const std::string& path ):
-//       m_connection( conn ),
-//       m_destination( destination ),
-//       m_path( path )
-//   {}
-// 
-// 
-//   ObjectProxy::~ObjectProxy()
-//   {}
-// 
-//   Connection& ObjectProxy::connection( )
-//   {
-//     return m_connection;
-//   }
-// 
-//   void ObjectProxy::set_connection( Connection & conn )
-//   {
-//     m_connection = conn;
-//     this->on_connection_set(conn);
-//   }
-// 
-//   const std::string & ObjectProxy::destination( )
-//   {
-//     return m_destination;
-//   }
-// 
-//   void ObjectProxy::set_destination( const std::string & dest )
-//   {
-//     m_destination = dest;
-//   }
-// 
-//   const std::string & ObjectProxy::path( )
-//   {
-//     return m_path;
-//   }
-// 
-//   void ObjectProxy::set_path( const std::string & path )
-//   {
-//     m_path = path;
-//   }
-// 
-//   const std::string & ObjectProxy::interface( )
-//   {
-//     const static std::string null_string;
-//     return null_string;
-//   }
-// 
-//   bool ObjectProxy::set_interface( const std::string & interface )
-//   {
-//     return false;
-//   }
-// 
-//   std::string ObjectProxy::introspect( )
-//   {
-//     // TODO fix
-// //     return this->call<std::string>( "org.freedesktop.DBus.Introspectable", "Introspect" );
-//   }
 
 }
 
