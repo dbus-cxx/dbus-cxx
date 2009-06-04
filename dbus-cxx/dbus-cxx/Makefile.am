@@ -17,7 +17,7 @@
 ##   along with this software. If not see <http://www.gnu.org/licenses/>.  ##
 #############################################################################
 
-INCLUDES = -I$(top_srcdir)/. $(PROJECT_CFLAGS)
+INCLUDES = -I$(top_builddir)/. -I$(top_srcdir)/. $(PROJECT_CFLAGS)
 METASOURCES = AUTO
 lib_LTLIBRARIES = libdbus-cxx.la
 library_includedir = $(includedir)/@PACKAGE_NAME@-@PACKAGE_RELEASE@/@PACKAGE_NAME@
@@ -42,16 +42,17 @@ library_include_HEADERS = accumulators.h callmessage.h connection.h \
 	dbus-cxx-config.h dbus_signal.h dispatcher.h enums.h error.h errormessage.h interface.h \
 	interfaceproxy.h message.h messageappenditerator.h messagefilter.h messagehandler.h \
 	messageiterator.h method.h method_impl.h methodbase.h methodproxy.h methodproxybase.h \
-	object.h objectpathhandler.h objectproxy.h pendingcall.h pointer.h \
+	object.h objectpathhandler.h objectproxy.h path.h pendingcall.h pointer.h \
 	returnmessage.h signal_base.h signal_proxy.h signal_proxy_base.h signalmessage.h \
 	signalreceiver.h signature.h signatureiterator.h timeout.h utility.h watch.h
 
 libdbus_cxx_la_SOURCES = callmessage.cpp connection.cpp dispatcher.cpp \
 	error.cpp errormessage.cpp interface.cpp interfaceproxy.cpp message.cpp \
 	messageappenditerator.cpp messagefilter.cpp messagehandler.cpp messageiterator.cpp methodbase.cpp \
-	methodproxybase.cpp object.cpp objectpathhandler.cpp objectproxy.cpp pendingcall.cpp \
-	returnmessage.cpp signal_base.cpp signal_proxy_base.cpp signalmessage.cpp \
-	signalreceiver.cpp signature.cpp signatureiterator.cpp timeout.cpp utility.cpp watch.cpp
+	methodproxybase.cpp object.cpp objectpathhandler.cpp objectproxy.cpp path.cpp \
+	pendingcall.cpp returnmessage.cpp signal_base.cpp signal_proxy_base.cpp \
+	signalmessage.cpp signalreceiver.cpp signature.cpp signatureiterator.cpp timeout.cpp \
+	utility.cpp watch.cpp
 
 
 libdbus_cxx_la_LDFLAGS = -version-info @LIBTOOL_SO_VERSION@
