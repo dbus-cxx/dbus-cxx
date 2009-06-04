@@ -88,7 +88,7 @@ namespace DBus
     m_signal_member_changed.emit();
   }
 
-  const std::string & SignalReceiver::path()
+  const Path& SignalReceiver::path()
   {
     return m_path;
   }

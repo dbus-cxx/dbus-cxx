@@ -535,6 +535,11 @@ namespace DBus
     return this->protected_extract(v);
   }
 
+  MessageIterator & MessageIterator::operator >>(Path & v)
+  {
+    return this->protected_extract(v);
+  }
+
 
 //   void MessageIterator::value( std::vector<std::string>& temp )
 //   {

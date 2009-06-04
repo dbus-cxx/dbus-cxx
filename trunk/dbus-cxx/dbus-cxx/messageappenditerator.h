@@ -85,6 +85,7 @@ namespace DBus
       bool append( const char* v );
       bool append( const std::string& v );
       bool append( const Signature& v );
+      bool append( const Path& v );
 
       MessageAppendIterator& operator<<( bool v );
       MessageAppendIterator& operator<<( uint8_t v );
@@ -98,6 +99,7 @@ namespace DBus
       MessageAppendIterator& operator<<( const char* v );
       MessageAppendIterator& operator<<( const std::string& v );
       MessageAppendIterator& operator<<( const Signature& v );
+      MessageAppendIterator& operator<<( const Path& v );
 
 //       void append( const std::string& v );
 
@@ -196,17 +198,11 @@ namespace DBus
 //         this->close_container();
 //       }
 
-//       void append_path( const std::string& v );
-
-//       void append_path( const char* v );
-
 //       void open_container( ContainerType t, const std::string& contained_signature );
 
 //       void close_container( );
 
 //       MessageAppendIterator* sub_iterator();
-
-//           bool append_path( const char* chars );
 
 //           bool append_array( char type, const void* ptr, size_t length );
 
@@ -229,6 +225,7 @@ namespace DBus
       bool protected_append( const bool& v );
       bool protected_append( const std::string& v );
       bool protected_append( const Signature& v );
+      bool protected_append( const Path& v );
 
   };
 

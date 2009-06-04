@@ -28,6 +28,7 @@
 #include <dbus-cxx/dbus-cxx-config.h>
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/pointer.h>
+#include <dbus-cxx/path.h>
 #include <dbus-cxx/signature.h>
 
 #define DBUS_CXX_PARAM_LIMIT 7
@@ -35,15 +36,16 @@
 #ifdef DBUS_CXX_DEBUG_ENABLED
   #include <iostream>
 
-//  #define DEBUG_OUT(x,y) if (DEBUG) std::cout << x << " " << pthread_self() << ": " << y << std::endl
-//  #define DBUS_CXX_DEBUG(x) std::cout << pthread_self() << ": " << x << std::endl
-  #define DEBUG_OUT(x,y) ;
-  #define DBUS_CXX_DEBUG(x) ;
+ #define DEBUG_OUT(x,y) if (DEBUG) std::cout << x << " " << pthread_self() << ": " << y << std::endl
+ #define DBUS_CXX_DEBUG(x) std::cout << pthread_self() << ": " << x << std::endl
+//   #define DEBUG_OUT(x,y) ;
+//   #define DBUS_CXX_DEBUG(x) ;
 #else
   #define DEBUG_OUT(x,y) ;
   #define DBUS_CXX_DEBUG(x) ;
 #endif
 
+#define DBUS_CXX_INTROSPECTABLE_INTERFACE "org.freedesktop.DBus.Introspectable"
 
 namespace DBus
 {
@@ -70,7 +72,22 @@ namespace DBus
   inline std::string signature( std::string ) { return DBUS_TYPE_STRING_AS_STRING; }
   inline std::string signature( Signature )   { return DBUS_TYPE_SIGNATURE_AS_STRING; }
   // TODO come back and reimplement
-//   inline std::string signature( Path )        { return DBUS_TYPE_OBJECT_PATH_AS_STRING; }
+  inline std::string signature( Path )        { return DBUS_TYPE_OBJECT_PATH_AS_STRING; }
+
+  template <typename T> inline std::string signature()   { return 1; /* This is invalid; you must use one of the specializations only */}
+  template<> inline std::string signature<uint8_t>()     { return DBUS_TYPE_BYTE_AS_STRING;        }
+  template<> inline std::string signature<bool>()        { return DBUS_TYPE_BOOLEAN_AS_STRING;     }
+  template<> inline std::string signature<int16_t>()     { return DBUS_TYPE_INT16_AS_STRING;       }
+  template<> inline std::string signature<uint16_t>()    { return DBUS_TYPE_UINT16_AS_STRING;      }
+  template<> inline std::string signature<int32_t>()     { return DBUS_TYPE_INT32_AS_STRING;       }
+  template<> inline std::string signature<uint32_t>()    { return DBUS_TYPE_UINT32_AS_STRING;      }
+  template<> inline std::string signature<int64_t>()     { return DBUS_TYPE_INT64_AS_STRING;       }
+  template<> inline std::string signature<uint64_t>()    { return DBUS_TYPE_UINT64_AS_STRING;      }
+  template<> inline std::string signature<double>()      { return DBUS_TYPE_DOUBLE_AS_STRING;      }
+  template<> inline std::string signature<std::string>() { return DBUS_TYPE_STRING_AS_STRING;      }
+  template<> inline std::string signature<Signature>()   { return DBUS_TYPE_SIGNATURE_AS_STRING;   }
+  template<> inline std::string signature<Path>()        { return DBUS_TYPE_OBJECT_PATH_AS_STRING; }
+  
 //   inline std::string signature( Variant )     { return DBUS_TYPE_VARIANT_AS_STRING; }
 //   template <typename T> inline std::string signature( const std::vector<T>& ) { T t; return DBUS_TYPE_ARRAY_AS_STRING + signature( t ); }
 
@@ -143,7 +160,7 @@ namespace DBus
   inline Type type( double )             { return TYPE_DOUBLE; }
   inline Type type( const std::string& ) { return TYPE_STRING; }
   inline Type type( const char* )        { return TYPE_STRING; }
-//   inline Type type( Path )               { return TYPE_OBJECT_PATH; }
+  inline Type type( Path )               { return TYPE_OBJECT_PATH; }
   inline Type type( Signature )          { return TYPE_SIGNATURE; }
 //   inline Type type( Variant )            { return TYPE_VARIANT; }
 
@@ -180,7 +197,7 @@ namespace DBus
   inline std::string type_string( uint64_t )    { return "uint64_t"; }
   inline std::string type_string( double )      { return "double"; }
   inline std::string type_string( std::string ) { return "std::string"; }
-//   inline std::string type_string( Path )        { return "Path"; }
+  inline std::string type_string( Path )        { return "Path"; }
   inline std::string type_string( Signature )   { return "Signature"; }
 //   inline std::string type_string( Variant )     { return "Variant"; }
 

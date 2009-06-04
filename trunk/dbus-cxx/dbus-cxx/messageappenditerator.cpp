@@ -53,7 +53,17 @@ namespace DBus
     const char* pstr = sig.c_str();
     result = dbus_message_iter_append_basic( &m_cobj, TYPE_SIGNATURE, &(pstr) );
     if ( ! result ) m_message->invalidate();
-  return result;
+    return result;
+  }
+
+  bool MessageAppendIterator::protected_append( const Path& v )
+  {
+    bool result;
+    if ( not this->is_valid() ) return false;
+    const char* pstr = v.c_str();
+    result = dbus_message_iter_append_basic( &m_cobj, TYPE_OBJECT_PATH, &(pstr) );
+    if ( ! result ) m_message->invalidate();
+    return result;
   }
 
   template <typename T>
@@ -195,6 +205,11 @@ namespace DBus
     return this->protected_append( v );
   }
 
+  bool MessageAppendIterator::append( const Path& v )
+  {
+    return this->protected_append( v );
+  }
+
   MessageAppendIterator& MessageAppendIterator::operator<<( bool v )
   {
     this->append( v );
@@ -267,21 +282,12 @@ namespace DBus
     return *this;
   }
 
-//   void MessageAppendIterator::append_path( const std::string& v )
-//   {
-//     bool success;
-//     const char* t = v.c_str();
-//     success = dbus_message_iter_append_basic( &m_cobj, TYPE_OBJECT_PATH, &t );
-//     if ( ! success ) throw ErrorNoMemory( "MessageAppendIterator::append: No memory to append argument" );
-//   }
-//
-//   void MessageAppendIterator::append_path( const char* v )
-//   {
-//     bool success;
-//     success = dbus_message_iter_append_basic( &m_cobj, TYPE_OBJECT_PATH, &v );
-//     if ( ! success ) throw ErrorNoMemory( "MessageAppendIterator::append: No memory to append argument" );
-//   }
-//
+  MessageAppendIterator& MessageAppendIterator::operator<<( const Path& v )
+  {
+    this->append( v );
+    return *this;
+  }
+
 //   void MessageAppendIterator::open_container( ContainerType t, const std::string& sig )
 //   {
 //     bool success;
