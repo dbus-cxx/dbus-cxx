@@ -208,9 +208,33 @@ public:
     return signal_base::pointer( new signal(*this) );
   }
 
+  /** Returns a DBus XML description of this interface */
+  virtual std::string introspect(int space_depth=0) const
+  {
+    std::ostringstream sout;
+    std::string spaces;
+    for (int i=0; i < space_depth; i++ ) spaces += " ";
+    sout << spaces << "<signal name=\"" << name() << "\">\n";
+    FOR(1,$1,[
+    sout << spaces << "  <arg name=\"" << m_arg_names[[[%1-1]]] << "\" type=\"" << signature<T_arg%1>() << "\"/>\n";],[])
+    sout << spaces << "</signal>\n";
+    return sout.str();
+  }
+
+  virtual std::string arg_name(size_t i) {
+    if ( i < $1 ) return m_arg_names[[i]];
+    return std::string();
+  }
+
+  virtual void set_arg_name(size_t i, const std::string& name) {
+    if ( i < $1 ) m_arg_names[[i]] = name;
+  }
+
   protected:
 
   friend class Interface;
+
+  std::string m_arg_names[[$1]];
 
   sigc::connection m_internal_callback_connection;
 
@@ -232,6 +256,7 @@ divert(0)
 #ifndef DBUS_CXX_SIGNAL_H_
 #define DBUS_CXX_SIGNAL_H_
 
+#include <sstream>
 #include <dbus-cxx/signal_base.h>
 
 namespace DBus {
