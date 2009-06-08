@@ -140,6 +140,36 @@ void MessageIteratorTests::call_message_append_extract_iterator_signature()
   CPPUNIT_ASSERT_EQUAL( v, v2 );
 }
 
+void MessageIteratorTests::call_message_append_extract_iterator_char()
+{
+  char v = 'a';
+  test_numeric_call_message_append_extract_iterator(v);
+}
+
+void MessageIteratorTests::call_message_append_extract_iterator_int8()
+{
+  int8_t v = -120;
+  test_numeric_call_message_append_extract_iterator(v);
+}
+
+void MessageIteratorTests::call_message_append_extract_iterator_float()
+{
+  float v = -2.8983;
+  test_numeric_call_message_append_extract_iterator(v);
+}
+
+void MessageIteratorTests::call_message_append_extract_iterator_long_int()
+{
+  long int v = -48321;
+  test_numeric_call_message_append_extract_iterator(v);
+}
+
+void MessageIteratorTests::call_message_append_extract_iterator_unsigned_long_int()
+{
+  unsigned long int v = 95382;
+  test_numeric_call_message_append_extract_iterator(v);
+}
+
 
 template <typename T>
     void test_numeric_call_message_iterator_insertion_extraction_operator( T v )
@@ -255,6 +285,36 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_s
   CPPUNIT_ASSERT_EQUAL( v, v2 );
 }
 
+void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_char()
+{
+  char v = 'a';
+  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+}
+
+void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_int8()
+{
+  int8_t v = -112;
+  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+}
+
+void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_float()
+{
+  float v = -2984.3933;
+  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+}
+
+void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_long_int()
+{
+  long int v = -67445;
+  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+}
+
+void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_unsigned_long_int()
+{
+  unsigned long int v = 343673;
+  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+}
+
 void MessageIteratorTests::call_message_append_extract_iterator_multiple( )
 {
   bool            b_1    = false       , b_2    = true;
@@ -269,7 +329,12 @@ void MessageIteratorTests::call_message_append_extract_iterator_multiple( )
   const char      *cs_1 = "Hello World", *cs_2 = NULL;
   std::string     s_1("Hello World")   , s_2("");
   DBus::Signature sig_1("Hello World") , sig_2;
-
+  char            c_1    = 'a'         , c_2    = '\0';
+  int8_t          i8_1   = 119         , i8_2   = 0;
+  float           f_1    = -222.43212  , f_2    = 0.00;
+  long int        li_1   = -344223     , li_2   = 0;
+  unsigned long int uli_1= 94321       , uli_2  = 0;
+  
   DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1.append( b_1 );
@@ -284,6 +349,11 @@ void MessageIteratorTests::call_message_append_extract_iterator_multiple( )
   iter1.append( cs_1 );
   iter1.append( s_1 );
   iter1.append( sig_1 );
+  iter1.append( c_1 );
+  iter1.append( i8_1 );
+  iter1.append( f_1 );
+  iter1.append( li_1 );
+  iter1.append( uli_1 );
 
   DBus::MessageIterator iter2(msg);
   b_2    = (bool)iter2;            iter2.next();
@@ -298,6 +368,11 @@ void MessageIteratorTests::call_message_append_extract_iterator_multiple( )
   cs_2   = (const char*)iter2;     iter2.next();
   s_2    = (std::string)iter2;     iter2.next();
   sig_2  = (DBus::Signature)iter2; iter2.next();
+  c_2    = (char)iter2;            iter2.next();
+  i8_2   = (int8_t)iter2;          iter2.next();
+  f_2    = (float)iter2;           iter2.next();
+  li_2   = (long int)iter2;        iter2.next();
+  uli_2  = (unsigned long int)iter2; iter2.next();
 
   CPPUNIT_ASSERT_EQUAL( b_1, b_2 );
   CPPUNIT_ASSERT_EQUAL( ui8_1, ui8_2 );
@@ -311,6 +386,11 @@ void MessageIteratorTests::call_message_append_extract_iterator_multiple( )
   CPPUNIT_ASSERT_EQUAL( 0, strcmp( cs_1, cs_2 ) );
   CPPUNIT_ASSERT_EQUAL( s_1, s_2 );
   CPPUNIT_ASSERT_EQUAL( sig_1, sig_2 );
+  CPPUNIT_ASSERT_EQUAL( c_1, c_2 );
+  CPPUNIT_ASSERT_EQUAL( i8_1, i8_2 );
+  CPPUNIT_ASSERT_EQUAL( f_1, f_2 );
+  CPPUNIT_ASSERT_EQUAL( li_1, li_2 );
+  CPPUNIT_ASSERT_EQUAL( uli_1, uli_2 );
 }
 
 void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_multiple( )
@@ -327,13 +407,18 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_m
   const char      *cs_1 = "Hello World", *cs_2 = NULL;
   std::string     s_1("Hello World")   , s_2("");
   DBus::Signature sig_1("Hello World") , sig_2;
+  char            c_1    = 'a'         , c_2    = '\0';
+  int8_t          i8_1   = 119         , i8_2   = 0;
+  float           f_1    = -222.43212  , f_2    = 0.00;
+  long int        li_1   = -344223     , li_2   = 0;
+  unsigned long int uli_1= 94321       , uli_2  = 0;
 
   DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
-  iter1 << b_1 << ui8_1 << i16_1 << ui16_1 << i32_1 << ui32_1 << i64_1 << ui64_1 << d_1 << cs_1 << s_1 << sig_1;
+  iter1 << b_1 << ui8_1 << i16_1 << ui16_1 << i32_1 << ui32_1 << i64_1 << ui64_1 << d_1 << cs_1 << s_1 << sig_1 << c_1 << i8_1 << f_1 << li_1 << uli_1;
 
   DBus::MessageIterator iter2(msg);
-  iter2 >> b_2 >> ui8_2 >> i16_2 >> ui16_2 >> i32_2 >> ui32_2 >> i64_2 >> ui64_2 >> d_2 >> cs_2 >> s_2 >> sig_2;
+  iter2 >> b_2 >> ui8_2 >> i16_2 >> ui16_2 >> i32_2 >> ui32_2 >> i64_2 >> ui64_2 >> d_2 >> cs_2 >> s_2 >> sig_2 >> c_2 >> i8_2 >> f_2 >> li_2 >> uli_2;
 
   CPPUNIT_ASSERT_EQUAL( b_1, b_2 );
   CPPUNIT_ASSERT_EQUAL( ui8_1, ui8_2 );
@@ -347,4 +432,9 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_m
   CPPUNIT_ASSERT_EQUAL( 0, strcmp( cs_1, cs_2 ) );
   CPPUNIT_ASSERT_EQUAL( s_1, s_2 );
   CPPUNIT_ASSERT_EQUAL( sig_1, sig_2 );
+  CPPUNIT_ASSERT_EQUAL( c_1, c_2 );
+  CPPUNIT_ASSERT_EQUAL( i8_1, i8_2 );
+  CPPUNIT_ASSERT_EQUAL( f_1, f_2 );
+  CPPUNIT_ASSERT_EQUAL( li_1, li_2 );
+  CPPUNIT_ASSERT_EQUAL( uli_1, uli_2 );
 }
