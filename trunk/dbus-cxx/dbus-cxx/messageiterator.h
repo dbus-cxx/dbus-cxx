@@ -69,9 +69,6 @@ namespace DBus
       /** True if this is a valid iterator */
       bool is_valid() const;
 
-      /** True if the iterator is valid and initialized, false otherwise */
-      operator bool() const;
-
       /** True if there are any more fields left to iterate over */
       bool has_next() const;
 
@@ -256,6 +253,15 @@ namespace DBus
       operator int64_t();
       operator double();
       operator const char*();
+      
+      operator char();
+      operator int8_t();
+      operator float();
+      #if DBUS_CXX_SIZEOF_LONG_INT == 4
+        operator long int();
+        operator unsigned long int();
+      #endif
+
 
       bool        get_bool();
       uint8_t     get_uint8();
@@ -268,19 +274,13 @@ namespace DBus
       double      get_double();
       const char* get_string();
 
-      MessageIterator& operator>>( bool& v );
-      MessageIterator& operator>>( uint8_t& v );
-      MessageIterator& operator>>( int16_t& v );
-      MessageIterator& operator>>( uint16_t& v );
-      MessageIterator& operator>>( int32_t& v );
-      MessageIterator& operator>>( uint32_t& v );
-      MessageIterator& operator>>( int64_t& v );
-      MessageIterator& operator>>( uint64_t& v );
-      MessageIterator& operator>>( double& v );
-      MessageIterator& operator>>( const char*& v );
-      MessageIterator& operator>>( std::string& v );
-      MessageIterator& operator>>( Signature& v );
-      MessageIterator& operator>>( Path& v );
+      template <typename T>
+      MessageIterator& operator>>( T& v )
+      {
+        v = (T)(*this);
+        this->next();
+        return *this;
+      }
       
       template <typename T>
       void value( T& temp ) {
@@ -297,8 +297,6 @@ namespace DBus
     protected:
       const Message* m_message;
       DBusMessageIter m_cobj;
-
-      template <typename T> MessageIterator& protected_extract( T& v );
 
   };
 

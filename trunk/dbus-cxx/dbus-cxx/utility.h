@@ -67,12 +67,21 @@ namespace DBus
   inline std::string signature( int32_t )     { return DBUS_TYPE_INT32_AS_STRING; }
   inline std::string signature( uint32_t )    { return DBUS_TYPE_UINT32_AS_STRING; }
   inline std::string signature( int64_t )     { return DBUS_TYPE_INT64_AS_STRING; }
-  inline std::string signature( uint64_t )    { return DBUS_TYPE_UINT64_AS_STRING; }
-  inline std::string signature( double )      { return DBUS_TYPE_DOUBLE_AS_STRING; }
-  inline std::string signature( std::string ) { return DBUS_TYPE_STRING_AS_STRING; }
-  inline std::string signature( Signature )   { return DBUS_TYPE_SIGNATURE_AS_STRING; }
-  // TODO come back and reimplement
+  inline std::string signature( uint64_t )    { return DBUS_TYPE_UINT64_AS_STRING;      }
+  inline std::string signature( double )      { return DBUS_TYPE_DOUBLE_AS_STRING;      }
+  inline std::string signature( std::string ) { return DBUS_TYPE_STRING_AS_STRING;      }
+  inline std::string signature( Signature )   { return DBUS_TYPE_SIGNATURE_AS_STRING;   }
   inline std::string signature( Path )        { return DBUS_TYPE_OBJECT_PATH_AS_STRING; }
+
+  inline std::string signature( char )        { return DBUS_TYPE_BYTE_AS_STRING;        }
+  inline std::string signature( int8_t )      { return DBUS_TYPE_BYTE_AS_STRING;        }
+  
+#if DBUS_CXX_SIZEOF_LONG_INT == 4
+  inline std::string signature( long int )          { return DBUS_TYPE_INT32_AS_STRING;       }
+  inline std::string signature( long unsigned int ) { return DBUS_TYPE_UINT32_AS_STRING;      }
+#endif
+  
+  inline std::string signature( float )         { return DBUS_TYPE_DOUBLE_AS_STRING; }
 
   template <typename T> inline std::string signature()   { return 1; /* This is invalid; you must use one of the specializations only */}
   template<> inline std::string signature<uint8_t>()     { return DBUS_TYPE_BYTE_AS_STRING;        }
@@ -88,6 +97,17 @@ namespace DBus
   template<> inline std::string signature<Signature>()   { return DBUS_TYPE_SIGNATURE_AS_STRING;   }
   template<> inline std::string signature<Path>()        { return DBUS_TYPE_OBJECT_PATH_AS_STRING; }
   
+  template<> inline std::string signature<char>()        { return DBUS_TYPE_BYTE_AS_STRING;        }
+  template<> inline std::string signature<int8_t>()      { return DBUS_TYPE_BYTE_AS_STRING;        }
+
+#if DBUS_CXX_SIZEOF_LONG_INT == 4
+  template<> inline std::string signature<long int>()          { return DBUS_TYPE_INT32_AS_STRING;       }
+  template<> inline std::string signature<long unsigned int>() { return DBUS_TYPE_UINT32_AS_STRING;       }
+#endif
+  
+  template<> inline std::string signature<float>()         { return DBUS_TYPE_DOUBLE_AS_STRING; }
+
+
 //   inline std::string signature( Variant )     { return DBUS_TYPE_VARIANT_AS_STRING; }
 //   template <typename T> inline std::string signature( const std::vector<T>& ) { T t; return DBUS_TYPE_ARRAY_AS_STRING + signature( t ); }
 
@@ -163,6 +183,17 @@ namespace DBus
   inline Type type( Path )               { return TYPE_OBJECT_PATH; }
   inline Type type( Signature )          { return TYPE_SIGNATURE; }
 //   inline Type type( Variant )            { return TYPE_VARIANT; }
+  
+  inline Type type( char )               { return TYPE_BYTE; }
+  inline Type type( int8_t )             { return TYPE_BYTE; }
+
+#if DBUS_CXX_SIZEOF_LONG_INT == 4
+  inline Type type( long int )            { return TYPE_INT32; }
+  inline Type type( long unsigned int )   { return TYPE_UINT32; }
+#endif
+  
+  inline Type type( float )               { return TYPE_DOUBLE; }
+
 
 //   template <typename T> inline Type type(const std::vector<T>&) { return TYPE_ARRAY; }
 

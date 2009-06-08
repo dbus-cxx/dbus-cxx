@@ -25,14 +25,6 @@
 namespace DBus
 {
 
-  template <typename T>
-  MessageIterator& MessageIterator::protected_extract( T& v )
-  {
-    v = (T)(*this);
-    this->next();
-    return *this;
-  }
-
   MessageIterator::MessageIterator():
       m_message( NULL )
   {
@@ -86,11 +78,6 @@ namespace DBus
     if ( not (m_message and m_message->is_valid() ) ) return false;
     if ( this->arg_type() == TYPE_INVALID ) return false;
     return true;
-  }
-
-  MessageIterator::operator bool() const
-  {
-    return this->is_valid();
   }
 
   bool MessageIterator::has_next() const
@@ -207,7 +194,7 @@ namespace DBus
       case TYPE_UINT64:  return (uint64_t)(*this);
       case TYPE_DOUBLE:  return (double)(*this);
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to boolean value");
     }
   }
 
@@ -376,6 +363,104 @@ namespace DBus
     }
   }
 
+  MessageIterator::operator char()
+  {
+    // TODO check for invalid
+    switch ( this->arg_type() )
+    {
+      case TYPE_BYTE:    return static_cast<char>(get_uint8());
+      case TYPE_BOOLEAN: return (bool)(*this);
+      case TYPE_INT16:   return (int16_t)(*this);
+      case TYPE_UINT16:  return (uint16_t)(*this);
+      case TYPE_INT32:   return (int32_t)(*this);
+      case TYPE_UINT32:  return (uint32_t)(*this);
+      case TYPE_INT64:   return (int64_t)(*this);
+      case TYPE_UINT64:  return (uint64_t)(*this);
+      case TYPE_DOUBLE:  return (double)(*this);
+      default:
+        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+    }
+  }
+
+  MessageIterator::operator int8_t()
+  {
+    // TODO check for invalid
+    switch ( this->arg_type() )
+    {
+      case TYPE_BYTE:    return static_cast<int8_t>(get_uint8());
+      case TYPE_BOOLEAN: return (bool)(*this);
+      case TYPE_INT16:   return (int16_t)(*this);
+      case TYPE_UINT16:  return (uint16_t)(*this);
+      case TYPE_INT32:   return (int32_t)(*this);
+      case TYPE_UINT32:  return (uint32_t)(*this);
+      case TYPE_INT64:   return (int64_t)(*this);
+      case TYPE_UINT64:  return (uint64_t)(*this);
+      case TYPE_DOUBLE:  return (double)(*this);
+      default:
+        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+    }
+  }
+
+  MessageIterator::operator float()
+  {
+    // TODO check for invalid
+    switch ( this->arg_type() )
+    {
+      case TYPE_BYTE:    return (uint8_t)(*this);
+      case TYPE_BOOLEAN: return (bool)(*this);
+      case TYPE_INT16:   return (int16_t)(*this);
+      case TYPE_UINT16:  return (uint16_t)(*this);
+      case TYPE_INT32:   return (int32_t)(*this);
+      case TYPE_UINT32:  return (uint32_t)(*this);
+      case TYPE_INT64:   return (int64_t)(*this);
+      case TYPE_UINT64:  return (uint64_t)(*this);
+      case TYPE_DOUBLE:  return static_cast<float>(get_double());
+      default:
+        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+    }
+  }
+  
+#if DBUS_CXX_SIZEOF_LONG_INT == 4
+  MessageIterator::operator unsigned long int()
+  {
+    // TODO check for invalid
+    switch ( this->arg_type() )
+    {
+      case TYPE_BYTE:    return (uint8_t)(*this);
+      case TYPE_BOOLEAN: return (bool)(*this);
+      case TYPE_INT16:   return (int16_t)(*this);
+      case TYPE_UINT16:  return (uint16_t)(*this);
+      case TYPE_INT32:   return (int32_t)(*this);
+      case TYPE_UINT32:  return get_uint32();
+      case TYPE_INT64:   return (int64_t)(*this);
+      case TYPE_UINT64:  return (uint64_t)(*this);
+      case TYPE_DOUBLE:  return (double)(*this);
+      default:
+        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+    }
+  }
+
+  MessageIterator::operator long int()
+  {
+    // TODO check for invalid
+    switch ( this->arg_type() )
+    {
+      case TYPE_BYTE:    return (uint8_t)(*this);
+      case TYPE_BOOLEAN: return (bool)(*this);
+      case TYPE_INT16:   return (int16_t)(*this);
+      case TYPE_UINT16:  return (uint16_t)(*this);
+      case TYPE_INT32:   return get_int32();
+      case TYPE_UINT32:  return (uint32_t)(*this);
+      case TYPE_INT64:   return (int64_t)(*this);
+      case TYPE_UINT64:  return (uint64_t)(*this);
+      case TYPE_DOUBLE:  return (double)(*this);
+      default:
+        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+    }
+  }
+
+#endif
+
   bool MessageIterator::get_bool()
   {
     // TODO check for invalid
@@ -475,100 +560,6 @@ namespace DBus
     return ptr;
   }
 
-  MessageIterator & MessageIterator::operator >>(bool & v)
-  {
-    return this->protected_extract(v);
-  }
-
-  MessageIterator & MessageIterator::operator >>(uint8_t & v)
-  {
-    return this->protected_extract(v);
-  }
-
-  MessageIterator & MessageIterator::operator >>(int16_t & v)
-  {
-    return this->protected_extract(v);
-  }
-
-  MessageIterator & MessageIterator::operator >>(uint16_t & v)
-  {
-    return this->protected_extract(v);
-  }
-
-  MessageIterator & MessageIterator::operator >>(int32_t & v)
-  {
-    return this->protected_extract(v);
-  }
-
-  MessageIterator & MessageIterator::operator >>(uint32_t & v)
-  {
-    return this->protected_extract(v);
-  }
-
-  MessageIterator & MessageIterator::operator >>(int64_t & v)
-  {
-    return this->protected_extract(v);
-  }
-
-  MessageIterator & MessageIterator::operator >>(uint64_t & v)
-  {
-    return this->protected_extract(v);
-  }
-
-  MessageIterator & MessageIterator::operator >>(double & v)
-  {
-    return this->protected_extract(v);
-  }
-
-  MessageIterator & MessageIterator::operator >>(const char* & v)
-  {
-    return this->protected_extract(v);
-  }
-
-  MessageIterator & MessageIterator::operator >>(std::string & v)
-  {
-    return this->protected_extract(v);
-  }
-
-  MessageIterator & MessageIterator::operator >>(Signature & v)
-  {
-    return this->protected_extract(v);
-  }
-
-  MessageIterator & MessageIterator::operator >>(Path & v)
-  {
-    return this->protected_extract(v);
-  }
-
-
-//   void MessageIterator::value( std::vector<std::string>& temp )
-//   {
-//     if ( this->element_type() != TYPE_STRING ) throw ErrorInvalidTypecast( "MessageIterator: Extracting string array into non-string vector" );
-//     std::string tempstr;
-//     MessageIterator iter = this->recurse();
-//     temp.clear();
-//     while ( iter.has_next() ) {
-//       iter >> tempstr;
-//       iter++;
-//       temp.push_back( tempstr );
-//     }
-//   }
-// 
-//   void MessageIterator::value( std::string& temp )
-//   {
-//     if ( this->arg_type() != DBus::type( temp ) ) {
-//       std::string s = "MessageIterator: Extracting DBus type ";
-//       s += type_string_from_code(( DBus::Type )( this->arg_type() ) );
-//       s += " into C++ RTTI type ";
-//       s += typeid( std::string ).name();
-//       throw ErrorInvalidTypecast( s.c_str() );
-//     }
-//     char* tempchar;
-//     dbus_message_iter_get_basic( &m_cobj, &tempchar );
-//     temp = tempchar;
-//   }
-
-
 //   void MessageIterator::value( Variant& temp )
 //   {
 // 
@@ -661,30 +652,6 @@ namespace DBus
 //     throw ErrorInvalidTypecast( "MessageIterator: Extracting non-primitive DBus type into variant" );
 //   }
 
-//   bool MessageIterator::append_path( const char* chars )
-//   {
-//     return append_basic( DBUS_TYPE_OBJECT_PATH, &chars );
-//   }
-
-//   const char* MessageIterator::get_path()
-//   {
-//     char * chars;
-//     get_basic( DBUS_TYPE_OBJECT_PATH, &chars );
-//     return chars;
-//   }
-  //
-//   bool MessageIterator::append_signature( const char* chars )
-//   {
-//     return append_basic( DBUS_TYPE_SIGNATURE, &chars );
-//   }
-  //
-//   const char* MessageIterator::get_signature()
-//   {
-//     char * chars;
-//     get_basic( DBUS_TYPE_SIGNATURE, &chars );
-//     return chars;
-//   }
-
 //   bool MessageIterator::append_array( char type, const void* ptr, size_t length )
 //   {
 //     return dbus_message_iter_append_fixed_array( ( DBusMessageIter* ) & _iter, type, ptr, length );
@@ -737,60 +704,6 @@ namespace DBus
 //   {
 //     dbus_message_iter_close_container( ( DBusMessageIter* ) & _iter, ( DBusMessageIter* ) & ( container._iter ) );
 //   }
-
-//   static bool is_basic_type( int typecode )
-//   {
-//     switch ( typecode ) {
-//       case 'y':
-//       case 'b':
-//       case 'n':
-//       case 'q':
-//       case 'i':
-//       case 'u':
-//       case 'x':
-//       case 't':
-//       case 'd':
-//       case 's':
-//       case 'o':
-//       case 'g':
-//         return true;
-//       default:
-//         return false;
-//     }
-//   }
-
-//   void MessageIterator::copy_data( MessageIterator& to )
-//   {
-/*    for ( MessageIterator & from = *this; !from.at_end(); ++from ) {
-  if ( is_basic_type( from.type() ) ) {
-  debug_log( "copying basic type: %c", from.type() );
-
-  unsigned char value[ 8 ];
-  from.get_basic( from.type(), &value );
-  to.append_basic( from.type(), &value );
-} else {
-  MessageIterator from_container = from.recurse();
-  char* sig = from_container.signature();
-
-  debug_log( "copying compound type: %c[%s]", from.type(), sig );
-
-  MessageIterator to_container ( to.msg() );
-  dbus_message_iter_open_container
-  (
-  ( DBusMessageIter* ) & ( to._iter ),
-  from.type(),
-  from.type() == DBUS_TYPE_VARIANT ? NULL : sig,
-  ( DBusMessageIter* ) & ( to_container._iter )
-            );
-
-  from_container.copy_data( to_container );
-  to.close_container( to_container );
-  free( sig );
-}
-}*/
-//   }
-
-
 
 }
 

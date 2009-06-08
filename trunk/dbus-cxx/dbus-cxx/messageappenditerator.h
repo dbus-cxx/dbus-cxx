@@ -86,30 +86,23 @@ namespace DBus
       bool append( const std::string& v );
       bool append( const Signature& v );
       bool append( const Path& v );
+      
+      bool append( char v );
+      bool append( int8_t v );
+      bool append( float v );
+      #if DBUS_CXX_SIZEOF_LONG_INT == 4
+        bool append( long int v );
+        bool append( long unsigned int v );
+      #endif
 
-      MessageAppendIterator& operator<<( bool v );
-      MessageAppendIterator& operator<<( uint8_t v );
-      MessageAppendIterator& operator<<( int16_t v );
-      MessageAppendIterator& operator<<( uint16_t v );
-      MessageAppendIterator& operator<<( int32_t v );
-      MessageAppendIterator& operator<<( uint32_t v );
-      MessageAppendIterator& operator<<( int64_t v );
-      MessageAppendIterator& operator<<( uint64_t v );
-      MessageAppendIterator& operator<<( double v );
-      MessageAppendIterator& operator<<( const char* v );
-      MessageAppendIterator& operator<<( const std::string& v );
-      MessageAppendIterator& operator<<( const Signature& v );
-      MessageAppendIterator& operator<<( const Path& v );
+      template <typename T>
+      MessageAppendIterator& operator<<( T& v )
+      {
+        this->append( v );
+        return *this;
+      }
 
-//       void append( const std::string& v );
 
-//           template <typename T0>
-//           void append(const Struct<T0>& s) {
-//             this->open_container( CONTAINER_STRUCT, std::string() );
-//             m_subiter->append( boost::get<0>(s) );
-//             this->close_container();
-//           }
-      //
 //           template <typename T0, typename T1>
 //           void append(const Struct<T0,T1>& s) {
 //             this->open_container( CONTAINER_STRUCT, std::string() );

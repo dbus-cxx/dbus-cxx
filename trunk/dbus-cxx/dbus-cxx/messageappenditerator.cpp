@@ -209,84 +209,37 @@ namespace DBus
   {
     return this->protected_append( v );
   }
-
-  MessageAppendIterator& MessageAppendIterator::operator<<( bool v )
+  
+  bool MessageAppendIterator::append( char v )
   {
-    this->append( v );
-    return *this;
+    return this->protected_append( v );
+  }
+  
+  bool MessageAppendIterator::append( int8_t v )
+  {
+    return this->protected_append( v );
+  }
+  
+  bool MessageAppendIterator::append( float v )
+  {
+    double d = v;
+    return this->protected_append( d );
   }
 
-  MessageAppendIterator& MessageAppendIterator::operator<<( uint8_t v )
+#if DBUS_CXX_SIZEOF_LONG_INT == 4
+  
+  bool MessageAppendIterator::append( long int v )
   {
-    this->append( v );
-    return *this;
+    return this->protected_append( v );
+  }
+  
+  bool MessageAppendIterator::append( long unsigned int v )
+  {
+    return this->protected_append( v );
   }
 
-  MessageAppendIterator& MessageAppendIterator::operator<<( int16_t v )
-  {
-    this->append( v );
-    return *this;
-  }
+#endif
 
-  MessageAppendIterator& MessageAppendIterator::operator<<( uint16_t v )
-  {
-    this->append( v );
-    return *this;
-  }
-
-  MessageAppendIterator& MessageAppendIterator::operator<<( int32_t v )
-  {
-    this->append( v );
-    return *this;
-  }
-
-  MessageAppendIterator& MessageAppendIterator::operator<<( uint32_t v )
-  {
-    this->append( v );
-    return *this;
-  }
-
-  MessageAppendIterator& MessageAppendIterator::operator<<( int64_t v )
-  {
-    this->append( v );
-    return *this;
-  }
-
-  MessageAppendIterator& MessageAppendIterator::operator<<( uint64_t v )
-  {
-    this->append( v );
-    return *this;
-  }
-
-  MessageAppendIterator& MessageAppendIterator::operator<<( double v )
-  {
-    this->append( v );
-    return *this;
-  }
-
-  MessageAppendIterator& MessageAppendIterator::operator<<( const char* v )
-  {
-    this->append( v );
-    return *this;
-  }
-
-  MessageAppendIterator& MessageAppendIterator::operator<<( const std::string& v )
-  {
-    this->append( v );
-    return *this;
-  }
-
-  MessageAppendIterator& MessageAppendIterator::operator<<( const Signature& v )
-  {
-    this->append( v );
-    return *this;
-  }
-
-  MessageAppendIterator& MessageAppendIterator::operator<<( const Path& v )
-  {
-    this->append( v );
-    return *this;
-  }
 
 //   void MessageAppendIterator::open_container( ContainerType t, const std::string& sig )
 //   {
