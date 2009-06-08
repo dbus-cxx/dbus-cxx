@@ -1,5 +1,37 @@
+2009-06-08  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* dbus-cxx/messageappenditerator.cpp,
+	  dbus-cxx/messageappenditerator.h, dbus-cxx/messageiterator.cpp,
+	  dbus-cxx/messageiterator.h, dbus-cxx/utility.h: Added support for
+	  char, int8_t, float types and long int and long unsigned int on
+	  i386.
+	* dbus-cxx/message.cpp, dbus-cxx/message.h:
+	* dbus-cxx/method.h.m4:
+	* dbus-cxx/methodproxy.h.m4:
+	* dbus-cxx/object.cpp:
+	* dbus-cxx/dbus_signal.h.m4:
+	* examples/basics/Makefile.am:
+	* examples/basics/types, examples/basics/types/Makefile.am,
+	  examples/basics/types/time_client.cpp,
+	  examples/basics/types/time_server.cpp,
+	  examples/basics/types/timeval_dbus.cpp,
+	  examples/basics/types/timeval_dbus.h: Added example demonstrating
+	  how to extend Message::iterator and Message::append_iterator with
+	  operators << and >>
+	* unit-tests/messageiteratortests.cpp,
+	  unit-tests/messageiteratortests.h: Added tests for new types
+
 2009-06-04  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
+	* configure.in, dbus-cxx.spec.m4, examples/xml2cpp/Makefile.am,
+	  examples/xml2cpp/calculator/Makefile.am,
+	  examples/xml2cpp/computer-has-a[CPY],
+	  examples/xml2cpp/computer-has-a/Makefile.am,
+	  examples/xml2cpp/computer-hasa[DEL],
+	  examples/xml2cpp/computer-is-a[CPY],
+	  examples/xml2cpp/computer-is-a/Makefile.am,
+	  examples/xml2cpp/computer-isa[DEL]: 0.2.0
+	* ChangeLog, dbuscxx.kdevelop:
 	* configure.in:
 	* examples/xml2cpp/Makefile.am,
 	  examples/xml2cpp/calculator/Makefile.am:
