@@ -77,7 +77,7 @@ ifelse($1, $2,[dnl
 
       if ( not retmsg ) return NOT_HANDLED;
 
-      retmsg << _retval;
+      *retmsg << _retval;
 
       connection << retmsg;
 
