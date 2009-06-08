@@ -132,29 +132,21 @@ namespace DBus
 
       bool has_sender( const std::string& name ) const;
 
-      iterator operator>>( bool& value ) const;
-      iterator operator>>( uint8_t& value ) const;
-      iterator operator>>( int16_t& value ) const;
-      iterator operator>>( uint16_t& value ) const;
-      iterator operator>>( int32_t& value ) const;
-      iterator operator>>( uint32_t& value ) const;
-      iterator operator>>( int64_t& value ) const;
-      iterator operator>>( uint64_t& value ) const;
-      iterator operator>>( double& value ) const;
-      iterator operator>>( const char*& value ) const;
-      iterator operator>>( std::string& value ) const;
+      template <typename T>
+      iterator operator>>( T& value ) const
+      {
+        iterator iter = this->begin();
+        iter >> value;
+        return iter;
+      }
       
-      append_iterator operator<<( bool value );
-      append_iterator operator<<( uint8_t value );
-      append_iterator operator<<( int16_t value );
-      append_iterator operator<<( uint16_t value );
-      append_iterator operator<<( int32_t value );
-      append_iterator operator<<( uint32_t value );
-      append_iterator operator<<( int64_t value );
-      append_iterator operator<<( uint64_t value );
-      append_iterator operator<<( double value );
-      append_iterator operator<<( const char* value );
-      append_iterator operator<<( const std::string& value );
+      template <typename T>
+      append_iterator operator<<( T& value )
+      {
+        append_iterator aiter( *this );
+        aiter << value;
+        return aiter;
+      }
 
       iterator begin() const;
 
@@ -174,22 +166,22 @@ namespace DBus
 
   };
 
-  template <typename T>
-  inline
-  Message::iterator operator>>( Message::const_pointer ptr, T& value )
-  {
-    if ( not ptr ) throw -1;
-    return ptr->operator>>( value );
-  }
-      
-  template <typename T>
-  inline
-  Message::append_iterator operator<<( Message::pointer ptr, T& value )
-  {
-    if ( not ptr ) throw -1;
-    return ptr->operator<<( value );
-  }
+}
 
+template <typename T>
+inline
+DBus::Message::iterator operator>>( DBus::Message::const_pointer ptr, T& value )
+{
+  if ( not ptr ) throw -1;
+  return (*ptr) >> value;
+}
+      
+template <typename T>
+inline
+DBus::Message::append_iterator operator<<( DBus::Message::pointer ptr, T& value )
+{
+  if ( not ptr ) throw -1;
+  return (*ptr) << value;
 }
 
 #endif
