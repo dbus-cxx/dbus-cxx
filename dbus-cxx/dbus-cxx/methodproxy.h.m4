@@ -54,7 +54,7 @@ ifelse($1, $2,[dnl
     {
       DBUS_CXX_DEBUG("Method<LIST(T_return, LOOP(T_arg%1, $1))>::operator()   method=" << m_name );
       CallMessage::pointer _callmsg = this->create_call_message();
-      ifelse(eval($1>0),1,[_callmsg FOR(1, $1,[ << _val_%1]);],[])
+      ifelse(eval($1>0),1,[*_callmsg FOR(1, $1,[ << _val_%1]);],[])
       ReturnMessage::const_pointer retmsg = this->call( _callmsg );
       T_return _retval;
       retmsg >> _retval;
@@ -87,7 +87,7 @@ define([METHODPROXY_VOID],[dnl
     {
       DBUS_CXX_DEBUG("Method<LIST(T_return, LOOP(T_arg%1, $1))>::operator()   method=" << m_name );
       CallMessage::pointer _callmsg = this->create_call_message();
-      _callmsg FOR(1, $1,[ << _val_%1]);
+      *_callmsg FOR(1, $1,[ << _val_%1]);
       _callmsg->set_no_reply();
       this->call( _callmsg );
     }
