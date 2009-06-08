@@ -41,7 +41,12 @@ class MessageIteratorTests : public  CppUnit::TestFixture {
     CPPUNIT_TEST( call_message_append_extract_iterator_cstring );
     CPPUNIT_TEST( call_message_append_extract_iterator_string );
     CPPUNIT_TEST( call_message_append_extract_iterator_signature );
-
+    CPPUNIT_TEST( call_message_append_extract_iterator_char );
+    CPPUNIT_TEST( call_message_append_extract_iterator_int8 );
+    CPPUNIT_TEST( call_message_append_extract_iterator_float );
+    CPPUNIT_TEST( call_message_append_extract_iterator_long_int );
+    CPPUNIT_TEST( call_message_append_extract_iterator_unsigned_long_int );
+    
     CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_bool );
     CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_byte );
     CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_int16 );
@@ -54,6 +59,11 @@ class MessageIteratorTests : public  CppUnit::TestFixture {
     CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_cstring );
     CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_string );
     CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_signature );
+    CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_char );
+    CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_int8 );
+    CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_float );
+    CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_long_int );
+    CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_unsigned_long_int );
 
     CPPUNIT_TEST( call_message_append_extract_iterator_multiple );
     CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_multiple );
@@ -77,7 +87,12 @@ class MessageIteratorTests : public  CppUnit::TestFixture {
     void call_message_append_extract_iterator_cstring();
     void call_message_append_extract_iterator_string();
     void call_message_append_extract_iterator_signature();
-
+    void call_message_append_extract_iterator_char();
+    void call_message_append_extract_iterator_int8();
+    void call_message_append_extract_iterator_float();
+    void call_message_append_extract_iterator_long_int();
+    void call_message_append_extract_iterator_unsigned_long_int();
+    
     void call_message_iterator_insertion_extraction_operator_bool();
     void call_message_iterator_insertion_extraction_operator_byte();
     void call_message_iterator_insertion_extraction_operator_int16();
@@ -90,6 +105,11 @@ class MessageIteratorTests : public  CppUnit::TestFixture {
     void call_message_iterator_insertion_extraction_operator_cstring();
     void call_message_iterator_insertion_extraction_operator_string();
     void call_message_iterator_insertion_extraction_operator_signature();
+    void call_message_iterator_insertion_extraction_operator_char();
+    void call_message_iterator_insertion_extraction_operator_int8();
+    void call_message_iterator_insertion_extraction_operator_float();
+    void call_message_iterator_insertion_extraction_operator_long_int();
+    void call_message_iterator_insertion_extraction_operator_unsigned_long_int();
 
     void call_message_append_extract_iterator_multiple();
     void call_message_iterator_insertion_extraction_operator_multiple();
