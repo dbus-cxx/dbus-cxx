@@ -241,10 +241,10 @@ public:
   T_return internal_callback(LIST(LOOP(T_arg%1 arg%1, $1)))
   {
     DBUS_CXX_DEBUG( "signal::internal_callback: " FOR(1,$1,[ << arg%1]) );
-    SignalMessage::pointer msg = SignalMessage::create(m_path, m_interface, m_name);
-    if ( not m_destination.empty() ) msg->set_destination(m_destination);
-    ifelse(eval($1>0),1,[msg FOR(1, $1,[ << arg%1]);],[])
-    bool result = this->handle_dbus_outgoing(msg);
+    SignalMessage::pointer __msg = SignalMessage::create(m_path, m_interface, m_name);
+    if ( not m_destination.empty() ) __msg->set_destination(m_destination);
+    ifelse(eval($1>0),1,[*__msg FOR(1, $1,[ << arg%1]);],[])
+    bool result = this->handle_dbus_outgoing(__msg);
     DBUS_CXX_DEBUG( "signal::internal_callback: result=" << result );
   }
 
