@@ -320,7 +320,7 @@ namespace DBus
       ReturnMessage::pointer return_message = callmessage->create_reply();
       std::string introspection = DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE;
       introspection += this->introspect();
-      return_message << introspection;
+      *return_message << introspection;
       connection << return_message;
       return HANDLED;
     }
