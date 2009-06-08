@@ -20,4 +20,4 @@
 INCLUDES = -I$(top_srcdir)/. $(PROJECT_CFLAGS)
 METASOURCES = AUTO
 
-SUBDIRS = methods signals
+SUBDIRS = methods signals types
