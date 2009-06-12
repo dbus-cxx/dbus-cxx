@@ -16,7 +16,7 @@
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>examples/xml2cpp/computer-hasa/computer-server</activetarget>
+      <activetarget>unit-tests/dbus-cxx-unit-tests</activetarget>
       <useconfiguration>default</useconfiguration>
     </general>
     <run>
