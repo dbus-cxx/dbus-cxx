@@ -266,6 +266,7 @@ namespace DBus
     int selresult;
     std::set<int>::iterator fditer;
     std::map<int,Watch::pointer>::iterator witer;
+    struct timeval timeout;
     
     while ( m_running )
     {
@@ -285,7 +286,8 @@ namespace DBus
       // TODO handle the case where we have no watches
       
       // Now we'll wait in the select call for activity or a timeout
-      selresult = select(max_fd, &read_fds, &write_fds, NULL, &m_responsiveness);
+      timeout = m_responsiveness;
+      selresult = select(max_fd, &read_fds, &write_fds, NULL, &timeout);
 
       // If we timed out we'll loop back and see if we should still be running
       if ( selresult == 0 ) continue;
