@@ -43,11 +43,15 @@ struct Arg {
   std::string dbus_name;
   std::string cxx_name;
   std::string direction_string;
+  std::string cpp_type_override;
   DBus::Signature signature;
 
   std::string name() { if ( cxx_name.empty() ) return dbus_name; return cxx_name; }
   Direction direction();
   std::string cpp_type();
+  std::string cpp_cast(const std::string& var);
+  std::string dbus_cast(const std::string& var);
+  std::string cpp_dbus_type();
   std::string stubsignature();
   DBus::Type type();
   std::string strfmt(int depth=0);
