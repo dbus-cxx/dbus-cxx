@@ -110,6 +110,9 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 %{_bindir}/dbus-cxx-introspect
 
 %changelog
+* Mon Jun 15 2009 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.3.2-1
+- New release
+
 * Fri Jun 12 2009 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.3.1-1
 - New release
 

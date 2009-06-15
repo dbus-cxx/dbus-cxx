@@ -16,7 +16,7 @@
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>unit-tests/dbus-cxx-unit-tests</activetarget>
+      <activetarget>tools/dbus-cxx-xml2cpp</activetarget>
       <useconfiguration>default</useconfiguration>
     </general>
     <run>
