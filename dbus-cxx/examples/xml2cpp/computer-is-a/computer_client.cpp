@@ -22,6 +22,28 @@
 
 #include "client_popt.h"
 
+void print_last_op( DBus::Example::ComputerProxy::pointer computer )
+{
+  Examples::Computer::Operation last_op = computer->last_op();
+
+  switch(last_op)
+  {
+    case Examples::Computer::NONE:
+      std::cout << "Last op: None" << std::endl;
+      break;
+    case Examples::Computer::FIBONACCI:
+      std::cout << "Last op: Fibonacci" << std::endl;
+      break;
+    case Examples::Computer::FACTORIAL:
+      std::cout << "Last op: Factorial" << std::endl;
+      break;
+    case Examples::Computer::THUE_MORSE:
+      std::cout << "Last op: Thue-Morse" << std::endl;
+      break;
+  }
+
+}
+
 int main(int argc, const char** argv)
 {
   // Useful symbols declared:
@@ -41,6 +63,8 @@ int main(int argc, const char** argv)
 
   double answer=NAN;
   uint64_t result;
+
+  print_last_op(computer);
 
   if      ( strcmp(op,"add")         == 0 ) { answer = computer->add(param1,param2); std::cout << param1 << " + " << param2 << " = " << answer << std::endl; }
   else if ( strcmp(op,"sub")         == 0 ) { answer = computer->sub(param1,param2); std::cout << param1 << " - " << param2 << " = " << answer << std::endl; }
@@ -73,6 +97,8 @@ int main(int argc, const char** argv)
       std::cout << std::endl;
     }
   }
+
+  print_last_op(computer);
 
   return 0;
 }

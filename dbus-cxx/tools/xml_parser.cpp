@@ -48,8 +48,8 @@ XMLTag xml_tag( const char* name )
   return TAG_UNKNOWN;
 }
 
-typedef enum XMLArgAttr { ARG_NAME, ARG_DIR, ARG_TYPE, ARG_UNKNOWN } XMLArgAttr;
-const char* xml_arg_strings[] = { "name", "direction", "type" };
+typedef enum XMLArgAttr { ARG_NAME, ARG_DIR, ARG_TYPE, ARG_CPPTYPE, ARG_UNKNOWN } XMLArgAttr;
+const char* xml_arg_strings[] = { "name", "direction", "type", "cpptype" /*extended*/ };
 XMLArgAttr xml_arg_attr( const char* name )
 {
   for ( int i=0; i < ARG_UNKNOWN; i++ )
@@ -147,10 +147,11 @@ void start_element_handler( void* userData, const XML_Char* name, const XML_Char
         ptrvaluestring = *(ptr+1);
         switch ( xml_arg_attr( *ptr ) )
         {
-          case ARG_NAME: current_arg.dbus_name = ptrvaluestring;        break;
-          case ARG_DIR:  current_arg.direction_string = ptrvaluestring; break;
-          case ARG_TYPE: current_arg.signature = ptrvaluestring;        break;
-          default:                                                      break;
+          case ARG_NAME:    current_arg.dbus_name = ptrvaluestring;          break;
+          case ARG_DIR:     current_arg.direction_string = ptrvaluestring;   break;
+          case ARG_TYPE:    current_arg.signature = ptrvaluestring;          break;
+          case ARG_CPPTYPE: current_arg.cpp_type_override = ptrvaluestring;  break;
+          default:                                                           break;
         }
         ptr += 2;
       }

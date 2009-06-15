@@ -32,9 +32,18 @@ namespace Examples
   {
     public:
 
-      Computer() { }
+      typedef enum Operation {
+        NONE,
+        FACTORIAL,
+        FIBONACCI,
+        THUE_MORSE
+      } Operation;
+
+      Computer(): m_last_op(NONE) { }
 
       ~Computer() { }
+
+      uint64_t compute( Operation op, uint8_t n );
 
       uint64_t factorial( uint8_t n );
 
@@ -44,7 +53,11 @@ namespace Examples
 
       sigc::signal<void,std::string,uint64_t,uint8_t> signal_computation();
 
+      Operation last_op();
+
     protected:
+
+      Operation m_last_op;
 
       sigc::signal<void,std::string,uint64_t,uint8_t> m_signal_computation;
 

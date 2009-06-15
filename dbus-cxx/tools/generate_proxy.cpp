@@ -46,6 +46,9 @@ std::string generate_proxy_h(Node n)
        << "#define " << definestr << "\n\n"
        << "#include <dbus-cxx.h>\n\n";
 
+  if ( not n.cppinclude.empty() )
+    sout << "#include " << n.cppinclude << "\n\n";
+
   if ( not n.proxy_parent_include.empty() )
     sout << "#include " << n.proxy_parent_include << "\n\n";
   

@@ -9,17 +9,25 @@
       proxy-parent-include="&quot;calculator_proxy.h&quot;"
       >
   <interface name="Computer.Basic">
+    <method name="compute">
+      <arg name="result" direction="out" type="t"/>
+      <arg name="op"     direction="in"  type="u" cpptype="Examples::Computer::Operation"/>
+      <arg name="n"      direction="in"  type="y"/>
+    </method>
     <method name="factorial">
       <arg name="result" direction="out" type="t"/>
-      <arg name="n" direction="in" type="y"/>
+      <arg name="n"      direction="in"  type="y"/>
     </method>
     <method name="fibonacci">
       <arg name="result" direction="out" type="t"/>
-      <arg name="n" direction="in" type="y"/>
+      <arg name="n"      direction="in"  type="y"/>
     </method>
     <method name="thue_morse">
       <arg name="result" direction="out" type="t"/>
-      <arg name="n" direction="in" type="y"/>
+      <arg name="n"      direction="in"  type="y"/>
+    </method>
+    <method name="last_op">
+      <arg name="op" direction="out" type="u" cpptype="Examples::Computer::Operation"/>
     </method>
     <signal name="computation" accessor="signal_computation()">
       <arg name="algorithm" type="s"/>
