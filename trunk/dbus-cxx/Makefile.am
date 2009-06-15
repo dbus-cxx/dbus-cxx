@@ -17,6 +17,8 @@
 ##   along with this software. If not see <http://www.gnu.org/licenses/>.  ##
 #############################################################################
 
+ACLOCAL_AMFLAGS = -I m4
+
 EXTRA_DIST = dbus-cxx.spec \
 	m4/ac_cxx_compile_stdcxx_0x.m4 \
 	m4/ax_prefix_config_h.m4 \
