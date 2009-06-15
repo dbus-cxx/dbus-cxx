@@ -1,5 +1,26 @@
+2009-06-15  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* dbus-cxx/connection.h,
+	  examples/xml2cpp/computer-is-a/computer.cpp,
+	  examples/xml2cpp/computer-is-a/computer.h,
+	  examples/xml2cpp/computer-is-a/computer.xml,
+	  examples/xml2cpp/computer-is-a/computer_client.cpp,
+	  tools/generate_proxy.cpp, tools/parsed_object.cpp,
+	  tools/parsed_object.h, tools/xml_parser.cpp: Added support for
+	  specifying a C++ type for arguments and return values when using
+	  dbus-cxx-xml2cpp.
+	* Makefile.am, configure.in:
+
+2009-06-12  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* configure.in, dbus-cxx.spec.m4, dbuscxx.kdevelop: 0.3.1
+	* dbus-cxx/dispatcher.cpp: Fix bug in Dispatcher that caused CPU
+	  usage to go up to 100%
+
 2009-06-08  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
+	* ChangeLog: 0.3.0
+	* configure.in: 0.3.0
 	* dbus-cxx/messageappenditerator.cpp,
 	  dbus-cxx/messageappenditerator.h, dbus-cxx/messageiterator.cpp,
 	  dbus-cxx/messageiterator.h, dbus-cxx/utility.h: Added support for
