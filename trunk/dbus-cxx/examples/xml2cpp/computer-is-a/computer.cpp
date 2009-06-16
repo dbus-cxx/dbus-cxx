@@ -41,6 +41,7 @@ namespace Examples
     uint64_t result = compute_factorial( n );
     m_last_op = FACTORIAL;
     m_signal_computation.emit( "factorial", result, n );
+    m_signal_op.emit(FACTORIAL);
     return result;
   }
 
@@ -49,6 +50,7 @@ namespace Examples
     uint64_t result = compute_fibonacci( n );
     m_last_op = FIBONACCI;
     m_signal_computation.emit( "Fibonacci", result, n );
+    m_signal_op.emit(FIBONACCI);
     return result;
   }
 
@@ -57,6 +59,7 @@ namespace Examples
     uint64_t result = compute_thue_morse( n );
     m_last_op = THUE_MORSE;
     m_signal_computation.emit( "Thue-Morse", result, n );
+    m_signal_op.emit(THUE_MORSE);
     return result;
   }
 
@@ -68,6 +71,11 @@ namespace Examples
   sigc::signal< void, std::string, uint64_t, uint8_t > Computer::signal_computation()
   {
     return m_signal_computation;
+  }
+
+  sigc::signal<void,Computer::Operation> Computer::signal_op()
+  {
+    return m_signal_op;
   }
 
   uint64_t Computer::compute_factorial( uint8_t n )

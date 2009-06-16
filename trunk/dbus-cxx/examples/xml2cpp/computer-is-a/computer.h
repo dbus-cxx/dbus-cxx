@@ -53,6 +53,8 @@ namespace Examples
 
       sigc::signal<void,std::string,uint64_t,uint8_t> signal_computation();
 
+      sigc::signal<void,Operation> signal_op();
+
       Operation last_op();
 
     protected:
@@ -60,6 +62,8 @@ namespace Examples
       Operation m_last_op;
 
       sigc::signal<void,std::string,uint64_t,uint8_t> m_signal_computation;
+
+      sigc::signal<void,Operation> m_signal_op;
 
       uint64_t compute_factorial( uint8_t n );
 

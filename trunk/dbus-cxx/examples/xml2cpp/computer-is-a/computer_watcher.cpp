@@ -19,9 +19,13 @@
 
 #include "computer_proxy.h"
 
+#include "computer_adapter.h"
+
 void print_calculation(std::string op, std::string opsym, double result, double param1, double param2);
 
 void print_computation(std::string op, uint64_t result, uint8_t n);
+
+void print_operation( Examples::Computer::Operation op );
 
 int main()
 {
@@ -35,6 +39,7 @@ int main()
 
   computer->signal_computation().connect( sigc::ptr_fun(print_computation) );
   computer->signal_calculation().connect( sigc::ptr_fun(print_calculation) );
+  computer->signal_operation().connect( sigc::ptr_fun(print_operation) );
 
   dispatcher.start();
 
@@ -62,3 +67,9 @@ void print_computation(std::string op, uint64_t result, uint8_t n)
 {
   std::cout << op << "(" << (int)n << ") = " << result << std::endl;
 }
+
+void print_operation( Examples::Computer::Operation op )
+{
+  std::cout << "Op signal " << op << std::endl;
+}
+
