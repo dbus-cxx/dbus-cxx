@@ -1,5 +1,23 @@
+2009-06-16  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* configure.in, dbus-cxx.spec.m4, dbuscxx.kdevelop: 0.3.3
+	* examples/xml2cpp/computer-is-a:
+	* examples/xml2cpp/computer-is-a/computer.cpp,
+	  examples/xml2cpp/computer-is-a/computer.h,
+	  examples/xml2cpp/computer-is-a/computer.xml,
+	  examples/xml2cpp/computer-is-a/computer_watcher.cpp: Extended
+	  example to demonstrate signals with enums
+	* tools/generate_adapter.cpp, tools/generate_proxy.cpp,
+	  tools/parsed_object.cpp, tools/parsed_object.h: Added support to
+	  dbus-cxx-xml2cpp for signals to support C++ types that are not
+	  inherent to dbus-cxx but castable to dbus-cxx supported types.
+	  Restructed similar support for methods.
+	* dbus-cxx/utility.h: Added macro to make it easier to support
+	  types static castable to inherent types
+
 2009-06-15  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
+	* ChangeLog, dbus-cxx.spec.m4, dbuscxx.kdevelop: 0.3.2
 	* dbus-cxx/connection.h,
 	  examples/xml2cpp/computer-is-a/computer.cpp,
 	  examples/xml2cpp/computer-is-a/computer.h,
