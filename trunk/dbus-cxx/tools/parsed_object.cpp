@@ -26,6 +26,25 @@ char upper( char c ) { return std::toupper( c ); }
 
 char lower( char c ) { return std::tolower( c ); }
 
+void merge( std::map<std::string,std::string>& tgt, const std::map<std::string,std::string>& src )
+{
+  std::map<std::string,std::string>::const_iterator s;
+  std::map<std::string,std::string>::iterator t;
+
+  for ( s = src.begin(); s != src.end(); s++ )
+  {
+    t = tgt.find( s->first );
+    if ( t != tgt.end() and t->second != s->second )
+    {
+      std::string errstr = "Error: multiple mappings to " + t->first;
+      throw (errstr);
+    }
+    else
+    {
+      tgt[s->first] = s->second;
+    }
+  }
+}
 
 Direction Arg::direction()
 {
@@ -36,17 +55,17 @@ Direction Arg::direction()
   return DIRECTION_NONE;
 }
 
-std::string Arg::cpp_cast(const std::string& var)
-{
-  if ( cpp_type_override.empty() ) return var;
-  return "static_cast< " + cpp_type_override + " >( " + var + " )";
-}
-
-std::string Arg::dbus_cast(const std::string& var)
-{
-  if ( cpp_type_override.empty() ) return var;
-  return "static_cast< " + cpp_dbus_type() + " >( " + var + " )";
-}
+// std::string Arg::cpp_cast(const std::string& var)
+// {
+//   if ( cpp_type_override.empty() ) return var;
+//   return "static_cast< " + cpp_type_override + " >( " + var + " )";
+// }
+// 
+// std::string Arg::dbus_cast(const std::string& var)
+// {
+//   if ( cpp_type_override.empty() ) return var;
+//   return "static_cast< " + cpp_dbus_type() + " >( " + var + " )";
+// }
 
 std::string Arg::cpp_type()
 {
@@ -140,9 +159,9 @@ std::string Method::cpp_creation()
     if ( out_args.size() == 0 )
       s += "void";
     else
-      s += out_args[0].cpp_dbus_type();
+      s += out_args[0].cpp_type();
     for ( unsigned int i = 0; i < in_args.size(); i++ )
-      s += "," + in_args[i].cpp_dbus_type();
+      s += "," + in_args[i].cpp_type();
     s += ">( ";
     if ( interface != NULL )
       s += "\"" + interface->name() + "\", ";
@@ -154,7 +173,6 @@ std::string Method::cpp_creation()
 std::string Method::cpp_proto()
 {
   std::ostringstream sout;
-  std::string call_string;
   if ( args_valid() ) {
     if ( out_args.size() == 0 )
       sout << "void";
@@ -164,14 +182,10 @@ std::string Method::cpp_proto()
     for ( unsigned int i = 0; i < in_args.size(); i++ )
       sout << (( i==0 )?" ":", " ) << in_args[i].cpp_type() << " " << in_args[i].name();
     sout << " ) { return ";
-    call_string = "(*" + varname() + ")(";
+    sout << "(*" << varname() << ")(";
     for ( unsigned int i = 0; i < in_args.size(); i++ )
-      call_string += (( i==0 )?" ":", " ) + in_args[i].dbus_cast( in_args[i].name() );
-    call_string += ")";
-    if ( out_args.size() == 0 )
-      sout << call_string;
-    else
-      sout << out_args[0].cpp_cast(call_string);
+      sout << (( i==0 )?" ":", " ) << in_args[i].name();
+    sout << ")";
     sout << "; }";
   }
   else {
@@ -188,9 +202,9 @@ std::string Method::cpp_decl()
     if ( out_args.size() == 0 )
       s += "void";
     else
-      s += out_args[0].cpp_dbus_type();
+      s += out_args[0].cpp_type();
     for ( unsigned int i = 0; i < in_args.size(); i++ )
-      s += "," + in_args[i].cpp_dbus_type();
+      s += "," + in_args[i].cpp_type();
     s += ">::pointer " + varname() + ";";
   }
   return s;
@@ -214,9 +228,9 @@ std::string Method::cpp_adapter_creation()
     if ( out_args.size() == 0 )
       sout << "void";
     else
-      sout << out_args[0].cpp_dbus_type();
+      sout << out_args[0].cpp_type();
     for ( unsigned int i = 0; i < in_args.size(); i++ )
-      sout << "," << in_args[i].cpp_dbus_type();
+      sout << "," << in_args[i].cpp_type();
     sout << ">( ";
     if ( interface != NULL )
       sout << "\"" << interface->name() << "\", ";
@@ -252,10 +266,10 @@ std::string Method::cpp_adapter_stub()
     if ( out_args.size() == 0 )
       sout << "void";
     else
-      sout << out_args[0].cpp_dbus_type();
+      sout << out_args[0].cpp_type();
     sout << " " << stubname() << "(";
     for ( unsigned int i = 0; i < in_args.size(); i++ )
-      sout << (( i==0 )?" ":", " ) << in_args[i].cpp_dbus_type() << " " << in_args[i].name();
+      sout << (( i==0 )?" ":", " ) << in_args[i].cpp_type() << " " << in_args[i].name();
     sout << " ) { this->check_adaptee(); ";
     if (out_args.size() != 0 ) sout << "return ";
     sout << "m_adaptee->";
@@ -263,7 +277,7 @@ std::string Method::cpp_adapter_stub()
     else sout << cppname;
     sout << "(";
     for ( unsigned int i = 0; i < in_args.size(); i++ )
-      sout << (( i==0 )?" ":", " ) << in_args[i].cpp_cast( in_args[i].name() );
+      sout << (( i==0 )?" ":", " ) << in_args[i].name();
     sout << "); }";
   }
   else {
@@ -287,13 +301,44 @@ bool Method::args_valid()
   return true;
 }
 
+std::map<std::string,std::string> Method::iterator_support()
+{
+  std::map<std::string,std::string> need_support;
+  std::pair<std::string,std::string> support;
+  std::vector<Arg>::iterator a;
+
+  for ( a = in_args.begin(); a != in_args.end(); a++ )
+  {
+    if ( a->need_iterator_support() )
+    {
+      support = a->iterator_support();
+      std::map<std::string,std::string> tmp;
+      tmp[support.first] = support.second;
+      merge(need_support, tmp);
+    }
+  }
+  
+  for ( a = out_args.begin(); a != out_args.end(); a++ )
+  {
+    if ( a->need_iterator_support() )
+    {
+      support = a->iterator_support();
+      std::map<std::string,std::string> tmp;
+      tmp[support.first] = support.second;
+      merge(need_support, tmp);
+    }
+  }
+  
+  return need_support;
+}
+
 std::string Signal::cpp_creation()
 {
   std::ostringstream sout;
   if ( args_valid() ) {
     sout << varname() << " = this->create_signal<void";
     for ( size_t i = 0; i < args.size(); i++ )
-      sout << "," << args[i].cpp_dbus_type();
+      sout << "," << args[i].cpp_type();
     sout << ">( ";
     if ( interface == NULL ) throw("bad signal interface");
     sout << "\"" << interface->name() << "\", ";
@@ -321,7 +366,7 @@ std::string Signal::cpp_proto()
   if ( args_valid() ) {
     sout << "::DBus::signal_proxy<void";
     for ( unsigned int i = 0; i < args.size(); i++ )
-      sout << "," << args[i].cpp_dbus_type();
+      sout << "," << args[i].cpp_type();
     sout << " >& signal_" << name << "() { return *" << varname() << "; }";
   }
   else {
@@ -336,7 +381,7 @@ std::string Signal::cpp_decl()
   if ( args_valid() ) {
     s = "::DBus::signal_proxy<void";
     for ( unsigned int i = 0; i < args.size(); i++ )
-      s += "," + args[i].cpp_dbus_type();
+      s += "," + args[i].cpp_type();
     s += ">::pointer " + varname() + ";";
   }
   return s;
@@ -366,7 +411,7 @@ std::string Signal::adapter_signal_create()
   std::ostringstream sout;
   if ( args_valid() ) {
     sout << adapter_name() << " = this->create_signal<void";
-    for ( unsigned int i=0; i < args.size(); i++ ) sout << "," << args[i].cpp_dbus_type();
+    for ( unsigned int i=0; i < args.size(); i++ ) sout << "," << args[i].cpp_type();
     sout << ">(\"" << interface->name() << "\",\"" << name << "\");";
   }
   return sout.str();
@@ -390,7 +435,7 @@ std::string Signal::adapter_signal_declare()
   std::ostringstream sout;
   if ( args_valid() ) {
     sout << "::DBus::signal<void";
-    for ( unsigned int i = 0; i < args.size(); i++ ) sout << "," << args[i].cpp_dbus_type();
+    for ( unsigned int i = 0; i < args.size(); i++ ) sout << "," << args[i].cpp_type();
     sout << ">::pointer " << adapter_name() << ";";
   }
   return sout.str();
@@ -402,6 +447,26 @@ std::string Signal::adapter_signal_connect()
   std::ostringstream sout;
   sout << "if ( m_adaptee ) " << adapter_conn_name() << " = m_adaptee->" << accessor << ".connect( *" << adapter_name() << " );";
   return sout.str();
+}
+
+std::map<std::string,std::string> Signal::iterator_support()
+{
+  std::map<std::string,std::string> need_support;
+  std::pair<std::string,std::string> support;
+  std::vector<Arg>::iterator a;
+
+  for ( a = args.begin(); a != args.end(); a++ )
+  {
+    if ( a->need_iterator_support() )
+    {
+      support = a->iterator_support();
+      std::map<std::string,std::string> tmp;
+      tmp[support.first] = support.second;
+      merge(need_support, tmp);
+    }
+  }
+  
+  return need_support;
 }
 
 std::string Interface::strfmt( int depth )
@@ -526,6 +591,27 @@ std::vector< std::string > Interface::cpp_adapter_stubs()
   return strings;
 }
 
+std::map<std::string,std::string> Interface::iterator_support()
+{
+  std::map<std::string,std::string> need_support, current;
+  std::vector<Method>::iterator m;
+  std::vector<Signal>::iterator s;
+
+  for ( m = methods.begin(); m != methods.end(); m++ )
+  {
+    current = m->iterator_support();
+    merge( need_support, current );
+  }
+  
+  for ( s = signals.begin(); s != signals.end(); s++ )
+  {
+    current = s->iterator_support();
+    merge( need_support, current );
+  }
+  
+  return need_support;
+}
+
 std::vector<std::string> Node::namespaces()
 {
   const char* current = gen_namespace.c_str();
@@ -614,6 +700,20 @@ std::string Node::name_lower()
   std::string lname = name();
   std::transform( lname.begin(), lname.end(), lname.begin(), lower );
   return lname;
+}
+
+std::map<std::string,std::string> Node::iterator_support()
+{
+  std::map<std::string,std::string> need_support, current;
+  std::vector<Interface>::iterator i;
+
+  for ( i = interfaces.begin(); i != interfaces.end(); i++ )
+  {
+    current = i->iterator_support();
+    merge( need_support, current );
+  }
+  
+  return need_support;
 }
 
 

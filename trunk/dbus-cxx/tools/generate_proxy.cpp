@@ -58,6 +58,24 @@ std::string generate_proxy_h(Node n)
       sout << "#include " << i->proxy_include << "\n";
   }
 
+  std::map<std::string,std::string> iterator_support = n.iterator_support();
+
+  if ( iterator_support.size() > 0 )
+  {
+    std::map<std::string,std::string>::iterator i;
+    std::string definestr = "__DBUS_";
+    for ( int i = 0; i < nsu.size(); i++ ) definestr += nsu[i] + "_";
+    definestr += n.cppname_upper() + "_ITERATOR_SUPPORT";
+
+    sout << "#ifndef " << definestr << "\n"
+        << "  #define " << definestr << "\n";
+    for ( i = iterator_support.begin(); i != iterator_support.end(); i++ )
+    {
+      sout << "  DBUS_CXX_ITERATOR_SUPPORT( " << i->first << " , " << i->second << " )\n";
+    }
+    sout << "#endif\n";
+  }
+  
   sout << "\n" << n.cpp_namespace_begin(tab) + "\n";
 
   // Class declaration
