@@ -499,9 +499,10 @@ namespace DBus
    * <br><hr>
    *
    * \par About
-   * dbus-cxx is yet another dbus C++ wrapper. What differentiates dbus-cxx from other C++
-   * wrappers is that dbus-cxx relies heavily on sigc++ and explicitly exposes the wrapped
-   * dbus C API.
+   * dbus-cxx is a C++ wrapper for dbus. It exposes the C API to allow direct
+   * manipulation and relies on sigc++ to provide an OO interface. Also included
+   * is dbus-cxx-xml2cpp to generate proxy and adapter interfaces from DBus XML
+   * introspection-like documents.
    * 
    * \htmlonly
    * <script type="text/javascript" src="http://www.ohloh.net/p/330958/widgets/project_users.js?style=red"></script><br>
