@@ -49,13 +49,15 @@ struct Arg {
   std::string name() { if ( cxx_name.empty() ) return dbus_name; return cxx_name; }
   Direction direction();
   std::string cpp_type();
-  std::string cpp_cast(const std::string& var);
-  std::string dbus_cast(const std::string& var);
+//   std::string cpp_cast(const std::string& var);
+//   std::string dbus_cast(const std::string& var);
   std::string cpp_dbus_type();
   std::string stubsignature();
   DBus::Type type();
   std::string strfmt(int depth=0);
 
+  bool need_iterator_support() { return not cpp_type_override.empty(); }
+  std::pair<std::string,std::string> iterator_support() { return std::make_pair(cpp_type(), cpp_dbus_type()); }
 };
 
 struct Interface;
@@ -82,6 +84,8 @@ struct Method {
   std::string cpp_adapter_creation();
   std::string cpp_adapter_stub();
   bool args_valid();
+
+  std::map<std::string,std::string> iterator_support();
 };
 
 struct Signal {
@@ -109,6 +113,8 @@ struct Signal {
   std::string adapter_signal_disconnect() { return adapter_conn_name() + ".disconnect();"; }
   
   bool args_valid();
+
+  std::map<std::string,std::string> iterator_support();
 };
 
 struct Node;
@@ -134,6 +140,8 @@ struct Interface {
   std::vector<std::string> cpp_adapter_stubs();
   std::vector<std::string> cpp_adapter_signal_connection();
   std::vector<std::string> cpp_adapter_signal_disconnection();
+
+  std::map<std::string,std::string> iterator_support();
 };
 
 struct Node {
@@ -181,6 +189,8 @@ struct Node {
   
   std::string cpp_namespace_begin(const std::string& tab="  ");
   std::string cpp_namespace_end(const std::string& tab="  ");
+
+  std::map<std::string,std::string> iterator_support();
 };
 
 typedef std::vector<Node> Nodes;
