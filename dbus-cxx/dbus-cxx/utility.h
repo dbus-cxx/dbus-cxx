@@ -47,6 +47,47 @@
 
 #define DBUS_CXX_INTROSPECTABLE_INTERFACE "org.freedesktop.DBus.Introspectable"
 
+/**
+ * \fn DBUS_CXX_ITERATOR_SUPPORT(CppType,DBusType)
+ * Provides support for unsupported types that can be cast to DBus supported types
+ *
+ * This macro provides message iterator and introspection support for types that are
+ * not supported by the DBus native types, but can be \c static_cast<> to a DBus
+ * native type. Typically, this is an enum.
+ *
+ * @param CppType The unsupported type. Must be able to static_cast<> to DBusType
+ *
+ * @param DBusType One of the types inherently supported by dbus-cxx
+ *
+ * Example supporting an enum as a 32-bit int:
+ * \code
+ * typedef MyEnum { ZERO, ONE, TWO, THREE } MyEnum;
+ * 
+ * DBUS_CXX_ITERATOR_SUPPORT( MyEnum, uint32_t )
+ * \endcode
+ */
+#define DBUS_CXX_ITERATOR_SUPPORT( CppType, DBusType )                                                \
+  inline                                                                                              \
+  DBus::MessageIterator& operator>>(DBus::MessageIterator& __msgiter, CppType& __cpptype)             \
+  {                                                                                                   \
+    DBusType __dbustype;                                                                              \
+    __msgiter >> __dbustype;                                                                          \
+    __cpptype = static_cast< CppType >( __dbustype );                                                 \
+    return __msgiter;                                                                                 \
+  }                                                                                                   \
+                                                                                                      \
+  inline                                                                                              \
+  DBus::MessageAppendIterator& operator<<(DBus::MessageAppendIterator& __msgiter, CppType& __cpptype) \
+  {                                                                                                   \
+    __msgiter << static_cast< DBusType >( __cpptype );                                                \
+    return __msgiter;                                                                                 \
+  }                                                                                                   \
+                                                                                                      \
+  namespace DBus {                                                                                    \
+    template<> inline std::string signature< CppType >() { return signature< DBusType >(); }          \
+  }
+
+
 namespace DBus
 {
 
