@@ -21,6 +21,8 @@
 #ifndef GENERATE_ADAPTER_H
 #define GENERATE_ADAPTER_H
 
+std::string make_decl( const std::string & basis );
+
 std::string generate_adapter_h(Node n);
 
 std::string generate_adapter_cpp(Node n);

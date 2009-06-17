@@ -21,6 +21,8 @@
 #ifndef GENERATE_PROXY_H
 #define GENERATE_PROXY_H
 
+std::string make_decl( const std::string & basis );
+
 std::string generate_proxy_h(Node n);
 
 std::string generate_proxy_cpp(Node n);

@@ -20,6 +20,18 @@
 
 #include <sstream>
 
+std::string make_decl( const std::string & basis )
+{
+  std::string decl = basis;
+  const char* acceptable = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  size_t pos;
+  while ( (pos = decl.find_first_not_of(acceptable)) != std::string::npos )
+    decl[pos] = '_';
+  for ( size_t i = 0; i < decl.size(); i++ )
+    decl[i] = toupper(decl[i]);
+  return decl;
+}
+
 std::string generate_proxy_h(Node n)
 {
   std::ostringstream sout;
@@ -63,17 +75,14 @@ std::string generate_proxy_h(Node n)
   if ( iterator_support.size() > 0 )
   {
     std::map<std::string,std::string>::iterator i;
-    std::string definestr = "__DBUS_";
-    for ( int i = 0; i < nsu.size(); i++ ) definestr += nsu[i] + "_";
-    definestr += n.cppname_upper() + "_ITERATOR_SUPPORT";
-
-    sout << "#ifndef " << definestr << "\n"
-        << "  #define " << definestr << "\n";
     for ( i = iterator_support.begin(); i != iterator_support.end(); i++ )
     {
-      sout << "  DBUS_CXX_ITERATOR_SUPPORT( " << i->first << " , " << i->second << " )\n";
+      std::string definestr = "__DBUS_" + make_decl(i->first) + "_ITERATOR_SUPPORT";
+      sout << "#ifndef " << definestr << "\n"
+           << "  #define " << definestr << "\n"
+           << "  DBUS_CXX_ITERATOR_SUPPORT( " << i->first << " , " << i->second << " )\n"
+           << "#endif\n\n";
     }
-    sout << "#endif\n";
   }
   
   sout << "\n" << n.cpp_namespace_begin(tab) + "\n";
