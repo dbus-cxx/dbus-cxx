@@ -96,7 +96,7 @@ namespace DBus
       virtual pointer clone() = 0;
 
       /** Returns a DBus XML description of this interface */
-      virtual std::string introspect(int space_depth=0) const { }
+      virtual std::string introspect(int space_depth=0) const { return std::string(); }
 
       virtual std::string arg_name(size_t i) { return std::string(); }
 
