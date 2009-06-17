@@ -65,18 +65,16 @@ std::string generate_adapter_h(Node n)
   if ( iterator_support.size() > 0 )
   {
     std::map<std::string,std::string>::iterator i;
-    std::string definestr = "__DBUS_";
-    for ( int i = 0; i < nsu.size(); i++ ) definestr += nsu[i] + "_";
-    definestr += n.cppname_upper() + "_ITERATOR_SUPPORT";
-
-    sout << "#ifndef " << definestr << "\n"
-        << "  #define " << definestr << "\n";
     for ( i = iterator_support.begin(); i != iterator_support.end(); i++ )
     {
-      sout << "  DBUS_CXX_ITERATOR_SUPPORT( " << i->first << " , " << i->second << " )\n";
+      std::string definestr = "__DBUS_" + make_decl(i->first) + "_ITERATOR_SUPPORT";
+      sout << "#ifndef " << definestr << "\n"
+          << "  #define " << definestr << "\n"
+          << "  DBUS_CXX_ITERATOR_SUPPORT( " << i->first << " , " << i->second << " )\n"
+          << "#endif\n\n";
     }
-    sout << "#endif\n";
   }
+  
   
   sout << "\n";
   
