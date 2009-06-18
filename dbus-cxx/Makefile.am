@@ -24,15 +24,15 @@ EXTRA_DIST = dbus-cxx.spec \
 	m4/ax_prefix_config_h.m4 \
 	ax_dbus_cxx_xml2cpp.m4
 
-SUBDIRS = dbus-cxx tools doc examples unit-tests
+SUBDIRS = dbus-cxx dbus-cxx-glibmm tools doc examples unit-tests
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = dbus-cxx-$(PKGCONFIG_VERSION).pc
+pkgconfig_DATA = dbus-cxx-$(PKGCONFIG_VERSION).pc dbus-cxx-glibmm-$(PKGCONFIG_VERSION).pc
 
 INCLUDES = -I$(top_srcdir)/. $(PROJECT_CFLAGS)
 
 toplevel_includedir = $(includedir)/dbus-cxx-$(PACKAGE_RELEASE)
-toplevel_include_HEADERS = dbus-cxx.h
+toplevel_include_HEADERS = dbus-cxx-glibmm.h dbus-cxx.h
 
 PACKAGE_RELEASEHOST="rvinyard@frs.sourceforge.net:uploads/"
 
