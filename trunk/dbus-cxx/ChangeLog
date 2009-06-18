@@ -1,5 +1,86 @@
+2009-06-18  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* examples/glibmm/caller_popt.h:
+	* examples/glibmm/Makefile.am:
+	* dbus-cxx-glibmm/dispatcher.cpp, dbus-cxx-glibmm/dispatcher.h,
+	  dbus-cxx/dispatcher.cpp, dbus-cxx/dispatcher.h: Added support for
+	  pointer typedef and create() methods to DBus::Dispatcher to
+	  standardize across all dbus-cxx classes.
+	* examples/basics/methods/callee.cpp,
+	  examples/basics/methods/callee_2.cpp,
+	  examples/basics/methods/callee_dispatched.cpp,
+	  examples/basics/methods/callee_object.cpp,
+	  examples/basics/methods/callee_object_inherited.cpp,
+	  examples/basics/signals/signal_emitter_3.cpp,
+	  examples/basics/signals/signal_emitter_object.cpp,
+	  examples/basics/signals/signal_receiver.cpp,
+	  examples/basics/signals/signal_receiver_2.cpp,
+	  examples/basics/signals/signal_receiver_object.cpp,
+	  examples/basics/types/time_server.cpp,
+	  examples/xml2cpp/calculator/calculator_server.cpp,
+	  examples/xml2cpp/calculator/calculator_watcher.cpp,
+	  examples/xml2cpp/computer-has-a/computer_server.cpp,
+	  examples/xml2cpp/computer-has-a/computer_watcher.cpp,
+	  examples/xml2cpp/computer-is-a/computer_server.cpp,
+	  examples/xml2cpp/computer-is-a/computer_watcher.cpp,
+	  examples/xml2cpp/hal-proxy/hal_proxy.cpp: Removed explicit
+	  dispatcher start and stop calls. DBus::Dispatcher now has a
+	  constructor option that defaults to true and will automatically
+	  start the dispatcher. DBus::Dispatcher's destructor will now stop
+	  the dispatcher if it is running when the destructor is
+	  encountered.
+	* dbus-cxx/connection.h: Added notes on dbus-cxx-glibmm Fedora
+	  packages
+	* doc/Doxyfile: Added a new sublibrary dbus-cxx-glibmm with
+	  configure option --enable-glibmm to provide integration with
+	  glibmm applications.
+	* dbus-cxx/utility.h:
+	* dbus-cxx/dispatcher.cpp: On destruction Dispatcher now calls stop
+	  to effect and orderly shutdown
+	  
+	  Added a missing mutex lock to create_connection()
+	  
+	  Finally got around to fixing a missing piece of dispatching to
+	  account for the case when there are no watches. Instead, the
+	  dispatcher will sleep for the select() timeout period and look to
+	  see if there are any new watches.
+	  
+	  Removed a hack that flushed every connection at the end of the
+	  dispatch loop. The problem was that the sending dispatchers in
+	  the examples weren't started.
+	* dbus-cxx/dispatcher.h: Added a constructor option to
+	  DBus::Dispatcher to start a dispatcher on instantiation.
+	  
+	  Made dispatch thread virtual to allow classes to derive from
+	  DBus::Dispatcher and re-implement dispatching.
+	* examples/Makefile.am, examples/glibmm,
+	  examples/glibmm/Makefile.am,
+	  examples/glibmm/glibmm_callee_dispatched.cpp,
+	  examples/glibmm/glibmm_caller_dispatched.cpp: Added a new
+	  sublibrary dbus-cxx-glibmm with configure option --enable-glibmm
+	  to provide integration with glibmm applications.
+	* Makefile.am, configure.in, dbus-cxx-glibmm,
+	  dbus-cxx-glibmm-1.0.pc.in, dbus-cxx-glibmm/Makefile.am,
+	  dbus-cxx-glibmm/dispatcher.cpp, dbus-cxx-glibmm/dispatcher.h,
+	  dbus-cxx.spec.m4: Added a new sublibrary dbus-cxx-glibmm with
+	  configure option --enable-glibmm to provide integration with
+	  glibmm applications.
+	* dbus-cxx-1.0.pc.in:
+
+2009-06-17  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* configure.in, dbus-cxx.spec.m4: 0.3.4
+	* tools/generate_adapter.cpp, tools/generate_adapter.h,
+	  tools/generate_proxy.cpp, tools/generate_proxy.h: Fix
+	  dbus-cxx-xml2cpp castable type definitions #defines to prevent
+	  clashes if another class declares the same castable type.
+	* dbus-cxx/signal_base.h: Fix a bug where the default introspect
+	  method wasn't returning anything. Should have been a null string.
+
 2009-06-16  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
+	* dbus-cxx/connection.h, dbuscxx.kdevelop:
+	* ChangeLog:
 	* configure.in, dbus-cxx.spec.m4, dbuscxx.kdevelop: 0.3.3
 	* examples/xml2cpp/computer-is-a:
 	* examples/xml2cpp/computer-is-a/computer.cpp,
