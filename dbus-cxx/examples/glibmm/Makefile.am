@@ -17,13 +17,19 @@
 ##   along with this software. If not see <http://www.gnu.org/licenses/>.  ##
 #############################################################################
 
-INCLUDES = -I$(top_srcdir)/. $(PROJECT_CFLAGS)
+INCLUDES = $(PROJECT_CFLAGS) $(DBUS_CXX_GLIBMM_CFLAGS) -I$(top_srcdir)/.
+METASOURCES = AUTO
 
-if DBUS_CXX_EXAMPLES
+if DBUS_CXX_GLIBMM
 
-SUBDIRS = basics glibmm xml2cpp
-
-MAINTAINERCLEANFILES = \
-	Makefile.in
+noinst_PROGRAMS = glibmm-callee-dispatched glibmm-caller-dispatched
+glibmm_callee_dispatched_SOURCES = glibmm_callee_dispatched.cpp
+glibmm_callee_dispatched_LDADD = \
+	$(top_builddir)/dbus-cxx-glibmm/libdbus-cxx-glibmm.la $(top_builddir)/dbus-cxx/libdbus-cxx.la $(DBUS_CXX_GLIBMM_LIBS) \
+	$(PROJECT_LIBS)
+glibmm_caller_dispatched_SOURCES = glibmm_caller_dispatched.cpp
+glibmm_caller_dispatched_LDADD = \
+	$(top_builddir)/dbus-cxx-glibmm/libdbus-cxx-glibmm.la $(top_builddir)/dbus-cxx/libdbus-cxx.la $(DBUS_CXX_GLIBMM_LIBS) \
+	$(PROJECT_LIBS)
 
 endif
