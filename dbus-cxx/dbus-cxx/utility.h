@@ -48,7 +48,7 @@
 #define DBUS_CXX_INTROSPECTABLE_INTERFACE "org.freedesktop.DBus.Introspectable"
 
 /**
- * \fn DBUS_CXX_ITERATOR_SUPPORT(CppType,DBusType)
+ * \def DBUS_CXX_ITERATOR_SUPPORT(CppType,DBusType)
  * Provides support for unsupported types that can be cast to DBus supported types
  *
  * This macro provides message iterator and introspection support for types that are
