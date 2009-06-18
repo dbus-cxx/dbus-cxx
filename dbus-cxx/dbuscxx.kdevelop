@@ -16,7 +16,7 @@
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>tools/dbus-cxx-xml2cpp</activetarget>
+      <activetarget>examples/glibmm/glibmm-callee-dispatched</activetarget>
       <useconfiguration>default</useconfiguration>
     </general>
     <run>
@@ -42,6 +42,8 @@
         <dbus-cxx-unit-tests/>
         <callee_dispatched/>
         <caller_dispatched/>
+        <glibmm-caller-dispatched/>
+        <glibmm-callee-dispatched/>
       </runarguments>
       <customdirectory>/</customdirectory>
       <programargs/>
@@ -66,6 +68,8 @@
         <dbus-cxx-unit-tests/>
         <callee_dispatched/>
         <caller_dispatched/>
+        <glibmm-caller-dispatched/>
+        <glibmm-callee-dispatched/>
       </debugarguments>
       <cwd>
         <callee_simple>/home/rvinyard/projects/dbus-cxx/debug/./examples/basics</callee_simple>
@@ -80,6 +84,8 @@
         <dbus-cxx-unit-tests>/home/rvinyard/projects/dbus-cxx/debug/./examples/basics</dbus-cxx-unit-tests>
         <callee_dispatched>/home/rvinyard/projects/dbus-cxx/debug/./examples/basics</callee_dispatched>
         <caller_dispatched>/home/rvinyard/projects/dbus-cxx/debug/./examples/basics</caller_dispatched>
+        <glibmm-caller-dispatched>/home/rvinyard/projects/dbus-cxx/./tools</glibmm-caller-dispatched>
+        <glibmm-callee-dispatched>/home/rvinyard/projects/dbus-cxx/./tools</glibmm-callee-dispatched>
       </cwd>
     </run>
     <configurations>
@@ -101,7 +107,7 @@
         <f77flags/>
       </optimized>
       <debug>
-        <configargs>--enable-debug=full --enable-examples --enable-unit-tests --enable-debug-output --enable-tools</configargs>
+        <configargs>--enable-debug=full --enable-examples --enable-unit-tests --enable-debug-output --enable-tools --enable-glibmm</configargs>
         <builddir>debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
@@ -119,7 +125,7 @@
       </debug>
       <default>
         <envvars/>
-        <configargs>--enable-doc --enable-examples --enable-unit-tests --enable-tools</configargs>
+        <configargs>--enable-doc --enable-examples --enable-unit-tests --enable-tools --enable-glibmm</configargs>
         <builddir/>
         <topsourcedir/>
         <cppflags/>
