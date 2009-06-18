@@ -9,6 +9,7 @@ Source:           http://downloads.sourceforge.net/dbus-cxx/dbus-cxx-%{version}.
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    dbus-devel >= 1.2
 BuildRequires:    libsigc++20-devel >= 2.0.0
+BuildRequires:    glibmm24-devel >= 2.4.0
 BuildRequires:    pkgconfig
 BuildRequires:    m4
 BuildRequires:    expat-devel
@@ -64,11 +65,36 @@ This package contains tools to assist with dbus-cxx application development.
 * dbus-cxx-introspect:
   Command line utility to simplify introspection
 
+%package          glibmm
+Summary:          Adds support to dbus-cxx (C++ bindings for dbus) for glibmm integration
+Group:            System Environment/Libraries
+Requires:         dbus-cxx = %{version}-%{release}
+
+%description      glibmm
+Adds support to dbus-cxx (C++ bindings for dbus) for glibmm integration.
+
+%package          glibmm-devel
+Summary:          Headers for developing programs that will use dbus-cxx-glibmm
+Group:            Development/Libraries
+Requires:         dbus-cxx-glibmm = %{version}-%{release}
+Requires:         dbus-cxx-devel = %{version}-%{release}
+Requires:         glibmm24-devel >= 2.4
+
+%description      glibmm-devel
+dbus-cxx provides C++ bindings for the dbus library. dbus-cxx-glibmm
+provides dbus-cxx a means of integrating with glibmm.
+
+Since gtkmm relies on glibmm for main-loop operations this library
+can also be used to integrate dbus-cxx with gtkmm applications.
+
+This package contains the libraries and header files needed for
+developing dbus-cxx-glibmm applications.
+
 %prep
 %setup -q
 
 %build
-%configure --enable-static=no --enable-tools
+%configure --enable-static=no --enable-tools --enable-glibmm
 %{__make} %{?_smp_mflags}
 
 %install
@@ -76,7 +102,6 @@ This package contains tools to assist with dbus-cxx application development.
 %{__make} DESTDIR=%{buildroot} INSTALL="%{__install} -p" install
 find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 
-# Fix documentation installation and put papyrus-gtkmm docs under gtk-doc
 %{__mkdir} -p %{buildroot}%{_datadir}/gtk-doc/html/dbus-cxx-API_VERSION/reference/html/
 %{__install} -p --mode=0664 -t %{buildroot}%{_datadir}/gtk-doc/html/dbus-cxx-API_VERSION/reference/html/ doc/reference/html/*
 %{__install} -p --mode=0664 -t %{buildroot}%{_datadir}/gtk-doc/html/dbus-cxx-API_VERSION/ doc/dbus-cxx-API_VERSION.devhelp
@@ -88,6 +113,10 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 
 %postun -p /sbin/ldconfig
 
+%post glibmm -p /sbin/ldconfig
+
+%postun glibmm -p /sbin/ldconfig
+
 %files
 %defattr(-,root,root,-)
 %{_libdir}/libdbus-cxx.so.*
@@ -97,7 +126,9 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 %defattr(-,root,root,-)
 %{_libdir}/libdbus-cxx.so
 %{_libdir}/pkgconfig/dbus-cxx-PKGCONFIG_VERSION.pc
-%{_includedir}/dbus-cxx-PACKAGE_RELEASE/
+%dir %{_includedir}/dbus-cxx-PACKAGE_RELEASE
+%{_includedir}/dbus-cxx-PACKAGE_RELEASE/dbus-cxx.h
+%{_includedir}/dbus-cxx-PACKAGE_RELEASE/dbus-cxx/
 %doc ChangeLog
 
 %files doc
@@ -109,7 +140,22 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 %{_bindir}/dbus-cxx-xml2cpp
 %{_bindir}/dbus-cxx-introspect
 
+%files glibmm
+%defattr(-,root,root,-)
+%{_libdir}/libdbus-cxx-glibmm.so.*
+
+%files glibmm-devel
+%defattr(-,root,root,-)
+%{_libdir}/libdbus-cxx-glibmm.so
+%{_libdir}/pkgconfig/dbus-cxx-glibmm-PKGCONFIG_VERSION.pc
+%{_includedir}/dbus-cxx-PACKAGE_RELEASE/dbus-cxx-glibmm.h
+%{_includedir}/dbus-cxx-PACKAGE_RELEASE/dbus-cxx-glibmm/
+
 %changelog
+* Thu Jun 18 2009 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.4.0-1
+- New release
+- Added glibmm subpackage
+
 * Wed Jun 17 2009 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.3.4-1
 - New release
 
