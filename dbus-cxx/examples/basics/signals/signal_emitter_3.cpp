@@ -39,8 +39,6 @@ int main()
 
   DBus::signal<void,std::string>::pointer signal = connection->create_signal<void,std::string>("/test/signal/Object", "test.signal.Type", "Test");
 
-  dispatcher.start();
-
   const char* sigvalue1 = "Hello";
   std::string sigvalue2("World");
 
@@ -51,8 +49,6 @@ int main()
   signal->emit( sigvalue2 );
 
   usleep(250000);
-
-  dispatcher.stop();
 
   return 0;
 }

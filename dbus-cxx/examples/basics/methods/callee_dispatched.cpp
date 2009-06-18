@@ -38,8 +38,6 @@ int main()
   
   conn->create_object("/dbuscxx/example/Calculator", reply_to_method_call);
 
-  dispatcher.start();
-  
   std::cout << "Running" << std::flush;
   
   for (int i=0; i < 10; i++)
@@ -48,8 +46,6 @@ int main()
     sleep(1);
   }
   
-  dispatcher.stop();
-
   std::cout << std::endl;
 
   return 0;

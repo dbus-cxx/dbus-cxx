@@ -45,8 +45,6 @@ int main()
   object->create_method<double,double,double>("Calculator.Basic", "mul", sigc::ptr_fun(multiply) );
   object->create_method<double,double,double>("Calculator.Basic", "div", sigc::ptr_fun(divide) );
 
-  dispatcher.start();
-  
   std::cout << "Running" << std::flush;
   
   for (int i=0; i < 10; i++)
@@ -55,8 +53,6 @@ int main()
     sleep(1);
   }
   
-  dispatcher.stop();
-
   std::cout << std::endl;
 
   return 0;

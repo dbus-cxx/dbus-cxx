@@ -36,8 +36,6 @@ int main()
   calculator->signal_calculation().connect( sigc::ptr_fun(print_calculation) );
   calculator->signal_computation().connect( sigc::ptr_fun(print_computation) );
 
-  dispatcher.start();
-
   std::cout << "Running" << std::flush;
   
   for (int i=0; i < 10; i++)
@@ -46,8 +44,6 @@ int main()
     sleep(1);
   }
   
-  dispatcher.stop();
-
   std::cout << std::endl;
 
   return 0;

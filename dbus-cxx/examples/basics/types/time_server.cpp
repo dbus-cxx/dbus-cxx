@@ -50,8 +50,6 @@ int main()
 
   object->create_method<struct timeval>("now", sigc::ptr_fun(now) );
 
-  dispatcher.start();
-  
   std::cout << "Running" << std::flush;
   
   for (int i=0; i < 20; i++)
@@ -60,8 +58,6 @@ int main()
     sleep(1);
   }
   
-  dispatcher.stop();
-
   std::cout << std::endl;
 
   return 0;

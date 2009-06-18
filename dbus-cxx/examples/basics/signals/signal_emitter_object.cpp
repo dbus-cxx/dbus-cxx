@@ -105,9 +105,6 @@ int main()
 
   conn->register_object( inherited );
 
-
-  dispatcher.start();
-  
   std::cout << "Running" << std::flush;
   
   for (int i=0; i < 10; i++)
@@ -116,8 +113,6 @@ int main()
     sleep(1);
   }
   
-  dispatcher.stop();
-
   std::cout << std::endl;
 
   return 0;
