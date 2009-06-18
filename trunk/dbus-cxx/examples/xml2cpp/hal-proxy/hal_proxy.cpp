@@ -37,8 +37,6 @@ int main()
   manager->signal_DeviceAdded().connect( sigc::ptr_fun(on_device_added) );
   manager->signal_DeviceRemoved().connect( sigc::ptr_fun(on_device_removed) );
 
-  dispatcher.start();
-
   std::cout << "Running" << std::flush;
   
   for (int i=0; i < 30; i++)
@@ -47,8 +45,6 @@ int main()
     sleep(1);
   }
   
-  dispatcher.stop();
-
   std::cout << std::endl;
 
   return 0;

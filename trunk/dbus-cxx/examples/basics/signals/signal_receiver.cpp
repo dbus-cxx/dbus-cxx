@@ -42,8 +42,6 @@ int main()
 
   signal->signal_dbus_incoming().connect( sigc::ptr_fun(print) );
 
-  dispatcher.start();
-
   std::cout << "Running" << std::flush;
   
   for (int i=0; i < 10; i++)
@@ -52,8 +50,6 @@ int main()
     sleep(1);
   }
   
-  dispatcher.stop();
-
   std::cout << std::endl;
 
   return 0;

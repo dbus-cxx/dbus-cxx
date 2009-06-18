@@ -41,8 +41,6 @@ int main()
   computer->signal_calculation().connect( sigc::ptr_fun(print_calculation) );
   computer->signal_operation().connect( sigc::ptr_fun(print_operation) );
 
-  dispatcher.start();
-
   std::cout << "Running" << std::flush;
   
   for (int i=0; i < 30; i++)
@@ -51,8 +49,6 @@ int main()
     sleep(1);
   }
   
-  dispatcher.stop();
-
   std::cout << std::endl;
 
   return 0;

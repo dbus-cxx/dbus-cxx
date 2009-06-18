@@ -54,8 +54,6 @@ int main()
   object->create_method<double,double,double>("mul", sigc::mem_fun(test, &Test::multiply) );
   object->create_method<double,double,double>("div", sigc::mem_fun(test, &Test::divide) );
 
-  dispatcher.start();
-  
   std::cout << "Running" << std::flush;
   
   for (int i=0; i < 10; i++)
@@ -64,8 +62,6 @@ int main()
     sleep(1);
   }
   
-  dispatcher.stop();
-
   std::cout << std::endl;
 
   return 0;
