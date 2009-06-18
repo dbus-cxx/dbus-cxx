@@ -32,4 +32,6 @@ glibmm_caller_dispatched_LDADD = \
 	$(top_builddir)/dbus-cxx-glibmm/libdbus-cxx-glibmm.la $(top_builddir)/dbus-cxx/libdbus-cxx.la $(DBUS_CXX_GLIBMM_LIBS) \
 	$(PROJECT_LIBS)
 
+noinst_HEADERS = caller_popt.h
+EXTRA_DIST = caller_popt.h
 endif
