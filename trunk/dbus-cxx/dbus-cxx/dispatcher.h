@@ -49,11 +49,17 @@ namespace DBus
   class Dispatcher
   {
     public:
+      
+      typedef DBusCxxPointer<Dispatcher> pointer;
+
+      typedef DBusCxxPointer<const Dispatcher> const_pointer;
 
       Dispatcher(bool is_running=true);
 
-      virtual ~Dispatcher();
+      static pointer create( bool is_running=true );
 
+      virtual ~Dispatcher();
+      
       /** @name Managing Connections */
       //@{
 

@@ -52,6 +52,11 @@ namespace DBus
 
     if ( is_running ) this->start();
   }
+  
+  Dispatcher::pointer Dispatcher::create( bool is_running )
+  {
+    return pointer( new Dispatcher(is_running) );
+  }
 
   Dispatcher::~Dispatcher()
   {

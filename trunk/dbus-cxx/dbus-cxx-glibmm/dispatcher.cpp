@@ -47,6 +47,16 @@ namespace DBus
       m_glibmm_dispatcher.connect( sigc::mem_fun(*this, &DBus::Glib::Dispatcher::on_glibmm_dispatch) );
       if ( is_running ) this->start();
     }
+    
+    Dispatcher::pointer Dispatcher::create( bool is_running )
+    {
+      return pointer( new Dispatcher(is_running) );
+    }
+
+    Dispatcher::pointer Dispatcher::create(bool is_running, const ::Glib::RefPtr< ::Glib::MainContext > & context)
+    {
+      return pointer( new Dispatcher(is_running, context) );
+    }
 
     Dispatcher::~Dispatcher()
     {

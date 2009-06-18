@@ -44,9 +44,17 @@ namespace DBus
     {
       public:
 
+        typedef DBusCxxPointer<Dispatcher> pointer;
+
+        typedef DBusCxxPointer<const Dispatcher> const_pointer;
+
         Dispatcher(bool is_running=true);
         
         Dispatcher(bool is_running, const ::Glib::RefPtr< ::Glib::MainContext >& context );
+
+        static pointer create( bool is_running=true );
+
+        static pointer create( bool is_running, const ::Glib::RefPtr< ::Glib::MainContext >& context );
 
         virtual ~Dispatcher();
 
