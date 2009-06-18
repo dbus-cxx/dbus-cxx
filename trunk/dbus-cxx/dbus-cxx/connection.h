@@ -532,9 +532,11 @@ namespace DBus
    * \par
    * Fedora package description
    * - \b dbus-cxx - Libraries needed to run applications
-   * - \b dbus-cxx-devel - Headers, libraries and documentation for developing applications with dbus-cxx
+   * - \b dbus-cxx-devel - Headers and libraries for developing applications with dbus-cxx
    * - \b dbus-cxx-doc - Developer's documentation including devhelp docs
    * - \b dbus-cxx-tools - Development tools, et. al. such as \c dbus-cxx-xml2cpp
+   * - \b dbus-cxx-glibmm - Libraries need to run applications that integrate dbus-cxx into glibmm
+   * - \b dbus-cxx-glibmm-devel - Headers and libraries for developing applications that will integrate dbus-cxx into glibmm
    *
    * \htmlonly <img src="sourcecode-small.png" alt=""/> \endhtmlonly
    * \par Source Code
