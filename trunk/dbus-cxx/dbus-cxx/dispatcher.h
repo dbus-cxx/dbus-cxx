@@ -50,7 +50,7 @@ namespace DBus
   {
     public:
 
-      Dispatcher();
+      Dispatcher(bool is_running=true);
 
       virtual ~Dispatcher();
 
@@ -124,7 +124,7 @@ namespace DBus
       pthread_cond_t m_cond_initiate_processing;
       pthread_mutex_t m_mutex_initiate_processing;
       
-      void dispatch_thread_main();
+      virtual void dispatch_thread_main();
       
       void watch_thread_main();
       
