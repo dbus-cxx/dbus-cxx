@@ -28,7 +28,7 @@
 namespace DBus
 {
 
-  Dispatcher::Dispatcher():
+  Dispatcher::Dispatcher(bool is_running):
       m_running(false),
       m_dispatch_thread(0),
       m_watch_thread(0),
@@ -49,10 +49,13 @@ namespace DBus
     
     m_responsiveness.tv_sec = 0;
     m_responsiveness.tv_usec = 100000;
+
+    if ( is_running ) this->start();
   }
 
   Dispatcher::~Dispatcher()
   {
+    if ( this->is_running() ) this->stop();
   }
 
   Connection::pointer Dispatcher::create_connection(DBusConnection * cobj, bool is_private)
@@ -129,7 +132,10 @@ namespace DBus
     m_running = false;
 
     // The dispach thread may be sleeping, let's wake it up so it will terminate
+    // We'll wrap this in mutexes to ensure that there isn't a race condition in waking up
+    pthread_mutex_lock( &m_mutex_initiate_processing );
     pthread_cond_broadcast( &m_cond_initiate_processing );
+    pthread_mutex_unlock( &m_mutex_initiate_processing );
     
     pthread_join( m_dispatch_thread, NULL );
     pthread_join( m_watch_thread, NULL );
@@ -251,9 +257,6 @@ namespace DBus
           }
         }
 
-        // HACK why does this need to be here?
-        // sends call wakeup main, but dispatch doesn't take care of them
-        (*ci)->flush();
       }
       
     }
@@ -267,6 +270,7 @@ namespace DBus
     std::set<int>::iterator fditer;
     std::map<int,Watch::pointer>::iterator witer;
     struct timeval timeout;
+    bool no_watches;
     
     while ( m_running )
     {
@@ -276,6 +280,7 @@ namespace DBus
       pthread_mutex_lock( &m_mutex_write_watches );
       read_fds = m_read_fd_set;
       write_fds = m_write_fd_set;
+      no_watches = m_enabled_read_fds.empty() and m_enabled_write_fds.empty();
       // We can go ahead and unlock here since we have copies of the fds and the maximums from the read/write sets
       pthread_mutex_unlock( &m_mutex_read_watches );
       pthread_mutex_unlock( &m_mutex_write_watches );
@@ -283,7 +288,13 @@ namespace DBus
       // Get the max fd from the max between the read and write sets
       max_fd = std::max(m_maximum_read_fd, m_maximum_write_fd);
 
-      // TODO handle the case where we have no watches
+      // If we have no watches we'll sleep for the timeout period and continue the loop
+      if ( no_watches )
+      {
+        sleep( m_responsiveness.tv_sec );
+        usleep( m_responsiveness.tv_usec );
+        continue;
+      }
       
       // Now we'll wait in the select call for activity or a timeout
       timeout = m_responsiveness;
