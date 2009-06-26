@@ -674,6 +674,8 @@ namespace DBus
    *   - \b ignored - If set to "1" this signal will not be built for the proxy or adapter
    * - \b method
    *   - \b cppname - Renames the DBus method to the provided name in the proxy and adapter
+   *   - \b const - Makes the proxy method a const method (useful when subclassing virtual methods)
+   *   - \b virtual - Prefixes the method with keyword virtual (useful for improving readability of virtual methods)
    * - \b arg
    *   - \b cpptype - Defines the C++ type to be used when creating proxies/adapters for this argument. Useful for wrapping enumerations.
    */
