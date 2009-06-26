@@ -16,7 +16,7 @@
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>examples/glibmm/glibmm-callee-dispatched</activetarget>
+      <activetarget>tools/dbus-cxx-xml2cpp</activetarget>
       <useconfiguration>default</useconfiguration>
     </general>
     <run>
@@ -38,7 +38,7 @@
         <dbus-cxx-introspect>--system --dest=&quot;org.freedesktop.Hal&quot; &quot;/org/freedesktop/Hal/Manager&quot;</dbus-cxx-introspect>
         <hal-query/>
         <hal-property/>
-        <dbus-cxx-xml2cpp>-f dbus-hal-manager.xml</dbus-cxx-xml2cpp>
+        <dbus-cxx-xml2cpp>--proxy --xml test.xml</dbus-cxx-xml2cpp>
         <dbus-cxx-unit-tests/>
         <callee_dispatched/>
         <caller_dispatched/>
@@ -64,7 +64,7 @@
         <hal-query/>
         <hal-listen/>
         <hal-property/>
-        <dbus-cxx-xml2cpp>-f dbus-hal-manager.xml</dbus-cxx-xml2cpp>
+        <dbus-cxx-xml2cpp>--proxy --xml test.xml</dbus-cxx-xml2cpp>
         <dbus-cxx-unit-tests/>
         <callee_dispatched/>
         <caller_dispatched/>

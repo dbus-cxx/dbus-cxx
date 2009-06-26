@@ -22,7 +22,7 @@
 #########################################################################
 pushdef([PACKAGE_MAJOR_VERSION], [0])
 pushdef([PACKAGE_MINOR_VERSION], [4])
-pushdef([PACKAGE_MICRO_VERSION], [0])
+pushdef([PACKAGE_MICRO_VERSION], [1])
 pushdef([PKG_VERSION], PACKAGE_MAJOR_VERSION.PACKAGE_MINOR_VERSION.PACKAGE_MICRO_VERSION)
 
 AC_INIT([dbus-cxx], PKG_VERSION, [rvinyard@cs.nmsu.edu])
@@ -228,7 +228,7 @@ AC_ARG_ENABLE([debug-output],[AS_HELP_STRING([--enable-debug-output],[Enable deb
 AC_OUTPUT(Makefile dbus-cxx-1.0.pc dbus-cxx-glibmm-1.0.pc dbus-cxx-glibmm/Makefile \
 	dbus-cxx/Makefile doc/Makefile examples/Makefile examples/basics/Makefile \
 	examples/basics/methods/Makefile examples/basics/signals/Makefile examples/basics/types/Makefile \
-	examples/glibmm/Makefile examples/xml2cpp/Makefile examples/xml2cpp/calculator/Makefile \
-	examples/xml2cpp/computer-has-a/Makefile examples/xml2cpp/computer-is-a/Makefile \
-	examples/xml2cpp/hal-proxy/Makefile tools/Makefile unit-tests/Makefile)
+	examples/glibmm/Makefile examples/xml2cpp/Makefile examples/xml2cpp/calculator-interface/Makefile \
+	examples/xml2cpp/calculator/Makefile examples/xml2cpp/computer-has-a/Makefile \
+	examples/xml2cpp/computer-is-a/Makefile examples/xml2cpp/hal-proxy/Makefile tools/Makefile unit-tests/Makefile)
 

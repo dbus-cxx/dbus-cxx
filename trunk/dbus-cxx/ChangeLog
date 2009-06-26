@@ -1,5 +1,34 @@
+2009-06-26  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* tools/generate_proxy.cpp, tools/parsed_object.cpp,
+	  tools/parsed_object.h, tools/xml2cpp.cpp, tools/xml_parser.cpp:
+	  Added support to dbus-cxx-xml2cpp for proxies based on virtual
+	  interfaces
+	* examples/xml2cpp/Makefile.am,
+	  examples/xml2cpp/calculator/calculator_client.cpp,
+	  examples/xml2cpp/computer-has-a/computer_client.cpp,
+	  examples/xml2cpp/computer-is-a/computer_client.cpp:
+	* examples/xml2cpp/calculator-interface,
+	  examples/xml2cpp/calculator-interface/Makefile.am,
+	  examples/xml2cpp/calculator-interface/README,
+	  examples/xml2cpp/calculator-interface/calculator.cpp,
+	  examples/xml2cpp/calculator-interface/calculator.h,
+	  examples/xml2cpp/calculator-interface/calculator.xml,
+	  examples/xml2cpp/calculator-interface/calculator_client.cpp,
+	  examples/xml2cpp/calculator-interface/calculator_interface.h,
+	  examples/xml2cpp/calculator-interface/calculator_server.cpp,
+	  examples/xml2cpp/calculator-interface/calculator_watcher.cpp,
+	  examples/xml2cpp/calculator-interface/client_popt.h: Added
+	  example of generating a proxy from a virtual parent interface
+	* dbus-cxx/connection.h: Documentation
+	* dbus-cxx/methodbase.h: Added missing return value to base
+	  introspect method
+	* dbus-cxx/dbus_signal.h.m4: Cleaned up warning about unused value
+	  when debugging is turned off
+
 2009-06-18  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
+	* ChangeLog, dbuscxx.kdevelop: 0.4.0
 	* examples/glibmm/caller_popt.h:
 	* examples/glibmm/Makefile.am:
 	* dbus-cxx-glibmm/dispatcher.cpp, dbus-cxx-glibmm/dispatcher.h,
