@@ -67,10 +67,17 @@ Direction Arg::direction()
 //   return "static_cast< " + cpp_dbus_type() + " >( " + var + " )";
 // }
 
-std::string Arg::cpp_type()
+std::string Arg::cpp_type(ProxyAdapter pa)
 {
-  if ( cpp_type_override.empty() ) return cpp_dbus_type();
-  return cpp_type_override;
+  std::string type;
+  
+  if ( cpp_type_override.empty() ) type = cpp_dbus_type();
+  else type = cpp_type_override;
+
+  if ( pa == PROXY_PARAM and is_const ) type = "const " + type;
+  if ( pa == PROXY_PARAM and is_ref )   type = type + "&";
+
+  return type;
 }
 
 std::string Arg::cpp_dbus_type()
@@ -151,18 +158,18 @@ std::string Method::strfmt( int depth )
   return sout.str();
 }
 
-std::string Method::cpp_creation()
+std::string Method::cpp_adapter_create()
 {
   std::string s;
   if ( args_valid() ) {
-    s = varname() + " = this->create_method<";
+    s = varname() + " = this->create_method< ";
     if ( out_args.size() == 0 )
       s += "void";
     else
-      s += out_args[0].cpp_type();
+      s += out_args[0].cpp_type(PROXY_RET);
     for ( unsigned int i = 0; i < in_args.size(); i++ )
-      s += "," + in_args[i].cpp_type();
-    s += ">( ";
+      s += "," + in_args[i].cpp_type(PROXY_PARAM);
+    s += " >( ";
     if ( interface != NULL )
       s += "\"" + interface->name() + "\", ";
     s += "\"" + name + "\" );";
@@ -170,18 +177,21 @@ std::string Method::cpp_creation()
   return s;
 }
 
-std::string Method::cpp_proto()
+std::string Method::cpp_proxy_method()
 {
   std::ostringstream sout;
   if ( args_valid() ) {
+    if ( is_virtual ) sout << "virtual ";
     if ( out_args.size() == 0 )
       sout << "void";
     else
-      sout << out_args[0].cpp_type();
-    sout << " " << name << "(";
+      sout << out_args[0].cpp_type(PROXY_RET);
+    sout << " " << get_name() << "(";
     for ( unsigned int i = 0; i < in_args.size(); i++ )
-      sout << (( i==0 )?" ":", " ) << in_args[i].cpp_type() << " " << in_args[i].name();
-    sout << " ) { return ";
+      sout << (( i==0 )?" ":", " ) << in_args[i].cpp_type(PROXY_PARAM) << " " << in_args[i].name();
+    sout << " )";
+    if ( is_const ) sout << " const";
+    sout << " { return ";
     sout << "(*" << varname() << ")(";
     for ( unsigned int i = 0; i < in_args.size(); i++ )
       sout << (( i==0 )?" ":", " ) << in_args[i].name();
@@ -194,7 +204,7 @@ std::string Method::cpp_proto()
   return sout.str();
 }
 
-std::string Method::cpp_decl()
+std::string Method::cpp_declare_proxy()
 {
   std::string s;
   if ( args_valid() ) {
@@ -202,9 +212,9 @@ std::string Method::cpp_decl()
     if ( out_args.size() == 0 )
       s += "void";
     else
-      s += out_args[0].cpp_type();
+      s += out_args[0].cpp_type(PROXY_RET);
     for ( unsigned int i = 0; i < in_args.size(); i++ )
-      s += "," + in_args[i].cpp_type();
+      s += "," + in_args[i].cpp_type(PROXY_PARAM);
     s += ">::pointer " + varname() + ";";
   }
   return s;
@@ -228,9 +238,9 @@ std::string Method::cpp_adapter_creation()
     if ( out_args.size() == 0 )
       sout << "void";
     else
-      sout << out_args[0].cpp_type();
+      sout << out_args[0].cpp_type(ADAPTER_RET);
     for ( unsigned int i = 0; i < in_args.size(); i++ )
-      sout << "," << in_args[i].cpp_type();
+      sout << "," << in_args[i].cpp_type(ADAPTER_PARAM);
     sout << ">( ";
     if ( interface != NULL )
       sout << "\"" << interface->name() << "\", ";
@@ -266,10 +276,10 @@ std::string Method::cpp_adapter_stub()
     if ( out_args.size() == 0 )
       sout << "void";
     else
-      sout << out_args[0].cpp_type();
+      sout << out_args[0].cpp_type(ADAPTER_RET);
     sout << " " << stubname() << "(";
     for ( unsigned int i = 0; i < in_args.size(); i++ )
-      sout << (( i==0 )?" ":", " ) << in_args[i].cpp_type() << " " << in_args[i].name();
+      sout << (( i==0 )?" ":", " ) << in_args[i].cpp_type(ADAPTER_PARAM) << " " << in_args[i].name();
     sout << " ) { this->check_adaptee(); ";
     if (out_args.size() != 0 ) sout << "return ";
     sout << "m_adaptee->";
@@ -332,13 +342,13 @@ std::map<std::string,std::string> Method::iterator_support()
   return need_support;
 }
 
-std::string Signal::cpp_creation()
+std::string Signal::cpp_adapter_create()
 {
   std::ostringstream sout;
   if ( args_valid() ) {
     sout << varname() << " = this->create_signal<void";
     for ( size_t i = 0; i < args.size(); i++ )
-      sout << "," << args[i].cpp_type();
+      sout << "," << args[i].cpp_type(ADAPTER_PARAM);
     sout << ">( ";
     if ( interface == NULL ) throw("bad signal interface");
     sout << "\"" << interface->name() << "\", ";
@@ -360,13 +370,13 @@ std::vector<std::string> Signal::proxy_arg_names()
   return decls;
 }
 
-std::string Signal::cpp_proto()
+std::string Signal::cpp_proxy_accessor()
 {
   std::ostringstream sout;
   if ( args_valid() ) {
     sout << "::DBus::signal_proxy<void";
     for ( unsigned int i = 0; i < args.size(); i++ )
-      sout << "," << args[i].cpp_type();
+      sout << "," << args[i].cpp_type(PROXY_PARAM);
     sout << " >& signal_" << name << "() { return *" << varname() << "; }";
   }
   else {
@@ -375,13 +385,13 @@ std::string Signal::cpp_proto()
   return sout.str();
 }
 
-std::string Signal::cpp_decl()
+std::string Signal::cpp_declare_proxy()
 {
   std::string s;
   if ( args_valid() ) {
     s = "::DBus::signal_proxy<void";
     for ( unsigned int i = 0; i < args.size(); i++ )
-      s += "," + args[i].cpp_type();
+      s += "," + args[i].cpp_type(PROXY_PARAM);
     s += ">::pointer " + varname() + ";";
   }
   return s;
@@ -411,7 +421,7 @@ std::string Signal::adapter_signal_create()
   std::ostringstream sout;
   if ( args_valid() ) {
     sout << adapter_name() << " = this->create_signal<void";
-    for ( unsigned int i=0; i < args.size(); i++ ) sout << "," << args[i].cpp_type();
+    for ( unsigned int i=0; i < args.size(); i++ ) sout << "," << args[i].cpp_type(ADAPTER_PARAM);
     sout << ">(\"" << interface->name() << "\",\"" << name << "\");";
   }
   return sout.str();
@@ -435,7 +445,7 @@ std::string Signal::adapter_signal_declare()
   std::ostringstream sout;
   if ( args_valid() ) {
     sout << "::DBus::signal<void";
-    for ( unsigned int i = 0; i < args.size(); i++ ) sout << "," << args[i].cpp_type();
+    for ( unsigned int i = 0; i < args.size(); i++ ) sout << "," << args[i].cpp_type(ADAPTER_PARAM);
     sout << ">::pointer " << adapter_name() << ";";
   }
   return sout.str();
@@ -479,48 +489,48 @@ std::string Interface::strfmt( int depth )
   return sout.str();
 }
 
-std::vector< std::string > Interface::cpp_method_creation()
+std::vector< std::string > Interface::cpp_adapter_methods_signals_create()
 {
   std::vector<std::string> strings;
   for ( unsigned int i = 0; i < methods.size(); i++ ) {
     methods[i].interface = this;
     if ( methods[i].args_valid() )
-      strings.push_back( methods[i].cpp_creation() );
+      strings.push_back( methods[i].cpp_adapter_create() );
   }
   for ( unsigned int i = 0; i < signals.size(); i++ ) {
     signals[i].interface = this;
     if ( signals[i].args_valid() )
-      strings.push_back( signals[i].cpp_creation() );
+      strings.push_back( signals[i].cpp_adapter_create() );
   }
   return strings;
 }
 
-std::vector< std::string > Interface::cpp_method_proto()
+std::vector< std::string > Interface::cpp_proxy_methods_signals()
 {
   std::vector<std::string> strings;
   for ( unsigned int i = 0; i < methods.size(); i++ ) {
     methods[i].interface = this;
-    strings.push_back( methods[i].cpp_proto() );
+    strings.push_back( methods[i].cpp_proxy_method() );
   }
   for ( unsigned int i = 0; i < signals.size(); i++ ) {
     signals[i].interface = this;
-    strings.push_back( signals[i].cpp_proto() );
+    strings.push_back( signals[i].cpp_proxy_accessor() );
   }
   return strings;
 }
 
-std::vector< std::string > Interface::cpp_method_decl()
+std::vector< std::string > Interface::cpp_declare_proxy_objects()
 {
   std::vector<std::string> strings;
   for ( unsigned int i = 0; i < methods.size(); i++ ) {
     methods[i].interface = this;
     if ( methods[i].args_valid() )
-      strings.push_back( methods[i].cpp_decl() );
+      strings.push_back( methods[i].cpp_declare_proxy() );
   }
   for ( unsigned int i = 0; i < signals.size(); i++ ) {
     signals[i].interface = this;
     if ( signals[i].args_valid() )
-      strings.push_back( signals[i].cpp_decl() );
+      strings.push_back( signals[i].cpp_declare_proxy() );
   }
   return strings;
 }
@@ -716,5 +726,34 @@ std::map<std::string,std::string> Node::iterator_support()
   return need_support;
 }
 
+std::vector< std::string > Node::other_proxy_parents()
+{
+  std::vector<std::string> result;
+  size_t last = 0;
+  for ( size_t i=0; i < other_proxy_parents_str.size(); i++ )
+  {
+    if ( i != 0 and other_proxy_parents_str[i] == ';' )
+    {
+      std::string parent = other_proxy_parents_str.substr(last, i);
+      result.push_back(parent);
+      last = i+1;
+    }
+  }
+  return result;
+}
 
-
+std::vector< std::string > Node::other_proxy_parent_includes()
+{
+  std::vector<std::string> result;
+  size_t last = 0;
+  for ( size_t i=0; i < other_proxy_parent_includes_str.size(); i++ )
+  {
+    if ( i != 0 and other_proxy_parent_includes_str[i] == ';' )
+    {
+      std::string incl = other_proxy_parent_includes_str.substr(last, i);
+      result.push_back(incl);
+      last = i+1;
+    }
+  }
+  return result;
+}

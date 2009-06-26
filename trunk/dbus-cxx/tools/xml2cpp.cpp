@@ -90,6 +90,8 @@ int main( int argc, const char** argv )
 
 //     std::cout << "Nodes: " << nodes.size() << std::endl;
 
+//     std::cout << "Parsed" << std::endl;
+
     for ( int i = 0; i < nodes.size(); i++ )
     {
       proxy_h.clear();

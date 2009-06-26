@@ -63,6 +63,10 @@ std::string generate_proxy_h(Node n)
 
   if ( not n.proxy_parent_include.empty() )
     sout << "#include " << n.proxy_parent_include << "\n\n";
+
+  std::vector<std::string> oppi = n.other_proxy_parent_includes();
+  for ( std::vector<std::string>::iterator i = oppi.begin(); i != oppi.end(); i++ )
+    sout << "#include " << *i << "\n";
   
   for ( std::vector<Node>::iterator i = n.children.begin(); i != n.children.end(); i++ )
   {
@@ -89,10 +93,16 @@ std::string generate_proxy_h(Node n)
 
   // Class declaration
   if ( inherit_from_dbus_objectproxy )
-    sout << class_indent << "class " << n.proxy_name() << " : public ::DBus::ObjectProxy\n";
+    sout << class_indent << "class " << n.proxy_name() << " : public ::DBus::ObjectProxy";
   else
-    sout << class_indent << "class " << n.proxy_name() << " : public " << n.proxy_parent << "\n";
+    sout << class_indent << "class " << n.proxy_name() << " : public " << n.proxy_parent;
 
+  std::vector<std::string> opp = n.other_proxy_parents();
+  for ( std::vector<std::string>::iterator i = opp.begin(); i != opp.end(); i++ )
+    sout << ", public " << *i;
+
+  sout << "\n";
+  
   sout << class_indent << "{\n"
        << class_indent << tab << "protected:\n"
        << decl_indent << n.proxy_name() << "( ::DBus::Connection::pointer conn, const std::string& dest=\""
@@ -119,7 +129,7 @@ std::string generate_proxy_h(Node n)
   for ( int i=0; i < n.interfaces.size(); i++ )
   {
     if ( n.interfaces[i].ignored ) continue;
-    std::vector<std::string> decls = n.interfaces[i].cpp_method_creation();
+    std::vector<std::string> decls = n.interfaces[i].cpp_adapter_methods_signals_create();
     for ( int k=0; k < decls.size(); k++ )
       sout << decl_indent << tab << decls[k] << "\n";
   }
@@ -142,7 +152,7 @@ std::string generate_proxy_h(Node n)
   for ( int i=0; i < n.interfaces.size(); i++ )
   {
     if ( n.interfaces[i].ignored ) continue;
-    std::vector<std::string> decls = n.interfaces[i].cpp_method_proto();
+    std::vector<std::string> decls = n.interfaces[i].cpp_proxy_methods_signals();
     for ( int k=0; k < decls.size(); k++ )
       sout << decl_indent << decls[k] << "\n\n";
   }
@@ -157,7 +167,7 @@ std::string generate_proxy_h(Node n)
   for ( size_t i=0; i < n.interfaces.size(); i++ )
   {
     if ( n.interfaces[i].ignored ) continue;
-    std::vector<std::string> decls = n.interfaces[i].cpp_method_decl();
+    std::vector<std::string> decls = n.interfaces[i].cpp_declare_proxy_objects();
     for ( int k=0; k < decls.size(); k++ )
       sout << decl_indent << decls[k] << "\n";
     sout << "\n";
