@@ -37,18 +37,22 @@ inline void out_tabs( std::ostream& out, int depth )
   for ( int i=0; i < depth; i++ ) out << "  ";
 }
 
+typedef enum ProxyAdapter { PROXY_RET, PROXY_PARAM, ADAPTER_RET, ADAPTER_PARAM } ProxyAdapter;
+
 struct Arg {
-  Arg() { }
+  Arg(): is_const(false), is_ref(false) { }
   
   std::string dbus_name;
   std::string cxx_name;
   std::string direction_string;
   std::string cpp_type_override;
   DBus::Signature signature;
+  bool is_const;
+  bool is_ref;
 
   std::string name() { if ( cxx_name.empty() ) return dbus_name; return cxx_name; }
   Direction direction();
-  std::string cpp_type();
+  std::string cpp_type(ProxyAdapter pa);
 //   std::string cpp_cast(const std::string& var);
 //   std::string dbus_cast(const std::string& var);
   std::string cpp_dbus_type();
@@ -57,16 +61,18 @@ struct Arg {
   std::string strfmt(int depth=0);
 
   bool need_iterator_support() { return not cpp_type_override.empty(); }
-  std::pair<std::string,std::string> iterator_support() { return std::make_pair(cpp_type(), cpp_dbus_type()); }
+  std::pair<std::string,std::string> iterator_support() { return std::make_pair(cpp_type(ADAPTER_RET), cpp_dbus_type()); }
 };
 
 struct Interface;
 
 struct Method {
-  Method():interface(NULL) { }
+  Method():interface(NULL), is_const(false), is_virtual(false) { }
   Interface* interface;
   std::string name;
   std::string cppname;
+  bool is_const;
+  bool is_virtual;
 
   std::vector<Arg> in_args;
   std::vector<Arg> out_args;
@@ -75,12 +81,14 @@ struct Method {
 
   std::vector<std::string> adapter_arg_names();
 
+  std::string get_name() { if ( cppname.empty() ) return name; return cppname; }
+
   std::string stubsignature();
   std::string stubname() { return name + "_adapter_stub_" + stubsignature(); }
   std::string varname()  { return "m_method_" + name + "_" + stubsignature(); }
-  std::string cpp_creation();
-  std::string cpp_proto();
-  std::string cpp_decl();
+  std::string cpp_adapter_create();
+  std::string cpp_proxy_method();
+  std::string cpp_declare_proxy();
   std::string cpp_adapter_creation();
   std::string cpp_adapter_stub();
   bool args_valid();
@@ -101,11 +109,11 @@ struct Signal {
   std::string varname() { return "m_signal_" + name; }
   std::string adapter_name() { return "m_signal_adapter_" + name; }
   std::string adapter_conn_name() { return "m_signal_adapter_connection_" + name; }
-  std::string cpp_creation();
+  std::string cpp_adapter_create();
   std::vector<std::string> proxy_arg_names();
   std::vector<std::string> adapter_arg_names();
-  std::string cpp_proto();
-  std::string cpp_decl();
+  std::string cpp_proxy_accessor();
+  std::string cpp_declare_proxy();
   std::string adapter_signal_create();
   std::string adapter_signal_declare();
   std::string adapter_signal_conn_declare() { if (args_valid()) return "sigc::connection " + adapter_conn_name() + ";"; return ""; }
@@ -133,9 +141,9 @@ struct Interface {
 
   std::string name() { if ( not cxx_name.empty() ) return cxx_name; return dbus_name; }
 
-  std::vector<std::string> cpp_method_creation();
-  std::vector<std::string> cpp_method_proto();
-  std::vector<std::string> cpp_method_decl();
+  std::vector<std::string> cpp_adapter_methods_signals_create();
+  std::vector<std::string> cpp_proxy_methods_signals();
+  std::vector<std::string> cpp_declare_proxy_objects();
   std::vector<std::string> cpp_adapter_creation();
   std::vector<std::string> cpp_adapter_stubs();
   std::vector<std::string> cpp_adapter_signal_connection();
@@ -162,6 +170,12 @@ struct Node {
   std::string adapter_parent_include;
   std::string proxy_parent;
   std::string proxy_parent_include;
+
+  std::string other_proxy_parents_str;
+  std::string other_proxy_parent_includes_str;
+
+  std::vector<std::string> other_proxy_parents();
+  std::vector<std::string> other_proxy_parent_includes();
 
   std::string adapter_include;
   std::string adapter;
