@@ -67,9 +67,9 @@ int main(int argc, const char** argv)
   print_last_op(computer);
 
   if      ( strcmp(op,"add")         == 0 ) { answer = computer->add(param1,param2); std::cout << param1 << " + " << param2 << " = " << answer << std::endl; }
-  else if ( strcmp(op,"sub")         == 0 ) { answer = computer->sub(param1,param2); std::cout << param1 << " - " << param2 << " = " << answer << std::endl; }
-  else if ( strcmp(op,"mul")         == 0 ) { answer = computer->mul(param1,param2); std::cout << param1 << " * " << param2 << " = " << answer << std::endl; }
-  else if ( strcmp(op,"div")         == 0 ) { answer = computer->div(param1,param2); std::cout << param1 << " / " << param2 << " = " << answer << std::endl; }
+  else if ( strcmp(op,"sub")         == 0 ) { answer = computer->subtract(param1,param2); std::cout << param1 << " - " << param2 << " = " << answer << std::endl; }
+  else if ( strcmp(op,"mul")         == 0 ) { answer = computer->multiply(param1,param2); std::cout << param1 << " * " << param2 << " = " << answer << std::endl; }
+  else if ( strcmp(op,"div")         == 0 ) { answer = computer->divide(param1,param2); std::cout << param1 << " / " << param2 << " = " << answer << std::endl; }
   else if ( strcmp(op,"pi")          == 0 ) { answer = computer->pi();               std::cout << "pi = " << answer << std::endl; }
   else if ( strcmp(op,"print-pi")    == 0 ) { computer->print_pi();                  std::cout << "printed pi on server" << std::endl; }
   else if ( strcmp(op,"factorial")   == 0 ) { result = computer->factorial(param1);  std::cout << (uint64_t)param1 << "! = " << result << std::endl; }
