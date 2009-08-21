@@ -188,7 +188,7 @@ AC_SUBST(PKGCONFIG_REQUIRES)
 AC_SUBST(PROJECT_LIBS)
 AC_SUBST(PROJECT_CFLAGS)
 
-AC_ARG_ENABLE([doc],[AS_HELP_STRING([--enable-doc],[Build documentation [default=no]])],[enable_doc=$enableval],[enable_doc=no)
+AC_ARG_ENABLE([doc],[AS_HELP_STRING([--enable-doc],[Build documentation [default=no]])],[enable_doc=$enableval],[enable_doc=no])
 AM_CONDITIONAL(DBUS_CXX_DOC, [test "x${enable_doc}" == xyes])
 
 AC_ARG_ENABLE([glibmm],[AS_HELP_STRING([--enable-glibmm],[Build glibmm support [default=no]])],[enable_glibmm=set])
