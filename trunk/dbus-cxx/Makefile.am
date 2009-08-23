@@ -22,7 +22,20 @@ ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = dbus-cxx.spec \
 	m4/ac_cxx_compile_stdcxx_0x.m4 \
 	m4/ax_prefix_config_h.m4 \
-	ax_dbus_cxx_xml2cpp.m4
+	ax_dbus_cxx_xml2cpp.m4 \
+	debian/changelog                debian/dbus-cxx-glibmm0.dirs		\
+	debian/compat                   debian/dbus-cxx-glibmm0.install		\
+	debian/control                  debian/dbus-cxx-glibmm-dev.dirs		\
+	debian/control.m4               debian/dbus-cxx-glibmm-dev.install	\
+	debian/copyright                debian/dbus-cxx-glibmm-dev.install.m4	\
+	debian/dbus-cxx0.dirs           debian/dbus-cxx-tools.dirs		\
+	debian/dbus-cxx0.install        debian/dbus-cxx-tools.install		\
+	debian/dbus-cxx-dev.dirs        debian/dirs				\
+	debian/dbus-cxx-dev.install     debian/docs				\
+	debian/dbus-cxx-dev.install.m4  debian/rules				\
+	debian/dbus-cxx-doc.install     debian/rules.m4				\
+	debian/dbus-cxx-doc.install.m4
+
 
 SUBDIRS = dbus-cxx dbus-cxx-glibmm tools doc examples unit-tests
 
@@ -78,3 +91,45 @@ srpm: spec dist-bzip2
 mockbuild: srpm
 	mock --rebuild ~/rpmbuild/SRPMS/$(PACKAGE)-$(VERSION)*.src.rpm
 
+
+debfiles:
+	m4 -D PACKAGE_VERSION=$(PACKAGE_VERSION) \
+		-D PACKAGE_RELEASE=$(PACKAGE_RELEASE) \
+		-D PKGCONFIG_VERSION=$(PKGCONFIG_VERSION) \
+		-D API_VERSION=$(PACKAGE_RELEASE) \
+		-D PACKAGE_MAJOR=$(PACKAGE_MAJOR_VERSION) \
+		debian/control.m4 >debian/control
+	m4 -D PACKAGE_VERSION=$(PACKAGE_VERSION) \
+		-D PACKAGE_RELEASE=$(PACKAGE_RELEASE) \
+		-D PKGCONFIG_VERSION=$(PKGCONFIG_VERSION) \
+		-D API_VERSION=$(PACKAGE_RELEASE) \
+		-D PACKAGE_MAJOR=$(PACKAGE_MAJOR_VERSION) \
+		debian/dbus-cxx-dev.install.m4 >debian/dbus-cxx-dev.install
+	m4 -D PACKAGE_VERSION=$(PACKAGE_VERSION) \
+		-D PACKAGE_RELEASE=$(PACKAGE_RELEASE) \
+		-D PKGCONFIG_VERSION=$(PKGCONFIG_VERSION) \
+		-D API_VERSION=$(PACKAGE_RELEASE) \
+		-D PACKAGE_MAJOR=$(PACKAGE_MAJOR_VERSION) \
+		debian/dbus-cxx-doc.install.m4 >debian/dbus-cxx-doc.install
+	m4 -D PACKAGE_VERSION=$(PACKAGE_VERSION) \
+		-D PACKAGE_RELEASE=$(PACKAGE_RELEASE) \
+		-D PKGCONFIG_VERSION=$(PKGCONFIG_VERSION) \
+		-D API_VERSION=$(PACKAGE_RELEASE) \
+		-D PACKAGE_MAJOR=$(PACKAGE_MAJOR_VERSION) \
+		debian/dbus-cxx-glibmm-dev.install.m4 >debian/dbus-cxx-glibmm-dev.install
+	m4 -D PACKAGE_VERSION=$(PACKAGE_VERSION) \
+		-D PACKAGE_RELEASE=$(PACKAGE_RELEASE) \
+		-D PKGCONFIG_VERSION=$(PKGCONFIG_VERSION) \
+		-D API_VERSION=$(PACKAGE_RELEASE) \
+		-D PACKAGE_MAJOR=$(PACKAGE_MAJOR_VERSION) \
+		debian/rules.m4 >debian/rules
+
+deb: debfiles
+	debclean
+	debuild -i -uc -us -b
+	debclean
+
+deb-src: debfiles
+	debclean
+	debuild -i -uc -us -S
+	debclean
