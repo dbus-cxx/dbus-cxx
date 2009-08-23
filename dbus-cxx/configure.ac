@@ -191,33 +191,33 @@ AC_SUBST(PROJECT_CFLAGS)
 AC_ARG_ENABLE([doc],[AS_HELP_STRING([--enable-doc],[Build documentation [default=no]])],[enable_doc=$enableval],[enable_doc=no])
 AM_CONDITIONAL(DBUS_CXX_DOC, [test "x${enable_doc}" == xyes])
 
-AC_ARG_ENABLE([glibmm],[AS_HELP_STRING([--enable-glibmm],[Build glibmm support [default=no]])],[enable_glibmm=set])
-AS_IF([test "x${enable_glibmm}" == xset],
+AC_ARG_ENABLE([glibmm],[AS_HELP_STRING([--enable-glibmm],[Build glibmm support [default=no]])],[enable_glibmm=$enableval],[enable_glibmm=no])
+AS_IF([test "x${enable_glibmm}" == xyes],
   [ PKG_CHECK_MODULES(DBUS_CXX_GLIBMM,[$GLIBMM_PKGCONFIG_REQUIRES])
   ],
   [])
-AM_CONDITIONAL(DBUS_CXX_GLIBMM, [test "x${enable_glibmm}" == xset])
+AM_CONDITIONAL(DBUS_CXX_GLIBMM, [test "x${enable_glibmm}" == xyes])
 AC_SUBST(GLIBMM_PKGCONFIG_REQUIRES)
 AC_SUBST(DBUS_CXX_GLIBMM_LIBS)
 AC_SUBST(DBUS_CXX_GLIBMM_CFLAGS)
 
-AC_ARG_ENABLE([unit-tests],[AS_HELP_STRING([--enable-unit-tests],[Build dbus-cxx unit test applications [default=no]])],[enable_unit_tests=set])
-AS_IF([test "x${enable_unit_tests}" == xset],
+AC_ARG_ENABLE([unit-tests],[AS_HELP_STRING([--enable-unit-tests],[Build dbus-cxx unit test applications [default=no]])],[enable_unit_tests=$enableval],[enable_unit_tests=no])
+AS_IF([test "x${enable_unit_tests}" == xyes],
   [ PKG_CHECK_MODULES([UNIT_TEST],[cppunit])
   ],
   [])
-AM_CONDITIONAL(DBUS_CXX_UNIT_TESTS, [test "x${enable_unit_tests}" == xset])
+AM_CONDITIONAL(DBUS_CXX_UNIT_TESTS, [test "x${enable_unit_tests}" == xyes])
 AC_SUBST(UNIT_TEST_LIBS)
 AC_SUBST(UNIT_TEST_CFLAGS)
 
-AC_ARG_ENABLE([hal],[AS_HELP_STRING([--enable-hal],[Build dbus-cxx-hal [default=no]])],[enable_hal=set])
-AM_CONDITIONAL(DBUS_CXX_HAL, [test "x${enable_hal}" == xset])
+AC_ARG_ENABLE([hal],[AS_HELP_STRING([--enable-hal],[Build dbus-cxx-hal [default=no]])],[enable_hal=$enableval],[enable_hal=no])
+AM_CONDITIONAL(DBUS_CXX_HAL, [test "x${enable_hal}" == xyes])
 
-AC_ARG_ENABLE([examples],[AS_HELP_STRING([--enable-examples],[Build dbus-cxx examples [default=no]])],[enable_examples=set])
-AM_CONDITIONAL(DBUS_CXX_EXAMPLES, [test "x${enable_examples}" == xset])
+AC_ARG_ENABLE([examples],[AS_HELP_STRING([--enable-examples],[Build dbus-cxx examples [default=no]])],[enable_examples=$enableval],[enable_examples=no])
+AM_CONDITIONAL(DBUS_CXX_EXAMPLES, [test "x${enable_examples}" == xyes])
 
-AC_ARG_ENABLE([tools],[AS_HELP_STRING([--enable-tools],[Build dbus-cxx tools [default=no]])],[enable_tools=set])
-AM_CONDITIONAL(DBUS_CXX_TOOLS, [test "x${enable_tools}" == xset])
+AC_ARG_ENABLE([tools],[AS_HELP_STRING([--enable-tools],[Build dbus-cxx tools [default=no]])],[enable_tools=$enableval],[enable_tools=no])
+AM_CONDITIONAL(DBUS_CXX_TOOLS, [test "x${enable_tools}" == xyes])
 
 AC_ARG_ENABLE([debug-output],[AS_HELP_STRING([--enable-debug-output],[Enable debugging output [default=no]])],[AC_DEFINE([DEBUG_ENABLED],[],[Enable debugging output])])
 
