@@ -3,9 +3,10 @@ Name:             dbus-cxx
 Version:          PACKAGE_VERSION
 Release:          1%{?dist}
 License:          GPLv3
-URL:              http://dbus-cxx.sourceforge.net
+URL:              http://dbus-cxx.sourceforge.net/
 Group:            System Environment/Libraries
-Source:           http://downloads.sourceforge.net/dbus-cxx/dbus-cxx-%{version}.tar.bz2
+Source0:          http://downloads.sourceforge.net/dbus-cxx/%{name}-%{version}.tar.bz2
+Source1:          http://downloads.sourceforge.net/dbus-cxx/%{name}-%{version}-doc.tar.bz2
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    dbus-devel >= 1.2
 BuildRequires:    libsigc++20-devel >= 2.0.0
@@ -38,6 +39,9 @@ Summary:          Developer's documentation for the dbus-cxx library
 Group:            Documentation
 Requires:         gtk-doc
 Requires:         devhelp
+%if 0%{?fedora} > 9 || 0%{?rhel} > 5
+BuildArch:        noarch
+%endif
 
 %description      doc
 This package contains developer's documentation for the dbus-cxx
@@ -91,7 +95,7 @@ This package contains the libraries and header files needed for
 developing dbus-cxx-glibmm applications.
 
 %prep
-%setup -q
+%setup -q -b 1
 
 %build
 %configure --enable-static=no --enable-tools --enable-glibmm
@@ -152,6 +156,16 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 %{_includedir}/dbus-cxx-PACKAGE_RELEASE/dbus-cxx-glibmm/
 
 %changelog
+* Mon Aug 24 2009 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.4.2-1
+- New release
+- Made docs noarch
+
+* Fri Jul 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.4.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
+
+* Mon Jul  6 2009 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.4.1-1
+- New release
+
 * Thu Jun 18 2009 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.4.0-1
 - New release
 - Added glibmm subpackage

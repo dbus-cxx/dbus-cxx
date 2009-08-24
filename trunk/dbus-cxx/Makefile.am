@@ -19,7 +19,8 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = dbus-cxx.spec \
+EXTRA_DIST = \
+	dbus-cxx.spec \
 	m4/ac_cxx_compile_stdcxx_0x.m4 \
 	m4/ax_prefix_config_h.m4 \
 	ax_dbus_cxx_xml2cpp.m4 \
@@ -47,7 +48,7 @@ INCLUDES = -I$(top_srcdir)/. $(PROJECT_CFLAGS)
 toplevel_includedir = $(includedir)/dbus-cxx-$(PACKAGE_RELEASE)
 toplevel_include_HEADERS = dbus-cxx-glibmm.h dbus-cxx.h
 
-PACKAGE_RELEASEHOST="rvinyard@frs.sourceforge.net:uploads/"
+PACKAGE_RELEASEHOST="${USER},dbus-cxx@frs.sourceforge.net:/home/frs/project/d/db/dbus-cxx/dbus-cxx"
 
 docs:
 	cd doc && make docs
@@ -58,15 +59,26 @@ upload-docs:
 upload-docs-only:
 	cd doc && make upload-docs-only
 
-upload-release: dist
-	scp $(PACKAGE)-$(VERSION).tar.bz2 $(PACKAGE)-$(VERSION).tar.gz $(PACKAGE)-$(VERSION).zip $(PACKAGE_RELEASEHOST)
+TO_UPLOAD = $(PACKAGE)-$(VERSION).tar.bz2 $(PACKAGE)-$(VERSION).tar.gz $(PACKAGE)-$(VERSION).zip $(PACKAGE)-$(VERSION)-doc.tar.bz2 $(PACKAGE)-$(VERSION)-doc.tar.gz $(PACKAGE)-$(VERSION)-doc.zip
+RELEASE_NOTES = $(PACKAGE)-$(VERSION)-release-notes.txt
+TO_UPLOAD_RN = $(TO_UPLOAD) $(RELEASE_NOTES)
+
+release-notes:
+	gedit $(RELEASE_NOTES) ChangeLog
 
 upload-release-only:
-	scp $(PACKAGE)-$(VERSION).tar.bz2 $(PACKAGE)-$(VERSION).tar.gz $(PACKAGE)-$(VERSION).zip $(PACKAGE_RELEASEHOST)
+	rm -rf $(VERSION)
+	mkdir $(VERSION)
+	if test -e $(RELEASE_NOTES); \
+          then \
+            cp -a $(TO_UPLOAD_RN) $(VERSION); \
+          else \
+            cp -a $(TO_UPLOAD) $(VERSION); \
+        fi
+	scp -Crp $(VERSION) $(PACKAGE_RELEASEHOST)
+	rm -rf $(VERSION)
 
-upload-all: dist
-	make upload-docs-only
-	make upload-release-only
+upload-release: changelog release-notes dist upload-release-only
 
 spec:
 	m4 -D PACKAGE_VERSION=$(PACKAGE_VERSION) \
@@ -79,7 +91,7 @@ changelog:
 	svn2cl --authors=svn2cl.authors -r HEAD:1 --group-by-day -a
 
 rpm: spec dist-bzip2
-	cp $(PACKAGE)-$(VERSION).tar.bz2 ~/rpmbuild/SOURCES/
+	cp $(PACKAGE)-$(VERSION).tar.bz2 $(PACKAGE)-$(VERSION)-doc.tar.bz2 ~/rpmbuild/SOURCES/
 	cp $(PACKAGE_NAME).spec ~/rpmbuild/SPECS/
 	rpmbuild -ba $(PACKAGE_NAME).spec
 
@@ -91,6 +103,11 @@ srpm: spec dist-bzip2
 mockbuild: srpm
 	mock --rebuild ~/rpmbuild/SRPMS/$(PACKAGE)-$(VERSION)*.src.rpm
 
+dist-hook:
+	cd doc && make docsdist
+	mv doc/$(PACKAGE)-$(VERSION)-doc.tar.gz .
+	mv doc/$(PACKAGE)-$(VERSION)-doc.tar.bz2 .
+	mv doc/$(PACKAGE)-$(VERSION)-doc.zip .
 
 debfiles:
 	m4 -D PACKAGE_VERSION=$(PACKAGE_VERSION) \

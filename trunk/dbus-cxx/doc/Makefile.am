@@ -52,13 +52,22 @@ $(devhelp_file): refdocs devhelp_stylesheet
 
 docs: $(devhelp_file)
 
-dist-hook: docs
-	mkdir -p $(distdir)/reference/
-	cp -arv reference/html/ $(distdir)/reference/
-	rm -rf `find $(distdir)/reference -name CVS`
-	rm -rf `find $(distdir)/reference -name *.md5`
-	rm -rf `find $(distdir)/reference -name *.map`
-	rm -rf `find $(distdir)/reference -name *.dot`
+docdistdir="$(PACKAGE)-$(VERSION)"
+doctgtdir="$(docdistdir)/doc/reference/"
+
+docsdist: docs
+	rm -rf $(docdistdir)
+	mkdir $(docdistdir)
+	mkdir -p $(doctgtdir)
+	cp -arv reference/html/ $(doctgtdir)
+	rm -rf `find $(doctgtdir) -name CVS`
+	rm -rf `find $(doctgtdir) -name *.md5`
+	rm -rf `find $(doctgtdir) -name *.map`
+	rm -rf `find $(doctgtdir) -name *.dot`
+	tar cvzf $(docdistdir)-doc.tar.gz $(docdistdir)/*
+	tar cvjf $(docdistdir)-doc.tar.bz2 $(docdistdir)/*
+	zip -r $(docdistdir)-doc.zip $(docdistdir)/*
+	rm -rf $(docdistdir)
 
 PACKAGE_WWWHOST="${USER},dbus-cxx@web.sourceforge.net:htdocs/"
 
