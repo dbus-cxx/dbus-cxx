@@ -1,5 +1,11 @@
+dbus-cxx (0.4.2-1) unstable; urgency=low
+
+  * New release
+
+ -- Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>  Mon, 24 Aug 2009 13:10:13 -0600
+
 dbus-cxx (0.4.1-1) unstable; urgency=low
 
-  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+  * Initial release
 
  -- Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>  Fri, 21 Aug 2009 13:10:13 -0600
