@@ -1,5 +1,6 @@
 2009-06-26  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
+	* ChangeLog, configure.in, dbuscxx.kdevelop: 0.4.1
 	* tools/generate_proxy.cpp, tools/parsed_object.cpp,
 	  tools/parsed_object.h, tools/xml2cpp.cpp, tools/xml_parser.cpp:
 	  Added support to dbus-cxx-xml2cpp for proxies based on virtual

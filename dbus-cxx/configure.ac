@@ -68,14 +68,9 @@ AC_SUBST(PACKAGE_MAJOR_VERSION)
 AC_SUBST(PACKAGE_MINOR_VERSION)
 AC_SUBST(PACKAGE_MICRO_VERSION)
 
-AC_SUBST(DOXYGEN_INPUT)
-AC_SUBST(DOXYGEN_HTML_HEADER)
-AC_SUBST(DOXYGEN_HTML_FOOTER)
-AC_SUBST(DOXYGEN_HTML_STYLESHEET)
-
 AM_INIT_AUTOMAKE([1.9 tar-ustar dist-bzip2 dist-zip -Wno-portability])
 AM_CONFIG_HEADER([config.h])
-AX_PREFIX_CONFIG_H([$PACKAGE/$PACKAGE-config.h],[DBUS_CXX],[config.h])
+AX_PREFIX_CONFIG_H([dbus-cxx/dbus-cxx-config.h],[DBUS_CXX],[config.h])
 
 dnl this package needs m4
 AC_CHECK_PROGS(M4, gm4 m4, m4)
@@ -138,11 +133,11 @@ AC_DEFUN(
                      [CHECK_FOR_BOOST_SMART_POINTER
                      ],
                      [
-#include <typeinfo>
-#include <memory>
-#include <functional>
-#include <bits/concurrence.h>
-#include <ext/mt_allocator.h>
+                       #include <typeinfo>
+                       #include <memory>
+                       #include <functional>
+                       #include <bits/concurrence.h>
+                       #include <ext/mt_allocator.h>
                      ]
                    )
   ]
