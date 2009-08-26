@@ -27,7 +27,12 @@ EXTRA_DIST = Doxyfile \
 	doxygen_footer.html \
 	doxygen_to_devhelp.xsl \
 	doxygen_to_devhelp.xsl.m4 \
-	$(devhelp_file)
+	$(devhelp_file) \
+	images/bug-small.png          images/documents-small.png  \
+	images/bugs-small.png         images/download-small.png   \
+	images/dbus-cxx-logo-med.png  images/fedora-logo-tiny.png \
+	images/dbus-cxx-logo.png      images/gplv3.png            \
+	images/dbus-cxx-logo.svg      images/sourcecode-small.png
 
 mostlyclean-local:
 	rm -rf reference
