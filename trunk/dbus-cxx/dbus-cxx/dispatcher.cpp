@@ -277,6 +277,9 @@ namespace DBus
     struct timeval timeout;
     bool no_watches;
     
+    // HACK this is to alleviate a race condition between the read/write handling and dispatching
+    bool need_initiate_processing_hack = false;
+    
     while ( m_running )
     {
       // Lock the read/write/exception fd sets so that the sets for this iteration can be created
@@ -320,8 +323,11 @@ namespace DBus
         if ( FD_ISSET( *fditer, &read_fds ) )
         {
           witer = m_read_watches.find(*fditer);
-          if ( witer != m_read_watches.end() )
+          if ( witer != m_read_watches.end() ) {
             witer->second->handle_read();
+            // HACK this is to alleviate a race condition between the read handling and dispatching
+            need_initiate_processing_hack = true;
+          }
         }
       }
       pthread_mutex_unlock( &m_mutex_read_watches );
@@ -333,11 +339,31 @@ namespace DBus
         if ( FD_ISSET( *fditer, &write_fds ) )
         {
           witer = m_write_watches.find(*fditer);
-          if ( witer != m_write_watches.end() )
+          if ( witer != m_write_watches.end() ) {
             witer->second->handle_write();
+            // HACK this is to alleviate a race condition between the write handling and dispatching
+            need_initiate_processing_hack = true;
+          }
         }
       }
       pthread_mutex_unlock( &m_mutex_write_watches );
+      
+      // HACK This is to alleviate a race condition between read/write handling and
+      // dispatching. The problem occurs when the read/write handler acquires the IO
+      // lock and the dispatcher silently queues a response.
+      // This should guarantee that the dispatch loop wakes up after reading/writing
+      // and if nothing is to be done will go back to sleep.
+      if ( need_initiate_processing_hack )
+      {
+        // We'll lock the initiate processing mutex before setting the initiate processing variable
+        // to true and signalling the initiate processing condition
+        pthread_mutex_lock( &m_mutex_initiate_processing );
+        m_initiate_processing = true;
+        need_initiate_processing_hack = false;
+        pthread_cond_broadcast( &m_cond_initiate_processing );
+        pthread_mutex_unlock( &m_mutex_initiate_processing );
+      }
+      
     }
   }
 
