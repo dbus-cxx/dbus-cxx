@@ -2,7 +2,7 @@ Source: dbus-cxx
 Priority: extra
 Maintainer: Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 XSBC-Original-Maintainer: Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
-Build-Depends: quilt, debhelper (>= 7), autotools-dev, dbus, libdbus-1-dev
+Build-Depends: cdbs, quilt, debhelper (>= 7), autotools-dev, dbus, libdbus-1-dev, libsigc++-2.0-dev, libglibmm-2.4-dev, libpopt-dev, libexpat1-dev, doxygen, xsltproc
 Standards-Version: 3.8.0
 Section: libs
 Homepage: http://dbus-cxx.sourceforge.net/
@@ -66,5 +66,3 @@ Description: Headers for developing programs that will use dbus-cxx-glibmm
  can also be used to integrate dbus-cxx with gtkmm applications.
  This package contains the libraries and header files needed for
  developing dbus-cxx-glibmm applications.
-
-
