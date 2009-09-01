@@ -842,13 +842,13 @@ namespace DBus
   void Connection::on_remove_watch_callback(DBusWatch * cwatch, void * data)
   {
     Connection* conn = static_cast<Connection*>(data);
-    conn->signal_add_watch().emit(Watch::create(cwatch));
+    conn->signal_remove_watch().emit(Watch::create(cwatch));
   }
 
   void Connection::on_watch_toggled_callback(DBusWatch * cwatch, void * data)
   {
     Connection* conn = static_cast<Connection*>(data);
-    conn->signal_add_watch().emit(Watch::create(cwatch));
+    conn->signal_watch_toggled().emit(Watch::create(cwatch));
   }
 
   dbus_bool_t Connection::on_add_timeout_callback(DBusTimeout * ctimeout, void * data)
@@ -892,7 +892,7 @@ namespace DBus
     // Otherwise, this has no effect
     conn->m_timeouts.erase(ctimeout);
 
-    conn->signal_add_timeout().emit(timeout);
+    conn->signal_remove_timeout().emit(timeout);
   }
 
   void Connection::on_timeout_toggled_callback(DBusTimeout * ctimeout, void * data)
@@ -912,7 +912,7 @@ namespace DBus
     // But, if we didn't handle it will pass it along to the signal
     else
     {
-      conn->signal_add_timeout().emit(timeout);
+      conn->signal_timeout_toggled().emit(timeout);
     }
   }
 
