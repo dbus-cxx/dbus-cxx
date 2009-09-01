@@ -1,6 +1,0 @@
-usr/include/dbus-cxx-0.4/dbus-cxx.h
-usr/include/dbus-cxx-0.4/dbus-cxx/*
-usr/lib/libdbus-cxx.a
-usr/lib/libdbus-cxx.so
-usr/lib/pkgconfig/dbus-cxx-1.0.pc
-usr/lib/libdbus-cxx.la
