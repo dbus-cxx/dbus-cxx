@@ -30,6 +30,8 @@ namespace DBus
       m_destination(destination),
       m_path(path)
   {
+    pthread_mutex_init( &m_name_mutex, NULL );
+    pthread_rwlock_init( &m_interfaces_rwlock, NULL );
   }
 
   ObjectProxy::pointer ObjectProxy::create( const std::string& path )
@@ -54,6 +56,8 @@ namespace DBus
 
   ObjectProxy::~ ObjectProxy( )
   {
+    pthread_mutex_destroy( &m_name_mutex );
+    pthread_rwlock_destroy( &m_interfaces_rwlock );
   }
 
   Connection::pointer ObjectProxy::connection() const

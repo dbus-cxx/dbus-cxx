@@ -31,6 +31,8 @@ namespace DBus
   Object::Object( const std::string& path, PrimaryFallback pf ):
       ObjectPathHandler( path, pf )
   {
+    pthread_mutex_init( &m_name_mutex, NULL );
+    pthread_rwlock_init( &m_interfaces_rwlock, NULL );
   }
 
   Object::pointer Object::create( const std::string& path, PrimaryFallback pf )
@@ -40,6 +42,8 @@ namespace DBus
 
   Object::~ Object( )
   {
+    pthread_mutex_destroy( &m_name_mutex );
+    pthread_rwlock_destroy( &m_interfaces_rwlock );
   }
 
   bool Object::register_with_connection(Connection::pointer conn)
