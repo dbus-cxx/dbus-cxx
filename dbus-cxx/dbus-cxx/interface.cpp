@@ -43,6 +43,9 @@ namespace DBus
 
   Interface::~ Interface( )
   {
+    pthread_rwlock_destroy( &m_methods_rwlock );
+    pthread_rwlock_destroy( &m_signals_rwlock );
+    pthread_mutex_destroy( &m_name_mutex );
   }
 
   Object* Interface::object() const
@@ -76,8 +79,9 @@ namespace DBus
     for ( Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++ )
       (*i)->set_interface( new_name );
     
-    m_signal_name_changed.emit(old_name, new_name);
     pthread_mutex_unlock( &m_name_mutex );
+
+    m_signal_name_changed.emit(old_name, new_name);
   }
 
   const Interface::Methods & Interface::methods() const
