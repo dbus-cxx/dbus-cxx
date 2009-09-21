@@ -48,6 +48,7 @@ namespace DBus
 
   MethodProxyBase::~MethodProxyBase()
   {
+    pthread_mutex_destroy( &m_name_mutex );
   }
 
   InterfaceProxy* MethodProxyBase::interface() const
@@ -65,8 +66,8 @@ namespace DBus
     pthread_mutex_lock( &m_name_mutex );
     std::string old_name = m_name;
     m_name = name;
-    m_signal_name_changed.emit(old_name, m_name);
     pthread_mutex_unlock( &m_name_mutex );
+    m_signal_name_changed.emit(old_name, m_name);
   }
 
   CallMessage::pointer DBus::MethodProxyBase::create_call_message() const

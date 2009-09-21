@@ -41,6 +41,7 @@ namespace DBus
     pthread_mutex_lock( &m_arming_mutex );
     if ( m_is_armed ) timer_delete( m_timer_id );
     pthread_mutex_unlock( &m_arming_mutex );
+    pthread_mutex_destroy( &m_arming_mutex );
   }
 
   bool Timeout::is_valid() const
