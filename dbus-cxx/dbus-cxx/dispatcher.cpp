@@ -61,6 +61,10 @@ namespace DBus
   Dispatcher::~Dispatcher()
   {
     if ( this->is_running() ) this->stop();
+    pthread_mutex_destroy( &m_mutex_read_watches );
+    pthread_mutex_destroy( &m_mutex_write_watches );
+    pthread_cond_destroy( &m_cond_initiate_processing );
+    pthread_mutex_destroy( &m_mutex_initiate_processing );
   }
 
   Connection::pointer Dispatcher::create_connection(DBusConnection * cobj, bool is_private)
@@ -317,36 +321,44 @@ namespace DBus
       // If we made it here we have some activity we need to handle
       //
       // We'll start by updating the fds that are ready for reading and add them to the set of read fds to handle
-      pthread_mutex_lock( &m_mutex_read_watches );
       for ( fditer = m_enabled_read_fds.begin(); fditer != m_enabled_read_fds.end(); fditer++ )
       {
         if ( FD_ISSET( *fditer, &read_fds ) )
         {
+          pthread_mutex_lock( &m_mutex_read_watches );
           witer = m_read_watches.find(*fditer);
           if ( witer != m_read_watches.end() ) {
-            witer->second->handle_read();
+            Watch::pointer w = witer->second;
+            pthread_mutex_unlock( &m_mutex_read_watches );
+            w->handle_read();
             // HACK this is to alleviate a race condition between the read handling and dispatching
             need_initiate_processing_hack = true;
           }
+          else {
+            pthread_mutex_unlock( &m_mutex_read_watches );
+          }
         }
       }
-      pthread_mutex_unlock( &m_mutex_read_watches );
 
       // Now we'll check the fds that are ready for writing and add them to the set of write fds to handle
-      pthread_mutex_lock( &m_mutex_write_watches );
       for ( fditer = m_enabled_write_fds.begin(); fditer != m_enabled_write_fds.end(); fditer++ )
       {
         if ( FD_ISSET( *fditer, &write_fds ) )
         {
+          pthread_mutex_lock( &m_mutex_write_watches );
           witer = m_write_watches.find(*fditer);
           if ( witer != m_write_watches.end() ) {
-            witer->second->handle_write();
+            Watch::pointer w = witer->second;
+            pthread_mutex_unlock( &m_mutex_write_watches );
+            w->handle_write();
             // HACK this is to alleviate a race condition between the write handling and dispatching
             need_initiate_processing_hack = true;
           }
+          else {
+            pthread_mutex_unlock( &m_mutex_write_watches );
+          }
         }
       }
-      pthread_mutex_unlock( &m_mutex_write_watches );
       
       // HACK This is to alleviate a race condition between read/write handling and
       // dispatching. The problem occurs when the read/write handler acquires the IO
