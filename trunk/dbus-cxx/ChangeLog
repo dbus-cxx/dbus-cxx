@@ -1,3 +1,85 @@
+2009-09-21  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* dbus-cxx/methodproxybase.cpp, dbus-cxx/object.cpp,
+	  dbus-cxx/objectproxy.cpp, dbus-cxx/timeout.cpp: Fix memory leak
+	  due to pthread items not being destroyed. Thanks to Patrick
+	  Allison for providing a patch for this.
+	  
+	  Reorder name mutex unlocking before signal emission to prevent
+	  external call causing deadlock.
+	* dbus-cxx/methodbase.cpp: Fix memory leak due to pthread items not
+	  being destroyed. Thanks to Patrick Allison for providing a patch
+	  for this.
+	  
+	  Reorder name mutex unlocking before signal emission to prevent
+	  external call causing deadlock.
+	* dbus-cxx/interfaceproxy.cpp: Fix memory leak due to pthread items
+	  not being destroyed. Thanks to Patrick Allison for providing a
+	  patch for this.
+	  
+	  Reorder name mutex unlocking before signal emission to prevent
+	  external call causing deadlock.
+	* dbus-cxx/interface.cpp: Fix memory leak due to pthread items not
+	  being destroyed. Thanks to Patrick Allison for providing a patch
+	  for this.
+	  
+	  Reorder name mutex unlocking before signal emission to prevent
+	  external call causing deadlock.
+	* dbus-cxx/dispatcher.cpp: Fix memory leak due to pthread items not
+	  being destroyed
+	  
+	  Fix deadlock due to watch handling while mutexes are held
+	  
+	  Thanks to Patrick Allison for providing a patch for both of
+	  these.
+
+2009-09-01  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* configure.ac:
+	* dbus-cxx/dispatcher.cpp: Added hack to initiate dispatching after
+	  read/write watches are handled to prevent problem with race
+	  condition between watch thread and dispatch thread in IO locks.
+	* debian:
+	* debian/changelog, debian/control[DEL],
+	  debian/dbus-cxx-dev.install[DEL],
+	  debian/dbus-cxx-doc.install[DEL],
+	  debian/dbus-cxx-glibmm-dev.install[DEL], debian/rules[DEL]:
+	* debian/control.m4, debian/copyright:
+	* dbus-cxx/connection.cpp: Fix external signals emitted when
+	  watches and timeouts are removed and toggled.
+
+2009-08-26  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* doc/Makefile.am:
+
+2009-08-24  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* Makefile.am, configure.ac, dbus-cxx.spec.m4, dbuscxx.kdevelop,
+	  debian/changelog, doc/Makefile.am: 0.4.2
+	* ChangeLog, configure.ac:
+
+2009-08-23  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* Makefile.am, configure.ac:
+	* debian, debian/changelog, debian/compat, debian/control,
+	  debian/control.m4, debian/copyright, debian/dbus-cxx-dev.dirs,
+	  debian/dbus-cxx-dev.install, debian/dbus-cxx-dev.install.m4,
+	  debian/dbus-cxx-doc.install, debian/dbus-cxx-doc.install.m4,
+	  debian/dbus-cxx-glibmm-dev.dirs,
+	  debian/dbus-cxx-glibmm-dev.install,
+	  debian/dbus-cxx-glibmm-dev.install.m4,
+	  debian/dbus-cxx-glibmm0.dirs, debian/dbus-cxx-glibmm0.install,
+	  debian/dbus-cxx-tools.dirs, debian/dbus-cxx-tools.install,
+	  debian/dbus-cxx0.dirs, debian/dbus-cxx0.install, debian/dirs,
+	  debian/docs, debian/rules, debian/rules.m4:
+
+2009-08-21  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* configure.ac:
+	* configure.ac, dbus-cxx-glibmm/Makefile.am, dbuscxx.kdevelop:
+	* dbus-cxx-glibmm.h:
+	* configure.ac[CPY], configure.in[DEL]:
+
 2009-06-26  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
 	* ChangeLog, configure.in, dbuscxx.kdevelop: 0.4.1
