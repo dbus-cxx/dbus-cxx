@@ -42,6 +42,8 @@ namespace DBus
 
   InterfaceProxy::~ InterfaceProxy( )
   {
+    pthread_rwlock_destroy( &m_methods_rwlock );
+    pthread_mutex_destroy( &m_name_mutex );
   }
 
   ObjectProxy* InterfaceProxy::object() const
@@ -71,8 +73,8 @@ namespace DBus
     pthread_mutex_lock( &m_name_mutex );
     std::string old_name = m_name;
     m_name = new_name;
-    m_signal_name_changed.emit(old_name, new_name);
     pthread_mutex_unlock( &m_name_mutex );
+    m_signal_name_changed.emit(old_name, new_name);
   }
 
   const InterfaceProxy::Methods & InterfaceProxy::methods() const
