@@ -522,7 +522,7 @@ namespace DBus
    *
    * <br><hr>
    *
-   * \par Download dbus-cxx rpms or get the source code
+   * <h2>Download dbus-cxx packages or get the source code</h2>
    *
    * 
    * \htmlonly <img src="fedora-logo-tiny.png" alt="Fedora"/> \endhtmlonly
@@ -537,6 +537,31 @@ namespace DBus
    * - \b dbus-cxx-tools - Development tools, et. al. such as \c dbus-cxx-xml2cpp
    * - \b dbus-cxx-glibmm - Libraries need to run applications that integrate dbus-cxx into glibmm
    * - \b dbus-cxx-glibmm-devel - Headers and libraries for developing applications that will integrate dbus-cxx into glibmm
+   *
+   * \htmlonly <img src="ubuntu-logo-tiny.png" alt="Ubuntu"/> \endhtmlonly
+   * \par
+   * dbus-cxx is available for Ubuntu via launchpad.
+   *
+   * \par 
+   * Installing from Launchpad
+   * - Here is a useful page on setting up a Launchpad PPA in Ubuntu: 
+   *   <a href="http://launchpad.net/+help/soyuz/ppa-sources-list.html">http://launchpad.net/+help/soyuz/ppa-sources-list.html</a>
+   * - Here is the Launchpad PPA page: 
+   *   <a href="http://launchpad.net/~rvinyard/+archive/ppa">https://launchpad.net/~rvinyard/+archive/ppa</a>
+   * - If you just want the basic PPA info:
+   *   \code 
+   *   deb http://ppa.launchpad.net/rvinyard/ppa/ubuntu jaunty main 
+   *   deb-src http://ppa.launchpad.net/rvinyard/ppa/ubuntu jaunty main
+   *   \endcode
+   * 
+   * \par
+   * Ubuntu package description
+   * - \b dbus-cxx0 - Libraries needed to run applications
+   * - \b dbus-cxx-dev - Headers and libraries for developing applications with dbus-cxx
+   * - \b dbus-cxx-doc - Developer's documentation including devhelp docs
+   * - \b dbus-cxx-tools - Development tools, et. al. such as \c dbus-cxx-xml2cpp
+   * - \b dbus-cxx-glibmm0 - Libraries need to run applications that integrate dbus-cxx into glibmm
+   * - \b dbus-cxx-glibmm-dev - Headers and libraries for developing applications that will integrate dbus-cxx into glibmm
    *
    * \htmlonly <img src="sourcecode-small.png" alt=""/> \endhtmlonly
    * \par Source Code
