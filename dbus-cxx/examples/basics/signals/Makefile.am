@@ -21,7 +21,7 @@ INCLUDES = $(PROJECT_CFLAGS) -I$(top_srcdir)/.
 METASOURCES = AUTO
 noinst_PROGRAMS = signal-emitter signal-emitter-2 signal-emitter-3 \
 	signal-emitter-c signal-emitter-raw signal-receiver signal-receiver-2 signal-receiver-c \
-	signal-receiver-raw signal-emitter-object signal-receiver-object
+	signal-receiver-raw signal-emitter-object signal-receiver-object signal-emitter-array signal-receiver-array
 
 signal_emitter_c_SOURCES = signal_emitter_c.cpp
 signal_emitter_c_LDADD = $(PROJECT_LIBS)
@@ -48,3 +48,11 @@ signal_emitter_object_SOURCES = signal_emitter_object.cpp
 signal_emitter_object_LDADD = $(top_builddir)/dbus-cxx/libdbus-cxx.la $(PROJECT_LIBS)
 signal_receiver_object_SOURCES = signal_receiver_object.cpp
 signal_receiver_object_LDADD = $(top_builddir)/dbus-cxx/libdbus-cxx.la $(PROJECT_LIBS)
+
+signal_emitter_array_SOURCES = signal_emitter_array.cpp
+signal_emitter_array_LDADD = $(top_builddir)/dbus-cxx/libdbus-cxx.la \
+	$(PROJECT_LIBS)
+signal_receiver_array_SOURCES = signal_receiver_array.cpp
+signal_receiver_array_LDADD = $(top_builddir)/dbus-cxx/libdbus-cxx.la \
+	$(PROJECT_LIBS)
+
