@@ -122,6 +122,25 @@ void CallMessageTests::call_message_insertion_extraction_operator_string()
   CPPUNIT_ASSERT_EQUAL( v, v2 );
 }
 
+void CallMessageTests::call_message_insertion_extraction_operator_array_double()
+{
+  std::vector<double> v, v2;
+  
+  for ( int i = 0; i < 35; i++ )
+    v.push_back( (double)rand()/(double)rand() );
+
+  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  
+  msg << v;
+  
+  msg >> v2;
+  
+  CPPUNIT_ASSERT_EQUAL( v.size(), v2.size() );
+  
+  for ( int i = 0; i < 35; i++ )
+    CPPUNIT_ASSERT_EQUAL( v[i], v2[i] );
+}
+
 void CallMessageTests::call_message_insertion_extraction_operator_multiple( )
 {
   bool        b_1    = false       , b_2    = true;
@@ -135,11 +154,15 @@ void CallMessageTests::call_message_insertion_extraction_operator_multiple( )
   double      d_1    = 3.141592654 , d_2    = 0.00;
   const char  *cs_1 = "Hello World", *cs_2 = NULL;
   std::string s_1("Hello World")   , s_2("");
+  std::vector<double> ad_1         , ad_2;
+  
+  for ( int i = 0; i < 35; i++ )
+    ad_1.push_back( (double)rand()/(double)(rand()) );
 
   DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
-  msg << b_1 << ui8_1 << i16_1 << ui16_1 << i32_1 << ui32_1 << i64_1 << ui64_1 << d_1 << cs_1 << s_1;
+  msg << b_1 << ui8_1 << i16_1 << ui16_1 << i32_1 << ui32_1 << i64_1 << ui64_1 << d_1 << cs_1 << s_1 << ad_1;
 
-  msg >> b_2 >> ui8_2 >> i16_2 >> ui16_2 >> i32_2 >> ui32_2 >> i64_2 >> ui64_2 >> d_2 >> cs_2 >> s_2;
+  msg >> b_2 >> ui8_2 >> i16_2 >> ui16_2 >> i32_2 >> ui32_2 >> i64_2 >> ui64_2 >> d_2 >> cs_2 >> s_2 >> ad_2;
 
   CPPUNIT_ASSERT_EQUAL( b_1, b_2 );
   CPPUNIT_ASSERT_EQUAL( ui8_1, ui8_2 );
@@ -150,6 +173,11 @@ void CallMessageTests::call_message_insertion_extraction_operator_multiple( )
   CPPUNIT_ASSERT_EQUAL( i64_1, i64_2 );
   CPPUNIT_ASSERT_EQUAL( ui64_1, ui64_2 );
   CPPUNIT_ASSERT_EQUAL( d_1, d_2 );
+  
+  CPPUNIT_ASSERT_EQUAL( ad_1.size(), ad_2.size() );
+  for ( int i=0; i < 35; i++ )
+    CPPUNIT_ASSERT_EQUAL( ad_1[i], ad_2[i] );
+
 }
 
 
