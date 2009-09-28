@@ -156,6 +156,9 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 %{_includedir}/dbus-cxx-PACKAGE_RELEASE/dbus-cxx-glibmm/
 
 %changelog
+* Mon Sep 21 2009 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.4.3-1
+- New release
+
 * Mon Aug 24 2009 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.4.2-1
 - New release
 - Made docs noarch
