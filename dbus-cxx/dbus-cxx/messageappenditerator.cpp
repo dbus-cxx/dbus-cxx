@@ -241,36 +241,36 @@ namespace DBus
 #endif
 
 
-//   void MessageAppendIterator::open_container( ContainerType t, const std::string& sig )
-//   {
-//     bool success;
-//
-//     if ( m_subiter ) this->close_container();
-//
-//     if ( m_message )
-//       m_subiter = new MessageAppendIterator( *m_message );
-//     else
-//       m_subiter = new MessageAppendIterator();
-//
-//     if ( t == CONTAINER_STRUCT || t == CONTAINER_DICT_ENTRY )
-//       success = dbus_message_iter_open_container( &m_cobj, t, NULL, m_subiter->cobj() );
-//     else
-//       success = dbus_message_iter_open_container( &m_cobj, t, sig.c_str(), m_subiter->cobj() );
-//   }
-//
-//   void MessageAppendIterator::close_container( )
-//   {
-//     bool success;
-//     if ( ! m_subiter ) return;
-//     success = dbus_message_iter_close_container( &m_cobj, m_subiter->cobj() );
-//     delete m_subiter;
-//     if ( ! success ) throw ErrorNoMemory( "MessageAppendIterator::close_container: No memory to close the container" );
-//   }
-//
-//   MessageAppendIterator* MessageAppendIterator::sub_iterator()
-//   {
-//     return m_subiter;
-//   }
+  void MessageAppendIterator::open_container( ContainerType t, const std::string& sig )
+  {
+    bool success;
+
+    if ( m_subiter ) this->close_container();
+
+    if ( m_message )
+      m_subiter = new MessageAppendIterator( *m_message );
+    else
+      m_subiter = new MessageAppendIterator();
+
+    if ( t == CONTAINER_STRUCT || t == CONTAINER_DICT_ENTRY )
+      success = dbus_message_iter_open_container( &m_cobj, t, NULL, m_subiter->cobj() );
+    else
+      success = dbus_message_iter_open_container( &m_cobj, t, sig.c_str(), m_subiter->cobj() );
+  }
+
+  void MessageAppendIterator::close_container( )
+  {
+    bool success;
+    if ( ! m_subiter ) return;
+    success = dbus_message_iter_close_container( &m_cobj, m_subiter->cobj() );
+    delete m_subiter;
+    if ( ! success ) throw ErrorNoMemory( "MessageAppendIterator::close_container: No memory to close the container" );
+  }
+
+  MessageAppendIterator* MessageAppendIterator::sub_iterator()
+  {
+    return m_subiter;
+  }
 
 
 
