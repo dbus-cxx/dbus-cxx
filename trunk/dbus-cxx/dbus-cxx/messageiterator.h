@@ -224,23 +224,6 @@ namespace DBus
 //         }
 //       }
 
-//       template <typename T>
-//       void value( std::vector<T>& temp ) {
-//         if ( this->element_type() != DBus::type( temp ) ) {
-//           std::string s = "MessageIterator: Extracting DBus array type ";
-//           s += type_string( temp );
-//           s += " into C++ vector with RTTI type ";
-//           s += typeid( T ).name();
-//           throw ErrorInvalidTypecast( s.c_str() );
-//         }
-// 
-//         int elements;
-//         T* values;
-//         dbus_message_iter_get_fixed_array( &m_cobj, &values, &elements );
-//         temp.clear();
-//         for ( int i=0; i < elements; i++ )
-//           temp.push_back( *( values+elements ) );
-//       }
 
 
       operator bool();
@@ -261,7 +244,11 @@ namespace DBus
         operator long int();
         operator unsigned long int();
       #endif
-
+        
+      template <typename T>
+      operator std::vector<T>() {
+        return get_array<T>();
+      }
 
       bool        get_bool();
       uint8_t     get_uint8();
@@ -273,6 +260,78 @@ namespace DBus
       int64_t     get_int64();
       double      get_double();
       const char* get_string();
+
+      template <typename T>
+      std::vector<T> get_array() {
+        T t;
+        
+        if ( not this->is_array() )
+          throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
+        
+        if ( not this->is_fixed() )
+          throw ErrorInvalidTypecast( "MessageIterator: Extracting non fixed array into std::vector" );
+        
+        if ( this->element_type() != DBus::type( t ) ) {
+          std::string s = "MessageIterator: Extracting DBus array type ";
+          s += type_string( t );
+          s += " into C++ vector with RTTI type ";
+          s += typeid( T ).name();
+          throw ErrorInvalidTypecast( s.c_str() );
+        }
+        
+        std::vector<T> array;
+        int elements;
+        T* values;
+        
+        MessageIterator subiter = this->recurse();
+        
+        // Get the underlying array
+        dbus_message_iter_get_fixed_array( subiter.cobj(), &values, &elements );
+        
+        // Iteratively add the elements to the array
+        for ( int i=0; i < elements; i++ )
+          array.push_back( values[i] );
+        
+        return array;
+      }
+      
+      template <typename T>
+      void get_array(std::vector<T>& array) {
+        T t;
+        
+        if ( not this->is_array() )
+          throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
+        
+        if ( not this->is_fixed() )
+          throw ErrorInvalidTypecast( "MessageIterator: Extracting non fixed array into std::vector" );
+        
+        if ( this->element_type() != DBus::type( t ) ) {
+          std::string s = "MessageIterator: Extracting DBus array type ";
+          s += type_string( t );
+          s += " into C++ vector with RTTI type ";
+          s += typeid( T ).name();
+          throw ErrorInvalidTypecast( s.c_str() );
+        }
+        
+        int elements;
+        T* values;
+        
+        MessageIterator subiter = this->recurse();
+        
+        // Get the underlying array
+        dbus_message_iter_get_fixed_array( subiter.cobj(), &values, &elements );
+        
+        // Iteratively add the elements to the array
+        array.clear();
+        for ( int i=0; i < elements; i++ )
+          array.push_back( values[i] );
+      }
+
+      template <typename T>
+      MessageIterator& operator>>( std::vector<T>& v )
+      {
+        this->get_array<T>(v);
+      }
 
       template <typename T>
       MessageIterator& operator>>( T& v )

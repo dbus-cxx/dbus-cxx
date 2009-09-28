@@ -96,6 +96,17 @@ namespace DBus
       #endif
 
       template <typename T>
+      void append( const std::vector<T>& v ) {
+        T t;
+        this->open_container( CONTAINER_ARRAY, DBus::signature( t ).c_str() );
+        
+        for ( int i=0; i < v.size(); i++ )
+          m_subiter->append( v[i] );
+        
+        this->close_container();
+      }
+
+      template <typename T>
       MessageAppendIterator& operator<<( T& v )
       {
         this->append( v );
@@ -166,17 +177,6 @@ namespace DBus
 //             this->close_container();
 //           }
 
-//       template <typename T>
-//       void append( const std::vector<T>& v ) {
-//         T t;
-//         this->open_container( CONTAINER_ARRAY, DBus::signature( t ).c_str() );
-//
-//         for ( int i=0; i < v.size(); i++ )
-//           m_subiter->append( v[i] );
-//
-//         this->close_container();
-//       }
-
 //       template <typename Key, typename Data>
 //       void append( const std::vector<std::pair<Key,Data> >& dictionary ) {
 //         std::string sig = signature( dictionary );
@@ -191,11 +191,11 @@ namespace DBus
 //         this->close_container();
 //       }
 
-//       void open_container( ContainerType t, const std::string& contained_signature );
+      void open_container( ContainerType t, const std::string& contained_signature );
 
-//       void close_container( );
+      void close_container( );
 
-//       MessageAppendIterator* sub_iterator();
+      MessageAppendIterator* sub_iterator();
 
 //           bool append_array( char type, const void* ptr, size_t length );
 
