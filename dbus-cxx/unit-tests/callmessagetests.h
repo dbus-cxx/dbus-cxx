@@ -40,6 +40,7 @@ class CallMessageTests : public  CppUnit::TestFixture {
     CPPUNIT_TEST( call_message_insertion_extraction_operator_double );
     CPPUNIT_TEST( call_message_insertion_extraction_operator_cstring );
     CPPUNIT_TEST( call_message_insertion_extraction_operator_string );
+    CPPUNIT_TEST( call_message_insertion_extraction_operator_array_double );
     CPPUNIT_TEST( call_message_insertion_extraction_operator_multiple );
 
     CPPUNIT_TEST_SUITE_END();
@@ -60,6 +61,7 @@ class CallMessageTests : public  CppUnit::TestFixture {
     void call_message_insertion_extraction_operator_double();
     void call_message_insertion_extraction_operator_cstring();
     void call_message_insertion_extraction_operator_string();
+    void call_message_insertion_extraction_operator_array_double();
     void call_message_insertion_extraction_operator_multiple();
 
 };
