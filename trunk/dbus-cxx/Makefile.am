@@ -97,6 +97,7 @@ rpm: spec dist-bzip2
 
 srpm: spec dist-bzip2
 	cp $(PACKAGE)-$(VERSION).tar.bz2 ~/rpmbuild/SOURCES/
+	cp $(PACKAGE)-$(VERSION)-doc.tar.bz2 ~/rpmbuild/SOURCES/
 	cp $(PACKAGE_NAME).spec ~/rpmbuild/SPECS/
 	rpmbuild -bs $(PACKAGE_NAME).spec
 
