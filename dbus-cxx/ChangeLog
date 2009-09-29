@@ -1,5 +1,6 @@
 2009-09-21  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
+	* ChangeLog: 0.4.3
 	* dbus-cxx/methodproxybase.cpp, dbus-cxx/object.cpp,
 	  dbus-cxx/objectproxy.cpp, dbus-cxx/timeout.cpp: Fix memory leak
 	  due to pthread items not being destroyed. Thanks to Patrick

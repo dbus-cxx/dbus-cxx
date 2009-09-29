@@ -136,7 +136,16 @@ AC_DEFUN(
                        #include <typeinfo>
                        #include <memory>
                        #include <functional>
-                       #include <bits/concurrence.h>
+                       #ifdef __GNUC__
+                         #if __GNUC_ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 1))
+                           #include <ext/concurrence.h>
+                           #include <tr1/type_traits>
+                         #else
+                           #include <bits/concurrence.h>
+                         #endif
+                       #else
+                         #include <bits/concurrence.h>
+                       #endif
                        #include <ext/mt_allocator.h>
                      ]
                    )
