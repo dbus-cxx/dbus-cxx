@@ -24,6 +24,19 @@ include(template.macros.m4)
 define([CREATE_METHOD],[dnl
       dnl
 template <LIST(class T_return, LOOP(class T_arg%1, [$1]))>
+      DBusCxxPointer<Method<LIST(T_return, LOOP(T_arg%1, $1))> > create_method( const std::string& name )
+      {
+        DBusCxxPointer< Method<LIST(T_return, LOOP(T_arg%1, $1))> > method;
+        method = Method<LIST(T_return, LOOP(T_arg%1, $1))>::create(name);
+        this->add_method( method );
+        return method;
+      }
+      dnl
+])
+    
+define([CREATE_METHOD_SLOT],[dnl
+      dnl
+template <LIST(class T_return, LOOP(class T_arg%1, [$1]))>
       DBusCxxPointer<Method<LIST(T_return, LOOP(T_arg%1, $1))> > create_method( const std::string& name, sigc::slot$1<LIST(T_return, LOOP(T_arg%1, $1))> slot )
       {
         DBusCxxPointer< Method<LIST(T_return, LOOP(T_arg%1, $1))> > method;
@@ -31,6 +44,19 @@ template <LIST(class T_return, LOOP(class T_arg%1, [$1]))>
         method->set_method( slot );
         this->add_method( method );
         return method;
+      }
+      dnl
+])
+    
+define([CREATE_SIGNAL],[dnl
+      dnl
+template <LIST(class T_return, LOOP(class T_arg%1, [$1]))>
+      DBusCxxPointer<signal<LIST(T_return, LOOP(T_arg%1, $1))> > create_signal( const std::string& name )
+      {
+        DBusCxxPointer<DBus::signal<LIST(T_return, LOOP(T_arg%1, $1))> > sig;
+        sig = DBus::signal<LIST(T_return, LOOP(T_arg%1, $1))>::create(m_name, name);
+        if ( this->add_signal(sig) ) return sig;
+        return DBusCxxPointer<DBus::signal<LIST(T_return,LOOP(T_arg%1, [$1]))> >();
       }
       dnl
 ])
@@ -106,16 +132,10 @@ namespace DBus {
       /** Returns the first method with the given name */
       MethodBase::pointer method( const std::string& name ) const;
 
-      template <class T_return, class T_arg1=nil, class T_arg2=nil, class T_arg3=nil, class T_arg4=nil, class T_arg5=nil, class T_arg6=nil, class T_arg7=nil>
-      DBusCxxPointer<Method<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7> > create_method( const std::string& name )
-      {
-        DBusCxxPointer< Method<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7> > method;
-        method = Method<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7>::create(name);
-        this->add_method( method );
-        return method;
-      }
-
 FOR(0, eval(CALL_SIZE),[[CREATE_METHOD(%1)
+]])
+
+FOR(0, eval(CALL_SIZE),[[CREATE_METHOD_SLOT(%1)
 ]])
       /** Adds the named method */
       bool add_method( MethodBase::pointer method );
@@ -153,15 +173,8 @@ FOR(0, eval(CALL_SIZE),[[CREATE_METHOD(%1)
       /** True if this interface has at least one signal with the given name */
       bool has_signal( const std::string& name ) const;
 
-      template <class T_return, class T_arg1=nil, class T_arg2=nil, class T_arg3=nil, class T_arg4=nil, class T_arg5=nil, class T_arg6=nil, class T_arg7=nil>
-      DBusCxxPointer<signal<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7> > create_signal( const std::string& name ) {
-        DBusCxxPointer<DBus::signal<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7> > sig;
-        sig = DBus::signal<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7>::create(m_name, name);
-
-        if ( this->add_signal(sig) ) return sig;
-
-        return DBusCxxPointer<DBus::signal<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7> >();
-      }
+FOR(0, eval(CALL_SIZE),[[CREATE_SIGNAL(%1)
+]])
 
       /** Returns the signals associated with this interface */
       const Signals& signals();
