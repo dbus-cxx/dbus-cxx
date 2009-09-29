@@ -23,46 +23,28 @@ include(template.macros.m4)
 
 define([CREATE_METHOD],[dnl
       dnl
-/**
-      * Creates a method with the given signature and adds it to the default interface
-      */
       template <LIST(class T_return, LOOP(class T_arg%1, [$1]))>
-      DBusCxxPointer<Method<LIST(T_return, LOOP(T_arg%1, $1))> > create_method( const std::string& method_name, sigc::slot$1<LIST(T_return, LOOP(T_arg%1, $1))> slot )
+      DBusCxxPointer<MethodProxy<LIST(T_return, LOOP(T_arg%1, $1))> > create_method( const std::string& interface_name, const std::string& method_name )
       {
-        if ( not m_default_interface )
-        {
-          this->create_interface("");
-          this->set_default_interface("");
-        }
-        // TODO throw an error if the default interface still doesn't exist
-     
-        DBusCxxPointer< Method<LIST(T_return, LOOP(T_arg%1, $1))> > method;
-        method = m_default_interface->create_method<LIST(T_return, LOOP(T_arg%1, $1))>(method_name);
-        method->set_method( slot );
-        return method;
+        InterfaceProxy::pointer interface = this->interface(interface_name);
+        if ( not interface ) interface = this->create_interface( interface_name );
+        return interface->create_method<LIST(T_return, LOOP(T_arg%1, $1))>(method_name);
       }
       dnl
 ])
     
-define([CREATE_INTERFACE_METHOD],[dnl
+define([CREATE_SIGNAL],[dnl
       dnl
-template <LIST(class T_return, LOOP(class T_arg%1, [$1]))>
-      DBusCxxPointer<Method<LIST(T_return, LOOP(T_arg%1, $1))> > create_method( const std::string& interface_name, const std::string& method_name, sigc::slot$1<LIST(T_return, LOOP(T_arg%1, $1))> slot )
+      template <LIST(class T_return, LOOP(class T_arg%1, [$1]))>
+      DBusCxxPointer<signal_proxy<LIST(T_return, LOOP(T_arg%1, $1))> > create_signal( const std::string& interface_name, const std::string& sig_name )
       {
-        Interface::pointer interface;
-        interface = this->interface(interface_name);
-        if ( not interface ) interface = this->create_interface(interface_name);
-        // TODO throw an error if the interface still doesn't exist
-     
-        DBusCxxPointer< Method<LIST(T_return, LOOP(T_arg%1, $1))> > method;
-        method = interface->create_method<LIST(T_return, LOOP(T_arg%1, $1))>(method_name);
-        method->set_method( slot );
-        return method;
+        InterfaceProxy::pointer interface = this->interface(interface_name);
+        if ( not interface ) interface = this->create_interface( interface_name );
+        return interface->create_signal<LIST(T_return, LOOP(T_arg%1, $1))>(sig_name);
       }
       dnl
 ])
     
-
 divert(0)
 dnl
 #ifndef DBUSCXXOBJECTPROXY_H
@@ -302,30 +284,12 @@ namespace DBus
 
       PendingCall::pointer call_async( CallMessage::const_pointer, int timeout_milliseconds=-1 ) const;
 
-      template <class T_return, class T_arg1=nil, class T_arg2=nil, class T_arg3=nil, class T_arg4=nil, class T_arg5=nil, class T_arg6=nil, class T_arg7=nil>
-      DBusCxxPointer<MethodProxy<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7> > create_method( const std::string& interface_name, const std::string& method_name )
-      {
-        InterfaceProxy::pointer interface = this->interface(interface_name);
-        if ( not interface ) interface = this->create_interface( interface_name );
-        return interface->create_method<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7>(method_name);
-      }
-
-      template <class T_return, class T_arg1=nil, class T_arg2=nil, class T_arg3=nil, class T_arg4=nil, class T_arg5=nil, class T_arg6=nil, class T_arg7=nil>
-      DBusCxxPointer<signal_proxy<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7> > create_signal( const std::string& interface_name, const std::string& sig_name )
-      {
-        InterfaceProxy::pointer interface = this->interface(interface_name);
-        if ( not interface ) interface = this->create_interface( interface_name );
-        return interface->create_signal<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7>(sig_name);
-      }
+FOR(0, eval(CALL_SIZE),[[CREATE_METHOD(%1)
+          ]])
+FOR(0, eval(CALL_SIZE),[[CREATE_SIGNAL(%1)
+          ]])      
 
 
-dnl FOR(0, eval(CALL_SIZE),[[BLOCKING_CALL_INTERFACE_METHOD(%1)
-dnl           ]])
-dnl FOR(0, eval(CALL_SIZE),[[CREATE_METHOD(%1)
-dnl           ]])
-dnl FOR(0, eval(CALL_SIZE),[[CREATE_INTERFACE_METHOD(%1)
-dnl           ]])
-      
       sigc::signal<void,InterfaceProxy::pointer> signal_interface_added();
 
       sigc::signal<void,InterfaceProxy::pointer> signal_interface_removed();

@@ -22,12 +22,12 @@ METASOURCES = AUTO
 lib_LTLIBRARIES = libdbus-cxx.la
 library_includedir = $(includedir)/@PACKAGE_NAME@-@PACKAGE_RELEASE@/@PACKAGE_NAME@
 
-dbus_cxx_m4 = dbus_signal.h.m4 signal_proxy.h.m4 method.h.m4 method_impl.h.m4 interface.h.m4 object.h.m4 methodproxybase.h.m4 methodproxy.h.m4
-EXTRA_DIST = dbus_signal.h.m4 signal_proxy.h.m4 method.h.m4 method_impl.h.m4 interface.h.m4 object.h.m4 objectproxy.h.m4  methodproxybase.h.m4 methodproxy.h.m4 template.macros.m4
+dbus_cxx_m4 = dbus_signal.h.m4 connection.h.m4 interfaceproxy.h.m4 signal_proxy.h.m4 method.h.m4 method_impl.h.m4 interface.h.m4 object.h.m4 methodproxybase.h.m4 methodproxy.h.m4
+EXTRA_DIST = dbus_signal.h.m4 connection.h.m4 interfaceproxy.h.m4 signal_proxy.h.m4 method.h.m4 method_impl.h.m4 interface.h.m4 object.h.m4 objectproxy.h.m4  methodproxybase.h.m4 methodproxy.h.m4 template.macros.m4
 
-nodist_libdbus_cxx_la_SOURCES = dbus_signal.h signal_proxy.h method.h method_impl.h interface.h object.h objectproxy.h methodproxybase.h methodproxy.h
-BUILT_SOURCES = dbus_signal.h signal_proxy.h method.h method_impl.h interface.h object.h objectproxy.h methodproxybase.h methodproxy.h
-CLEANFILES = dbus_signal.h signal_proxy.h method.h method_impl.h interface.h object.h objectproxy.h methodproxybase.h methodproxy.h
+nodist_libdbus_cxx_la_SOURCES = dbus_signal.h connection.h interfaceproxy.h signal_proxy.h method.h method_impl.h interface.h object.h objectproxy.h methodproxybase.h methodproxy.h
+BUILT_SOURCES = dbus_signal.h connection.h interfaceproxy.h signal_proxy.h method.h method_impl.h interface.h object.h objectproxy.h methodproxybase.h methodproxy.h
+CLEANFILES = dbus_signal.h connection.h interfaceproxy.h signal_proxy.h method.h method_impl.h interface.h object.h objectproxy.h methodproxybase.h methodproxy.h
 
 # Rules to generate .h and .cc from .h.m4 and .cpp.m4:
 %.h: %.h.m4 template.macros.m4
@@ -36,7 +36,7 @@ CLEANFILES = dbus_signal.h signal_proxy.h method.h method_impl.h interface.h obj
 %.cpp: %.cpp.m4 template.macros.m4
 	        $(M4) $<  > $@
 
-gen: dbus_signal.h signal_proxy.h method.h method_impl.h interface.h object.h objectproxy.h methodproxybase.h methodproxy.h
+gen: dbus_signal.h connection.h signal_proxy.h method.h method_impl.h interface.h object.h objectproxy.h methodproxybase.h methodproxy.h
 
 library_include_HEADERS = accumulators.h callmessage.h connection.h \
 	dbus-cxx-config.h dbus_signal.h dispatcher.h enums.h error.h errormessage.h interface.h \

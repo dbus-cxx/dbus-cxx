@@ -62,7 +62,33 @@ template <LIST(class T_return, LOOP(class T_arg%1, [$1]))>
       dnl
 ])
     
-
+define([CREATE_SIGNAL_N],[dnl
+      dnl
+      template <LIST(class T_return, LOOP(class T_arg%1, [$1]))>
+      DBusCxxPointer<signal<LIST(T_return, LOOP(T_arg%1, $1))> > create_signal( const std::string& name )
+      {
+        DBusCxxPointer<DBus::signal<LIST(T_return, LOOP(T_arg%1, $1))> > sig;
+        Interface::pointer iface = this->default_interface();
+        if ( not iface ) iface = this->create_interface("");
+        sig = iface->create_signal<LIST(T_return, LOOP(T_arg%1, $1))>(name);
+        return sig;
+      }
+      dnl
+])
+    
+define([CREATE_SIGNAL_IN],[dnl
+      dnl
+      template <LIST(class T_return, LOOP(class T_arg%1, [$1]))>
+      DBusCxxPointer<signal<LIST(T_return, LOOP(T_arg%1, $1))> > create_signal( const std::string& iface, const std::string& name )
+      {
+        DBusCxxPointer<DBus::signal<LIST(T_return, LOOP(T_arg%1, $1))> > sig;
+        if ( not has_interface(iface) ) this->create_interface(iface);
+        sig = this->interface(iface)->create_signal<LIST(T_return, LOOP(T_arg%1, $1))>(name);
+        return sig;
+      }
+      dnl
+])
+    
 divert(0)
 dnl
 #ifndef DBUSCXXOBJECT_H
@@ -190,28 +216,10 @@ FOR(0, eval(CALL_SIZE),[[CREATE_INTERFACE_METHOD(%1)
 
       void remove_default_interface();
 
-      template <class T_return, class T_arg1=nil, class T_arg2=nil, class T_arg3=nil, class T_arg4=nil, class T_arg5=nil, class T_arg6=nil, class T_arg7=nil>
-          DBusCxxPointer<signal<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7> > create_signal( const std::string& name ) {
-            DBusCxxPointer<DBus::signal<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7> > sig;
-            Interface::pointer iface = this->default_interface();
-
-            if (not iface) iface = this->create_interface("");
-
-            sig = iface->create_signal<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7>(name);
-
-            return sig;
-          }
-
-      template <class T_return, class T_arg1=nil, class T_arg2=nil, class T_arg3=nil, class T_arg4=nil, class T_arg5=nil, class T_arg6=nil, class T_arg7=nil>
-      DBusCxxPointer<signal<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7> > create_signal( const std::string& iface, const std::string& name ) {
-        DBusCxxPointer<DBus::signal<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7> > sig;
-
-        if ( not has_interface(iface) ) this->create_interface(iface);
-        
-        sig = this->interface(iface)->create_signal<T_return,T_arg1,T_arg2,T_arg3,T_arg4,T_arg5,T_arg6,T_arg7>(name);
-
-        return sig;
-      }
+FOR(0, eval(CALL_SIZE),[[CREATE_SIGNAL_N(%1)
+          ]])
+FOR(0, eval(CALL_SIZE),[[CREATE_SIGNAL_IN(%1)
+          ]])
 
       const Children& children() const;
 
