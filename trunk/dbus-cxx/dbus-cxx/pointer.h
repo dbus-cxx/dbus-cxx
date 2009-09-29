@@ -41,7 +41,12 @@
       #include <typeinfo>
       #include <memory>
       #include <functional>
-      #include <bits/concurrence.h>
+      #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 1 ))
+        #include <ext/concurrence.h>
+        #include <tr1/type_traits>
+      #else
+        #include <bits/concurrence.h>
+      #endif
       #include <ext/mt_allocator.h>
       #include <tr1/boost_shared_ptr.h>
       #define DBusCxxPointer std::tr1::shared_ptr
