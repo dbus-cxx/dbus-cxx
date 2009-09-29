@@ -16,7 +16,7 @@
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>tools/dbus-cxx-xml2cpp</activetarget>
+      <activetarget>examples/basics/signals/signal-receiver-array</activetarget>
       <useconfiguration>default</useconfiguration>
     </general>
     <run>
@@ -44,6 +44,8 @@
         <caller_dispatched/>
         <glibmm-caller-dispatched/>
         <glibmm-callee-dispatched/>
+        <signal-emitter-array/>
+        <signal-receiver-array/>
       </runarguments>
       <customdirectory>/</customdirectory>
       <programargs/>
@@ -70,6 +72,8 @@
         <caller_dispatched/>
         <glibmm-caller-dispatched/>
         <glibmm-callee-dispatched/>
+        <signal-emitter-array/>
+        <signal-receiver-array/>
       </debugarguments>
       <cwd>
         <callee_simple>/home/rvinyard/projects/dbus-cxx/debug/./examples/basics</callee_simple>
@@ -86,6 +90,8 @@
         <caller_dispatched>/home/rvinyard/projects/dbus-cxx/debug/./examples/basics</caller_dispatched>
         <glibmm-caller-dispatched>/home/rvinyard/projects/dbus-cxx/./tools</glibmm-caller-dispatched>
         <glibmm-callee-dispatched>/home/rvinyard/projects/dbus-cxx/./tools</glibmm-callee-dispatched>
+        <signal-emitter-array>/home/rvinyard/projects/dbus-cxx/./examples/basics/signals</signal-emitter-array>
+        <signal-receiver-array>/home/rvinyard/projects/dbus-cxx/./examples/basics/signals</signal-receiver-array>
       </cwd>
     </run>
     <configurations>
