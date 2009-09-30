@@ -107,7 +107,7 @@ AC_CHECK_LIB(expat,main)
 #########################################################################
 #  header checks
 #########################################################################
-
+PKG_CHECK_MODULES(DBUS_VER,dbus-1 >= 1.2,AC_DEFINE(HAVE_DBUS_12,[],[If defined, dbus 1.2 or higher is present]),[AC_MSG_RESULT(dbus < 1.2)])
 
 #########################################################################
 #  Look for smart pointers in either tr1 or boost
