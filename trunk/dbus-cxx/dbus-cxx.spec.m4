@@ -8,13 +8,17 @@ Group:            System Environment/Libraries
 Source0:          http://downloads.sourceforge.net/dbus-cxx/%{name}-%{version}.tar.bz2
 Source1:          http://downloads.sourceforge.net/dbus-cxx/%{name}-%{version}-doc.tar.bz2
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:    dbus-devel >= 1.2
+BuildRequires:    dbus-devel >= 1.1
 BuildRequires:    libsigc++20-devel >= 2.0.0
 BuildRequires:    glibmm24-devel >= 2.4.0
 BuildRequires:    pkgconfig
 BuildRequires:    m4
 BuildRequires:    expat-devel
+%if 0%{?fedora} > 8 || 0%{?rhel} > 5
 BuildRequires:    popt-devel
+%else
+BuildRequires:    popt
+%endif
 
 %description
 C++ wrapper for the DBus C reference implementation.
@@ -156,6 +160,9 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 %{_includedir}/dbus-cxx-PACKAGE_RELEASE/dbus-cxx-glibmm/
 
 %changelog
+* Tue Sep 29 2009 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.5.0-1
+- New release
+
 * Mon Sep 21 2009 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.4.3-1
 - New release
 

@@ -9,9 +9,9 @@
     <ignoreparts/>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description/>
+    <description></description>
     <projectname>dbuscxx</projectname>
-    <defaultencoding/>
+    <defaultencoding></defaultencoding>
     <versioncontrol/>
   </general>
   <kdevautoproject>
@@ -132,19 +132,19 @@
       <default>
         <envvars/>
         <configargs>--enable-doc --enable-examples --enable-unit-tests --enable-tools --enable-glibmm</configargs>
-        <builddir/>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
+        <builddir></builddir>
+        <topsourcedir></topsourcedir>
+        <cppflags></cppflags>
+        <ldflags></ldflags>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevpgf77options</f77compiler>
-        <ccompilerbinary/>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
-        <cflags/>
-        <cxxflags/>
-        <f77flags/>
+        <ccompilerbinary></ccompilerbinary>
+        <cxxcompilerbinary></cxxcompilerbinary>
+        <f77compilerbinary></f77compilerbinary>
+        <cflags></cflags>
+        <cxxflags>-Wall</cxxflags>
+        <f77flags></f77flags>
       </default>
     </configurations>
     <make>
@@ -156,7 +156,7 @@
       <runmultiplejobs>true</runmultiplejobs>
       <numberofjobs>2</numberofjobs>
       <dontact>false</dontact>
-      <makebin/>
+      <makebin></makebin>
       <prio>0</prio>
     </make>
   </kdevautoproject>
@@ -164,10 +164,10 @@
     <general>
       <dbgshell>libtool</dbgshell>
       <programargs/>
-      <gdbpath/>
-      <configGdbScript/>
-      <runShellScript/>
-      <runGdbScript/>
+      <gdbpath></gdbpath>
+      <configGdbScript></configGdbScript>
+      <runShellScript></runShellScript>
+      <runGdbScript></runGdbScript>
       <breakonloadinglibs>false</breakonloadinglibs>
       <separatetty>true</separatetty>
       <floatingtoolbar>false</floatingtoolbar>
@@ -275,7 +275,7 @@
       <designerpluginpaths/>
     </qt>
     <creategettersetter>
-      <prefixGet/>
+      <prefixGet></prefixGet>
       <prefixSet>set</prefixSet>
       <prefixVariable>m_,_</prefixVariable>
       <parameterName>theValue</parameterName>
