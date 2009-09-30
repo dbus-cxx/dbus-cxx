@@ -122,10 +122,7 @@ namespace DBus
 
   InterfaceProxy::pointer ObjectProxy::operator[]( const std::string& name ) const
   {
-    InterfaceProxy::pointer interface;
-    interface = this->interface( name );
-    if ( not interface )
-      return this->interface( name );
+    return this->interface(name);
   }
 
   bool ObjectProxy::add_interface( InterfaceProxy::pointer interface )

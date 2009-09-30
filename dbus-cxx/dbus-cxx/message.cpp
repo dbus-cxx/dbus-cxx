@@ -161,11 +161,11 @@ namespace DBus
     return 0;
   }
 
-  Message Message::copy()
-  {
+//   Message Message::copy()
+//   {
     // TODO fix
 //     return Message( *this, CREATE_COPY );
-  }
+//   }
 
   int Message::type() const
   {

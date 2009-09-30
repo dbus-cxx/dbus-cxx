@@ -56,7 +56,7 @@ namespace DBus
 
       typedef DBusCxxPointer<MethodBase> pointer;
 
-      ~MethodBase();
+      virtual ~MethodBase();
 
       const std::string& name() const;
 

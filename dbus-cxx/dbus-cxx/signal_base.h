@@ -63,7 +63,7 @@ namespace DBus
 
       typedef DBusCxxPointer<signal_base> pointer;
 
-      ~signal_base();
+      virtual ~signal_base();
 
       DBusCxxPointer<Connection> connection();
 
@@ -108,11 +108,11 @@ namespace DBus
 
       std::string m_sender;
 
+      Path m_path;
+
       std::string m_interface;
 
       std::string m_name;
-
-      Path m_path;
 
       std::string m_destination;
 

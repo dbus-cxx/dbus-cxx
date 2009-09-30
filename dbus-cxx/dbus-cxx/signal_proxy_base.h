@@ -48,7 +48,7 @@ namespace DBus
 
       signal_proxy_base(const signal_proxy_base& other);
 
-      ~signal_proxy_base();
+      virtual ~signal_proxy_base();
 
       virtual HandlerResult handle_signal( SignalMessage::const_pointer );
 
@@ -97,7 +97,7 @@ namespace DBus
 
       static pointer create(const signal_proxy_simple& other);
 
-      ~signal_proxy_simple();
+      virtual ~signal_proxy_simple();
 
       /**
        * This method is needed to be able to create a duplicate of a child

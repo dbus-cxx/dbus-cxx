@@ -18,6 +18,7 @@
  ***************************************************************************/
 #include "objectpathhandler.h"
 #include "connection.h"
+#include "dbus-cxx-config.h"
 
 namespace DBus
 {
@@ -71,12 +72,20 @@ namespace DBus
       this->unregister( conn );
     }
     
+#ifdef DBUS_CXX_HAVE_DBUS_12
     if ( m_primary_fallback == PRIMARY )
       result = dbus_connection_try_register_object_path( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this, error.cobj() );
     else
       result = dbus_connection_try_register_fallback( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this, error.cobj() );
-
-    if ( not result or error ) return false;
+    if ( error ) return false;
+#else
+    if ( m_primary_fallback == PRIMARY )
+      result = dbus_connection_register_object_path( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this );
+    else
+      result = dbus_connection_register_fallback( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this );
+#endif
+    
+    if ( not result ) return false;
 
     m_connection = conn;
     

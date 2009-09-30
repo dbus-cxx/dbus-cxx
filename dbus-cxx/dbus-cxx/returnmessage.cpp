@@ -80,6 +80,7 @@ namespace DBus
   {
     m_cobj = other.cobj();
     if ( other.cobj() != NULL ) dbus_message_ref( m_cobj );
+    return *this;
   }
 
   bool ReturnMessage::set_reply_serial( uint32_t s )

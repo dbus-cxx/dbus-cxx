@@ -54,9 +54,9 @@ namespace DBus
   }
 
   signal_base::signal_base(const signal_base& other):
+      m_path(other.m_path),
       m_interface(other.m_interface),
       m_name(other.m_name),
-      m_path(other.m_path),
       m_destination(other.m_destination)
   {
     // TODO connect to the other's connection
