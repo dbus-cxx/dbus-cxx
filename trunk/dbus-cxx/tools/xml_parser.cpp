@@ -250,8 +250,6 @@ void start_element_handler( void* userData, const XML_Char* name, const XML_Char
 
 void end_element_handler( void* userData, const XML_Char* name )
 {
-  int i;
-
   XMLTag current_tag = xml_tag(name);
 
 //   std::cout << "End Tag:   " << xml_tag_strings[current_tag] << std::endl;
@@ -312,6 +310,8 @@ void end_element_handler( void* userData, const XML_Char* name )
         node_stack.pop_front();
         node_stack.front().children.push_back(current);
       }
+      break;
+    default:
       break;
   }
   
