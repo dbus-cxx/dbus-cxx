@@ -92,7 +92,7 @@ int main( int argc, const char** argv )
 
 //     std::cout << "Parsed" << std::endl;
 
-    for ( int i = 0; i < nodes.size(); i++ )
+    for ( unsigned i = 0; i < nodes.size(); i++ )
     {
       proxy_h.clear();
       proxy_cpp.clear();

@@ -46,12 +46,12 @@ std::string generate_proxy_h(Node n)
 
   bool inherit_from_dbus_objectproxy = n.proxy_parent.empty();
 
-  for ( int i = 0; i < nsu.size(); i++ ) class_indent += tab;
+  for ( unsigned i = 0; i < nsu.size(); i++ ) class_indent += tab;
 
   decl_indent = class_indent + tab + tab;
 
   std::string definestr = "__DBUS_PROXY_";
-  for ( int i = 0; i < nsu.size(); i++ ) definestr += nsu[i] + "_";
+  for ( unsigned i = 0; i < nsu.size(); i++ ) definestr += nsu[i] + "_";
   definestr += n.cppname_upper() + "_H";
 
   sout << "#ifndef " << definestr << "\n"
@@ -126,11 +126,11 @@ std::string generate_proxy_h(Node n)
 
   sout << "\n";
 
-  for ( int i=0; i < n.interfaces.size(); i++ )
+  for ( unsigned i=0; i < n.interfaces.size(); i++ )
   {
     if ( n.interfaces[i].ignored ) continue;
     std::vector<std::string> decls = n.interfaces[i].cpp_adapter_methods_signals_create();
-    for ( int k=0; k < decls.size(); k++ )
+    for ( unsigned k=0; k < decls.size(); k++ )
       sout << decl_indent << tab << decls[k] << "\n";
   }
 
@@ -149,11 +149,11 @@ std::string generate_proxy_h(Node n)
 
   sout << "\n";
   
-  for ( int i=0; i < n.interfaces.size(); i++ )
+  for ( unsigned i=0; i < n.interfaces.size(); i++ )
   {
     if ( n.interfaces[i].ignored ) continue;
     std::vector<std::string> decls = n.interfaces[i].cpp_proxy_methods_signals();
-    for ( int k=0; k < decls.size(); k++ )
+    for ( unsigned k=0; k < decls.size(); k++ )
       sout << decl_indent << decls[k] << "\n\n";
   }
 
@@ -168,7 +168,7 @@ std::string generate_proxy_h(Node n)
   {
     if ( n.interfaces[i].ignored ) continue;
     std::vector<std::string> decls = n.interfaces[i].cpp_declare_proxy_objects();
-    for ( int k=0; k < decls.size(); k++ )
+    for ( unsigned k=0; k < decls.size(); k++ )
       sout << decl_indent << decls[k] << "\n";
     sout << "\n";
   }

@@ -34,14 +34,14 @@ std::string generate_adapter_h(Node n)
 
   bool inherit_from_dbus_object = n.adapter_parent.empty();
 
-  for ( int i=0; i < n.interfaces.size(); i++ ) n.interfaces[i].node = &n;
+  for ( unsigned i=0; i < n.interfaces.size(); i++ ) n.interfaces[i].node = &n;
 
-  for ( int i = 0; i < nsu.size(); i++ ) class_indent += tab;
+  for ( unsigned i = 0; i < nsu.size(); i++ ) class_indent += tab;
 
   decl_indent = class_indent + tab + tab;
 
   std::string definestr = "__DBUS_ADAPTER_";
-  for ( int i = 0; i < nsu.size(); i++ ) definestr += nsu[i] + "_";
+  for ( unsigned i = 0; i < nsu.size(); i++ ) definestr += nsu[i] + "_";
   definestr += n.cppname_upper() + "_H";
 
   sout << "#ifndef " << definestr << "\n"
@@ -103,11 +103,11 @@ std::string generate_adapter_h(Node n)
        << decl_indent << "{\n\n"
        << decl_indent << tab << "::DBus::MethodBase::pointer temp_method;\n\n";
 
-  for ( int i=0; i < n.interfaces.size(); i++ )
+  for ( unsigned i=0; i < n.interfaces.size(); i++ )
   {
     if ( n.interfaces[i].ignored ) continue;
     std::vector<std::string> decls = n.interfaces[i].cpp_adapter_creation();
-    for ( int k=0; k < decls.size(); k++ )
+    for ( unsigned k=0; k < decls.size(); k++ )
       sout << decl_indent << tab << decls[k] << "\n";
   }
 
@@ -183,11 +183,11 @@ std::string generate_adapter_h(Node n)
 
   sout << "\n" << decl_indent << "void check_adaptee() { if ( not m_adaptee) throw ::DBus::ErrorInvalidAdaptee(); }\n\n";
 
-  for ( int i=0; i < n.interfaces.size(); i++ )
+  for ( unsigned i=0; i < n.interfaces.size(); i++ )
   {
     if ( n.interfaces[i].ignored ) continue;
     std::vector<std::string> decls = n.interfaces[i].cpp_adapter_stubs();
-    for ( int k=0; k < decls.size(); k++ )
+    for ( unsigned k=0; k < decls.size(); k++ )
       sout << decl_indent << decls[k] << "\n";
     sout << "\n";
   }
