@@ -29,8 +29,6 @@ void callback(std::string);
 
 int main()
 {
-  int ret;
-
   DBus::init();
 
   DBus::Dispatcher dispatcher;

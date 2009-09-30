@@ -60,4 +60,5 @@ DBus::HandlerResult print( DBus::SignalMessage::const_pointer msg)
   std::string val;
   msg >> val;
   std::cout << "Got Signal with value " << val << std::endl;
+  return DBus::HANDLED;
 }

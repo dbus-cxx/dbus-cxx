@@ -30,8 +30,6 @@ using namespace DBus;
     
 int main()
 {
-  int ret;
-  
   DBus::init();
 
   Connection::pointer connection = DBus::Connection::create( DBus::BUS_SESSION );

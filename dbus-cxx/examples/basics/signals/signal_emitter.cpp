@@ -33,8 +33,6 @@
 
 int main()
 {
-  int ret;
-
   DBus::init();
   
   DBus::Connection::pointer connection = DBus::Connection::create( DBus::BUS_SESSION );
