@@ -87,6 +87,7 @@ namespace DBus
   Error& Error::operator=( Error& other )
   {
     dbus_move_error( &m_cobj, &( other.m_cobj ) );
+    return *this;
   }
 
   void Error::set( const char* name, const char* message )

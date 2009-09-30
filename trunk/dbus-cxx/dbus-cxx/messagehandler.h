@@ -50,7 +50,7 @@ namespace DBus
 
       typedef DBusCxxWeakPointer<MessageHandler> weak_pointer;
 
-      ~MessageHandler();
+      virtual ~MessageHandler();
 
       /** The default implementation simply emits the message signal and returns the result */
       virtual HandlerResult handle_message( DBusCxxPointer<Connection>, Message::const_pointer );

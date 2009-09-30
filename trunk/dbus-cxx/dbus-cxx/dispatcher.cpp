@@ -273,7 +273,7 @@ namespace DBus
 
   void Dispatcher::watch_thread_main()
   {
-    fd_set read_fds, write_fds, exception_fds;
+    fd_set read_fds, write_fds;
     int max_fd;
     int selresult;
     std::set<int>::iterator fditer;
@@ -536,6 +536,7 @@ namespace DBus
     if ( not timeout or not timeout->is_valid() ) return false;
     
     DBUS_CXX_DEBUG( "Dispatcher::on_add_timeout  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
+    return true;
   }
 
   bool Dispatcher::on_remove_timeout(Timeout::pointer timeout)
@@ -543,6 +544,7 @@ namespace DBus
     if ( not timeout or not timeout->is_valid() ) return false;
     
     DBUS_CXX_DEBUG( "Dispatcher::on_remove_timeout  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
+    return true;
   }
 
   bool Dispatcher::on_timeout_toggled(Timeout::pointer timeout)
@@ -550,6 +552,7 @@ namespace DBus
     if ( not timeout or not timeout->is_valid() ) return false;
     
     DBUS_CXX_DEBUG( "Dispatcher::on_timeout_toggled  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
+    return true;
   }
 
   void Dispatcher::on_wakeup_main(Connection::pointer conn)

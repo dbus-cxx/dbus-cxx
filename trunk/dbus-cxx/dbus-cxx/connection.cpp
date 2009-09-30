@@ -42,7 +42,6 @@ namespace DBus
 
   Connection::Connection( BusType type, bool is_private ): m_cobj( NULL )
   {
-    dbus_bool_t result;
     Error error;
 
     if ( type != BUS_NONE ) {
@@ -644,6 +643,7 @@ namespace DBus
   bool Connection::unregister_object(const std::string & path)
   {
     // TODO implement this
+    return false;
   }
 
   signal_proxy_simple::pointer Connection::create_signal_proxy(const std::string & interface, const std::string & name)

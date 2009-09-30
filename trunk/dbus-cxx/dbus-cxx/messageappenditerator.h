@@ -97,10 +97,9 @@ namespace DBus
 
       template <typename T>
       void append( const std::vector<T>& v ) {
-        T t;
-        this->open_container( CONTAINER_ARRAY, DBus::signature( t ).c_str() );
+        this->open_container( CONTAINER_ARRAY, DBus::signature<T>().c_str() );
         
-        for ( int i=0; i < v.size(); i++ )
+        for ( size_t i=0; i < v.size(); i++ )
           m_subiter->append( v[i] );
         
         this->close_container();

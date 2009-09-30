@@ -97,11 +97,11 @@ namespace DBus
 
       std::string m_sender;
 
+      Path m_path;
+
       std::string m_interface;
 
       std::string m_member;
-
-      Path m_path;
 
       std::string m_destination;
 

@@ -49,6 +49,8 @@ ifelse($1, $2,[dnl
     Method(const std::string& name):
       MethodBase(name)
     {  }
+    
+    virtual ~Method() { }
 
     virtual HandlerResult handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message )
     {

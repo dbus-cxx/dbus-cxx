@@ -50,7 +50,7 @@ namespace DBus
 
       static pointer create(const std::string& path, PrimaryFallback pf=PRIMARY);
       
-      ~ObjectPathHandler();
+      virtual ~ObjectPathHandler();
 
       /** Returns the path this handler is associated with */
       const Path& path() const;

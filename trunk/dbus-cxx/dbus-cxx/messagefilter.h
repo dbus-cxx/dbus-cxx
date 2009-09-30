@@ -43,7 +43,7 @@ namespace DBus
 
       typedef DBusCxxWeakPointer<MessageFilter> weak_pointer;
 
-      ~MessageFilter();
+      virtual ~MessageFilter();
 
       /** The default implementation simply emits the message signal and returns the result */
 //       virtual HandlerResult handle_message( DBusCxxPointer<Connection>, Message::const_pointer );

@@ -254,6 +254,33 @@ namespace DBus
   
   inline Type type( float )               { return TYPE_DOUBLE; }
 
+  template <typename T> inline Type type()          { return std::string(); /* This is 
+invalid; you must use one of the specializations only */}
+  template<> inline Type type<uint8_t>()            { return TYPE_BYTE; }
+  template<> inline Type type<bool>()               { return TYPE_BOOLEAN; }
+  template<> inline Type type<int16_t>()            { return TYPE_INT16; }
+  template<> inline Type type<uint16_t>()           { return TYPE_UINT16; }
+  template<> inline Type type<int32_t>()            { return TYPE_INT32; }
+  template<> inline Type type<uint32_t>()           { return TYPE_UINT32; }
+  template<> inline Type type<int64_t>()            { return TYPE_INT64; }
+  template<> inline Type type<uint64_t>()           { return TYPE_UINT64; }
+  template<> inline Type type<double>()             { return TYPE_DOUBLE; }
+  template<> inline Type type<const std::string&>() { return TYPE_STRING; }
+  template<> inline Type type<const char*>()        { return TYPE_STRING; }
+  template<> inline Type type<Path>()               { return TYPE_OBJECT_PATH; }
+  template<> inline Type type<Signature>()          { return TYPE_SIGNATURE; }
+//   template<> inline Type type<Variant>()            { return TYPE_VARIANT; }
+  
+  template<> inline Type type<char>()               { return TYPE_BYTE; }
+  template<> inline Type type<int8_t>()             { return TYPE_BYTE; }
+
+#if DBUS_CXX_SIZEOF_LONG_INT == 4
+  template<> inline Type type<long int>()           { return TYPE_INT32; }
+  template<> inline Type type<long unsigned int>()  { return TYPE_UINT32; }
+#endif
+  
+  template<> inline Type type<float>()              { return TYPE_DOUBLE; }
+
 
 //   template <typename T> inline Type type(const std::vector<T>&) { return TYPE_ARRAY; }
 
@@ -291,6 +318,21 @@ namespace DBus
   inline std::string type_string( Path )        { return "Path"; }
   inline std::string type_string( Signature )   { return "Signature"; }
 //   inline std::string type_string( Variant )     { return "Variant"; }
+
+  template <typename T> inline std::string type_string()   { return 1; /* This is invalid; you must use one of the specializations only */}
+  template<> inline std::string type_string<uint8_t>()     { return "byte"; }
+  template<> inline std::string type_string<bool>()        { return "boolean"; }
+  template<> inline std::string type_string<int16_t>()     { return "int16_t"; }
+  template<> inline std::string type_string<uint16_t>()    { return "uint16_t"; }
+  template<> inline std::string type_string<int32_t>()     { return "int32_t"; }
+  template<> inline std::string type_string<uint32_t>()    { return "uint32_t"; }
+  template<> inline std::string type_string<int64_t>()     { return "int64_t"; }
+  template<> inline std::string type_string<uint64_t>()    { return "uint64_t"; }
+  template<> inline std::string type_string<double>()      { return "double"; }
+  template<> inline std::string type_string<std::string>() { return "std::string"; }
+  template<> inline std::string type_string<Path>()        { return "Path"; }
+  template<> inline std::string type_string<Signature>()   { return "Signature"; }
+//   template<> inline std::string type_string<Variant>()     { return "Variant"; }
 
   inline std::string type_string_from_code( DBus::Type t )
   {

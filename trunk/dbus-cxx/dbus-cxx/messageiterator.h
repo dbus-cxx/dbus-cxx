@@ -263,7 +263,6 @@ namespace DBus
 
       template <typename T>
       std::vector<T> get_array() {
-        T t;
         
         if ( not this->is_array() )
           throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
@@ -271,9 +270,9 @@ namespace DBus
         if ( not this->is_fixed() )
           throw ErrorInvalidTypecast( "MessageIterator: Extracting non fixed array into std::vector" );
         
-        if ( this->element_type() != DBus::type( t ) ) {
+        if ( this->element_type() != DBus::type<T>() ) {
           std::string s = "MessageIterator: Extracting DBus array type ";
-          s += type_string( t );
+          s += type_string<T>();
           s += " into C++ vector with RTTI type ";
           s += typeid( T ).name();
           throw ErrorInvalidTypecast( s.c_str() );
@@ -297,7 +296,6 @@ namespace DBus
       
       template <typename T>
       void get_array(std::vector<T>& array) {
-        T t;
         
         if ( not this->is_array() )
           throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
@@ -305,9 +303,9 @@ namespace DBus
         if ( not this->is_fixed() )
           throw ErrorInvalidTypecast( "MessageIterator: Extracting non fixed array into std::vector" );
         
-        if ( this->element_type() != DBus::type( t ) ) {
+        if ( this->element_type() != DBus::type<T>() ) {
           std::string s = "MessageIterator: Extracting DBus array type ";
-          s += type_string( t );
+          s += type_string<T>();
           s += " into C++ vector with RTTI type ";
           s += typeid( T ).name();
           throw ErrorInvalidTypecast( s.c_str() );
@@ -331,6 +329,7 @@ namespace DBus
       MessageIterator& operator>>( std::vector<T>& v )
       {
         this->get_array<T>(v);
+        return *this;
       }
 
       template <typename T>

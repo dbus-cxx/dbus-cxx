@@ -106,7 +106,7 @@ namespace DBus
 
       uint32_t serial() const;
 
-      Message copy();
+//       Message copy();
 
       int type() const;
 
