@@ -101,6 +101,12 @@ srpm: spec dist-bzip2
 	cp $(PACKAGE_NAME).spec ~/rpmbuild/SPECS/
 	rpmbuild -bs $(PACKAGE_NAME).spec
 
+srpm-md5: spec dist-bzip2
+	cp $(PACKAGE)-$(VERSION).tar.bz2 ~/rpmbuild/SOURCES/
+	cp $(PACKAGE)-$(VERSION)-doc.tar.bz2 ~/rpmbuild/SOURCES/
+	cp $(PACKAGE_NAME).spec ~/rpmbuild/SPECS/
+	rpmbuild-md5 -bs $(PACKAGE_NAME).spec
+
 mockbuild: srpm
 	mock --rebuild ~/rpmbuild/SRPMS/$(PACKAGE)-$(VERSION)*.src.rpm
 
