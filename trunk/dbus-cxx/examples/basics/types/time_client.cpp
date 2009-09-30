@@ -43,7 +43,7 @@ int main(int argc, const char** argv)
   char format_string[200];
   char formatted_time[200];
   
-  snprintf(format_string, 200, "%%a, %%d %%b %%Y %%H:%%M:%%S.%09d %%z", current.tv_usec);
+  snprintf(format_string, 200, "%%a, %%d %%b %%Y %%H:%%M:%%S.%09d %%z", (int)(current.tv_usec));
   strftime( formatted_time, 200, format_string, &tm_current );
   
   std::cout << "The current time is: " << formatted_time << std::endl;

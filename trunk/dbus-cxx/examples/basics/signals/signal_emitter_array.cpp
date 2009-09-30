@@ -29,8 +29,6 @@ void callback(std::vector<double> array);
 
 int main()
 {
-  int ret;
-
   DBus::init();
 
   DBus::Dispatcher dispatcher;
@@ -58,6 +56,6 @@ void callback(std::vector<double> array)
 {
   std::cout << "signal-emitter-array callback: " << std::endl;
   std::cout << "\tArray size:" << array.size() << std::endl;
-  for (int i=0; i < array.size(); i++)
+  for (unsigned i=0; i < array.size(); i++)
     std::cout << "\t\tElement " << i << " = " << array[i] << std::endl;
 }
