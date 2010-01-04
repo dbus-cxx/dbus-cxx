@@ -264,6 +264,7 @@ namespace DBus
     if ( ! m_subiter ) return;
     success = dbus_message_iter_close_container( &m_cobj, m_subiter->cobj() );
     delete m_subiter;
+    m_subiter = NULL;
     if ( ! success ) throw ErrorNoMemory( "MessageAppendIterator::close_container: No memory to close the container" );
   }
 
