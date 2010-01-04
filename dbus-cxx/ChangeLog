@@ -1,5 +1,12 @@
+2010-01-04  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* dbus-cxx/messageappenditerator.cpp: Fix bug in subiter not set to
+	  NULL. Caused problems when creating a second child container.
+
 2009-09-30  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
+	* ChangeLog, Makefile.am, dbus-cxx.spec.m4, dbuscxx.kdevelop: =====
+	  0.5.0 =====
 	* configure.ac: Added check to allow conditional building against
 	  dbus 1.1
 	* dbus-cxx:
