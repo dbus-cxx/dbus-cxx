@@ -64,6 +64,12 @@ RELEASE_NOTES = $(PACKAGE)-$(VERSION)-release-notes.txt
 TO_UPLOAD_RN = $(TO_UPLOAD) $(RELEASE_NOTES)
 
 release-notes:
+	echo "dbus-cxx is a C++ wrapper for the dbus library" > $(RELEASE_NOTES)
+	echo "http://dbus-cxx.sourceforge.net" >> $(RELEASE_NOTES)
+	echo >> $(RELEASE_NOTES)
+	echo ===== $(VERSION) ===== >> $(RELEASE_NOTES)
+	echo >> $(RELEASE_NOTES)
+	echo >> $(RELEASE_NOTES)
 	gedit $(RELEASE_NOTES) ChangeLog
 
 upload-release-only:
