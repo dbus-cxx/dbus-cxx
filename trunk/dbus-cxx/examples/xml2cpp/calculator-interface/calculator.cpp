@@ -111,7 +111,7 @@ namespace Examples
   {
     if ( n == 0 ) return 0;
     if ( n > 6 ) return 0;
-    uint64_t result, prev, neg, current, mask;
+    uint64_t result, prev, neg, mask;
     prev = compute_thue_morse( n-1 );
     mask = ~( 0xFFFFFFFFFFFFFFFFULL << (int)pow(2,n-1) );
     neg = ( ~prev ) & mask;
