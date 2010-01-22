@@ -59,6 +59,11 @@ namespace DBus
     return pointer( new Error( name, message ) );
   }
 
+  Error::pointer Error::create( Message& message )
+  {
+     return pointer( new Error( message ) );
+  }
+
   Error::~Error( ) throw()
   {
     dbus_error_free( &m_cobj );
@@ -84,11 +89,11 @@ namespace DBus
     return this->is_set();
   }
 
-  Error& Error::operator=( Error& other )
-  {
-    dbus_move_error( &m_cobj, &( other.m_cobj ) );
-    return *this;
-  }
+//   Error& Error::operator=( Error& other )
+//   {
+//     dbus_move_error( &m_cobj, &( other.m_cobj ) );
+//     return *this;
+//   }
 
   void Error::set( const char* name, const char* message )
   {

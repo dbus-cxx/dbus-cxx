@@ -21,8 +21,8 @@
 #  package specific values
 #########################################################################
 pushdef([PACKAGE_MAJOR_VERSION], [0])
-pushdef([PACKAGE_MINOR_VERSION], [5])
-pushdef([PACKAGE_MICRO_VERSION], [1])
+pushdef([PACKAGE_MINOR_VERSION], [6])
+pushdef([PACKAGE_MICRO_VERSION], [0])
 pushdef([PKG_VERSION], PACKAGE_MAJOR_VERSION.PACKAGE_MINOR_VERSION.PACKAGE_MICRO_VERSION)
 
 AC_INIT([dbus-cxx], PKG_VERSION, [rvinyard@cs.nmsu.edu])

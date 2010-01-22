@@ -25,7 +25,7 @@ namespace DBus
       : m_cobj( cobj )
   {
     if ( m_cobj && !dbus_pending_call_set_notify( m_cobj, PendingCall::notify_callback, this, NULL ) ) {
-      throw ErrorNoMemory( "Unable to initialize pending call" );
+      throw ErrorNoMemory::create( "Unable to initialize pending call" );
     }
   }
 

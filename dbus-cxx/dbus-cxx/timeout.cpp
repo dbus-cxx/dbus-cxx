@@ -56,19 +56,19 @@ namespace DBus
 
   int Timeout::interval( ) const
   {
-    if ( not this->is_valid() ) throw ErrorInvalidCObject();
+    if ( not this->is_valid() ) throw ErrorInvalidCObject::create();
     return dbus_timeout_get_interval( m_cobj );
   }
 
   bool Timeout::is_enabled( ) const
   {
-    if ( not this->is_valid() ) throw ErrorInvalidCObject();
+    if ( not this->is_valid() ) throw ErrorInvalidCObject::create();
     return dbus_timeout_get_enabled( m_cobj );
   }
 
   bool Timeout::handle( )
   {
-    if ( not this->is_valid() ) throw ErrorInvalidCObject();
+    if ( not this->is_valid() ) throw ErrorInvalidCObject::create();
     return dbus_timeout_handle( m_cobj );
   }
 
@@ -89,7 +89,7 @@ namespace DBus
     {
       if ( not m_is_armed )
       {
-        struct sigevent sigevent = {0};
+        struct sigevent sigevent = {{0},0};
 
         sigevent.sigev_notify = SIGEV_THREAD;
         sigevent.sigev_value.sival_ptr = this;
@@ -103,7 +103,7 @@ namespace DBus
       long int nsec;
       sec = intv / 1000;
       nsec = (intv % 1000) * 1000000;
-      struct itimerspec its = { sec, nsec, sec, nsec };
+      struct itimerspec its = { {sec, nsec}, {sec, nsec} };
 
       timer_settime( &m_timer_id, 0, &its, NULL );
 
