@@ -31,10 +31,10 @@ namespace DBus
   CallMessage::CallMessage( DBusMessage* cobj )
   {
     if ( cobj == NULL )
-      throw ErrorInvalidCObject();
+      throw ErrorInvalidCObject::create();
 
     if ( dbus_message_get_type( cobj ) != DBUS_MESSAGE_TYPE_METHOD_CALL )
-      throw ErrorInvalidMessageType();
+      throw ErrorInvalidMessageType::create();
 
     m_cobj = cobj;
     dbus_message_ref( m_cobj );
@@ -43,7 +43,7 @@ namespace DBus
   CallMessage::CallMessage( Message::pointer msg )
   {
     if ( msg->type() != CALL_MESSAGE )
-      throw ErrorInvalidMessageType();
+      throw ErrorInvalidMessageType::create();
 
     if ( msg and *msg )
     {
@@ -55,7 +55,7 @@ namespace DBus
   CallMessage::CallMessage( Message::const_pointer msg )
   {
     if ( msg->type() != CALL_MESSAGE )
-      throw ErrorInvalidMessageType();
+      throw ErrorInvalidMessageType::create();
 
     if ( msg and *msg )
     {
@@ -202,7 +202,7 @@ namespace DBus
   bool CallMessage::expects_reply() const
   {
     if ( m_cobj == NULL ) return false;
-    return dbus_message_get_no_reply( m_cobj );
+    return !dbus_message_get_no_reply( m_cobj );
   }
 
 }
