@@ -42,7 +42,7 @@ namespace DBus
     if ( threadsafe )
     {
       retval = pthread_mutex_lock( & init_mutex );
-      if ( retval ) throw ErrorDeadlock();
+      if ( retval ) throw ErrorDeadlock::create();
     }
     
     if ( not initialized_var ) {
@@ -58,7 +58,7 @@ namespace DBus
     if ( threadsafe )
     {
       retval = pthread_mutex_unlock( & init_mutex );
-      if ( retval ) throw ErrorNotOwner();
+      if ( retval ) throw ErrorNotOwner::create();
     }
   
   }

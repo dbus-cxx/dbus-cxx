@@ -265,17 +265,17 @@ namespace DBus
       std::vector<T> get_array() {
         
         if ( not this->is_array() )
-          throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
+          throw ErrorInvalidTypecast::create( "MessageIterator: Extracting non array into std::vector" );
         
         if ( not this->is_fixed() )
-          throw ErrorInvalidTypecast( "MessageIterator: Extracting non fixed array into std::vector" );
+          throw ErrorInvalidTypecast::create( "MessageIterator: Extracting non fixed array into std::vector" );
         
         if ( this->element_type() != DBus::type<T>() ) {
           std::string s = "MessageIterator: Extracting DBus array type ";
           s += type_string<T>();
           s += " into C++ vector with RTTI type ";
           s += typeid( T ).name();
-          throw ErrorInvalidTypecast( s.c_str() );
+	  throw ErrorInvalidTypecast::create( s.c_str() );
         }
         
         std::vector<T> array;
@@ -298,17 +298,17 @@ namespace DBus
       void get_array(std::vector<T>& array) {
         
         if ( not this->is_array() )
-          throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
+          throw ErrorInvalidTypecast::create( "MessageIterator: Extracting non array into std::vector" );
         
         if ( not this->is_fixed() )
-          throw ErrorInvalidTypecast( "MessageIterator: Extracting non fixed array into std::vector" );
+          throw ErrorInvalidTypecast::create( "MessageIterator: Extracting non fixed array into std::vector" );
         
         if ( this->element_type() != DBus::type<T>() ) {
           std::string s = "MessageIterator: Extracting DBus array type ";
           s += type_string<T>();
           s += " into C++ vector with RTTI type ";
           s += typeid( T ).name();
-          throw ErrorInvalidTypecast( s.c_str() );
+	  throw ErrorInvalidTypecast::create( s.c_str() );
         }
         
         int elements;

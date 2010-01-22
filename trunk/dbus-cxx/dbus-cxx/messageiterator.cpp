@@ -194,7 +194,7 @@ namespace DBus
       case TYPE_UINT64:  return (uint64_t)(*this);
       case TYPE_DOUBLE:  return (double)(*this);
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to boolean value");
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to boolean value");
     }
   }
 
@@ -213,7 +213,7 @@ namespace DBus
       case TYPE_UINT64:  return (uint64_t)(*this);
       case TYPE_DOUBLE:  return (double)(*this);
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
 
@@ -232,7 +232,7 @@ namespace DBus
       case TYPE_UINT64:  return (uint64_t)(*this);
       case TYPE_DOUBLE:  return (double)(*this);
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
 
@@ -251,7 +251,7 @@ namespace DBus
       case TYPE_UINT64:  return (uint64_t)(*this);
       case TYPE_DOUBLE:  return (double)(*this);
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
 
@@ -270,7 +270,7 @@ namespace DBus
       case TYPE_UINT64:  return (uint64_t)(*this);
       case TYPE_DOUBLE:  return (double)(*this);
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
 
@@ -289,7 +289,7 @@ namespace DBus
       case TYPE_UINT64:  return (uint64_t)(*this);
       case TYPE_DOUBLE:  return (double)(*this);
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
 
@@ -308,7 +308,7 @@ namespace DBus
       case TYPE_UINT64:  return get_uint64();
       case TYPE_DOUBLE:  return (double)(*this);
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
 
@@ -327,7 +327,7 @@ namespace DBus
       case TYPE_UINT64:  return (uint64_t)(*this);
       case TYPE_DOUBLE:  return (double)(*this);
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
 
@@ -346,7 +346,7 @@ namespace DBus
       case TYPE_UINT64:  return (uint64_t)(*this);
       case TYPE_DOUBLE:  return get_double();
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
 
@@ -359,7 +359,7 @@ namespace DBus
       case TYPE_SIGNATURE:
         return get_string();
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: extracting non-string type to char*");
+        throw ErrorInvalidTypecast::create("MessageIterator:: extracting non-string type to char*");
     }
   }
 
@@ -378,7 +378,7 @@ namespace DBus
       case TYPE_UINT64:  return (uint64_t)(*this);
       case TYPE_DOUBLE:  return (double)(*this);
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
 
@@ -397,7 +397,7 @@ namespace DBus
       case TYPE_UINT64:  return (uint64_t)(*this);
       case TYPE_DOUBLE:  return (double)(*this);
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
 
@@ -416,7 +416,7 @@ namespace DBus
       case TYPE_UINT64:  return (uint64_t)(*this);
       case TYPE_DOUBLE:  return static_cast<float>(get_double());
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
   
@@ -436,7 +436,7 @@ namespace DBus
       case TYPE_UINT64:  return (uint64_t)(*this);
       case TYPE_DOUBLE:  return (double)(*this);
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
 
@@ -455,7 +455,7 @@ namespace DBus
       case TYPE_UINT64:  return (uint64_t)(*this);
       case TYPE_DOUBLE:  return (double)(*this);
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
 
@@ -466,7 +466,7 @@ namespace DBus
     // TODO check for invalid
     dbus_bool_t ptr;
     if ( this->arg_type() != TYPE_BOOLEAN )
-      throw ErrorInvalidTypecast("MessageIterator: getting bool and type is not TYPE_BOOLEAN");
+      throw ErrorInvalidTypecast::create("MessageIterator: getting bool and type is not TYPE_BOOLEAN");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -476,7 +476,7 @@ namespace DBus
     // TODO check for invalid
     uint8_t ptr;
     if ( this->arg_type() != TYPE_BYTE )
-      throw ErrorInvalidTypecast("MessageIterator: getting uint8_t and type is not TYPE_BYTE");
+      throw ErrorInvalidTypecast::create("MessageIterator: getting uint8_t and type is not TYPE_BYTE");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -486,7 +486,7 @@ namespace DBus
     // TODO check for invalid
     dbus_int16_t ptr;
     if ( this->arg_type() != TYPE_INT16 )
-      throw ErrorInvalidTypecast("MessageIterator: getting int16_t and type is not TYPE_INT16");
+      throw ErrorInvalidTypecast::create("MessageIterator: getting int16_t and type is not TYPE_INT16");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -496,7 +496,7 @@ namespace DBus
     // TODO check for invalid
     dbus_uint16_t ptr;
     if ( this->arg_type() != TYPE_UINT16 )
-      throw ErrorInvalidTypecast("MessageIterator: getting uint16_t and type is not TYPE_UINT16");
+      throw ErrorInvalidTypecast::create("MessageIterator: getting uint16_t and type is not TYPE_UINT16");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -506,7 +506,7 @@ namespace DBus
     // TODO check for invalid
     dbus_int32_t ptr;
     if ( this->arg_type() != TYPE_INT32 )
-      throw ErrorInvalidTypecast("MessageIterator: getting int32_t and type is not TYPE_INT32");
+      throw ErrorInvalidTypecast::create("MessageIterator: getting int32_t and type is not TYPE_INT32");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -516,7 +516,7 @@ namespace DBus
     // TODO check for invalid
     dbus_uint32_t ptr;
     if ( this->arg_type() != TYPE_UINT32 )
-      throw ErrorInvalidTypecast("MessageIterator: getting uint32_t and type is not TYPE_UINT32");
+      throw ErrorInvalidTypecast::create("MessageIterator: getting uint32_t and type is not TYPE_UINT32");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -526,7 +526,7 @@ namespace DBus
     // TODO check for invalid
     dbus_int64_t ptr;
     if ( this->arg_type() != TYPE_INT64 )
-      throw ErrorInvalidTypecast("MessageIterator: getting int64_t and type is not TYPE_INT64");
+      throw ErrorInvalidTypecast::create("MessageIterator: getting int64_t and type is not TYPE_INT64");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -536,7 +536,7 @@ namespace DBus
     // TODO check for invalid
     dbus_uint64_t ptr;
     if ( this->arg_type() != TYPE_UINT64 )
-      throw ErrorInvalidTypecast("MessageIterator: getting uint64_t and type is not TYPE_UINT64");
+      throw ErrorInvalidTypecast::create("MessageIterator: getting uint64_t and type is not TYPE_UINT64");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -546,7 +546,7 @@ namespace DBus
     // TODO check for invalid
     double ptr;
     if ( this->arg_type() != TYPE_DOUBLE )
-      throw ErrorInvalidTypecast("MessageIterator: getting double and type is not TYPE_DOUBLE");
+      throw ErrorInvalidTypecast::create("MessageIterator: getting double and type is not TYPE_DOUBLE");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -555,7 +555,7 @@ namespace DBus
   {
     char* ptr;
     if ( not ( this->arg_type() == TYPE_STRING or this->arg_type() == TYPE_OBJECT_PATH or this->arg_type() == TYPE_SIGNATURE ) )
-      throw ErrorInvalidTypecast("MessageIterator: getting char* and type is not one of TYPE_STRING, TYPE_OBJECT_PATH or TYPE_SIGNATURE");
+      throw ErrorInvalidTypecast::create("MessageIterator: getting char* and type is not one of TYPE_STRING, TYPE_OBJECT_PATH or TYPE_SIGNATURE");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }

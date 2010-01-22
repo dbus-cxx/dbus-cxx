@@ -100,7 +100,7 @@ namespace DBus
         this->open_container( CONTAINER_ARRAY, DBus::signature<T>().c_str() );
         
         for ( size_t i=0; i < v.size(); i++ )
-          m_subiter->append( v[i] );
+          *m_subiter << v[i];
         
         this->close_container();
       }

@@ -50,9 +50,9 @@ namespace DBus
    */
   class Error : public std::exception
   {
-    public:
-      typedef DBusCxxPointer<Error> pointer;
 
+    protected:
+   
       Error();
 
       Error( DBusError* cobj );
@@ -61,11 +61,16 @@ namespace DBus
 
       Error( Message& );
 
-      pointer create();
+    public:
+      typedef DBusCxxPointer<Error> pointer;
 
-      pointer create( DBusError* cobj );
+      static pointer create();
 
-      pointer create( const char* name, const char* message );
+      static pointer create( DBusError* cobj );
+
+      static pointer create( const char* name, const char* message );
+
+      static pointer create( Message& );
 
       ~Error() throw();
 
@@ -82,7 +87,7 @@ namespace DBus
 
       operator bool() const;
 
-      Error& operator=( Error& other );
+//       Error& operator=( Error& other );
 
       DBusError* cobj();
 
@@ -91,10 +96,16 @@ namespace DBus
 
   };
 
-#define DBUSCXX_ERROR( CPPTYPE, DBUS_ERROR_CODE ) \
-  struct CPPTYPE : public Error {                 \
-    CPPTYPE( const char* message = NULL )         \
-        : Error( DBUS_ERROR_CODE, message ) {}    \
+#define DBUSCXX_ERROR( CPPTYPE, DBUS_ERROR_CODE )            \
+  class CPPTYPE : public Error {                             \
+    protected:                                               \
+    CPPTYPE( const char* message = NULL )                    \
+        : Error( DBUS_ERROR_CODE, message ) {}               \
+    public:                                                  \
+      typedef DBusCxxPointer<CPPTYPE> pointer;               \
+      static pointer create( const char* message = NULL ) {  \
+        return pointer( new CPPTYPE(message) );              \
+      }                                                      \
   }
 
   /**
