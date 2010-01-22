@@ -1,3 +1,32 @@
+2010-01-22  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* ChangeLog, configure.ac, dbus-cxx.spec.m4,
+	  dbus-cxx/connection.cpp, dbus-cxx/error.cpp, dbus-cxx/error.h,
+	  dbus-cxx/errormessage.cpp, dbus-cxx/messageappenditerator.cpp,
+	  dbus-cxx/messageappenditerator.h, dbus-cxx/messageiterator.cpp,
+	  dbus-cxx/messageiterator.h, dbus-cxx/objectpathhandler.cpp,
+	  dbus-cxx/pendingcall.cpp, dbus-cxx/signalmessage.cpp,
+	  dbus-cxx/timeout.cpp, dbus-cxx/utility.cpp, dbus-cxx/watch.cpp,
+	  dbuscxx.kdevelop, tools/generate_adapter.cpp,
+	  tools/parsed_object.cpp: Modified the dbus error wrapper to
+	  provide smart pointers for all error objects. The reference
+	  counting of the smart pointers will prevent an issue that
+	  resulted in double freeing dbus errors in the previous error
+	  implementation.
+	  
+	  Errors thrown are now smart pointer instances of error objects
+	  and can be accessed as Error::pointer. This keeps the syntax for
+	  errors inline with the other smart pointers used throughout
+	  dbus-cxx.
+	  
+	  Thanks to Tyler Conant for hunting down the double free issue.
+	* dbus-cxx/callmessage.cpp: Fixed logic error in
+	  CallMessage::expects_reply()
+	  
+	  Thanks to Julien Bonjean for catching this one
+	* examples/xml2cpp/calculator-interface/calculator.cpp,
+	  examples/xml2cpp/calculator/calculator.cpp:
+
 2010-01-04  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
 	* dbus-cxx.spec.m4:
