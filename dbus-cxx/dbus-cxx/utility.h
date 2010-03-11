@@ -83,15 +83,9 @@
 namespace DBus
 {
 
-  extern dbus_int32_t connection_weak_pointer_slot;
-
   void init(bool threadsafe=true);
   
   bool initialized();
-
-  class Connection;
-  
-  DBusCxxPointer<Connection> connection(DBusConnection * c);
 
 }
 
