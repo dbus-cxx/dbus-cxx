@@ -24,9 +24,7 @@
 
 #include <dbus/dbus.h>
 
-#include <dbus-cxx/utility.h>
-#include <dbus-cxx/error.h>
-#include <dbus-cxx/pointer.h>
+#include <dbus-cxx/types.h>
 
 namespace DBus
 {
