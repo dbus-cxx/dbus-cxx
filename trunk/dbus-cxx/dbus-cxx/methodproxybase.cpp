@@ -19,9 +19,6 @@
 
 #include "methodproxybase.h"
 
-#include "callmessage.h"
-#include "returnmessage.h"
-#include "connection.h"
 #include "interfaceproxy.h"
 
 namespace DBus
