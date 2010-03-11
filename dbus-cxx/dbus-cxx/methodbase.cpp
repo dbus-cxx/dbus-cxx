@@ -19,11 +19,6 @@
 
 #include "methodbase.h"
 
-#include "callmessage.h"
-#include "returnmessage.h"
-#include "connection.h"
-#include "interface.h"
-
 namespace DBus
 {
 
