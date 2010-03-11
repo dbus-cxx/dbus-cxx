@@ -19,15 +19,7 @@
 #ifndef DBUSMETHODBASE_H
 #define DBUSMETHODBASE_H
 
-#include <string>
-
-#include <sigc++/sigc++.h>
-
-#include <dbus-cxx/enums.h>
-#include <dbus-cxx/pointer.h>
-#include <dbus-cxx/accumulators.h>
 #include <dbus-cxx/callmessage.h>
-#include <dbus-cxx/returnmessage.h>
 
 namespace DBus
 {
