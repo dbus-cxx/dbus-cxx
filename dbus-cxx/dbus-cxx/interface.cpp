@@ -17,8 +17,6 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "interface.h"
-#include "connection.h"
-#include "object.h"
 
 #include <sstream>
 #include <map>
