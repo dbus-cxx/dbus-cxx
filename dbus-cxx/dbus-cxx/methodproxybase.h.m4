@@ -51,6 +51,25 @@ template <LIST(LOOP(class T_arg%1, [$1]))>
 
 
 divert(0)
+dnl
+[/***************************************************************************
+ *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+ *   rvinyard@cs.nmsu.edu                                                  *
+ *                                                                         *
+ *   This file is part of the dbus-cxx library.                            *
+ *                                                                         *
+ *   The dbus-cxx library is free software; you can redistribute it and/or *
+ *   modify it under the terms of the GNU General Public License           *
+ *   version 3 as published by the Free Software Foundation.               *
+ *                                                                         *
+ *   The dbus-cxx library is distributed in the hope that it will be       *
+ *   useful, but WITHOUT ANY WARRANTY; without even the implied warranty   *
+ *   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU   *
+ *   General Public License for more details.                              *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
+ ***************************************************************************/]
 #ifndef DBUSMETHODPROXYBASE_H
 #define DBUSMETHODPROXYBASE_H
 
@@ -60,6 +79,7 @@ divert(0)
 
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/pointer.h>
+#include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/accumulators.h>
 #include <dbus-cxx/callmessage.h>
 #include <dbus-cxx/returnmessage.h>
@@ -67,10 +87,6 @@ divert(0)
 
 namespace DBus
 {
-  class Connection;
-
-  class InterfaceProxy;
-
   /**
    * @ingroup objects
    * @ingroup proxy
