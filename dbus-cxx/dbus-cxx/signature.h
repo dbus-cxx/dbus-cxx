@@ -22,6 +22,7 @@
 #include <ostream>
 #include <string>
 #include <dbus-cxx/signatureiterator.h>
+#include <dbus-cxx/path.h>
 
 namespace DBus
 {
@@ -85,6 +86,135 @@ namespace DBus
       std::string m_signature;
 
   };
+
+  inline std::string signature( uint8_t )     { return DBUS_TYPE_BYTE_AS_STRING; }
+  inline std::string signature( bool )        { return DBUS_TYPE_BOOLEAN_AS_STRING; }
+  inline std::string signature( int16_t )     { return DBUS_TYPE_INT16_AS_STRING; }
+  inline std::string signature( uint16_t )    { return DBUS_TYPE_UINT16_AS_STRING; }
+  inline std::string signature( int32_t )     { return DBUS_TYPE_INT32_AS_STRING; }
+  inline std::string signature( uint32_t )    { return DBUS_TYPE_UINT32_AS_STRING; }
+  inline std::string signature( int64_t )     { return DBUS_TYPE_INT64_AS_STRING; }
+  inline std::string signature( uint64_t )    { return DBUS_TYPE_UINT64_AS_STRING;      }
+  inline std::string signature( double )      { return DBUS_TYPE_DOUBLE_AS_STRING;      }
+  inline std::string signature( std::string ) { return DBUS_TYPE_STRING_AS_STRING;      }
+  inline std::string signature( Signature )   { return DBUS_TYPE_SIGNATURE_AS_STRING;   }
+  inline std::string signature( Path )        { return DBUS_TYPE_OBJECT_PATH_AS_STRING; }
+
+  inline std::string signature( char )        { return DBUS_TYPE_BYTE_AS_STRING;        }
+  inline std::string signature( int8_t )      { return DBUS_TYPE_BYTE_AS_STRING;        }
+  
+#if DBUS_CXX_SIZEOF_LONG_INT == 4
+  inline std::string signature( long int )          { return DBUS_TYPE_INT32_AS_STRING;       }
+  inline std::string signature( long unsigned int ) { return DBUS_TYPE_UINT32_AS_STRING;      }
+#endif
+  
+  inline std::string signature( float )         { return DBUS_TYPE_DOUBLE_AS_STRING; }
+  
+  template <typename T> inline std::string signature()   { return 1; /* This is invalid; you must use one of the specializations only */}
+  template<> inline std::string signature<uint8_t>()     { return DBUS_TYPE_BYTE_AS_STRING;        }
+  template<> inline std::string signature<bool>()        { return DBUS_TYPE_BOOLEAN_AS_STRING;     }
+  template<> inline std::string signature<int16_t>()     { return DBUS_TYPE_INT16_AS_STRING;       }
+  template<> inline std::string signature<uint16_t>()    { return DBUS_TYPE_UINT16_AS_STRING;      }
+  template<> inline std::string signature<int32_t>()     { return DBUS_TYPE_INT32_AS_STRING;       }
+  template<> inline std::string signature<uint32_t>()    { return DBUS_TYPE_UINT32_AS_STRING;      }
+  template<> inline std::string signature<int64_t>()     { return DBUS_TYPE_INT64_AS_STRING;       }
+  template<> inline std::string signature<uint64_t>()    { return DBUS_TYPE_UINT64_AS_STRING;      }
+  template<> inline std::string signature<double>()      { return DBUS_TYPE_DOUBLE_AS_STRING;      }
+  template<> inline std::string signature<std::string>() { return DBUS_TYPE_STRING_AS_STRING;      }
+  template<> inline std::string signature<Signature>()   { return DBUS_TYPE_SIGNATURE_AS_STRING;   }
+  template<> inline std::string signature<Path>()        { return DBUS_TYPE_OBJECT_PATH_AS_STRING; }
+  
+  template<> inline std::string signature<char>()        { return DBUS_TYPE_BYTE_AS_STRING;        }
+  template<> inline std::string signature<int8_t>()      { return DBUS_TYPE_BYTE_AS_STRING;        }
+
+#if DBUS_CXX_SIZEOF_LONG_INT == 4
+  template<> inline std::string signature<long int>()          { return DBUS_TYPE_INT32_AS_STRING;       }
+  template<> inline std::string signature<long unsigned int>() { return DBUS_TYPE_UINT32_AS_STRING;       }
+#endif
+  
+  template<> inline std::string signature<float>()         { return DBUS_TYPE_DOUBLE_AS_STRING; }
+
+  template<> inline std::string signature<std::vector<uint8_t> >()     { return DBUS_TYPE_BYTE_AS_STRING;        }
+  template<> inline std::string signature<std::vector<bool> >()        { return DBUS_TYPE_BOOLEAN_AS_STRING;     }
+  template<> inline std::string signature<std::vector<int16_t> >()     { return DBUS_TYPE_INT16_AS_STRING;       }
+  template<> inline std::string signature<std::vector<uint16_t> >()    { return DBUS_TYPE_UINT16_AS_STRING;      }
+  template<> inline std::string signature<std::vector<int32_t> >()     { return DBUS_TYPE_INT32_AS_STRING;       }
+  template<> inline std::string signature<std::vector<uint32_t> >()    { return DBUS_TYPE_UINT32_AS_STRING;      }
+  template<> inline std::string signature<std::vector<int64_t> >()     { return DBUS_TYPE_INT64_AS_STRING;       }
+  template<> inline std::string signature<std::vector<uint64_t> >()    { return DBUS_TYPE_UINT64_AS_STRING;      }
+  template<> inline std::string signature<std::vector<double> >()      { return DBUS_TYPE_DOUBLE_AS_STRING;      }
+
+  template<> inline std::string signature<std::vector<char> >()        { return DBUS_TYPE_BYTE_AS_STRING;        }
+  template<> inline std::string signature<std::vector<int8_t> >()      { return DBUS_TYPE_BYTE_AS_STRING;        }
+
+#if DBUS_CXX_SIZEOF_LONG_INT == 4
+  template<> inline std::string signature<std::vector<long int> >()          { return DBUS_TYPE_INT32_AS_STRING;       }
+  template<> inline std::string signature<std::vector<long unsigned int> >() { return DBUS_TYPE_UINT32_AS_STRING;       }
+#endif
+  
+  template<> inline std::string signature<std::vector<float> >()         { return DBUS_TYPE_DOUBLE_AS_STRING; }
+
+  //   inline std::string signature( Variant )     { return DBUS_TYPE_VARIANT_AS_STRING; }
+//   template <typename T> inline std::string signature( const std::vector<T>& ) { T t; return DBUS_TYPE_ARRAY_AS_STRING + signature( t ); }
+
+//   template <typename Key,typename Data> inline std::string signature( const std::vector<std::pair<Key,Data> >& )
+//   {
+//     Key k; Data d;
+//     std::string sig;
+//     sig = DBUS_TYPE_ARRAY_AS_STRING;
+//     sig += DBUS_DICT_ENTRY_BEGIN_CHAR_AS_STRING + signature(k) + signature(d) + DBUS_DICT_ENTRY_END_CHAR_AS_STRING;
+//     return sig;
+//   }
+
+//   template <typename T1>
+//   inline std::string signature( const Struct<T1>& )
+//   {
+//     T1 t1;
+//     return DBUS_STRUCT_BEGIN_CHAR_AS_STRING + signature( t1 ) + DBUS_STRUCT_END_CHAR_AS_STRING;
+//   }
+// 
+//   template <typename T1, typename T2>
+//   inline std::string signature( const Struct<T1,T2>& )
+//   {
+//     T1 t1; T2 t2;
+//     return DBUS_STRUCT_BEGIN_CHAR_AS_STRING + signature( t1 ) + signature( t2 ) + DBUS_STRUCT_END_CHAR_AS_STRING;
+//   }
+// 
+//   template <typename T1, typename T2, typename T3>
+//   inline std::string signature( const Struct<T1,T2,T3>& )
+//   {
+//     T1 t1; T2 t2; T3 t3;
+//     return DBUS_STRUCT_BEGIN_CHAR_AS_STRING + signature( t1 ) + signature( t2 ) + signature( t3 ) + DBUS_STRUCT_END_CHAR_AS_STRING;
+//   }
+// 
+//   template <typename T1, typename T2, typename T3, typename T4>
+//   inline std::string signature( const Struct<T1,T2,T3,T4>& )
+//   {
+//     T1 t1; T2 t2; T3 t3; T4 t4;
+//     return DBUS_STRUCT_BEGIN_CHAR_AS_STRING + signature( t1 ) + signature( t2 ) + signature( t3 ) + signature( t4 ) + DBUS_STRUCT_END_CHAR_AS_STRING;
+//   }
+// 
+//   template <typename T1, typename T2, typename T3, typename T4, typename T5>
+//   inline std::string signature( const Struct<T1,T2,T3,T4,T5>& )
+//   {
+//     T1 t1; T2 t2; T3 t3; T4 t4; T5 t5;
+//     return DBUS_STRUCT_BEGIN_CHAR_AS_STRING + signature( t1 ) + signature( t2 ) + signature( t3 ) + signature( t4 ) + signature( t5 ) + DBUS_STRUCT_END_CHAR_AS_STRING;
+//   }
+// 
+//   template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
+//   inline std::string signature( const Struct<T1,T2,T3,T4,T5,T6>& )
+//   {
+//     T1 t1; T2 t2; T3 t3; T4 t4; T5 t5; T6 t6;
+//     return DBUS_STRUCT_BEGIN_CHAR_AS_STRING + signature( t1 ) + signature( t2 ) + signature( t3 ) + signature( t4 ) + signature( t5 ) + signature( t6 ) + DBUS_STRUCT_END_CHAR_AS_STRING;
+//   }
+// 
+//   template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7>
+//   inline std::string signature( const Struct<T1,T2,T3,T4,T5,T6,T7>& )
+//   {
+//     T1 t1; T2 t2; T3 t3; T4 t4; T5 t5; T6 t6; T7 t7;
+//     return DBUS_STRUCT_BEGIN_CHAR_AS_STRING + signature( t1 ) + signature( t2 ) + signature( t3 ) + signature( t4 ) + signature( t5 ) + signature( t6 ) + signature( t7 ) + DBUS_STRUCT_END_CHAR_AS_STRING;
+//   }
+
 
 }
 
