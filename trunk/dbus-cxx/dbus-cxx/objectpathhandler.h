@@ -24,8 +24,6 @@
 namespace DBus
 {
 
-  class Connection;
-
   /**
    * Provides an object that handles messages for a given object path on a connection.
    *
