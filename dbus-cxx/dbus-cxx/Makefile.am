@@ -39,12 +39,12 @@ CLEANFILES = dbus_signal.h connection.h interfaceproxy.h signal_proxy.h method.h
 gen: dbus_signal.h connection.h signal_proxy.h method.h method_impl.h interface.h object.h objectproxy.h methodproxybase.h methodproxy.h
 
 library_include_HEADERS = accumulators.h callmessage.h connection.h \
-	dbus-cxx-config.h dbus_signal.h dispatcher.h enums.h error.h errormessage.h interface.h \
+	dbus-cxx-config.h dbus_signal.h dispatcher.h enums.h error.h errormessage.h forward_decls.h interface.h \
 	interfaceproxy.h message.h messageappenditerator.h messagefilter.h messagehandler.h \
 	messageiterator.h method.h method_impl.h methodbase.h methodproxy.h methodproxybase.h \
 	object.h objectpathhandler.h objectproxy.h path.h pendingcall.h pointer.h \
 	returnmessage.h signal_base.h signal_proxy.h signal_proxy_base.h signalmessage.h \
-	signalreceiver.h signature.h signatureiterator.h timeout.h utility.h watch.h
+	signalreceiver.h signature.h signatureiterator.h timeout.h types.h utility.h watch.h
 
 libdbus_cxx_la_SOURCES = callmessage.cpp connection.cpp dispatcher.cpp \
 	error.cpp errormessage.cpp interface.cpp interfaceproxy.cpp message.cpp \
