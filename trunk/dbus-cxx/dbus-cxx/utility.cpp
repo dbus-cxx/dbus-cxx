@@ -18,6 +18,7 @@
  ***************************************************************************/
 #include "utility.h"
 #include "error.h"
+#include "connection.h"
 
 namespace DBus
 {
@@ -26,9 +27,6 @@ namespace DBus
   pthread_mutex_t init_mutex = PTHREAD_MUTEX_INITIALIZER;
 
   bool initialized_var = false;
-
-  dbus_int32_t connection_weak_pointer_slot = -1;
-
 
   void init(bool threadsafe)
   {
@@ -45,7 +43,7 @@ namespace DBus
             
       if ( threadsafe ) dbus_threads_init_default();
 
-      result = dbus_connection_allocate_data_slot( & connection_weak_pointer_slot );
+      result = dbus_connection_allocate_data_slot( & Connection::m_weak_pointer_slot );
       if ( not result ) throw (-1); // TODO throw something better
 
       initialized_var = true;
@@ -62,21 +60,6 @@ namespace DBus
   bool initialized()
   {
     return initialized_var;
-  }
-
-  DBusCxxPointer<Connection> connection(DBusConnection * c)
-  {
-    if ( c == NULL or connection_weak_pointer_slot == -1 ) return DBusCxxPointer<Connection>();
-    
-    void* v = dbus_connection_get_data(c, connection_weak_pointer_slot);
-
-    if ( v == NULL ) return DBusCxxPointer<Connection>();
-
-    DBusCxxWeakPointer<Connection>* wp = static_cast<DBusCxxWeakPointer<Connection>*>(v);
-
-    DBusCxxPointer<Connection> p = wp->lock();
-
-    return p;
   }
 
 }
