@@ -26,11 +26,34 @@ namespace DBus {
   class Connection;
 
   class Interface;
+
+  class InterfaceProxy;
   
   class Object;
 
-  template <class T_return, class T_arg1 = nil,class T_arg2 = nil,class T_arg3 = nil,class T_arg4 = nil,class T_arg5 = nil,class T_arg6 = nil,class T_arg7 = nil>
+  class ObjectProxy;
+
+  template <class T_return,
+            class T_arg1 = nil,
+            class T_arg2 = nil,
+            class T_arg3 = nil,
+	    class T_arg4 = nil,
+            class T_arg5 = nil,
+	    class T_arg6 = nil,
+            class T_arg7 = nil
+           >
   class Method;
+
+  template <class T_return,
+            class T_arg1 = nil,
+            class T_arg2 = nil,
+            class T_arg3 = nil,
+            class T_arg4 = nil,
+            class T_arg5 = nil,
+            class T_arg6 = nil,
+            class T_arg7 = nil
+           >
+  class MethodProxy; 
 
 };
 
