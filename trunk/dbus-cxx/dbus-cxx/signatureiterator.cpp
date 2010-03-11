@@ -18,7 +18,7 @@
  ***************************************************************************/
 #include "signatureiterator.h"
 
-#include "utility.h"
+#include "types.h"
 
 #include <cstring>
 
