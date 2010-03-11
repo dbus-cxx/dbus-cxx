@@ -19,9 +19,6 @@
 
 #include "signal_proxy_base.h"
 
-#include "signalmessage.h"
-#include "connection.h"
-
 namespace DBus
 {
 
@@ -35,12 +32,12 @@ namespace DBus
   {
   }
 
-  signal_proxy_base::signal_proxy_base( Connection::pointer connection, const std::string& path, const std::string& interface, const std::string& name ):
+  signal_proxy_base::signal_proxy_base( DBusCxxPointer<Connection>  connection, const std::string& path, const std::string& interface, const std::string& name ):
       signal_base( connection, path, interface, name )
   {
   }
 
-  signal_proxy_base::signal_proxy_base( Connection::pointer connection, const std::string& interface, const std::string& name ):
+  signal_proxy_base::signal_proxy_base( DBusCxxPointer<Connection>  connection, const std::string& interface, const std::string& name ):
       signal_base( connection, interface, name )
   {
   }
@@ -116,12 +113,12 @@ namespace DBus
   {
   }
 
-  signal_proxy_simple::signal_proxy_simple( Connection::pointer connection, const std::string& path, const std::string& interface, const std::string& name ):
+  signal_proxy_simple::signal_proxy_simple( DBusCxxPointer<Connection>  connection, const std::string& path, const std::string& interface, const std::string& name ):
       signal_proxy_base( connection, path, interface, name )
   {
   }
 
-  signal_proxy_simple::signal_proxy_simple( Connection::pointer connection, const std::string& interface, const std::string& name ):
+  signal_proxy_simple::signal_proxy_simple( DBusCxxPointer<Connection>  connection, const std::string& interface, const std::string& name ):
       signal_proxy_base( connection, interface, name )
   {
   }
