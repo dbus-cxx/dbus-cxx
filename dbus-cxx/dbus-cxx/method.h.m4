@@ -21,7 +21,7 @@ divert(-1)
 
 include(template.macros.m4)
 
-define([METHOD],[dnl
+define([DECLARE_METHOD],[dnl
 ifelse($1, $2,[dnl
 
   /**
@@ -30,7 +30,7 @@ ifelse($1, $2,[dnl
    * 
    * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
    */
-  template <LIST(class T_return, LOOP(class T_arg%1 = nil, $1))>],[dnl
+  template <LIST(class T_return, LOOP(class T_arg%1, $1))>],[dnl
 
   /**
    * @ingroup local
@@ -46,48 +46,14 @@ ifelse($1, $2,[dnl
 
     typedef DBusCxxPointer<Method> pointer;
 
-    Method(const std::string& name):
-      MethodBase(name)
-    {  }
+    Method(const std::string& name): MethodBase(name) {  }
     
     virtual ~Method() { }
 
-    virtual HandlerResult handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message )
-    {
-      DBUS_CXX_DEBUG("Method<LIST(T_return, LOOP(T_arg%1, $1))>::handle_call_message   method=" << m_name );
-      
-      if ( not connection or not message ) return NOT_HANDLED;
+    virtual HandlerResult handle_call_message( DBusCxxPointer<Connection> connection,
+					       CallMessage::const_pointer message );
 
-      T_return _retval;
-      dnl
-      FOR(1, $1,[
-      T_arg%1 _val_%1;])
-
-      ifelse(eval($1>0),1,[
-      try {
-        Message::iterator i = message->begin();
-        i FOR(1, $1,[ >> _val_%1]);
-      }
-      catch ( ErrorInvalidTypecast& e ) {
-          return NOT_HANDLED;
-      }
-      ],[])
-
-      _retval = m_slot(LIST(LOOP(_val_%1, $1)));
-
-      ReturnMessage::pointer retmsg = message->create_reply();
-
-      if ( not retmsg ) return NOT_HANDLED;
-
-      *retmsg << _retval;
-
-      connection << retmsg;
-
-      return HANDLED;
-    }
-
-    void set_method( sigc::slot$1<LIST(T_return, LOOP(T_arg%1, $1))> slot )
-    { m_slot = slot; }
+    void set_method( sigc::slot$1<LIST(T_return, LOOP(T_arg%1, $1))> slot );
 
     static pointer create(const std::string& name)
     { return pointer( new Method(name) ); }
@@ -128,17 +94,90 @@ ifelse($1, $2,[dnl
 
 ])
 
+define([DEFINE_METHOD],[dnl
+
+  template <LIST(class T_return, LOOP(class T_arg%1, $1))>
+  void Method<LIST(T_return, LOOP(T_arg%1,$1), LOOP(nil, CALL_SIZE - $1))>::set_method( sigc::slot$1<LIST(T_return, LOOP(T_arg%1, $1))> slot )
+  { m_slot = slot; }
+
+  template <LIST(class T_return, LOOP(class T_arg%1, $1))>
+  HandlerResult Method<LIST(T_return, LOOP(T_arg%1,$1), LOOP(nil, CALL_SIZE - $1))>::handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message )
+  {
+    DBUS_CXX_DEBUG("Method<LIST(T_return, LOOP(T_arg%1, $1))>::handle_call_message   method=" << m_name );
+      
+    if ( not connection or not message ) return NOT_HANDLED;
+
+    T_return _retval;
+    dnl
+    FOR(1, $1,[
+    T_arg%1 _val_%1;])
+
+    ifelse(eval($1>0),1,[
+    try {
+      Message::iterator i = message->begin();
+      i FOR(1, $1,[ >> _val_%1]);
+    }
+    catch ( ErrorInvalidTypecast& e ) {
+        return NOT_HANDLED;
+    }
+    ],[])
+
+    _retval = m_slot(LIST(LOOP(_val_%1, $1)));
+
+    ReturnMessage::pointer retmsg = message->create_reply();
+
+    if ( not retmsg ) return NOT_HANDLED;
+
+    *retmsg << _retval;
+
+    connection->send(retmsg);
+
+    return HANDLED;
+  }
+
+])
+
 divert(0)
+dnl
+[/***************************************************************************
+ *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+ *   rvinyard@cs.nmsu.edu                                                  *
+ *                                                                         *
+ *   This file is part of the dbus-cxx library.                            *
+ *                                                                         *
+ *   The dbus-cxx library is free software; you can redistribute it and/or *
+ *   modify it under the terms of the GNU General Public License           *
+ *   version 3 as published by the Free Software Foundation.               *
+ *                                                                         *
+ *   The dbus-cxx library is distributed in the hope that it will be       *
+ *   useful, but WITHOUT ANY WARRANTY; without even the implied warranty   *
+ *   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU   *
+ *   General Public License for more details.                              *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
+ ***************************************************************************/]
 #ifndef DBUS_CXX_METHOD_H
 #define DBUS_CXX_METHOD_H
 
 #include <sstream>
+#include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/methodbase.h>
+#include <dbus-cxx/utility.h>
     
 namespace DBus {
 
-METHOD(CALL_SIZE,CALL_SIZE)
-FOR(0,eval(CALL_SIZE-1),[[METHOD(%1)]])
+DECLARE_METHOD(CALL_SIZE,CALL_SIZE)
+FOR(0,eval(CALL_SIZE-1),[[DECLARE_METHOD(%1)]])
+
+} /* namespace DBus */
+
+#include <dbus-cxx/connection.h>
+
+namespace DBus {
+
+DEFINE_METHOD(CALL_SIZE,CALL_SIZE)
+FOR(0,eval(CALL_SIZE-1),[[DEFINE_METHOD(%1)]])
 
 } /* namespace DBus */
 
