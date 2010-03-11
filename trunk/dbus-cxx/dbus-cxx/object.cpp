@@ -17,8 +17,6 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "object.h"
-#include "connection.h"
-#include "interface.h"
 
 #include <map>
 #include <sstream>
@@ -245,10 +243,10 @@ namespace DBus
     return i->second;
   }
 
-  bool Object::add_child(const std::string& name, Object::pointer child)
+  bool Object::add_child(const std::string& name, Object::pointer child, bool force)
   {
     if ( not child ) return false;
-    if ( this->has_child(name) ) return false;
+    if ( not force and this->has_child(name) ) return false;
     m_children[name] = child;
     if ( m_connection ) child->register_with_connection(m_connection);
     return true;
@@ -362,6 +360,9 @@ namespace DBus
         }
       }
     }
+
+    if (result == NOT_HANDLED and m_default_interface)
+      result = m_default_interface->handle_call_message(connection, callmessage);
 
     // ========== UNLOCK ==========
     pthread_rwlock_unlock( &m_interfaces_rwlock );
