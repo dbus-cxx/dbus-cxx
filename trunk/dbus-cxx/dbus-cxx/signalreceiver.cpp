@@ -21,6 +21,8 @@
 
 #include "signalmessage.h"
 
+#include "utility.h"
+
 namespace DBus
 {
 
