@@ -17,12 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "utility.h"
-#include "message.h"
-
-#include "connection.h"
-#include "callmessage.h"
-
-#include <sstream>
+#include "error.h"
 
 namespace DBus
 {
@@ -32,6 +27,7 @@ namespace DBus
 
   bool initialized_var = false;
 
+  dbus_int32_t connection_weak_pointer_slot = -1;
 
 
   void init(bool threadsafe)
@@ -49,7 +45,7 @@ namespace DBus
             
       if ( threadsafe ) dbus_threads_init_default();
 
-      result = dbus_connection_allocate_data_slot( & Connection::m_weak_pointer_slot );
+      result = dbus_connection_allocate_data_slot( & connection_weak_pointer_slot );
       if ( not result ) throw (-1); // TODO throw something better
 
       initialized_var = true;
@@ -67,40 +63,20 @@ namespace DBus
   {
     return initialized_var;
   }
-  
-  
-  std::string introspect(Connection::pointer conn, const std::string& destination, const std::string& path)
+
+  DBusCxxPointer<Connection> connection(DBusConnection * c)
   {
-    std::string failed;
-    std::ostringstream sout;
-    sout << "Introspection of Destination: " << destination << "   Path: " << path << " failed";
+    if ( c == NULL or connection_weak_pointer_slot == -1 ) return DBusCxxPointer<Connection>();
     
-    failed = sout.str();
-    
-    if ( not conn or destination.empty() or path.empty() ) return failed;
-    
-    CallMessage::pointer msg = CallMessage::create( destination.c_str(), path.c_str(), DBUS_INTERFACE_INTROSPECTABLE, "Introspect" );
-    
-    Message::pointer retmsg;
-    PendingCall::pointer pending;
+    void* v = dbus_connection_get_data(c, connection_weak_pointer_slot);
 
-    pending = conn->send_with_reply_async(msg);
-    conn->flush();
-    pending->block();
-    retmsg = pending->steal_reply();
+    if ( v == NULL ) return DBusCxxPointer<Connection>();
 
-//     retmsg = conn->send_with_reply_blocking( msg );
+    DBusCxxWeakPointer<Connection>* wp = static_cast<DBusCxxWeakPointer<Connection>*>(v);
 
-    if (not retmsg) return failed;
-    
-    std::string retval;
-    retmsg >> retval;
-    return retval;
-  }
+    DBusCxxPointer<Connection> p = wp->lock();
 
-  Type checked_type_cast(int n)
-  {
-    return (Type)(n);
+    return p;
   }
 
 }
