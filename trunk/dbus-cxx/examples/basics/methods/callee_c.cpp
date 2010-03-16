@@ -78,7 +78,6 @@ void reply_to_method_call( DBusMessage* msg, DBusConnection* conn )
 {
   DBusMessage * reply;
   DBusMessageIter args;
-  bool stat = true;
   double param1=NAN, param2=NAN, answer=NAN;
   dbus_uint32_t serial = 0;
 

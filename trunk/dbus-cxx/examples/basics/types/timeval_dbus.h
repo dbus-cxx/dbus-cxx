@@ -25,7 +25,7 @@
 
 DBus::MessageIterator& operator>>(DBus::MessageIterator& i, struct timeval& t);
 
-DBus::MessageAppendIterator& operator<<(DBus::MessageAppendIterator& i, struct timeval& t);
+DBus::MessageAppendIterator& operator<<(DBus::MessageAppendIterator& i, const struct timeval& t);
 
 namespace DBus {
   template<> inline std::string signature<struct timeval>()     { return "ii";        }

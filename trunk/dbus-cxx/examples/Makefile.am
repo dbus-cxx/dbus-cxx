@@ -21,7 +21,7 @@ INCLUDES = -I$(top_srcdir)/. $(PROJECT_CFLAGS)
 
 if DBUS_CXX_EXAMPLES
 
-SUBDIRS = basics glibmm xml2cpp
+SUBDIRS = basics glibmm quick-start xml2cpp
 
 MAINTAINERCLEANFILES = \
 	Makefile.in

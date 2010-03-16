@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+ *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -25,9 +25,9 @@ int main()
   
   int ret;
 
-  DBus::Dispatcher dispatcher;
+  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
 
-  DBus::Connection::pointer conn = dispatcher.create_connection(DBus::BUS_SESSION);
+  DBus::Connection::pointer conn = dispatcher->create_connection(DBus::BUS_SESSION);
   
   // request a name on the bus
   ret = conn->request_name( "dbuscxx.example.calculator.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
