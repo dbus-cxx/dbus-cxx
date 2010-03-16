@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007,2008,2009 by Rick L. Vinyard, Jr.                  *
+ *   Copyright (C) 2007,2008,2009,2010 by Rick L. Vinyard, Jr.             *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -16,12 +16,12 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef __DBUSXX_GLIBMM_DISPATCHER_H
-#define __DBUSXX_GLIBMM_DISPATCHER_H
-
 #include <dbus-cxx/dispatcher.h>
 #include <glibmm/main.h>
 #include <glibmm/dispatcher.h>
+
+#ifndef DBUSCXX_GLIBMM_DISPATCHER_H
+#define DBUSCXX_GLIBMM_DISPATCHER_H
 
 namespace DBus
 {
