@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007,2008,2009 by Rick L. Vinyard, Jr.                  *
+ *   Copyright (C) 2007,2008,2009,2010 by Rick L. Vinyard, Jr.             *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -16,9 +16,6 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef __DBUSXX_DISPATCHER_H
-#define __DBUSXX_DISPATCHER_H
-
 #include <map>
 #include <list>
 #include <set>
@@ -29,6 +26,9 @@
 #include <dbus-cxx/connection.h>
 #include <dbus-cxx/watch.h>
 #include <dbus-cxx/timeout.h>
+
+#ifndef DBUSCXX_DISPATCHER_H
+#define DBUSCXX_DISPATCHER_H
 
 namespace DBus
 {
@@ -48,13 +48,15 @@ namespace DBus
    */
   class Dispatcher
   {
+    protected:
+
+      Dispatcher(bool is_running=true);
+
     public:
       
       typedef DBusCxxPointer<Dispatcher> pointer;
 
       typedef DBusCxxPointer<const Dispatcher> const_pointer;
-
-      Dispatcher(bool is_running=true);
 
       static pointer create( bool is_running=true );
 
@@ -188,6 +190,11 @@ namespace DBus
    * \endhtmlonly
    *
    * <br><hr>
+   *
+   * If you want to jump into the code quickly check out the quick start guide:
+   * \ref quick_start
+   * 
+   * <br><hr>
    * 
    * \par dbus-cxx Sourceforge Project Page
    * The dbus-cxx sourceforge project page can be found here:
@@ -263,6 +270,9 @@ namespace DBus
    * \htmlonly <img src="documents-small.png" alt=""/> \endhtmlonly
    * \par Documentation, Tutorials, Guides, Quick Start, et. al.
    *
+   * \par Quick Start Guide
+   * If you want to jump into the code quickly check out the \ref quick_start guide.
+   * 
    * \par dbus-cxx-xml2cpp Reference
    * Documentation on using \ref dbus-cxx-xml2cpp to convert DBus XML introspection
    * documents into C++ proxies and adapters.
@@ -382,3 +392,346 @@ namespace DBus
    * - \b arg
    *   - \b cpptype - Defines the C++ type to be used when creating proxies/adapters for this argument. Useful for wrapping enumerations.
    */
+
+/**
+ * \page quick_start Quick Start Guide to dbus-cxx
+ *
+ * This is intended to be a very succinct introduction to dbus-cxx, and is \b not
+ * intended as a general tutorial.
+ *
+ * \section quick_start_sections Sections:
+ *
+ *  -# \ref quick_start_initial_concepts
+ *  -# \ref quick_start_example_0
+ *     -# \ref quick_start_server_0
+ *        -# \ref quick_start_server_0_code
+ *        -# \ref quick_start_server_0_discussion
+ *     -# \ref quick_start_client_0
+ *        -# \ref quick_start_client_0_code
+ *        -# \ref quick_start_client_0_discussion
+ */
+
+/**
+ * \page quick_start_initial_concepts Initial Concepts
+ * 
+ * \section quick_start_concepts_1234 Concepts #1, #2, #3 and #4: Objects (#1), methods (#2), signals (#3) and proxies (#4)
+ *
+ * \par
+ * A dbus-cxx Object is a collection of methods and signals. A method is an
+ * operation that may be invoked on a object and may or may not return a value.
+ * A signal is emitted by the object and does not have a return value.
+ *
+ * \par
+ * A dbus-cxx ObjectProxy provides an abstration of a remote Object to a client
+ * application. The ObjectProxy provides method and signal proxies that have
+ * signatures equivalent to their server-side counterparts.
+ *
+ * \par
+ * A method proxy assembles the parameters of the method call into a D-Bus
+ * message and transmits to the server. The response (if any) is returned in
+ * the form of a D-Bus message which is then unpacked and returned to the
+ * application as the return value from the proxy call.
+ *
+ * \par
+ * A signal proxy is different from a method proxy in that it watches an Object
+ * for signal events. These signal events arrive as a D-Bus signal message.
+ * When a signal event arrives the parameters are unpacked and emitted locally
+ * through the signal proxy callback.
+ *
+ * \section quick_start_concept_5 Concept #5: sigc++ signal and slot library
+ * 
+ * \par
+ * dbus-cxx relies heavily on \c sigc++'s signal and slot system for both
+ * Objects and their proxies.
+ *
+ * \par
+ * On the server side and object's methods rely upon slots to provide the
+ * underlying functionality. When an incoming method call is invoked, the
+ * parameters of the call are unpacked and passed to the slot associated
+ * with the method.
+ *
+ * \par
+ * Slots are similar to function pointers in C, but can also be a method
+ * of a specific class. The details of this are available in the \c sigc++
+ * documentation and are beyond the scope of this tutorial.
+ * 
+ * \section quick_start_concept_678 Concepts #6, #7 and #8: Smart Pointers, pointer and create()
+ * 
+ * \par
+ * An early design decision was made to focus on the use of smart pointers as
+ * defined in the ANSI C++ committee's \c tr1 (Technical Report 1), which as
+ * of this writing has been accepted by the committee and recommended to ISO
+ * for incorporation as the first revision to the C++ standard. A reference
+ * implementation can be found in the boost library, the \c std::tr1 namespace
+ * of gcc 4.0 or greater, or the \c C++0x draft standard in gcc 4.3 or greater.
+ *
+ * \par
+ * Two key concepts are the \c pointer typedef and the \c create method defined
+ * in each dbus-cxx class.
+ *
+ * \par
+ * The \c pointer typedef is defined \e within \e each \e class and is
+ * typedefed to a smart pointer to that \e specific class. Thus,
+ * \c DBus::Connection::pointer is a smart pointer to a D-Bus Connection
+ * endpoint, and \c DBus::CallMessage::pointer is a smart pointer to a D-Bus
+ * call message.
+ *
+ * \par
+ * Each class also has static \c create() methods with parameters that are
+ * identical to the class' constructors. Class constructors are \c protected,
+ * so in general you cannot access them.
+ *
+ * \par
+ * Instead, you will need to use the class' \c create() method to dynamically
+ * creates an instance of the class. This method will returns a smart pointer
+ * of the appropriate type for that class similar to the way the \c new
+ * operator dynamically creates an object and returns a raw pointer to the
+ * newly created object.
+ *
+ * \par
+ * Since the \c create() method is static, you do not need an instance of the
+ * class to call it; \c Classname::create() is sufficient. Thus, to create
+ * a new dbus-cxx call message you would use \c DBus::CallMessage::create()
+ * and to create a new dbus-cxx connection you would use
+ * \c DBus::Connection::create().
+ *
+ * \par
+ * Naturally, the smart pointer returned from \c create() can be assigned to
+ * the class' \c pointer type, which allows you to use a syntax such as:
+ * \code DBus::CallMessage::pointer my_callmessage = DBus::CallMessage::create(); \endcode
+ *
+ * <b>Continue On:</b> \ref quick_start_example_0
+ *
+ * <b>Go Back:</b> \ref quick_start
+ */
+
+/**
+ * \page quick_start_example_0 Quick start example 0: A simple server and client
+ * 
+ * \par
+ * This example will demonstrate a simple server and client pair.
+ *
+ * \par
+ * The server will only offer one method named \c add that will take two
+ * \c double parameters and return the sum as a \c double.
+ *
+ * \par
+ * The client will use a proxy object for the server as well as a proxy for the
+ * \c add method.
+ *
+ * \section quick_start_server_0 A simple server
+ *
+ * \par
+ * This section provides an example of a simple server. The server will run
+ * for 10 seconds and then automatically shut-down.
+ *
+ * \par Summary
+ * This is an overview of the code we will need in our example server:
+ * -# Include headers
+ * -# Initialize the dbus-cxx library
+ * -# Create a dispatcher to manage threads, timeouts and I/O watches
+ * -# Create a connection to the D-Bus session bus
+ * -# Request a name for our application on the bus
+ * -# Create an object on the bus
+ * -# Add a method named \c add to our object
+ * -# Wait for incoming calls
+ * 
+ * \section quick_start_server_0_code Simple server 0 code
+ * 
+ * \par
+ * Here is the code in full, followed by a section-by-section discussion.
+ * 
+ * \include quickstart_server_0.cpp
+ *
+ * \section quick_start_server_0_discussion Simple server 0 code discussion
+ *
+ * \par Include headers
+ * First, we need to include the main dbus-cxx library header:
+ * \code
+ * #include <dbus-cxx.h>
+ * \endcode
+ *
+ * \par
+ * Then we will define a function that will be our workhorse on the server side.
+ * This function will be the actual function that will be called when the dbus
+ * \c add method is invoked, so we will name our function similarly. But, note
+ * that the actual name of the function in our program and the name in our
+ * dbus server do not have to match.
+ * \code double add( double param1, double param2 )      { return param1 + param2; } \endcode
+ *
+ * \par
+ * And now for the beginning of our \c main() function. We'll also declare a
+ * variable \c ret that can be used to check the return value of functions.
+ * \code
+ * int main()
+ * {
+ *   int ret;
+ * \endcode
+ *
+ * \par Initialize the dbus-cxx library
+ * Before we do anything in dbus-cxx we must call the library's \c init() method
+ * which will take care of various initializations including the threading system.
+ * \code DBus::init(); \endcode
+ *
+ * \par Create a dispatcher to manage threads, timeouts and I/O watches
+ * Now, we will create a dispatcher to handle incoming and outgoing messages.
+ * Handling incoming and outgoing messages can be messy and the Dispatcher
+ * class handles much of this for us.
+ * \code DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create(); \endcode
+ *
+ * \par Create a connection to the D-Bus session bus
+ * Now that we have a dispatcher we need to create a connection to the session bus.
+ * \code DBus::Connection::pointer conn = dispatcher->create_connection(DBus::BUS_SESSION); \endcode
+ *
+ * \par Request a name for our application on the bus
+ * Next, we need to request a name that will identify our application on the
+ * session bus.
+ * \code
+ *   ret = conn->request_name( "dbuscxx.quickstart_0.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
+ *   if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) return 1;
+ * \endcode
+ *
+ * \par Create an object on the bus
+ * Now that our application has a name on the bus we need to add an object with
+ * it's path.
+ * \code DBus::Object::pointer object = conn->create_object("/dbuscxx/quickstart_0"); \endcode
+ *
+ * \par Add a method named \c add to our object
+ * We will now create a method named \c add for our object. The functionality
+ * of the method will be provided by the function we declared above also named
+ * \c add(). We must add this to an interface, and the D-Bus specification
+ * required that interface names must contain at least one \b . (period)
+ * character so we will use the interface name \c "dbuscxx.Quickstart".
+ *
+ * \par
+ * Note that our object's method named \c add has nothing to do with C++
+ * class methods. In essence we are creating virtual objects on the D-Bus
+ * and can choose to provide their functionality with either C++ class methods
+ * and/or plain functions.
+ * \code object->create_method<double,double,double>("dbuscxx.Quickstart", "add", sigc::ptr_fun(add) ); \endcode
+ *
+ * \par Wait for incoming calls
+ * Finally, we need to wait for incoming calls. We will sleep for 10 seconds in
+ * our \c main() function and the calls will be handled in the dispatcher's
+ * threads.
+ * \code
+ * sleep(10);
+ *   
+ *   return 0;
+ * }
+ * \endcode
+ *
+ * <b>Continue On:</b> \ref quick_start_client_0
+ *
+ * <b>Go Back:</b> \ref quick_start
+ */
+
+/**
+ * \page quick_start_client_0 Quick Start Client 0
+ *
+ * \section quick_start_server_0 A simple client
+ *
+ * \par
+ * This section provides an example of a simple client for our simple server.
+ *
+ * \par Summary
+ * This is an overview of the code we will need in our example client:
+ * -# Include headers
+ * -# Initialize the dbus-cxx library
+ * -# Create a dispatcher to manage threads, timeouts and I/O watches
+ * -# Create a connection to the D-Bus session bus
+ * -# Create a proxy object for the server's \c quickstart_0 object
+ * -# Create a proxy \c add method for our proxy object
+ * -# Call our proxy method
+ * -# Print out the results
+ *
+ * \section quick_start_client_0_code Simple client 0 code
+ *
+ * \par
+ * Here is the code in full, followed by a section-by-section discussion.
+ *
+ * \include quickstart_client_0.cpp
+ *
+ * \section quick_start_client_0_discussion Simple client 0 code discussion
+ *
+ * \par Include headers
+ * First, we need to include the main dbus-cxx library header. We'll also
+ * include the \c iostream header since we'll print out the results
+ * of our addition.
+ * \code
+ * #include <dbus-cxx.h>
+ * #include <iostream>
+ * \endcode
+ *
+ * \par
+ * And now for the beginning of our \c main() function.
+ * \code
+ * int main()
+ * {
+ * \endcode
+ *
+ * \par Initialize the dbus-cxx library
+ * Before we do anything in dbus-cxx we must call the library's \c init() method
+ * which will take care of various initializations including the threading system.
+ * \code DBus::init(); \endcode
+ *
+ * \par Create a dispatcher to manage threads, timeouts and I/O watches
+ * Now, we will create a dispatcher to handle incoming and outgoing messages.
+ * Handling incoming and outgoing messages can be messy and the Dispatcher
+ * class handles much of this for us.
+ * \code DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create(); \endcode
+ *
+ * \par Create a connection to the D-Bus session bus
+ * Now that we have a dispatcher we need to create a connection to the session bus.
+ * \code DBus::Connection::pointer conn = dispatcher->create_connection(DBus::BUS_SESSION); \endcode
+ *
+ * \par
+ * \par Request a name for our application on the bus
+ * Next, we need to request a name that will identify our application on the
+ * session bus.
+ * \code
+ *   ret = conn->request_name( "dbuscxx.quickstart_0.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
+ *   if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) return 1;
+ * \endcode
+ *
+ * \par Create a proxy object for the server's \c quickstart_0 object
+ * You'll notice that up to this point the code for the client and the server
+ * has been nearly identical. This is the point at which they will diverge.
+ * We will now create a proxy object for the object on the server.
+ * \code
+ *   DBus::ObjectProxy::pointer object;
+ *   object = connection->create_object_proxy("dbuscxx.quickstart_0.server", "/dbuscxx/quickstart_0");
+ * \endcode
+ * Note that we must use the name the server requested as well as the object
+ * path the server used when it created it's object when we create the
+ * proxy object.
+ *
+ * \par Create a proxy \c add method for our proxy object
+ * Now we create a proxy \c add method for the server object's \c add method.
+ * This will allow us to use function notation to call the method. When
+ * creating the proxy method we must use the same interface
+ * (\c "dbuscxx.Quickstart" ) and method name ( \c "add" ) as the server used.
+ * \code
+ *   DBus::MethodProxy<double,double,double>& add_proxy
+ *     = *(object->create_method<double,double,double>("dbuscxx.Quickstart","add"));
+ * \endcode
+ *
+ * \par Call our proxy method
+ * Now we can use our proxy method to call the method on the server using
+ * function notation. We'll keep things simple and just add \c 1.1 \c + \c 2.2 .
+ * \code
+ *   double answer;
+ *   answer = add_proxy( 1.1, 2.2 );
+ * \endcode
+ *
+ * \par Print out the results
+ * Finally, we can print out the results.
+ * \code
+ *   std::cout << "1.1 + 2.2 = " << answer << std::endl;
+ *
+ *   return 0;
+ * }
+ * \endcode
+ *
+ * <b>Go Back:</b> \ref quick_start
+ */
