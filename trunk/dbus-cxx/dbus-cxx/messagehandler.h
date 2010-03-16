@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+ *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -16,21 +16,19 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef DBUSMESSAGEHANDLER_H
-#define DBUSMESSAGEHANDLER_H
-
 #include <sigc++/sigc++.h>
 
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/pointer.h>
 #include <dbus-cxx/accumulators.h>
+#include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/message.h>
+
+#ifndef DBUSCXX_MESSAGEHANDLER_H
+#define DBUSCXX_MESSAGEHANDLER_H
 
 namespace DBus
 {
-  
-  class Connection;
-
   /**
    * @ingroup objects
    * @ingroup local
