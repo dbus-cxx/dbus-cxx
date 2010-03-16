@@ -1,5 +1,5 @@
 dnl ***************************************************************************
-dnl *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+dnl *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
 dnl *   rvinyard@cs.nmsu.edu                                                  *
 dnl *                                                                         *
 dnl *   This file is part of the dbus-cxx library.                            *
@@ -75,9 +75,24 @@ template <LIST(class T_return, LOOP(class T_arg%1, [$1]))>
     
 divert(0)
 dnl
-#ifndef __DBUSXX_CONNECTION_H
-#define __DBUSXX_CONNECTION_H
-
+[/***************************************************************************
+ *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
+ *   rvinyard@cs.nmsu.edu                                                  *
+ *                                                                         *
+ *   This file is part of the dbus-cxx library.                            *
+ *                                                                         *
+ *   The dbus-cxx library is free software; you can redistribute it and/or *
+ *   modify it under the terms of the GNU General Public License           *
+ *   version 3 as published by the Free Software Foundation.               *
+ *                                                                         *
+ *   The dbus-cxx library is distributed in the hope that it will be       *
+ *   useful, but WITHOUT ANY WARRANTY; without even the implied warranty   *
+ *   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU   *
+ *   General Public License for more details.                              *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
+ ***************************************************************************/]
 #include <list>
 #include <deque>
 
@@ -96,6 +111,9 @@ dnl
 #include <dbus-cxx/method.h>
 
 #include <iostream>
+
+#ifndef DBUSCXX_CONNECTION_H
+#define DBUSCXX_CONNECTION_H
 
 namespace DBus
 {
@@ -404,6 +422,8 @@ FOR(0, eval(CALL_SIZE),[[CREATE_SIGNAL_PIN(%1)
 
       static void set_global_change_sigpipe(bool will_modify_sigpipe=true);
 
+      std::string introspect( const std::string& destination, const std::string& path );
+
     protected:
       DBusConnection* m_cobj;
       
@@ -435,9 +455,9 @@ FOR(0, eval(CALL_SIZE),[[CREATE_SIGNAL_PIN(%1)
 
       friend void init(bool);
 
-      void initialize( bool is_private );
-
       static dbus_int32_t m_weak_pointer_slot;
+
+      void initialize( bool is_private );
 
       std::map<std::string,ObjectPathHandler::pointer> m_created_objects;
 
@@ -475,56 +495,56 @@ FOR(0, eval(CALL_SIZE),[[CREATE_SIGNAL_PIN(%1)
 
   };
   
-  inline
-  Connection::pointer operator<<(Connection::pointer ptr, Message::pointer msg)
-  {
-    if (not ptr) return ptr;
-    *ptr << msg;
-    return ptr;
-  }
+}
 
-  inline
-  Connection::pointer operator<<(Connection::pointer ptr, Message::const_pointer msg)
-  {
-    if (not ptr) return ptr;
-    *ptr << msg;
-    return ptr;
-  }
+inline
+DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::Message::pointer msg)
+{
+  if (not ptr) return ptr;
+  *ptr << msg;
+  return ptr;
+}
 
-  inline
-  Connection::pointer operator<<(Connection::pointer ptr, ReturnMessage::pointer msg)
-  {
-    if (not ptr) return ptr;
-    *ptr << msg;
-    return ptr;
-  }
+inline
+DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::Message::const_pointer msg)
+{
+  if (not ptr) return ptr;
+  *ptr << msg;
+  return ptr;
+}
 
-  inline
-  Connection::pointer operator<<(Connection::pointer ptr, ReturnMessage::const_pointer msg)
-  {
-    if (not ptr) return ptr;
-    *ptr << msg;
-    return ptr;
-  }
+inline
+DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::ReturnMessage::pointer msg)
+{
+  if (not ptr) return ptr;
+  *ptr << msg;
+  return ptr;
+}
 
-  inline
-  Connection::pointer operator<<(Connection::pointer ptr, SignalMessage::pointer msg)
-  {
-    if (not ptr) return ptr;
-    *ptr << msg;
-    return ptr;
-  }
+inline
+DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::ReturnMessage::const_pointer msg)
+{
+  if (not ptr) return ptr;
+  *ptr << msg;
+  return ptr;
+}
 
-  inline
-  Connection::pointer operator<<(Connection::pointer ptr, SignalMessage::const_pointer msg)
-  {
-    if (not ptr) return ptr;
-    *ptr << msg;
-    return ptr;
-  }
+inline
+DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::SignalMessage::pointer msg)
+{
+  if (not ptr) return ptr;
+  *ptr << msg;
+  return ptr;
+}
 
+inline
+DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::SignalMessage::const_pointer msg)
+{
+  if (not ptr) return ptr;
+  *ptr << msg;
+  return ptr;
 }
 
 #endif
 
-#include <dbus-cxx/method_impl.h>
+// #include <dbus-cxx/method_impl.h>
