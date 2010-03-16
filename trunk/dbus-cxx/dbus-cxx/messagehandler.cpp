@@ -17,8 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "messagehandler.h"
-
-#include <dbus-cxx/connection.h>
+#include "connection.h"
 
 namespace DBus
 {
@@ -32,7 +31,7 @@ namespace DBus
   {
   }
 
-  HandlerResult MessageHandler::handle_message(Connection::pointer conn, Message::const_pointer msg)
+  HandlerResult MessageHandler::handle_message(DBusCxxPointer<Connection> conn, Message::const_pointer msg)
   {
     return m_signal_message.emit(conn, msg);
   }
@@ -42,13 +41,13 @@ namespace DBus
     return m_signal_message;
   }
 
-  DBusHandlerResult MessageHandler::message_handler_callback(DBusConnection * connection, DBusMessage * message, void * user_data)
+  DBusHandlerResult MessageHandler::message_handler_callback(DBusConnection * conn, DBusMessage * message, void * user_data)
   {
     if ( user_data == NULL ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
     MessageHandler* handler = static_cast<MessageHandler*>(user_data);
 
-    return static_cast<DBusHandlerResult>(handler->handle_message( Connection::self(connection), Message::create(message) ));
+    return static_cast<DBusHandlerResult>(handler->handle_message( Connection::self(conn), Message::create(message) ));
   }
 
 }

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007,2009 by Rick L. Vinyard, Jr.                       *
+ *   Copyright (C) 2007,2009,2010 by Rick L. Vinyard, Jr.                  *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -16,10 +16,6 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-
-#ifndef DBUSCXXMESSAGE_H
-#define DBUSCXXMESSAGE_H
-
 #include <string>
 #include <vector>
 #include <map>
@@ -30,7 +26,8 @@
 #include <dbus-cxx/messageiterator.h>
 #include <dbus-cxx/messageappenditerator.h>
 
-// #include <dbus-cxx/util.h>
+#ifndef DBUSCXX_MESSAGE_H
+#define DBUSCXX_MESSAGE_H
 
 namespace DBus
 {
@@ -141,7 +138,7 @@ namespace DBus
       }
       
       template <typename T>
-      append_iterator operator<<( T& value )
+      append_iterator operator<<( const T& value )
       {
         append_iterator aiter( *this );
         aiter << value;
@@ -175,10 +172,10 @@ DBus::Message::iterator operator>>( DBus::Message::const_pointer ptr, T& value )
   if ( not ptr ) throw -1;
   return (*ptr) >> value;
 }
-      
+
 template <typename T>
 inline
-DBus::Message::append_iterator operator<<( DBus::Message::pointer ptr, T& value )
+DBus::Message::append_iterator operator<<( DBus::Message::pointer ptr, const T& value )
 {
   if ( not ptr ) throw -1;
   return (*ptr) << value;

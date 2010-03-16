@@ -1,5 +1,5 @@
 dnl ***************************************************************************
-dnl *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+dnl *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
 dnl *   rvinyard@cs.nmsu.edu                                                  *
 dnl *                                                                         *
 dnl *   This file is part of the dbus-cxx library.                            *
@@ -110,10 +110,29 @@ class signal_proxy ifelse($1, $2,,[<LIST(T_return, LOOP(T_arg%1,$1), LOOP(nil, C
 ])
 
 divert(0)
-#ifndef DBUS_CXX_SIGNALPROXY_H_
-#define DBUS_CXX_SIGNALPROXY_H_
-
+dnl
+[/***************************************************************************
+ *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
+ *   rvinyard@cs.nmsu.edu                                                  *
+ *                                                                         *
+ *   This file is part of the dbus-cxx library.                            *
+ *                                                                         *
+ *   The dbus-cxx library is free software; you can redistribute it and/or *
+ *   modify it under the terms of the GNU General Public License           *
+ *   version 3 as published by the Free Software Foundation.               *
+ *                                                                         *
+ *   The dbus-cxx library is distributed in the hope that it will be       *
+ *   useful, but WITHOUT ANY WARRANTY; without even the implied warranty   *
+ *   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU   *
+ *   General Public License for more details.                              *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
+ ***************************************************************************/]
 #include <dbus-cxx/signal_proxy_base.h>
+
+#ifndef DBUSCXX_SIGNALPROXY_H_
+#define DBUSCXX_SIGNALPROXY_H_
 
 namespace DBus {
   /**

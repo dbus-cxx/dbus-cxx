@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+ *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -16,15 +16,15 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef DBUSMESSAGEAPPENDITERATOR_H
-#define DBUSMESSAGEAPPENDITERATOR_H
-
 #include <string>
 #include <vector>
 
 #include <dbus/dbus.h>
 
 #include <dbus-cxx/types.h>
+
+#ifndef DBUSCXX_MESSAGEAPPENDITERATOR_H
+#define DBUSCXX_MESSAGEAPPENDITERATOR_H
 
 namespace DBus
 {
@@ -104,7 +104,7 @@ namespace DBus
       }
 
       template <typename T>
-      MessageAppendIterator& operator<<( T& v )
+      MessageAppendIterator& operator<<( const T& v )
       {
         this->append( v );
         return *this;

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+ *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -16,13 +16,13 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef DBUSSIGNATURE_H
-#define DBUSSIGNATURE_H
-
 #include <ostream>
 #include <string>
 #include <dbus-cxx/signatureiterator.h>
 #include <dbus-cxx/path.h>
+
+#ifndef DBUSCXX_SIGNATURE_H
+#define DBUSCXX_SIGNATURE_H
 
 namespace DBus
 {

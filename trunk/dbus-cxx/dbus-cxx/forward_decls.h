@@ -16,10 +16,10 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef DBUSCXXFORWARD_DECLS_H
-#define DBUSCXXFORWARD_DECLS_H
-
 #include <dbus-cxx/types.h>
+
+#ifndef DBUSCXX_FORWARD_DECLS_H
+#define DBUSCXX_FORWARD_DECLS_H
 
 namespace DBus {
 

@@ -1,5 +1,5 @@
 dnl ***************************************************************************
-dnl *   Copyright (C) 2007,2008,2009 by Rick L. Vinyard, Jr.                  *
+dnl *   Copyright (C) 2007,2008,2009,2010 by Rick L. Vinyard, Jr.             *
 dnl *   rvinyard@cs.nmsu.edu                                                  *
 dnl *                                                                         *
 dnl *   This file is part of the dbus-cxx library.                            *
@@ -49,9 +49,24 @@ define([CREATE_SIGNAL],[dnl
     
 divert(0)
 dnl
-#ifndef DBUSCXXINTERFACEPROXY_H
-#define DBUSCXXINTERFACEPROXY_H
-
+[/***************************************************************************
+ *   Copyright (C) 2007,2008,2009,2010 by Rick L. Vinyard, Jr.             *
+ *   rvinyard@cs.nmsu.edu                                                  *
+ *                                                                         *
+ *   This file is part of the dbus-cxx library.                            *
+ *                                                                         *
+ *   The dbus-cxx library is free software; you can redistribute it and/or *
+ *   modify it under the terms of the GNU General Public License           *
+ *   version 3 as published by the Free Software Foundation.               *
+ *                                                                         *
+ *   The dbus-cxx library is distributed in the hope that it will be       *
+ *   useful, but WITHOUT ANY WARRANTY; without even the implied warranty   *
+ *   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU   *
+ *   General Public License for more details.                              *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
+ ***************************************************************************/]
 #include <sigc++/sigc++.h>
 
 #include <string>
@@ -60,6 +75,9 @@ dnl
 
 #include <dbus-cxx/methodproxy.h>
 #include <dbus-cxx/signal_proxy.h>
+
+#ifndef DBUSCXX_INTERFACEPROXY_H
+#define DBUSCXX_INTERFACEPROXY_H
 
 namespace DBus {
 

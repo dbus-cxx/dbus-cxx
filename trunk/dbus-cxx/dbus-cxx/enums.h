@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007 by Rick L. Vinyard, Jr.                            *
+ *   Copyright (C) 2007,2010 by Rick L. Vinyard, Jr.                       *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -16,10 +16,10 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef DBUS_CXXENUMS_H
-#define DBUS_CXXENUMS_H
-
 #include <dbus/dbus.h>
+
+#ifndef DBUSCXX_ENUMS_H
+#define DBUSCXX_ENUMS_H
 
 namespace DBus {
 

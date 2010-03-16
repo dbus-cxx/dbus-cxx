@@ -1,5 +1,5 @@
 dnl ***************************************************************************
-dnl *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+dnl *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
 dnl *   rvinyard@cs.nmsu.edu                                                  *
 dnl *                                                                         *
 dnl *   This file is part of the dbus-cxx library.                            *
@@ -53,7 +53,7 @@ template <LIST(LOOP(class T_arg%1, [$1]))>
 divert(0)
 dnl
 [/***************************************************************************
- *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+ *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -70,9 +70,6 @@ dnl
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/]
-#ifndef DBUSMETHODPROXYBASE_H
-#define DBUSMETHODPROXYBASE_H
-
 #include <string>
 
 #include <sigc++/sigc++.h>
@@ -84,6 +81,9 @@ dnl
 #include <dbus-cxx/callmessage.h>
 #include <dbus-cxx/returnmessage.h>
 #include <dbus-cxx/pendingcall.h>
+
+#ifndef DBUSCXX_METHODPROXYBASE_H
+#define DBUSCXX_METHODPROXYBASE_H
 
 namespace DBus
 {
