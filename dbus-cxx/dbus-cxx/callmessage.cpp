@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+ *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *

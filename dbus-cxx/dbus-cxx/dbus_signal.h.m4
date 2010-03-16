@@ -1,5 +1,5 @@
 dnl ***************************************************************************
-dnl *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+dnl *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
 dnl *   rvinyard@cs.nmsu.edu                                                  *
 dnl *                                                                         *
 dnl *   This file is part of the dbus-cxx library.                            *
@@ -240,7 +240,7 @@ public:
 
   T_return internal_callback(LIST(LOOP(T_arg%1 arg%1, $1)))
   {
-    DBUS_CXX_DEBUG( "signal::internal_callback: " FOR(1,$1,[ << arg%1]) );
+    // DBUS_CXX_DEBUG( "signal::internal_callback: " FOR(1,$1,[ << arg%1]) );
     SignalMessage::pointer __msg = SignalMessage::create(m_path, m_interface, m_name);
     if ( not m_destination.empty() ) __msg->set_destination(m_destination);
     ifelse(eval($1>0),1,[*__msg FOR(1, $1,[ << arg%1]);],[])
@@ -258,7 +258,7 @@ public:
 
 divert(0)
 [/***************************************************************************
- *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+ *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -275,13 +275,13 @@ divert(0)
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/]
-#ifndef DBUS_CXX_SIGNAL_H_
-#define DBUS_CXX_SIGNAL_H_
-
 #include <sstream>
 #include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/utility.h>
 #include <dbus-cxx/signal_base.h>
+
+#ifndef DBUSCXX_DBUS_SIGNAL_H_
+#define DBUSCXX_DBUS_SIGNAL_H_
 
 namespace DBus {
 

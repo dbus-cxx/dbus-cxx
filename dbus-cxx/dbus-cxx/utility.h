@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007,2008,2009 by Rick L. Vinyard, Jr.                  *
+ *   Copyright (C) 2007,2008,2009,2010 by Rick L. Vinyard, Jr.             *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -17,11 +17,11 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef DBUSUTILITY_H
-#define DBUSUTILITY_H
-
 #include <dbus/dbus.h>
 #include <dbus-cxx/pointer.h>
+
+#ifndef DBUSCXX_UTILITY_H
+#define DBUSCXX_UTILITY_H
 
 #define DBUS_CXX_PARAM_LIMIT 7
 

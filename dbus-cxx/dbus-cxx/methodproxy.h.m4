@@ -1,5 +1,5 @@
 dnl ***************************************************************************
-dnl *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+dnl *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
 dnl *   rvinyard@cs.nmsu.edu                                                  *
 dnl *                                                                         *
 dnl *   This file is part of the dbus-cxx library.                            *
@@ -102,7 +102,7 @@ define([METHODPROXY_VOID],[dnl
 divert(0)
 dnl
 [/***************************************************************************
- *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+ *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -119,12 +119,12 @@ dnl
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/]
-#ifndef DBUSCXXMETHODPROXY_H
-#define DBUSCXXMETHODPROXY_H
-
 #include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/methodproxybase.h>
 #include <dbus-cxx/utility.h>
+
+#ifndef DBUSCXX_METHODPROXY_H
+#define DBUSCXX_METHODPROXY_H
 
 namespace DBus {
 

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007,2008,2009 by Rick L. Vinyard, Jr.                  *
+ *   Copyright (C) 2007,2008,2009,2010 by Rick L. Vinyard, Jr.             *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -16,9 +16,6 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef DBUSCXX_ERROR_H
-#define DBUSCXX_ERROR_H
-
 #include <exception>
 
 #include <dbus-cxx/pointer.h>
@@ -26,6 +23,9 @@
 #include <dbus/dbus.h>
 
 #include <string>
+
+#ifndef DBUSCXX_ERROR_H
+#define DBUSCXX_ERROR_H
 
 namespace DBus
 {

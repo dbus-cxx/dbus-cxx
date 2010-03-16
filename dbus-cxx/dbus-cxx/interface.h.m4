@@ -115,9 +115,6 @@ dnl
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/]
-#ifndef DBUSCXXINTERFACE_H
-#define DBUSCXXINTERFACE_H
-
 #include <sigc++/sigc++.h>
 
 #include <string>
@@ -127,6 +124,9 @@ dnl
 #include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/methodbase.h>
 #include <dbus-cxx/dbus_signal.h>
+
+#ifndef DBUSCXX_INTERFACE_H
+#define DBUSCXX_INTERFACE_H
 
 namespace DBus {
 

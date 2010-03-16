@@ -1,5 +1,5 @@
 dnl ***************************************************************************
-dnl *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+dnl *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
 dnl *   rvinyard@cs.nmsu.edu                                                  *
 dnl *                                                                         *
 dnl *   This file is part of the dbus-cxx library.                            *
@@ -140,7 +140,7 @@ define([DEFINE_CREATE_SIGNAL_IN],[dnl
 divert(0)
 dnl
 [/***************************************************************************
- *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+ *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -157,9 +157,6 @@ dnl
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/]
-#ifndef DBUSCXXOBJECT_H
-#define DBUSCXXOBJECT_H
-
 #include <sigc++/sigc++.h>
 
 #include <string>
@@ -168,6 +165,9 @@ dnl
 #include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/objectpathhandler.h>
 #include <dbus-cxx/dbus_signal.h>
+
+#ifndef DBUSCXXOBJECT_H
+#define DBUSCXXOBJECT_H
 
 namespace DBus
 {
