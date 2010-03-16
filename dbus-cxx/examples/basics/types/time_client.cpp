@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007 by Rick L. Vinyard, Jr.                            *
+ *   Copyright (C) 2007,2010 by Rick L. Vinyard, Jr.                       *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -26,9 +26,9 @@ int main(int argc, const char** argv)
 
   DBus::init();
 
-  DBus::Dispatcher dispatcher;
+  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
 
-  DBus::Connection::pointer connection = dispatcher.create_connection( DBus::BUS_SESSION );
+  DBus::Connection::pointer connection = dispatcher->create_connection( DBus::BUS_SESSION );
 
   DBus::ObjectProxy::pointer object = connection->create_object_proxy("dbuscxx.example.time.server", "/dbuscxx/example/Time");
 

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2007,2008,2009 by Rick L. Vinyard, Jr.                  *
+ *   Copyright (C) 2007,2008,2009,2010 by Rick L. Vinyard, Jr.             *
  *   rvinyard@cs.nmsu.edu                                                  *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -17,7 +17,6 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <cmath>
 
@@ -31,9 +30,9 @@ int main()
 {
   DBus::init();
 
-  DBus::Dispatcher dispatcher;
-  
-  DBus::Connection::pointer connection = dispatcher.create_connection( DBus::BUS_SESSION );
+  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
+
+  DBus::Connection::pointer connection = dispatcher->create_connection( DBus::BUS_SESSION );
 
   DBus::signal<void,std::vector<double> >::pointer signal = connection->create_signal<void,std::vector<double> >("/test/signal/Object", "test.signal.Type", "Test");
 
