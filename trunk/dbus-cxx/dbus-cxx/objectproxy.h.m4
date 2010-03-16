@@ -1,5 +1,5 @@
 dnl ***************************************************************************
-dnl *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
+dnl *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
 dnl *   rvinyard@cs.nmsu.edu                                                  *
 dnl *                                                                         *
 dnl *   This file is part of the dbus-cxx library.                            *
@@ -22,34 +22,61 @@ divert(-1)
 include(template.macros.m4)
 
 define([CREATE_METHOD],[dnl
-      dnl
+      /**
+       * Creates a proxy method with a signature based on the template parameters and adds it to the named interface
+       * @return A smart pointer to the newly created method proxy
+       * @param interface_name The name of the interface to add this proxy method to
+       * @param method_name The name to assign to the newly create method proxy. This name will be used to perform the dbus-call.
+       */
       template <LIST(class T_return, LOOP(class T_arg%1, [$1]))>
-      DBusCxxPointer<MethodProxy<LIST(T_return, LOOP(T_arg%1, $1))> > create_method( const std::string& interface_name, const std::string& method_name )
+      DBusCxxPointer<MethodProxy<LIST(T_return, LOOP(T_arg%1, $1))> >
+      create_method( const std::string& interface_name, const std::string& method_name )
       {
         InterfaceProxy::pointer interface = this->interface(interface_name);
         if ( not interface ) interface = this->create_interface( interface_name );
         return interface->create_method<LIST(T_return, LOOP(T_arg%1, $1))>(method_name);
       }
-      dnl
+
 ])
     
 define([CREATE_SIGNAL],[dnl
-      dnl
+      /**
+       * Creates a signal proxy with a signature based on the template parameters and adds it to the named interface
+       * @return A smart pointer to the newly created signal proxy
+       * @param interface_name The name of the interface to add this proxy signal to
+       * @param sig_name The name to assign to the newly created signal proxy.
+       */
       template <LIST(class T_return, LOOP(class T_arg%1, [$1]))>
-      DBusCxxPointer<signal_proxy<LIST(T_return, LOOP(T_arg%1, $1))> > create_signal( const std::string& interface_name, const std::string& sig_name )
+      DBusCxxPointer<signal_proxy<LIST(T_return, LOOP(T_arg%1, $1))> >
+      create_signal( const std::string& interface_name, const std::string& sig_name )
       {
         InterfaceProxy::pointer interface = this->interface(interface_name);
         if ( not interface ) interface = this->create_interface( interface_name );
         return interface->create_signal<LIST(T_return, LOOP(T_arg%1, $1))>(sig_name);
       }
-      dnl
+
 ])
     
 divert(0)
 dnl
-#ifndef DBUSCXXOBJECTPROXY_H
-#define DBUSCXXOBJECTPROXY_H
-
+[/***************************************************************************
+ *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
+ *   rvinyard@cs.nmsu.edu                                                  *
+ *                                                                         *
+ *   This file is part of the dbus-cxx library.                            *
+ *                                                                         *
+ *   The dbus-cxx library is free software; you can redistribute it and/or *
+ *   modify it under the terms of the GNU General Public License           *
+ *   version 3 as published by the Free Software Foundation.               *
+ *                                                                         *
+ *   The dbus-cxx library is distributed in the hope that it will be       *
+ *   useful, but WITHOUT ANY WARRANTY; without even the implied warranty   *
+ *   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU   *
+ *   General Public License for more details.                              *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
+ ***************************************************************************/]
 #include <sigc++/sigc++.h>
 
 #include <string>
@@ -57,6 +84,9 @@ dnl
 
 #include <dbus-cxx/signal_proxy.h>
 #include <dbus-cxx/interfaceproxy.h>
+
+#ifndef DBUSCXX_OBJECTPROXY_H
+#define DBUSCXX_OBJECTPROXY_H
 
 namespace DBus
 {
@@ -194,7 +224,8 @@ namespace DBus
    */
 
   /**
-   * Provides a mechanism for creating local proxies for objects with dbus interfaces
+   * Object proxies are local proxies that provide local methods and signals for
+   * remote objects with dbus interfaces.
    *
    * @ingroup proxy
    * @ingroup objects
@@ -204,14 +235,32 @@ namespace DBus
   {
     protected:
 
+      /**
+       * This class has a protected constructor. Use the \c create() methods
+       * to obtain a smart pointer to a new instance.
+       */
       ObjectProxy( DBusCxxPointer<Connection> conn, const std::string& destination, const std::string& path );
 
     public:
 
+      /**
+       * Typedef to smart pointers to ObjectProxy.
+       * 
+       * Can access \e type as \c ObjectProxy::pointer
+       */
       typedef DBusCxxPointer<ObjectProxy> pointer;
 
+      /**
+       * Creates an ObjectProxy with a specific path
+       * @param path The path of the object that this will be a proxy for
+       */
       static pointer create( const std::string& path );
 
+      /**
+       * Creates an ObjectProxy with a specific path
+       * @param destination The destination address that this will be a proxy for
+       * @param path The path of the object that this will be a proxy for
+       */
       static pointer create( const std::string& destination, const std::string& path );
 
       static pointer create( DBusCxxPointer<Connection> conn, const std::string& path );
@@ -284,12 +333,8 @@ namespace DBus
 
       PendingCall::pointer call_async( CallMessage::const_pointer, int timeout_milliseconds=-1 ) const;
 
-FOR(0, eval(CALL_SIZE),[[CREATE_METHOD(%1)
-          ]])
-FOR(0, eval(CALL_SIZE),[[CREATE_SIGNAL(%1)
-          ]])      
-
-
+FOR(0, eval(CALL_SIZE),[[CREATE_METHOD(%1)]])
+FOR(0, eval(CALL_SIZE),[[CREATE_SIGNAL(%1)]])
       sigc::signal<void,InterfaceProxy::pointer> signal_interface_added();
 
       sigc::signal<void,InterfaceProxy::pointer> signal_interface_removed();
