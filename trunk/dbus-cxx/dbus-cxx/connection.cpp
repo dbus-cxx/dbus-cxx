@@ -30,7 +30,7 @@ namespace DBus
 {
 
   dbus_int32_t Connection::m_weak_pointer_slot = -1;
-
+  
   Connection::Connection( DBusConnection* cobj, bool is_private ):
       m_cobj( cobj )
   {
@@ -148,18 +148,20 @@ namespace DBus
 
   Connection::pointer Connection::self(DBusConnection * c)
   {
-    if ( c == NULL or m_weak_pointer_slot == -1 ) return pointer();
+    if ( c == NULL or m_weak_pointer_slot == -1 ) return Connection::pointer();
     
     void* v = dbus_connection_get_data(c, m_weak_pointer_slot);
 
-    if ( v == NULL ) return pointer();
+    if ( v == NULL ) return Connection::pointer();
 
-    weak_pointer* wp = static_cast<weak_pointer*>(v);
+    Connection::weak_pointer* wp = static_cast<Connection::weak_pointer*>(v);
 
-    pointer p = wp->lock();
+    Connection::pointer p = wp->lock();
 
     return p;
   }
+
+
 
   DBusConnection* Connection::cobj()
   {
@@ -977,6 +979,35 @@ namespace DBus
     if ( signal_result == HANDLED or filter_result == FILTER ) return DBUS_HANDLER_RESULT_HANDLED;
     if ( signal_result == HANDLER_NEEDS_MEMORY or filter_result == FILTER_NEEDS_MEMORY ) return DBUS_HANDLER_RESULT_NEED_MEMORY;
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
+
+  std::string Connection::introspect(const std::string& destination, const std::string& path)
+  {
+    std::string failed;
+    std::ostringstream sout;
+    sout << "Introspection of Destination: " << destination << "   Path: " << path << " failed";
+    
+    failed = sout.str();
+    
+    if ( destination.empty() or path.empty() ) return failed;
+    
+    CallMessage::pointer msg = CallMessage::create( destination.c_str(), path.c_str(), DBUS_INTERFACE_INTROSPECTABLE, "Introspect" );
+    
+    Message::pointer retmsg;
+    PendingCall::pointer pending;
+
+    pending = this->send_with_reply_async(msg);
+    this->flush();
+    pending->block();
+    retmsg = pending->steal_reply();
+
+//     retmsg = this->send_with_reply_blocking( msg );
+
+    if (not retmsg) return failed;
+    
+    std::string retval;
+    retmsg >> retval;
+    return retval;
   }
 
 }
