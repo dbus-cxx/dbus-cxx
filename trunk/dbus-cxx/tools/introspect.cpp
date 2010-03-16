@@ -70,7 +70,7 @@ int main( int argc, const char** argv )
   else
     conn = Connection::create(BUS_SYSTEM);
 
-  std::string introspection = DBus::introspect( conn, dest, path );
+  std::string introspection = conn->introspect( dest, path );
 
   std::cout << introspection << std::endl;
 
