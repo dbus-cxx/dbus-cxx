@@ -83,8 +83,18 @@
 namespace DBus
 {
 
+  /**
+   * Initializes the dbus-cxx library
+   *
+   * @param threadsafe If \c true the library's threadsafe structures, along with the underlying dbus library will be initialized to support threadsafe operations. This makes the library threadsafe at the cost of efficiency.
+   */
   void init(bool threadsafe=true);
-  
+
+  /**
+   * Get the initialization state of the dbus-cxx library
+   *
+   * @return \c true if the library is initialized, \c false otherwise
+   */
   bool initialized();
 
 }

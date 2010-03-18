@@ -41,7 +41,10 @@ namespace DBus
     
     if ( not initialized_var ) {
             
-      if ( threadsafe ) dbus_threads_init_default();
+      if ( threadsafe ) {
+        result = dbus_threads_init_default();
+	if (!result) throw std::bad_alloc();
+      }
 
       result = dbus_connection_allocate_data_slot( & Connection::m_weak_pointer_slot );
       if ( not result ) throw (-1); // TODO throw something better
