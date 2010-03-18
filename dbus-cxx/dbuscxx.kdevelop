@@ -16,7 +16,7 @@
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>unit-tests/dbus-cxx-unit-tests</activetarget>
+      <activetarget>examples/basics/types/time-server</activetarget>
       <useconfiguration>default</useconfiguration>
     </general>
     <run>

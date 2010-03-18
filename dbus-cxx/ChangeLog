@@ -1,5 +1,135 @@
+2010-03-16  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* tools/introspect.cpp:
+	* templates/cpp, templates/h:
+	* examples/quick-start:
+	* examples/Makefile.am, examples/basics/methods/callee.cpp,
+	  examples/basics/methods/callee_2.cpp,
+	  examples/basics/methods/callee_c.cpp,
+	  examples/basics/methods/callee_dispatched.cpp,
+	  examples/basics/methods/callee_object.cpp,
+	  examples/basics/methods/callee_object_inherited.cpp,
+	  examples/basics/methods/caller_dispatched.cpp,
+	  examples/basics/methods/caller_object.cpp,
+	  examples/basics/signals/signal_emitter_3.cpp,
+	  examples/basics/signals/signal_emitter_array.cpp,
+	  examples/basics/signals/signal_emitter_object.cpp,
+	  examples/basics/signals/signal_receiver.cpp,
+	  examples/basics/signals/signal_receiver_2.cpp,
+	  examples/basics/signals/signal_receiver_array.cpp,
+	  examples/basics/signals/signal_receiver_object.cpp,
+	  examples/basics/types/time_client.cpp,
+	  examples/basics/types/time_server.cpp,
+	  examples/basics/types/timeval_dbus.cpp,
+	  examples/basics/types/timeval_dbus.h,
+	  examples/glibmm/glibmm_caller_dispatched.cpp,
+	  examples/xml2cpp/calculator-interface/calculator_client.cpp,
+	  examples/xml2cpp/calculator-interface/calculator_server.cpp,
+	  examples/xml2cpp/calculator-interface/calculator_watcher.cpp,
+	  examples/xml2cpp/calculator/calculator_client.cpp,
+	  examples/xml2cpp/calculator/calculator_server.cpp,
+	  examples/xml2cpp/calculator/calculator_watcher.cpp,
+	  examples/xml2cpp/computer-has-a/computer_client.cpp,
+	  examples/xml2cpp/computer-has-a/computer_server.cpp,
+	  examples/xml2cpp/computer-has-a/computer_watcher.cpp,
+	  examples/xml2cpp/computer-is-a/computer_client.cpp,
+	  examples/xml2cpp/computer-is-a/computer_server.cpp,
+	  examples/xml2cpp/computer-is-a/computer_watcher.cpp,
+	  examples/xml2cpp/hal-proxy/hal_proxy.cpp:
+	* examples/quick-start, examples/quick-start/Makefile.am,
+	  examples/quick-start/quickstart_client_0.cpp,
+	  examples/quick-start/quickstart_server_0.cpp:
+	* dbus-cxx-glibmm/dispatcher.cpp, dbus-cxx-glibmm/dispatcher.h:
+	* dbus-cxx/accumulators.h, dbus-cxx/callmessage.cpp,
+	  dbus-cxx/callmessage.h, dbus-cxx/dbus_signal.h.m4,
+	  dbus-cxx/enums.h, dbus-cxx/error.h, dbus-cxx/errormessage.h,
+	  dbus-cxx/forward_decls.h, dbus-cxx/interface.h.m4,
+	  dbus-cxx/interfaceproxy.h.m4, dbus-cxx/message.h,
+	  dbus-cxx/messageappenditerator.h, dbus-cxx/messagefilter.h,
+	  dbus-cxx/messagehandler.cpp, dbus-cxx/messageiterator.h,
+	  dbus-cxx/method_impl.h.m4, dbus-cxx/methodbase.h,
+	  dbus-cxx/methodproxy.h.m4, dbus-cxx/methodproxybase.h.m4,
+	  dbus-cxx/object.h.m4, dbus-cxx/objectpathhandler.h,
+	  dbus-cxx/path.h, dbus-cxx/pendingcall.h,
+	  dbus-cxx/returnmessage.h, dbus-cxx/signal_base.h,
+	  dbus-cxx/signal_proxy.h.m4, dbus-cxx/signal_proxy_base.h,
+	  dbus-cxx/signalmessage.h, dbus-cxx/signalreceiver.h,
+	  dbus-cxx/signature.h, dbus-cxx/signatureiterator.h,
+	  dbus-cxx/timeout.h, dbus-cxx/types.h, dbus-cxx/utility.h,
+	  dbus-cxx/watch.h:
+	* dbus-cxx/objectproxy.h.m4: Add documentation and cleanup code
+	  generation
+	* dbus-cxx/method.h.m4: Add template specializations for void
+	  methods
+	* dbus-cxx/messagehandler.h: Add dependency on forward_decls.h and
+	  remove explicit forward declaration
+	* dbus-cxx/dispatcher.h: Make Dispatcher constructor protected.
+	  Dispatcher::create() should be used.
+	  
+	  Add beginning of quickstart tutorial.
+	* dbus-cxx/connection.cpp, dbus-cxx/connection.h.m4: Move
+	  introspect() function from utility.h to the Connection class as a
+	  method
+
+2010-03-11  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* dbus-cxx/utility.cpp, dbus-cxx/utility.h:
+	* dbus-cxx/objectpathhandler.h:
+	* dbus-cxx/signal_proxy_base.cpp: Convert Connection::pointer to
+	  DBusCxxPointer<Connection> to remove dependency on connection.h
+	  
+	  Remove unnecessary headers
+	* dbus-cxx/Makefile.am:
+	* dbus-cxx/forward_decls.h:
+	* dbus-cxx/method.h.m4: Separate templates into forward
+	  declarations in class declaration and definition after headers
+	  are included for classes needed only in definition.
+	* dbus-cxx/methodproxybase.h.m4: Add dependency on forward_decls.h
+	* dbus-cxx/methodproxybase.cpp: Remove unnecessary headers
+	* dbus-cxx/methodproxy.h.m4: Add dependency on forward_decls.h
+	* dbus-cxx/methodbase.h: Remove unnecessary headers
+	* dbus-cxx/methodbase.cpp: Remove unnecessary headers
+	* dbus-cxx/dbus_signal.h.m4: Add dependency on forward_decls.h
+	* dbus-cxx/utility.cpp, dbus-cxx/utility.h: Separate type handling
+	  and signatures from utility.h into a separate header with fewer
+	  include dependencies.
+	  
+	  Add function for converting DBusConnection to
+	  DBus::Connection::pointer
+	* dbus-cxx/signatureiterator.cpp:
+	* dbus-cxx/signature.h: Added signature functions from utility.h
+	* dbus-cxx/signalreceiver.cpp:
+	* dbus-cxx/object.cpp: Remove unnecessary headers
+	  
+	  Add force to parameter to add_child()
+	  
+	  Add default interface fallback when a named interface doesn't
+	  handle a message
+	* dbus-cxx/interface.h.m4:
+	* dbus-cxx/object.h.m4: Separate templates into forward
+	  declarations in class declaration and definition after headers
+	  are included for classes needed only in definition.
+	  
+	  Added documentation.
+	  
+	  Add force parameter to add_child() method.
+	* dbus-cxx/types.h: Separate type handling from utility.h into a
+	  separate header with fewer include dependencies.
+	* dbus-cxx/messageiterator.h: Remove unnecessary headers
+	* dbus-cxx/messageappenditerator.h: Remove unnecessary headers
+	* dbus-cxx/interface.h.m4: Separate templates into forward
+	  declarations in class declaration and definition after headers
+	  are included for classes needed only in definition.
+	  
+	  Added documentation.
+	* dbus-cxx/interface.cpp: Remove unnecessary headers
+	* dbus-cxx/forward_decls.h: Added forward decls header to improve
+	  management of forward declarations by co-locating them in one
+	  file.
+
 2010-01-22  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
+	* ChangeLog: ===== 0.6.0 =====
 	* ChangeLog, configure.ac, dbus-cxx.spec.m4,
 	  dbus-cxx/connection.cpp, dbus-cxx/error.cpp, dbus-cxx/error.h,
 	  dbus-cxx/errormessage.cpp, dbus-cxx/messageappenditerator.cpp,
