@@ -160,7 +160,10 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 %{_includedir}/dbus-cxx-PACKAGE_RELEASE/dbus-cxx-glibmm/
 
 %changelog
-* Fri Jan 22 2010 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.6.1-1
+* Thu Mar 18 2010 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.7.0-1
+- New release
+
+* Fri Jan 22 2010 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.6.0-1
 - New release
 
 * Mon Jan  4 2010 Rick L Vinyard Jr <rvinyard@cs.nmsu.edu> - 0.5.1-1
