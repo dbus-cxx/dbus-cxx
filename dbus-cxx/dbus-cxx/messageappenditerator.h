@@ -94,14 +94,13 @@ namespace DBus
       #endif
 
       template <typename T>
-      void append( const std::vector<T>& v ) {
-        this->open_container( CONTAINER_ARRAY, DBus::signature<T>().c_str() );
-        
-        for ( size_t i=0; i < v.size(); i++ )
-          *m_subiter << v[i];
-        
-        this->close_container();
-      }
+      bool append( const std::vector<T>& v); 
+
+      template <typename Key, typename Data>
+      bool append( const std::vector<std::pair<Key,Data> >& dictionary );
+
+      template <typename T>
+	  bool append( const Variant<T> & var);
 
       template <typename T>
       MessageAppendIterator& operator<<( const T& v )
@@ -174,23 +173,9 @@ namespace DBus
 //             this->close_container();
 //           }
 
-//       template <typename Key, typename Data>
-//       void append( const std::vector<std::pair<Key,Data> >& dictionary ) {
-//         std::string sig = signature( dictionary );
-//         sig.erase( 0 );
-//         this->open_container( CONTAINER_ARRAY, sig );
-//         for ( int i = 0; i != dictionary.size(); i++ ) {
-//           m_subiter->open_container( CONTAINER_DICT_ENTRY, std::string() );
-//           m_subiter->m_subiter->append( dictionary[i].first );
-//           m_subiter->m_subiter->append( dictionary[i].second );
-//           m_subiter->close_container();
-//         }
-//         this->close_container();
-//       }
+      bool open_container( ContainerType t, const std::string& contained_signature );
 
-      void open_container( ContainerType t, const std::string& contained_signature );
-
-      void close_container( );
+      bool close_container( );
 
       MessageAppendIterator* sub_iterator();
 
@@ -216,7 +201,6 @@ namespace DBus
       bool protected_append( const std::string& v );
       bool protected_append( const Signature& v );
       bool protected_append( const Path& v );
-
   };
 
 }

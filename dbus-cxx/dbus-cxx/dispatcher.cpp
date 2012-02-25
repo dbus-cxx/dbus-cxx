@@ -316,7 +316,10 @@ namespace DBus
       if ( selresult == 0 ) continue;
 
       // Oops, select had a serious error
-      if ( selresult == -1 ) throw(errno);
+      if ( selresult == -1 && errno == EINTR ){
+        //if we were interrupted, continue on
+        continue;
+      } else throw(errno);
 
       // If we made it here we have some activity we need to handle
       //

@@ -442,14 +442,22 @@ namespace DBus
 //       return ReturnMessage::const_pointer();
 //     }
 
-    return m_connection->send_with_reply_blocking( call_message, timeout_milliseconds );
+    try{
+      return m_connection->send_with_reply_blocking( call_message, timeout_milliseconds );
+    }catch(std::shared_ptr<DBus::Error> err){
+      throw err;
+    }
   }
 
   PendingCall::pointer ObjectProxy::call_async( CallMessage::const_pointer call_message, int timeout_milliseconds ) const
   {
     if ( not m_connection or not m_connection->is_valid() ) return PendingCall::pointer();
 
-    return m_connection->send_with_reply_async( call_message, timeout_milliseconds );
+    try{
+      return m_connection->send_with_reply_async( call_message, timeout_milliseconds );
+    }catch(std::shared_ptr<DBus::Error> err){
+      throw err;
+    }
   }
 
   sigc::signal< void, InterfaceProxy::pointer > ObjectProxy::signal_interface_added()

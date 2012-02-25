@@ -17,6 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "pendingcall.h"
+#include "utility.h"
 
 namespace DBus
 {
@@ -49,8 +50,13 @@ namespace DBus
 
   PendingCall::~PendingCall()
   {
-    if ( m_cobj )
+    if ( m_cobj ){
+      //At this point, there are no more references to this PendingCall - which means that when 
+      //we get a callback, we will(most likely) segfault because the memory has been deallocated.
+      //Unref the pending call and then cancel it.
       dbus_pending_call_unref( m_cobj );
+      dbus_pending_call_cancel( m_cobj );
+    }
   }
 
   PendingCall& PendingCall::operator=( const PendingCall& other )

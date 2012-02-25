@@ -364,6 +364,8 @@ namespace DBus
 
     if ( not message or not *message ) return ReturnMessage::const_pointer();
 
+    dbus_message_set_no_reply(message->cobj(),FALSE);
+
     reply = dbus_connection_send_with_reply_and_block( m_cobj, message->cobj(), timeout_milliseconds, error->cobj() );
 
     if ( error->is_set() ) throw error;
@@ -671,7 +673,7 @@ namespace DBus
     if ( signal->connection() ) signal->connection()->remove_signal_proxy(signal);
 
     DBUS_CXX_DEBUG( "m_proxy_signal_interface_map.size(): " << m_proxy_signal_interface_map.size() );
-    DBUS_CXX_DEBUG( "m_proxy_signal_interface_map[" << interface << ".size(): " << m_proxy_signal_interface_map[interface].size() );
+    DBUS_CXX_DEBUG( "m_proxy_signal_interface_map[" << interface << "].size(): " << m_proxy_signal_interface_map[interface].size() );
     DBUS_CXX_DEBUG( "m_proxy_signal_interface_map[" << interface << "][" << name << "].size(): " << m_proxy_signal_interface_map[interface][name].size() );
     m_proxy_signal_interface_map[interface][name].push_back(signal);
     this->add_match( signal->match_rule() );
@@ -684,9 +686,13 @@ namespace DBus
   {
     if ( not signal ) return false;
 
+    DBUS_CXX_DEBUG( "remove_signal_proxy" );
+
     const std::string& interface = signal->interface();
     const std::string& name = signal->name();
     if ( interface.empty() or name.empty() ) return false;
+
+    this->remove_match( signal->match_rule() );
 
     size_t s1 = m_proxy_signal_interface_map[interface][name].size();
     m_proxy_signal_interface_map[interface][name].remove(signal);

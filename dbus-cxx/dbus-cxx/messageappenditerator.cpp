@@ -81,6 +81,39 @@ namespace DBus
     return result;
   }
 
+  template <typename T>
+  bool MessageAppendIterator::append( const std::vector<T>& v ) {
+    bool success;
+    success = this->open_container( CONTAINER_ARRAY, DBus::signature<T>().c_str() );
+
+    for ( size_t i=0; i < v.size(); i++ )
+      *m_subiter << v[i];
+
+    return this->close_container();
+  }
+
+  template <typename Key, typename Data>
+  bool MessageAppendIterator::append( const std::vector<std::pair<Key,Data> >& dictionary ) {
+    std::string sig = signature( dictionary );
+    this->open_container( CONTAINER_ARRAY, sig );
+    for ( int i = 0; i != dictionary.size(); i++ ) {
+      m_subiter->open_container( CONTAINER_DICT_ENTRY, std::string() );
+      m_subiter->m_subiter->append( dictionary[i].first );
+      m_subiter->m_subiter->append( dictionary[i].second );
+      m_subiter->close_container();
+    }
+   return this->close_container();
+  }
+
+  template <typename T>
+  bool MessageAppendIterator::append( const Variant<T> & var){
+      bool result;
+      this->open_container( CONTAINER_VARIANT, signature(var.data)  );
+      m_subiter->append(var.data);
+      return this->close_container();
+  }
+
+
   MessageAppendIterator::MessageAppendIterator():
       m_message( NULL ), m_subiter( NULL )
   {
@@ -241,7 +274,7 @@ namespace DBus
 #endif
 
 
-  void MessageAppendIterator::open_container( ContainerType t, const std::string& sig )
+  bool MessageAppendIterator::open_container( ContainerType t, const std::string& sig )
   {
     bool success;
 
@@ -256,16 +289,19 @@ namespace DBus
       success = dbus_message_iter_open_container( &m_cobj, t, NULL, m_subiter->cobj() );
     else
       success = dbus_message_iter_open_container( &m_cobj, t, sig.c_str(), m_subiter->cobj() );
+    
+    return success;
   }
 
-  void MessageAppendIterator::close_container( )
+  bool MessageAppendIterator::close_container( )
   {
     bool success;
-    if ( ! m_subiter ) return;
+    if ( ! m_subiter ) return false;
     success = dbus_message_iter_close_container( &m_cobj, m_subiter->cobj() );
     delete m_subiter;
     m_subiter = NULL;
     if ( ! success ) throw ErrorNoMemory::create( "MessageAppendIterator::close_container: No memory to close the container" );
+    return success;
   }
 
   MessageAppendIterator* MessageAppendIterator::sub_iterator()

@@ -78,13 +78,21 @@ namespace DBus
   ReturnMessage::const_pointer DBus::MethodProxyBase::call(CallMessage::const_pointer call_message, int timeout_milliseconds) const
   {
     if ( not m_interface ) return ReturnMessage::const_pointer();
-    return m_interface->call(call_message, timeout_milliseconds);
+    try{  
+      return m_interface->call(call_message, timeout_milliseconds);
+    }catch(std::shared_ptr<DBus::Error> err){
+      throw err;
+    }
   }
 
   PendingCall::pointer DBus::MethodProxyBase::call_async(CallMessage::const_pointer call_message, int timeout_milliseconds) const
   {
     if ( not m_interface ) return PendingCall::pointer();
-    return m_interface->call_async(call_message, timeout_milliseconds);
+    try{   
+      return m_interface->call_async(call_message, timeout_milliseconds);
+    }catch(std::shared_ptr<DBus::Error> err){
+      throw err;
+    }
   }
 
   sigc::signal< void, const std::string &, const std::string & > MethodProxyBase::signal_name_changed()
