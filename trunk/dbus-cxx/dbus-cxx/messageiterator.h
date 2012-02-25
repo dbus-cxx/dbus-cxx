@@ -322,16 +322,24 @@ namespace DBus
       template <typename T>
       MessageIterator& operator>>( std::vector<T>& v )
       {
-        this->get_array<T>(v);
-        return *this;
+	try{
+          this->get_array<T>(v);
+          return *this;
+	}catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
+	  throw (ErrorInvalidTypecast)*e;
+	}
       }
 
       template <typename T>
       MessageIterator& operator>>( T& v )
       {
-        v = (T)(*this);
-        this->next();
-        return *this;
+	try{
+          v = (T)(*this);
+          this->next();
+          return *this;
+        }catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
+          throw (ErrorInvalidTypecast)*e;
+        }
       }
       
       template <typename T>

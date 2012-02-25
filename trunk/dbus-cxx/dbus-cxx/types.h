@@ -46,7 +46,8 @@ namespace DBus
   inline Type type( const char* )        { return TYPE_STRING; }
   inline Type type( Path )               { return TYPE_OBJECT_PATH; }
   inline Type type( Signature )          { return TYPE_SIGNATURE; }
-//   inline Type type( Variant )            { return TYPE_VARIANT; }
+template <class T>
+  inline Type type( Variant<T> )            { return TYPE_VARIANT; }
   
   inline Type type( char )               { return TYPE_BYTE; }
   inline Type type( int8_t )             { return TYPE_BYTE; }
@@ -73,7 +74,7 @@ invalid; you must use one of the specializations only */}
   template<> inline Type type<const char*>()        { return TYPE_STRING; }
   template<> inline Type type<Path>()               { return TYPE_OBJECT_PATH; }
   template<> inline Type type<Signature>()          { return TYPE_SIGNATURE; }
-//   template<> inline Type type<Variant>()            { return TYPE_VARIANT; }
+  template<> inline Type type<Variant<class T>>()            { return TYPE_VARIANT; }
   
   template<> inline Type type<char>()               { return TYPE_BYTE; }
   template<> inline Type type<int8_t>()             { return TYPE_BYTE; }
@@ -121,7 +122,8 @@ invalid; you must use one of the specializations only */}
   inline std::string type_string( std::string ) { return "std::string"; }
   inline std::string type_string( Path )        { return "Path"; }
   inline std::string type_string( Signature )   { return "Signature"; }
-//   inline std::string type_string( Variant )     { return "Variant"; }
+template <class T>
+  inline std::string type_string( Variant<T> )     { return "Variant"; }
 
   template <typename T> inline std::string type_string()   { return 1; /* This is invalid; you must use one of the specializations only */}
   template<> inline std::string type_string<uint8_t>()     { return "byte"; }
@@ -136,7 +138,7 @@ invalid; you must use one of the specializations only */}
   template<> inline std::string type_string<std::string>() { return "std::string"; }
   template<> inline std::string type_string<Path>()        { return "Path"; }
   template<> inline std::string type_string<Signature>()   { return "Signature"; }
-//   template<> inline std::string type_string<Variant>()     { return "Variant"; }
+  template<> inline std::string type_string<Variant<class T>>()     { return "Variant"; }
 
   inline std::string type_string_from_code( DBus::Type t )
   {

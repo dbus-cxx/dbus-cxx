@@ -309,11 +309,21 @@ namespace DBus
 
     DBUS_CXX_DEBUG("Object::handle_message: before call message test");
 
-    CallMessage::const_pointer callmessage = CallMessage::create( message );
+    CallMessage::const_pointer callmessage;
+    try{
+      callmessage = CallMessage::create( message );
+    }catch(std::shared_ptr<DBus::ErrorInvalidMessageType> err){
+      return NOT_HANDLED;
+    }
 
     if ( not callmessage ) return NOT_HANDLED;
 
     DBUS_CXX_DEBUG("Object::handle_message: message is good (it's a call message) for interface '" << callmessage->interface() << "'");
+
+    if ( callmessage->interface() == NULL ){
+        //If for some reason the message that we are getting has a NULL interface, we will segfault.
+        return NOT_HANDLED;
+    }
 
     // Handle the introspection interface
     if ( strcmp(callmessage->interface(), DBUS_CXX_INTROSPECTABLE_INTERFACE) == 0 )

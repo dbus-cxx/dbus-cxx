@@ -20,6 +20,8 @@
 #include <string>
 #include <dbus-cxx/signatureiterator.h>
 #include <dbus-cxx/path.h>
+#include <dbus-cxx/variant.h>
+
 
 #ifndef DBUSCXX_SIGNATURE_H
 #define DBUSCXX_SIGNATURE_H
@@ -99,6 +101,8 @@ namespace DBus
   inline std::string signature( std::string ) { return DBUS_TYPE_STRING_AS_STRING;      }
   inline std::string signature( Signature )   { return DBUS_TYPE_SIGNATURE_AS_STRING;   }
   inline std::string signature( Path )        { return DBUS_TYPE_OBJECT_PATH_AS_STRING; }
+template <class T>
+   inline std::string signature( Variant<T> )     { return DBUS_TYPE_VARIANT_AS_STRING; }
 
   inline std::string signature( char )        { return DBUS_TYPE_BYTE_AS_STRING;        }
   inline std::string signature( int8_t )      { return DBUS_TYPE_BYTE_AS_STRING;        }
@@ -154,17 +158,15 @@ namespace DBus
   
   template<> inline std::string signature<std::vector<float> >()         { return DBUS_TYPE_DOUBLE_AS_STRING; }
 
-  //   inline std::string signature( Variant )     { return DBUS_TYPE_VARIANT_AS_STRING; }
-//   template <typename T> inline std::string signature( const std::vector<T>& ) { T t; return DBUS_TYPE_ARRAY_AS_STRING + signature( t ); }
+   template <typename T> inline std::string signature( const std::vector<T>& ) { T t; return DBUS_TYPE_ARRAY_AS_STRING + signature( t ); }
 
-//   template <typename Key,typename Data> inline std::string signature( const std::vector<std::pair<Key,Data> >& )
-//   {
-//     Key k; Data d;
-//     std::string sig;
-//     sig = DBUS_TYPE_ARRAY_AS_STRING;
-//     sig += DBUS_DICT_ENTRY_BEGIN_CHAR_AS_STRING + signature(k) + signature(d) + DBUS_DICT_ENTRY_END_CHAR_AS_STRING;
-//     return sig;
-//   }
+   template <typename Key,typename Data> inline std::string signature( const std::vector<std::pair<Key,Data> >& )
+   {
+     Key k; Data d;
+     std::string sig;
+     sig = DBUS_DICT_ENTRY_BEGIN_CHAR_AS_STRING + signature(k) + signature(d) + DBUS_DICT_ENTRY_END_CHAR_AS_STRING;
+     return sig;
+   }
 
 //   template <typename T1>
 //   inline std::string signature( const Struct<T1>& )

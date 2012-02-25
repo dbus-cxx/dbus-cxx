@@ -263,13 +263,21 @@ namespace DBus
   ReturnMessage::const_pointer InterfaceProxy::call( CallMessage::const_pointer call_message, int timeout_milliseconds ) const
   {
     if ( not m_object ) return ReturnMessage::const_pointer();
-    return m_object->call( call_message, timeout_milliseconds );
+    try{
+      return m_object->call( call_message, timeout_milliseconds );
+    }catch(std::shared_ptr<DBus::Error> err){
+      throw err;
+    }
   }
 
   PendingCall::pointer InterfaceProxy::call_async( CallMessage::const_pointer call_message, int timeout_milliseconds ) const
   {
     if ( not m_object ) return PendingCall::pointer();
-    return m_object->call_async( call_message, timeout_milliseconds );
+    try{  
+      return m_object->call_async( call_message, timeout_milliseconds );
+    }catch(std::shared_ptr<DBus::Error> err){
+      throw err;
+    }
   }
 
   const InterfaceProxy::Signals& InterfaceProxy::signals() const

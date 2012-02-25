@@ -95,17 +95,29 @@ namespace DBus
 
   CallMessage::pointer CallMessage::create(DBusMessage * cobj)
   {
-    return pointer( new CallMessage(cobj) );
+    try{
+      return pointer( new CallMessage(cobj) );
+    }catch(std::shared_ptr<DBus::ErrorInvalidMessageType> err){
+      throw err;
+    }
   }
 
   CallMessage::pointer CallMessage::create(Message::pointer msg)
   {
-    return pointer( new CallMessage(msg) );
+    try{
+      return pointer( new CallMessage(msg) );
+    }catch(std::shared_ptr<DBus::ErrorInvalidMessageType> err){
+      throw err;
+    }
   }
 
   CallMessage::const_pointer CallMessage::create(Message::const_pointer msg)
   {
-    return const_pointer( new CallMessage(msg) );
+    try{
+      return const_pointer( new CallMessage(msg) );
+    }catch(std::shared_ptr<DBus::ErrorInvalidMessageType> err){
+      throw err;
+    }
   }
 
   CallMessage::pointer CallMessage::create(const std::string & dest, const std::string & path, const std::string & iface, const std::string & method)
