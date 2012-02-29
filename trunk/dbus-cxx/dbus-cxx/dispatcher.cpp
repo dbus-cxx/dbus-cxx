@@ -319,7 +319,7 @@ namespace DBus
       if ( selresult == -1 && errno == EINTR ){
         //if we were interrupted, continue on
         continue;
-      } else throw(errno);
+      } else if( selresult == -1 ) throw(errno);
 
       // If we made it here we have some activity we need to handle
       //
