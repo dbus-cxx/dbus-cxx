@@ -54,15 +54,15 @@ ifelse(eval($1>0),1,[dnl
 ],[])dnl
 
     ifelse(RETURN_TYPE,[void],,[_retval = ])m_slot(LIST(LOOP(_val_%1, $1)));
-ifelse(RETURN_TYPE,[void],,[dnl
     ReturnMessage::pointer retmsg = message->create_reply();
 
     if ( not retmsg ) return NOT_HANDLED;
 
+ifelse(RETURN_TYPE,[void],,[dnl
     *retmsg << _retval;
+])dnl
 
     connection->send(retmsg);
-])dnl
 
     return HANDLED;
   }
@@ -92,7 +92,7 @@ define([RETURN_TYPE],ifelse($3,[void],[void],[T_return]))dnl
 ifelse(RETURN_TYPE,[void],[dnl
     virtual HandlerResult handle_call_message( DBusCxxPointer<Connection> connection,
 					       CallMessage::const_pointer message )
-MESSAGE_HANDLER_BODY($1,$2,$3)
+ MESSAGE_HANDLER_BODY($1,$2,$3)
 ],[dnl
     virtual HandlerResult handle_call_message( DBusCxxPointer<Connection> connection,
 					       CallMessage::const_pointer message );
@@ -186,7 +186,6 @@ namespace DBus {
 
 DECLARE_METHOD(CALL_SIZE,CALL_SIZE)
 FOR(0,eval(CALL_SIZE-1),[[DECLARE_METHOD(%1)]])
-FOR(0,eval(CALL_SIZE),[[DECLARE_METHOD(%1,[void],[void])]])
 
 } /* namespace DBus */
 
@@ -196,6 +195,7 @@ namespace DBus {
 
 DEFINE_METHOD(CALL_SIZE,CALL_SIZE)
 FOR(0,eval(CALL_SIZE-1),[[DEFINE_METHOD(%1)]])
+FOR(0,eval(CALL_SIZE),[[DECLARE_METHOD(%1,[void],[void])]])
 
 } /* namespace DBus */
 
