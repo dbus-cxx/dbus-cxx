@@ -52,7 +52,7 @@ libdbus_cxx_la_SOURCES = callmessage.cpp connection.cpp dispatcher.cpp \
 	methodproxybase.cpp object.cpp objectpathhandler.cpp objectproxy.cpp path.cpp \
 	pendingcall.cpp returnmessage.cpp signal_base.cpp signal_proxy_base.cpp \
 	signalmessage.cpp signalreceiver.cpp signature.cpp signatureiterator.cpp timeout.cpp \
-	utility.cpp watch.cpp variant.cpp
+	utility.cpp watch.cpp
 
 
 libdbus_cxx_la_LDFLAGS = -version-info @LIBTOOL_SO_VERSION@
