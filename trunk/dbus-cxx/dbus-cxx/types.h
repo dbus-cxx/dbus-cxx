@@ -111,6 +111,7 @@ invalid; you must use one of the specializations only */}
 //   inline Type type( const Struct<T0,T1,T2,T3,T4,T5,T6>& ) { return TYPE_STRUCT; }
 
   inline std::string type_string( uint8_t )     { return "byte"; }
+  inline std::string type_string( int8_t )      { return "byte"; }
   inline std::string type_string( bool )        { return "boolean"; }
   inline std::string type_string( int16_t )     { return "int16_t"; }
   inline std::string type_string( uint16_t )    { return "uint16_t"; }
@@ -119,6 +120,7 @@ invalid; you must use one of the specializations only */}
   inline std::string type_string( int64_t )     { return "int64_t"; }
   inline std::string type_string( uint64_t )    { return "uint64_t"; }
   inline std::string type_string( double )      { return "double"; }
+  inline std::string type_string( float )       { return "double"; }
   inline std::string type_string( std::string ) { return "std::string"; }
   inline std::string type_string( Path )        { return "Path"; }
   inline std::string type_string( Signature )   { return "Signature"; }
@@ -127,6 +129,7 @@ template <class T>
 
   template <typename T> inline std::string type_string()   { return 1; /* This is invalid; you must use one of the specializations only */}
   template<> inline std::string type_string<uint8_t>()     { return "byte"; }
+  template<> inline std::string type_string<int8_t>()      { return "byte"; }
   template<> inline std::string type_string<bool>()        { return "boolean"; }
   template<> inline std::string type_string<int16_t>()     { return "int16_t"; }
   template<> inline std::string type_string<uint16_t>()    { return "uint16_t"; }
@@ -135,6 +138,7 @@ template <class T>
   template<> inline std::string type_string<int64_t>()     { return "int64_t"; }
   template<> inline std::string type_string<uint64_t>()    { return "uint64_t"; }
   template<> inline std::string type_string<double>()      { return "double"; }
+  template<> inline std::string type_string<float>()       { return "double"; }
   template<> inline std::string type_string<std::string>() { return "std::string"; }
   template<> inline std::string type_string<Path>()        { return "Path"; }
   template<> inline std::string type_string<Signature>()   { return "Signature"; }
