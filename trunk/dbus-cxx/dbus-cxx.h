@@ -55,5 +55,6 @@
 #include <dbus-cxx/timeout.h>
 #include <dbus-cxx/utility.h>
 #include <dbus-cxx/watch.h>
+#include <dbus-cxx/variant.h>
 
 #endif

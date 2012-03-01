@@ -94,13 +94,37 @@ namespace DBus
       #endif
 
       template <typename T>
-      bool append( const std::vector<T>& v); 
+      bool append( const std::vector<T>& v){
+        bool success;
+        success = this->open_container( CONTAINER_ARRAY, DBus::signature<T>().c_str() );
+
+        for ( size_t i=0; i < v.size(); i++ )
+          *m_subiter << v[i];
+
+        return this->close_container();
+      }
 
       template <typename Key, typename Data>
-      bool append( const std::vector<std::pair<Key,Data> >& dictionary );
+      bool append( const std::vector<std::pair<Key,Data> >& dictionary ){
+        std::string sig = signature( dictionary );
+        this->open_container( CONTAINER_ARRAY, sig );
+        for ( int i = 0; i != dictionary.size(); i++ ) {
+          m_subiter->open_container( CONTAINER_DICT_ENTRY, std::string() );
+          m_subiter->m_subiter->append( dictionary[i].first );
+          m_subiter->m_subiter->append( dictionary[i].second );
+          m_subiter->close_container();
+        }
+        return this->close_container();
+
+      }
 
       template <typename T>
-	  bool append( const Variant<T> & var);
+      bool append( const Variant<T> & var){
+        bool result;
+        this->open_container( CONTAINER_VARIANT, signature(var.data)  );
+        m_subiter->append(var.data);
+        return this->close_container();
+      }
 
       template <typename T>
       MessageAppendIterator& operator<<( const T& v )
