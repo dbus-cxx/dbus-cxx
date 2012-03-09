@@ -216,7 +216,8 @@ public:
     for (int i=0; i < space_depth; i++ ) spaces += " ";
     sout << spaces << "<signal name=\"" << name() << "\">\n";
     FOR(1,$1,[
-    sout << spaces << "  <arg name=\"" << m_arg_names[[[%1-1]]] << "\" type=\"" << signature<T_arg%1>() << "\"/>\n";],[])
+    T_arg%1 arg%1;
+    sout << spaces << "  <arg name=\"" << m_arg_names[[[%1-1]]] << "\" type=\"" << signature(arg%1) << "\"/>\n";],[])
     sout << spaces << "</signal>\n";
     return sout.str();
   }

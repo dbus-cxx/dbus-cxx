@@ -114,64 +114,6 @@ template <class T>
   
   inline std::string signature( float )         { return DBUS_TYPE_DOUBLE_AS_STRING; }
   
-  template <typename T> inline std::string signature()   { return 1; /* This is invalid; you must use one of the specializations only */}
-  template<> inline std::string signature<uint8_t>()     { return DBUS_TYPE_BYTE_AS_STRING;        }
-  template<> inline std::string signature<bool>()        { return DBUS_TYPE_BOOLEAN_AS_STRING;     }
-  template<> inline std::string signature<int16_t>()     { return DBUS_TYPE_INT16_AS_STRING;       }
-  template<> inline std::string signature<uint16_t>()    { return DBUS_TYPE_UINT16_AS_STRING;      }
-  template<> inline std::string signature<int32_t>()     { return DBUS_TYPE_INT32_AS_STRING;       }
-  template<> inline std::string signature<uint32_t>()    { return DBUS_TYPE_UINT32_AS_STRING;      }
-  template<> inline std::string signature<int64_t>()     { return DBUS_TYPE_INT64_AS_STRING;       }
-  template<> inline std::string signature<uint64_t>()    { return DBUS_TYPE_UINT64_AS_STRING;      }
-  template<> inline std::string signature<double>()      { return DBUS_TYPE_DOUBLE_AS_STRING;      }
-  template<> inline std::string signature<std::string>() { return DBUS_TYPE_STRING_AS_STRING;      }
-  template<> inline std::string signature<Signature>()   { return DBUS_TYPE_SIGNATURE_AS_STRING;   }
-  template<> inline std::string signature<Path>()        { return DBUS_TYPE_OBJECT_PATH_AS_STRING; }
-  
-  template<> inline std::string signature<char>()        { return DBUS_TYPE_BYTE_AS_STRING;        }
-  template<> inline std::string signature<int8_t>()      { return DBUS_TYPE_BYTE_AS_STRING;        }
-
-#if DBUS_CXX_SIZEOF_LONG_INT == 4
-  template<> inline std::string signature<long int>()          { return DBUS_TYPE_INT32_AS_STRING;       }
-  template<> inline std::string signature<long unsigned int>() { return DBUS_TYPE_UINT32_AS_STRING;       }
-#endif
-  
-  template<> inline std::string signature<float>()         { return DBUS_TYPE_DOUBLE_AS_STRING; }
-
-  template<> inline std::string signature<std::vector<uint8_t> >()     { return std::string(DBUS_TYPE_ARRAY_AS_STRING) + 
-										std::string(DBUS_TYPE_BYTE_AS_STRING);        }
-  template<> inline std::string signature<std::vector<bool> >()        { return std::string(DBUS_TYPE_ARRAY_AS_STRING) + 
-										std::string(DBUS_TYPE_BOOLEAN_AS_STRING);     }
-  template<> inline std::string signature<std::vector<int16_t> >()     { return std::string(DBUS_TYPE_ARRAY_AS_STRING) + 
-										std::string(DBUS_TYPE_INT16_AS_STRING);       }
-  template<> inline std::string signature<std::vector<uint16_t> >()    { return std::string(DBUS_TYPE_ARRAY_AS_STRING) + 
-										std::string(DBUS_TYPE_UINT16_AS_STRING);      }
-  template<> inline std::string signature<std::vector<int32_t> >()     { return std::string(DBUS_TYPE_ARRAY_AS_STRING) + 
-										std::string(DBUS_TYPE_INT32_AS_STRING);       }
-  template<> inline std::string signature<std::vector<uint32_t> >()    { return std::string(DBUS_TYPE_ARRAY_AS_STRING) + 
-										std::string(DBUS_TYPE_UINT32_AS_STRING);      }
-  template<> inline std::string signature<std::vector<int64_t> >()     { return std::string(DBUS_TYPE_ARRAY_AS_STRING) + 
-										std::string(DBUS_TYPE_INT64_AS_STRING);       }
-  template<> inline std::string signature<std::vector<uint64_t> >()    { return std::string(DBUS_TYPE_ARRAY_AS_STRING) + 
-										std::string(DBUS_TYPE_UINT64_AS_STRING);      }
-  template<> inline std::string signature<std::vector<double> >()      { return std::string(DBUS_TYPE_ARRAY_AS_STRING) + 
-										std::string(DBUS_TYPE_DOUBLE_AS_STRING);      }
-
-  template<> inline std::string signature<std::vector<char> >()        { return std::string(DBUS_TYPE_ARRAY_AS_STRING) + 
-										std::string(DBUS_TYPE_BYTE_AS_STRING);        }
-  template<> inline std::string signature<std::vector<int8_t> >()      { return std::string(DBUS_TYPE_ARRAY_AS_STRING) + 
-										std::string(DBUS_TYPE_BYTE_AS_STRING);        }
-
-#if DBUS_CXX_SIZEOF_LONG_INT == 4
-  template<> inline std::string signature<std::vector<long int> >()          { return std::string(DBUS_TYPE_ARRAY_AS_STRING) + 
-											std::string(DBUS_TYPE_INT32_AS_STRING);       }
-  template<> inline std::string signature<std::vector<long unsigned int> >() { return std::string(DBUS_TYPE_ARRAY_AS_STRING) + 
-											std::string(DBUS_TYPE_UINT32_AS_STRING);       }
-#endif
-  
-  template<> inline std::string signature<std::vector<float> >()         { return std::string(DBUS_TYPE_ARRAY_AS_STRING) + 
-										std::string(DBUS_TYPE_DOUBLE_AS_STRING); }
-
    template <typename T> inline std::string signature( const std::vector<T>& ) { T t; return DBUS_TYPE_ARRAY_AS_STRING + signature( t ); }
 
    template <typename Key,typename Data> inline std::string signature( const std::vector<std::pair<Key,Data> >& )

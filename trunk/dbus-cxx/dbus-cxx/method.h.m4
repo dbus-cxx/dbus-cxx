@@ -32,7 +32,9 @@ ifelse($1, $2,,[<LIST(VAR1, LOOP(T_arg%1,$1), LOOP(nil, CALL_SIZE - $1))>])])
 define([MESSAGE_HANDLER_BODY],[dnl
 define([RETURN_TYPE],ifelse($3,[void],[void],[T_return]))dnl
   {
-    DBUS_CXX_DEBUG("Method<LIST(T_return, LOOP(T_arg%1, $1))>::handle_call_message   method=" << m_name );
+    ifelse($3,[void],
+    [DBUS_CXX_DEBUG("Method<void, LOOP(T_arg%1, $1)>::handle_call_message method=" << m_name);],
+    [DBUS_CXX_DEBUG("Method<LIST(T_return, LOOP(T_arg%1, $1))>::handle_call_message   method=" << m_name );])
       
     if ( not connection or not message ) return NOT_HANDLED;
 
@@ -115,13 +117,15 @@ ifelse(RETURN_TYPE,[void],[dnl
       for (int i=0; i < space_depth; i++ ) spaces += " ";
       sout << spaces << "<method name=\"" << name() << "\">\n";
 ifelse(RETURN_TYPE,[void],,[dnl
+      T_return type;
       sout << spaces << "  <arg name=\"" << m_arg_names[[0]]
-           << "\" type=\"" << signature<T_return>()
+           << "\" type=\"" << signature(type)
            << "\" direction=\"out\"/>\n";
 ])dnl
 FOR(1,$1,[dnl
+      T_arg%1 arg%1;
       sout << spaces << "  <arg name=\"" << m_arg_names[[[%1]]]
-           << "\" type=\"" << signature<T_arg%1>()
+           << "\" type=\"" << signature(arg%1)
            << "\" direction=\"in\"/>\n";
 ],[])dnl
       sout << spaces << "</method>\n";
