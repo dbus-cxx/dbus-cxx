@@ -107,27 +107,7 @@ std::string Arg::cpp_dbus_type()
 
 std::string Arg::stubsignature()
 {
-  switch ( type() ) {
-    case DBus::TYPE_INVALID:     throw  DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_BYTE:        return DBus::signature<uint8_t>();
-    case DBus::TYPE_BOOLEAN:     return DBus::signature<bool>();
-    case DBus::TYPE_INT16:       return DBus::signature<int16_t>();
-    case DBus::TYPE_UINT16:      return DBus::signature<uint16_t>();
-    case DBus::TYPE_INT32:       return DBus::signature<int32_t>();
-    case DBus::TYPE_UINT32:      return DBus::signature<uint32_t>();
-    case DBus::TYPE_INT64:       return DBus::signature<int64_t>();
-    case DBus::TYPE_UINT64:      return DBus::signature<uint64_t>();
-    case DBus::TYPE_DOUBLE:      return DBus::signature<double>();
-    case DBus::TYPE_STRING:      return DBus::signature<std::string>();
-    case DBus::TYPE_OBJECT_PATH: return DBus::signature<DBus::Path>();
-    case DBus::TYPE_SIGNATURE:   return DBus::signature<DBus::Signature>();
-    case DBus::TYPE_ARRAY:       throw  DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_VARIANT:     throw  DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_STRUCT:      throw  DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_DICT_ENTRY:  throw  DBus::ErrorInvalidMessageType::create();
-  }
-
-  throw DBus::ErrorInvalidMessageType::create();
+  return DBus::signature( type() );
 }
 
 DBus::Type Arg::type()

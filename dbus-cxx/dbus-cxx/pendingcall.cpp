@@ -54,7 +54,7 @@ namespace DBus
       //At this point, there are no more references to this PendingCall - which means that when 
       //we get a callback, we will(most likely) segfault because the memory has been deallocated.
       //Unref the pending call and then cancel it.
-      dbus_pending_call_unref( m_cobj );
+      //dbus_pending_call_unref( m_cobj );
       dbus_pending_call_cancel( m_cobj );
     }
   }
