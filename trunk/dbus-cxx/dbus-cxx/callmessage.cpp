@@ -97,7 +97,7 @@ namespace DBus
   {
     try{
       return pointer( new CallMessage(cobj) );
-    }catch(std::shared_ptr<DBus::ErrorInvalidMessageType> err){
+    }catch(DBusCxxPointer<DBus::ErrorInvalidMessageType> err){
       throw err;
     }
   }
@@ -106,7 +106,7 @@ namespace DBus
   {
     try{
       return pointer( new CallMessage(msg) );
-    }catch(std::shared_ptr<DBus::ErrorInvalidMessageType> err){
+    }catch(DBusCxxPointer<DBus::ErrorInvalidMessageType> err){
       throw err;
     }
   }
@@ -115,7 +115,7 @@ namespace DBus
   {
     try{
       return const_pointer( new CallMessage(msg) );
-    }catch(std::shared_ptr<DBus::ErrorInvalidMessageType> err){
+    }catch(DBusCxxPointer<DBus::ErrorInvalidMessageType> err){
       throw err;
     }
   }

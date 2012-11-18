@@ -444,7 +444,7 @@ namespace DBus
 
     try{
       return m_connection->send_with_reply_blocking( call_message, timeout_milliseconds );
-    }catch(std::shared_ptr<DBus::Error> err){
+    }catch(DBusCxxPointer<DBus::Error> err){
       throw err;
     }
   }
@@ -455,7 +455,7 @@ namespace DBus
 
     try{
       return m_connection->send_with_reply_async( call_message, timeout_milliseconds );
-    }catch(std::shared_ptr<DBus::Error> err){
+    }catch(DBusCxxPointer<DBus::Error> err){
       throw err;
     }
   }

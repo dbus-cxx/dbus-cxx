@@ -265,7 +265,7 @@ namespace DBus
     if ( not m_object ) return ReturnMessage::const_pointer();
     try{
       return m_object->call( call_message, timeout_milliseconds );
-    }catch(std::shared_ptr<DBus::Error> err){
+    }catch(DBusCxxPointer<DBus::Error> err){
       throw err;
     }
   }
@@ -275,7 +275,7 @@ namespace DBus
     if ( not m_object ) return PendingCall::pointer();
     try{  
       return m_object->call_async( call_message, timeout_milliseconds );
-    }catch(std::shared_ptr<DBus::Error> err){
+    }catch(DBusCxxPointer<DBus::Error> err){
       throw err;
     }
   }

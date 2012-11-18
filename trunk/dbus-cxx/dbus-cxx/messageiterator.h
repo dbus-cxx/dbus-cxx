@@ -350,7 +350,7 @@ namespace DBus
 	try{
           this->get_array<T>(v);
           return *this;
-	}catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
+	}catch(DBusCxxPointer<DBus::ErrorInvalidTypecast> e){
 	  throw (ErrorInvalidTypecast)*e;
 	}
       }
@@ -362,7 +362,7 @@ namespace DBus
           v = (T)(*this);
           this->next();
           return *this;
-        }catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
+        }catch(DBusCxxPointer<DBus::ErrorInvalidTypecast> e){
           throw (ErrorInvalidTypecast)*e;
         }
       }
@@ -375,7 +375,7 @@ namespace DBus
           dbus_message_iter_get_basic(subiter.cobj(), &v.data);
           this->next();
           return *this;
-        }catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
+        }catch(DBusCxxPointer<DBus::ErrorInvalidTypecast> e){
           throw (ErrorInvalidTypecast)*e;
         }
       }

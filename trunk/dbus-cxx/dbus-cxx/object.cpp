@@ -312,7 +312,7 @@ namespace DBus
     CallMessage::const_pointer callmessage;
     try{
       callmessage = CallMessage::create( message );
-    }catch(std::shared_ptr<DBus::ErrorInvalidMessageType> err){
+    }catch(DBusCxxPointer<DBus::ErrorInvalidMessageType> err){
       return NOT_HANDLED;
     }
 

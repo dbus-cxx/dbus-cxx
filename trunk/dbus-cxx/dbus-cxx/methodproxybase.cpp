@@ -80,7 +80,7 @@ namespace DBus
     if ( not m_interface ) return ReturnMessage::const_pointer();
     try{  
       return m_interface->call(call_message, timeout_milliseconds);
-    }catch(std::shared_ptr<DBus::Error> err){
+    }catch(DBusCxxPointer<DBus::Error> err){
       throw err;
     }
   }
@@ -90,7 +90,7 @@ namespace DBus
     if ( not m_interface ) return PendingCall::pointer();
     try{   
       return m_interface->call_async(call_message, timeout_milliseconds);
-    }catch(std::shared_ptr<DBus::Error> err){
+    }catch(DBusCxxPointer<DBus::Error> err){
       throw err;
     }
   }
