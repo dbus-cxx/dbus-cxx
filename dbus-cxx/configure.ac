@@ -153,14 +153,15 @@ AC_DEFUN(
 )
 
 AC_MSG_CHECKING([for c++0x smart pointers])
-AS_IF([test "$ac_cv_cxx_compile_cxx0x_native" = yes ||
-       test "$ac_cv_cxx_compile_cxx0x_cxx" = yes],
+AS_IF([test $ac_cv_cxx_compile_cxx0x_native = yes ||
+       test $ac_cv_cxx_compile_cxx0x_cxx = yes],
       [
-        AS_IF([test "$ac_cv_cxx_compile_cxx0x_cxx" = yes],
-              [ CXXFLAGS="$CXXFLAGS -std=c++0x"
-                AC_SUBST(CXXFLAGS)
-                CPP0XFLAGS="-std=c++0x"
-                AC_SUBST(CPP0XFLAGS) ])
+        AS_IF([test $ac_cv_cxx_compile_cxx0x_cxx = yes],
+                 [AC_CXX_COMPILE_STDCXX_0X ] )
+dnl              [ CXXFLAGS="$CXXFLAGS -std=c++0x"
+dnl                AC_SUBST(CXXFLAGS)
+dnl                CPP0XFLAGS="-std=c++0x"
+dnl                AC_SUBST(CPP0XFLAGS) ])
         AC_DEFINE(USE_CXX0X_SMART_POINTER,[],[If defined c++0x smart pointers will be used])
         AC_MSG_RESULT(yes)
       ],

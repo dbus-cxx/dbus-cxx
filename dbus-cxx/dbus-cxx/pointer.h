@@ -23,7 +23,7 @@
   // Headers for smart pointers
   #ifdef DBUS_CXX_USE_BOOST_SMART_POINTER
     #include <boost/shared_ptr.hpp>
-    //#include <boost/weak_ptr.hpp>
+    #include <boost/weak_ptr.hpp>
     #define DBusCxxPointer boost::shared_ptr
     #define DBusCxxWeakPointer boost::weak_ptr
     #define dbus_cxx_static_pointer_cast  boost::static_pointer_cast
