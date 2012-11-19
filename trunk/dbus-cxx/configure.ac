@@ -78,7 +78,7 @@ AC_CHECK_PROGS(M4, gm4 m4, m4)
 AC_LANG_CPLUSPLUS
 AC_PROG_CXX
 AC_PROG_INSTALL
-AC_CXX_COMPILE_STDCXX_0X
+AX_CXX_COMPILE_STDCXX_0X
 
 for top_builddir in . .. ../.. $ac_auxdir $ac_auxdir/..; do
 test -f $top_builddir/configure && break
@@ -153,15 +153,13 @@ AC_DEFUN(
 )
 
 AC_MSG_CHECKING([for c++0x smart pointers])
-AS_IF([test $ac_cv_cxx_compile_cxx0x_native = yes ||
-       test $ac_cv_cxx_compile_cxx0x_cxx = yes],
+AS_IF([test $ax_cv_cxx_compile_cxx0x_native = yes ||
+       test $ax_cv_cxx_compile_cxx0x_cxx = yes],
       [
-        AS_IF([test $ac_cv_cxx_compile_cxx0x_cxx = yes],
-                 [AC_CXX_COMPILE_STDCXX_0X ] )
-dnl              [ CXXFLAGS="$CXXFLAGS -std=c++0x"
-dnl                AC_SUBST(CXXFLAGS)
-dnl                CPP0XFLAGS="-std=c++0x"
-dnl                AC_SUBST(CPP0XFLAGS) ])
+        AS_IF([test $ax_cv_cxx_compile_cxx0x_cxx = yes],
+              [ CXXFLAGS="$CXXFLAGS -std=c++0x"
+                AC_SUBST(CXXFLAGS)
+               ])
         AC_DEFINE(USE_CXX0X_SMART_POINTER,[],[If defined c++0x smart pointers will be used])
         AC_MSG_RESULT(yes)
       ],
@@ -171,13 +169,6 @@ dnl                AC_SUBST(CPP0XFLAGS) ])
         CHECK_FOR_TR1_SMART_POINTER
       ]
      )
-
-
-AC_CHECK_HEADER( [boost/variant.hpp],
-  [AC_DEFINE(USE_BOOST_VARIANT,[1],[If defined, boost library variants will be used])],
-  [AC_DEFINE(USE_INTERNAL_VARIANT,[1],[If defined, internal variants will be used])]
-)
-
 
 AC_TYPE_LONG_LONG_INT
 AC_TYPE_UNSIGNED_LONG_LONG_INT
