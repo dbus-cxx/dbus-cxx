@@ -153,8 +153,9 @@ AC_DEFUN(
 )
 
 AC_MSG_CHECKING([for c++0x smart pointers])
-AS_IF([test $ax_cv_cxx_compile_cxx0x_native = yes ||
-       test $ax_cv_cxx_compile_cxx0x_cxx = yes],
+AS_IF([test x"$with_cpp" != xno && 
+       ( test $ax_cv_cxx_compile_cxx0x_native = yes || 
+       test $ax_cv_cxx_compile_cxx0x_cxx = yes ) ],
       [
         AS_IF([test $ax_cv_cxx_compile_cxx0x_cxx = yes],
               [ CXXFLAGS="$CXXFLAGS -std=c++0x"
@@ -216,6 +217,8 @@ AC_ARG_ENABLE([tools],[AS_HELP_STRING([--enable-tools],[Build dbus-cxx tools [de
 AM_CONDITIONAL(DBUS_CXX_TOOLS, [test "x${enable_tools}" == xyes])
 
 AC_ARG_ENABLE([debug-output],[AS_HELP_STRING([--enable-debug-output],[Enable debugging output [default=no]])],[AC_DEFINE([DEBUG_ENABLED],[],[Enable debugging output])])
+
+AC_ARG_WITH([cpp],[AS_HELP_STRING([--without-cpp],[Dont use C++0x Smart Pointers [default=no]])],[],[with_cpp=yes])
 
 #debug_default="no"
 #AC_ARG_ENABLE(debug,[AS_HELP_STRING([--enable-debug=[no/full]],[Turn on debugging #[default=${debug_default}]])],,[enable_debug=${debug_default}])
