@@ -33,6 +33,8 @@ namespace DBus
     int retval;
     dbus_bool_t result;
 
+    DBUS_CXX_DEBUG( "Initializing dbus-cxx, threadsafe:" << threadsafe );
+
     if ( threadsafe )
     {
       retval = pthread_mutex_lock( & init_mutex );
@@ -47,7 +49,7 @@ namespace DBus
       }
 
       result = dbus_connection_allocate_data_slot( & Connection::m_weak_pointer_slot );
-      if ( not result ) throw (-1); // TODO throw something better
+      if ( not result ) throw ErrorFailed::create(); 
 
       initialized_var = true;
     }
