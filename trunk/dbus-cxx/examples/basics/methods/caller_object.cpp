@@ -21,6 +21,13 @@
 
 #include "caller_popt.h"
 
+/**
+ * Calculator class.  As this is an ObjectProxy, we are able to
+ * call methods normally, as if they were methods on a real object.
+ * As with most dbus-cxx objects, we have a public typedef for a 
+ * smart pointer type.  There is also a create() method which will
+ * create a new proxy for us.
+ */
 class Calculator: public DBus::ObjectProxy
 {
   protected:
@@ -74,10 +81,13 @@ int main(int argc, const char** argv)
 
   DBus::Connection::pointer connection = dispatcher->create_connection( DBus::BUS_SESSION );
 
+  //Create the calculator from the connection
   Calculator::pointer calculator = Calculator::create(connection);
 
   double answer=NAN;
 
+  //We may now call methods on this proxy as if it was a real object,
+  //and not a remote object over the bus
   if      ( strcmp(op,"add") == 0 ) { answer = calculator->add(param1,param2); }
   else if ( strcmp(op,"sub") == 0 ) { answer = calculator->sub(param1,param2); }
   else if ( strcmp(op,"mul") == 0 ) { answer = calculator->mul(param1,param2); }

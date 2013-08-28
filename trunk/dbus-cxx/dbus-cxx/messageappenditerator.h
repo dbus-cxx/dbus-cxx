@@ -18,6 +18,7 @@
  ***************************************************************************/
 #include <string>
 #include <vector>
+#include <map>
 
 #include <dbus/dbus.h>
 
@@ -106,13 +107,14 @@ namespace DBus
       }
 
       template <typename Key, typename Data>
-      bool append( const std::vector<std::pair<Key,Data> >& dictionary ){
-        std::string sig = signature( dictionary );
+      bool append( const std::map<Key,Data>& dictionary ){
+        std::string sig = signature_dict_data( dictionary );
+        typename std::map<Key,Data>::const_iterator it;
         this->open_container( CONTAINER_ARRAY, sig );
-        for ( int i = 0; i != dictionary.size(); i++ ) {
+        for ( it = dictionary.begin(); it != dictionary.end(); it++ ) {
           m_subiter->open_container( CONTAINER_DICT_ENTRY, std::string() );
-          m_subiter->m_subiter->append( dictionary[i].first );
-          m_subiter->m_subiter->append( dictionary[i].second );
+          m_subiter->m_subiter->append( (*it).first );
+          m_subiter->m_subiter->append( (*it).second );
           m_subiter->close_container();
         }
         return this->close_container();

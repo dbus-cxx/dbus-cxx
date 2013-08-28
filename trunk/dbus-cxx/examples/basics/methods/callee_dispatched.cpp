@@ -19,6 +19,12 @@
 #include <dbus-cxx.h>
 #include <iostream>
 #include <cmath>
+#include <unistd.h>
+
+/**
+ * This example uses the low-level dbus-cxx methods(but not the low-level
+ * C bindings).  This is normally not something that you want to do.
+ */
 
 DBus::HandlerResult reply_to_method_call( DBus::Connection::pointer conn, DBus::Message::const_pointer msg );
 
@@ -60,6 +66,7 @@ DBus::HandlerResult reply_to_method_call( DBus::Connection::pointer conn, DBus::
   msg >> param1 >> param2;
   std::cout << "Method called with " << param1 << ", " << param2 << std::endl;
 
+  // figure out what the actual method called was
   if      ( msg->is_call( "Calculator.Basic", "add" ) ) answer = param1 + param2;
   else if ( msg->is_call( "Calculator.Basic", "sub" ) ) answer = param1 - param2;
   else if ( msg->is_call( "Calculator.Basic", "mul" ) ) answer = param1 * param2;

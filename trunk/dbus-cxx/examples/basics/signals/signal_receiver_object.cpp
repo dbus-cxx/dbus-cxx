@@ -18,6 +18,7 @@
  ***************************************************************************/
 #include <dbus-cxx.h>
 #include <iostream>
+#include <unistd.h>
 
 class Calculator: public DBus::ObjectProxy
 {

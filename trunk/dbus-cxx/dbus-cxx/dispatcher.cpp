@@ -23,6 +23,7 @@
 #include <dbus-cxx/signalmessage.h>
 
 #include <sys/select.h>
+#include <unistd.h>
 #include <errno.h>
 
 namespace DBus

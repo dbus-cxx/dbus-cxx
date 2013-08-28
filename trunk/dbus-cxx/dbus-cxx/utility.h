@@ -76,7 +76,7 @@
   }                                                                                                   \
                                                                                                       \
   namespace DBus {                                                                                    \
-    template<> inline std::string signature< CppType >() { return signature< DBusType >(); }          \
+    inline std::string signature( CppType ) { DBusType d; return signature( d ); }          \
   }
 
 

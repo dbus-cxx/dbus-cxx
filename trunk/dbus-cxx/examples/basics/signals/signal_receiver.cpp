@@ -18,6 +18,7 @@
  ***************************************************************************/
 #include <dbus-cxx.h>
 #include <iostream>
+#include <unistd.h>
 
 /**
  * This example demonstrates a dispatched signal receiver. Once started

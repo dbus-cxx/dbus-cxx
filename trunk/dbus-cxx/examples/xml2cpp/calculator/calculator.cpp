@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <unistd.h>
 
 namespace Examples
 {

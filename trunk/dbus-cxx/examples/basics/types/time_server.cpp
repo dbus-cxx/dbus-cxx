@@ -16,11 +16,24 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+
+/* VERY IMPORTANT NOTE: because we have a custom signature() method,
+ * we need to include that before the normal dbus-cxx methods.  This
+ * is because of how the pre-processor will process the files, and 
+ * we need to have the definition before we get to the code that 
+ * will actually use it. (dbus-cxx uses a recursive call to generate
+ * the correct DBus signature)
+ *
+ * This does not effect the client however, because of how the client
+ * generates code to call the server methods
+ */
+#include "timeval_dbus.h"
+
 #include <dbus-cxx.h>
 #include <iostream>
 #include <sys/time.h>
+#include <unistd.h>
 
-#include "timeval_dbus.h"
 
 struct timeval now() {
   struct timeval current;
