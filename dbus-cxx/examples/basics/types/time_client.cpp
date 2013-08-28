@@ -17,9 +17,9 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx.h>
-#include <iostream>
 
 #include "timeval_dbus.h"
+
 
 int main(int argc, const char** argv)
 {

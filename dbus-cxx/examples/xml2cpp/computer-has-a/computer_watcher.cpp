@@ -19,6 +19,8 @@
 
 #include "computer_proxy.h"
 
+#include <unistd.h>
+
 void print_calculation(std::string op, std::string opsym, double result, double param1, double param2);
 
 void print_computation(std::string op, uint64_t result, uint8_t n);

@@ -159,6 +159,8 @@ AS_IF([test x"$with_cpp" != xno &&
       [
         AS_IF([test $ax_cv_cxx_compile_cxx0x_cxx = yes],
               [ CXXFLAGS="$CXXFLAGS -std=c++0x"
+                CXX_STD="-std=c++0x"
+                AC_SUBST(CXX_STD)
                 AC_SUBST(CXXFLAGS)
                ])
         AC_DEFINE(USE_CXX0X_SMART_POINTER,[],[If defined c++0x smart pointers will be used])
@@ -230,5 +232,5 @@ AC_OUTPUT(Makefile dbus-cxx-1.0.pc dbus-cxx-glibmm-1.0.pc dbus-cxx-glibmm/Makefi
 	examples/glibmm/Makefile examples/quick-start/Makefile examples/xml2cpp/Makefile \
 	examples/xml2cpp/calculator-interface/Makefile examples/xml2cpp/calculator/Makefile \
 	examples/xml2cpp/computer-has-a/Makefile examples/xml2cpp/computer-is-a/Makefile \
-	examples/xml2cpp/hal-proxy/Makefile tools/Makefile unit-tests/Makefile)
+	tools/Makefile unit-tests/Makefile)
 

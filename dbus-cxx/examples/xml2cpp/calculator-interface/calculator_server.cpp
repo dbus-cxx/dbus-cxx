@@ -19,6 +19,8 @@
 
 #include "calculator_adapter.h"
 
+#include <unistd.h>
+
 int main()
 {
   DBus::init();

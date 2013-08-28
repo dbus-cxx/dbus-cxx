@@ -18,6 +18,13 @@
  ***************************************************************************/
 #include <dbus-cxx.h>
 #include <iostream>
+#include <unistd.h>
+
+/**
+ * This example exports an already-existing class out onto the bus.
+ * This class does not have to implement any interface in order to
+ * do its work.
+ */
 
 class Test {
   public:
@@ -49,6 +56,7 @@ int main()
 
   DBus::Object::pointer object = conn->create_object("/dbuscxx/example/Calculator");
 
+  //use sigc::mem_fun as this is a member function of a class
   object->create_method<double,double,double>("add", sigc::mem_fun(test, &Test::add) );
   object->create_method<double,double,double>("sub", sigc::mem_fun(test, &Test::subtract) );
   object->create_method<double,double,double>("mul", sigc::mem_fun(test, &Test::multiply) );

@@ -18,6 +18,7 @@
  ***************************************************************************/
 #include <dbus-cxx.h>
 #include <iostream>
+#include <unistd.h>
 
 double add( double first, double second );
 double subtract( double first, double second );
@@ -40,8 +41,12 @@ int main()
   ret = conn->request_name( "dbuscxx.example.calculator.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
   if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) return 1;
 
+  //create_object creates an object on our local side.  This is not an
+  //object proxy, we get an object proxy to something else
   DBus::Object::pointer object = conn->create_object("/dbuscxx/example/Calculator");
 
+  //export various methods out onto the bus.  add,sub,mul,div all take in
+  //two doubles, and return a double
   object->create_method<double,double,double>("add", sigc::ptr_fun(add) );
   object->create_method<double,double,double>("sub", sigc::ptr_fun(subtract) );
   object->create_method<double,double,double>("mul", sigc::ptr_fun(multiply) );

@@ -29,9 +29,13 @@ int main()
   DBus::Connection::pointer connection;
   connection = dispatcher->create_connection( DBus::BUS_SESSION );
 
+  //create an object proxy, which stands in for a real object.
+  //a proxy exists over the dbus
   DBus::ObjectProxy::pointer object;
   object = connection->create_object_proxy("dbuscxx.quickstart_0.server", "/dbuscxx/quickstart_0");
 
+  //a method proxy acts like a real method, but will go over the dbus
+  //to do its work.
   DBus::MethodProxy<double,double,double>& add_proxy
     = *(object->create_method<double,double,double>("dbuscxx.Quickstart","add"));
 

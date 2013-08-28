@@ -127,7 +127,7 @@ void MessageIteratorTests::call_message_append_extract_iterator_string()
 
 void MessageIteratorTests::call_message_append_extract_iterator_signature()
 {
-  DBus::Signature v("Hello World");
+  DBus::Signature v("a{iq}");
   DBus::Signature v2;
 
   DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
@@ -182,7 +182,7 @@ void MessageIteratorTests::call_message_append_extract_iterator_array_int( )
   iter1.append( v );
 
   DBus::MessageIterator iter2(msg);
-  v2 = iter2.get_array<int>();
+  iter2 >> v2;
 
   CPPUNIT_ASSERT_EQUAL( v.size(), v2.size() );
   
@@ -190,6 +190,60 @@ void MessageIteratorTests::call_message_append_extract_iterator_array_int( )
     CPPUNIT_ASSERT_EQUAL( v[i], v2[i] );
 }
 
+void MessageIteratorTests::call_message_append_extract_iterator_array_string( )
+{
+  std::vector<std::string> v, v2;
+  char string[ 30 ];
+  
+  for( int i = 0; i < 35; i++ ){
+    snprintf( string, 30, "string%d", i );
+    v.push_back( string );
+  }
+
+  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  DBus::MessageAppendIterator iter1(msg);
+  iter1.append( v );
+
+  DBus::MessageIterator iter2(msg);
+  iter2 >> v2;
+
+  CPPUNIT_ASSERT_EQUAL( v.size(), v2.size() );
+  
+  for ( int i = 0; i < 35; i++ )
+    CPPUNIT_ASSERT_EQUAL( v[i], v2[i] );
+}
+
+void MessageIteratorTests::call_message_append_extract_iterator_array_array_string( )
+{
+  std::vector<std::vector<std::string>> sv, sv2;
+  std::vector<std::string> v, v2;
+  char string[ 30 ];
+  
+  for( int y = 0; y < 6; y++ ){
+    v.clear();
+    for( int i = 0; i < 35; i++ ){
+      snprintf( string, 30, "string%d-%d", i, y );
+      v.push_back( string );
+    }
+    sv.push_back( v );
+  }
+
+  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  DBus::MessageAppendIterator iter1(msg);
+  iter1.append( sv );
+
+  DBus::MessageIterator iter2(msg);
+  iter2 >> sv2;
+
+  CPPUNIT_ASSERT_EQUAL( sv.size(), sv2.size() );
+
+  for( int y = 0; y < 6; y++ ){
+    for( int i = 0; i < 35; i++ ){
+      CPPUNIT_ASSERT_EQUAL( (sv[ y ])[i], (sv2[y])[i] );
+    }
+  }
+  
+}
 
 template <typename T>
     void test_numeric_call_message_iterator_insertion_extraction_operator( T v )
@@ -292,7 +346,7 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_s
 
 void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_signature()
 {
-  DBus::Signature v("Hello World");
+  DBus::Signature v("a{iq}");
   DBus::Signature v2;
 
   DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
@@ -335,6 +389,27 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_u
   test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
+void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_array_string()
+{
+  std::vector<std::string> v, v2;
+
+  v.push_back( "strign1" );
+  v.push_back( "string2" );
+
+  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  DBus::MessageAppendIterator iter1(msg);
+  
+  iter1 << v;
+
+  DBus::MessageIterator iter2(msg);
+  iter2 >> v2;
+
+  CPPUNIT_ASSERT_EQUAL( v.size(), v2.size() );
+
+  for( int i = 0; i < 2; i++ )
+    CPPUNIT_ASSERT_EQUAL( v[i], v2[i] );
+}
+
 void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_array_int( )
 {
   std::vector<int> v, v2;
@@ -368,7 +443,7 @@ void MessageIteratorTests::call_message_append_extract_iterator_multiple( )
   double          d_1    = 3.141592654 , d_2    = 0.00;
   const char      *cs_1 = "Hello World", *cs_2 = NULL;
   std::string     s_1("Hello World")   , s_2("");
-  DBus::Signature sig_1("Hello World") , sig_2;
+  DBus::Signature sig_1("a{iq}") , sig_2;
   char            c_1    = 'a'         , c_2    = '\0';
   int8_t          i8_1   = 119         , i8_2   = 0;
   float           f_1    = -222.43212  , f_2    = 0.00;
@@ -419,7 +494,8 @@ void MessageIteratorTests::call_message_append_extract_iterator_multiple( )
   f_2    = (float)iter2;             iter2.next();
   li_2   = (long int)iter2;          iter2.next();
   uli_2  = (unsigned long int)iter2; iter2.next();
-  iter2.get_array(ad_2);             iter2.next();
+  iter2 >> ad_2;
+  /*iter2.get_array(ad_2);*/             iter2.next();
 
   CPPUNIT_ASSERT_EQUAL( b_1, b_2 );
   CPPUNIT_ASSERT_EQUAL( ui8_1, ui8_2 );
@@ -457,7 +533,7 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_m
   double          d_1    = 3.141592654 , d_2    = 0.00;
   const char      *cs_1 = "Hello World", *cs_2 = NULL;
   std::string     s_1("Hello World")   , s_2("");
-  DBus::Signature sig_1("Hello World") , sig_2;
+  DBus::Signature sig_1("a{iq}") , sig_2;
   char            c_1    = 'a'         , c_2    = '\0';
   int8_t          i8_1   = 119         , i8_2   = 0;
   float           f_1    = -222.43212  , f_2    = 0.00;

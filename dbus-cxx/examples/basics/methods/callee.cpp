@@ -18,6 +18,7 @@
  ***************************************************************************/
 #include <dbus-cxx.h>
 #include <iostream>
+#include <unistd.h>
 
 double add( double param1, double param2 )      { return param1 + param2; }
 double subtract( double param1, double param2 ) { return param1 - param2; }

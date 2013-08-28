@@ -18,6 +18,15 @@
  ***************************************************************************/
 #include <dbus-cxx.h>
 #include <iostream>
+#include <unistd.h>
+
+/**
+ * This example shows how to export a class onto the bus that extends
+ * DBus::Object.  
+ *
+ * The main difference between this and callee_object.cpp is where the
+ * calls to create_method go, and where the path is set.
+ */
 
 class Inherited: public DBus::Object
 {

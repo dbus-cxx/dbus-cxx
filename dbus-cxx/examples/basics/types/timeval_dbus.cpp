@@ -18,6 +18,12 @@
  ***************************************************************************/
 #include "timeval_dbus.h"
 
+/*
+ * The extraction operator.
+ * Because we know that we have two ints for a timeval struct, we can simply
+ * grab the two integers from the message and increment the iterator in 
+ * the message
+ */
 DBus::MessageIterator& operator>>(DBus::MessageIterator& i, struct timeval& t)
 {
   t.tv_sec = i.get_int32();
@@ -27,6 +33,11 @@ DBus::MessageIterator& operator>>(DBus::MessageIterator& i, struct timeval& t)
   return i;
 }
 
+/*
+ * The insertion operator
+ * We can simply append two integers to  our message; dbus-cxx will
+ * automatically insert the signature for the message properly.
+ */
 DBus::MessageAppendIterator& operator<<(DBus::MessageAppendIterator& i, const struct timeval& t)
 {
   i.append( (int32_t)t.tv_sec );

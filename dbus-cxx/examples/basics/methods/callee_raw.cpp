@@ -19,6 +19,7 @@
 #include <dbus-cxx.h>
 #include <iostream>
 #include <cmath>
+#include <unistd.h>
 
 void reply_to_method_call( DBus::CallMessage::pointer msg, DBus::Connection::pointer conn );
 

@@ -69,6 +69,10 @@ int main( int argc, const char** argv )
     char buffer[1025];
     size_t n;
     fin.open( xml_file );
+    if( fin.fail() ){
+      std::cerr << "ERROR: Can't open file " << xml_file << std::endl;
+      return 1;
+    }
     while ( ! fin.eof() )
     {
       fin.read(buffer, 1024);
@@ -80,6 +84,7 @@ int main( int argc, const char** argv )
       }
     }
     fin.close();
+
 
     Nodes nodes;
 

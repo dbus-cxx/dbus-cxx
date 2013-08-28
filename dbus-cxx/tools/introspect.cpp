@@ -65,10 +65,10 @@ int main( int argc, const char** argv )
   
   Connection::pointer conn;
 
-  if ( use_session )
-    conn = Connection::create(BUS_SESSION);
-  else
+  if ( use_system )
     conn = Connection::create(BUS_SYSTEM);
+  else
+    conn = Connection::create(BUS_SESSION);
 
   std::string introspection = conn->introspect( dest, path );
 

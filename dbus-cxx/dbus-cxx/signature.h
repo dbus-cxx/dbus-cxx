@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <ostream>
 #include <string>
+#include <map>
 #include <dbus-cxx/signatureiterator.h>
 #include <dbus-cxx/path.h>
 #include <dbus-cxx/variant.h>
@@ -117,13 +118,31 @@ template <class T>
   
    template <typename T> inline std::string signature( const std::vector<T>& ) { T t; return DBUS_TYPE_ARRAY_AS_STRING + signature( t ); }
 
-   template <typename Key,typename Data> inline std::string signature( const std::vector<std::pair<Key,Data> >& )
+   template <typename Key,typename Data> inline std::string signature( const std::map<Key,Data>& )
    {
      Key k; Data d;
      std::string sig;
-     sig = DBUS_DICT_ENTRY_BEGIN_CHAR_AS_STRING + signature(k) + signature(d) + DBUS_DICT_ENTRY_END_CHAR_AS_STRING;
+     sig = DBUS_TYPE_ARRAY_AS_STRING;
+     sig += DBUS_DICT_ENTRY_BEGIN_CHAR_AS_STRING + 
+           signature(k) + signature(d) + 
+           DBUS_DICT_ENTRY_END_CHAR_AS_STRING;
      return sig;
    }
+
+   //Note: we need to have two different signature() methods for dictionaries; this is because
+   //when introspecting, we need to use the normal signature() so that it comes up properly.
+   //However, when we are sending out data, that signature would give us an extra array signature,
+   //which is not good.  Hence, this method is only used when we need to send out a dict
+   template <typename Key,typename Data> inline std::string signature_dict_data( const std::map<Key,Data>& )
+   {
+     Key k; Data d;
+     std::string sig;
+     sig = DBUS_DICT_ENTRY_BEGIN_CHAR_AS_STRING + 
+           signature(k) + signature(d) + 
+           DBUS_DICT_ENTRY_END_CHAR_AS_STRING;
+     return sig;
+   }
+
 
 //   template <typename T1>
 //   inline std::string signature( const Struct<T1>& )

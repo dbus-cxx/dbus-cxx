@@ -19,6 +19,8 @@
 
 #include "calculator_proxy.h"
 
+#include <unistd.h>
+
 class Watcher {
   public:
     Watcher()  { }

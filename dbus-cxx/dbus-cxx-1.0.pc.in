@@ -27,4 +27,4 @@ Description: C++ bindings for dbus
 Requires: @PKGCONFIG_REQUIRES@
 Version: @PACKAGE_VERSION@
 Libs: -ldbus-cxx
-Cflags: -I${includedir}/dbus-cxx-@PACKAGE_RELEASE@
+Cflags: -I${includedir}/dbus-cxx-@PACKAGE_RELEASE@ @CXX_STD@
