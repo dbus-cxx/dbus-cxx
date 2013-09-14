@@ -256,14 +256,16 @@ namespace DBus
    * \par
    * \b Subversion \b Repository
    * - You can browse the subversion repository at this url:
-   *   - <a href="http://dbus-cxx.svn.sourceforge.net/viewvc/dbus-cxx/trunk/dbus-cxx">http://dbus-cxx.svn.sourceforge.net/viewvc/dbus-cxx/trunk/dbus-cxx</a>
+   *   - <a href="http://sourceforge.net/p/dbus-cxx/code/HEAD/tree/">http://sourceforge.net/p/dbus-cxx/code/HEAD/tree/</a>
    * - You can also check out a copy of the repository with this command:
-   *   - \verbatim svn co https://dbus-cxx.svn.sourceforge.net/svnroot/dbus-cxx/trunk/dbus-cxx \endverbatim
+   *   - \verbatim svn checkout svn://svn.code.sf.net/p/dbus-cxx/code/trunk dbus-cxx-code \endverbatim
    *
    * <br><hr>
    *
    * \par Dependencies... and where to get them
-   * \b dbus: <a href="http://dbus.freedesktop.org">http://dbus.freedesktop.org</a>
+   * \b dbus: <a href="http://dbus.freedesktop.org">http://dbus.freedesktop.org</a> - Should be installed by default (runtime dependency)
+   * \b libsigc++ <a href="http://libsigc.sourceforge.net/">http://libsigc.sourceforge.net/</a> (compile dependency)
+   * See the README file for more information on compile-time dependencies
    *
    * <br><hr>
    *
@@ -310,38 +312,25 @@ namespace DBus
    *
    * <br><hr>
    *
-   * \par Sourceforge Forums
-   * Although mailing lists are preferred, the sourceforge forums are available for discussion as well.
-   * - <a href="http://sourceforge.net/forum/forum.php?forum_id=943815">Help forum</a> (for those using dbus-cxx in their applications)
-   * - <a href="http://sourceforge.net/forum/forum.php?forum_id=943816">Developers forum</a> (for discussion related to the development of dbus-cxx itself)
-   * 
-   * <br><hr>
-   *
    * \par Bugs
-   * \htmlonly <img src="bugs-small.png" alt=""/> \endhtmlonly
-   * <a href="http://sourceforge.net/tracker/?atid=1127519&group_id=259994&func=browse">View reported bugs in the bug tracker</a>
    *
-   * \par
-   * \htmlonly <img src="bug-small.png" alt=""/> \endhtmlonly
-   * <a href="http://sourceforge.net/tracker/?atid=1127519&group_id=259994&func=add">Submit a bug report here</a>
+   * \par 
+   * Please submit all bugs to the mailing list
    *
    * <br><hr>
    *
    * \par Patches
    * Patches are always welcome!!!
    *
-   * \par
-   * <a href="http://sourceforge.net/tracker/?atid=1127520&group_id=259994&func=browse">View submitted patches</a>
-   * 
-   * \par
-   * <a href="http://sourceforge.net/tracker/?atid=1127520&group_id=259994&func=add">Submit patches here</a>
+   * \par 
+   * Please submit all patches to the mailing list
    *
    * <br><hr>
    *
    * \par Feature Requests
    *
    * \par
-   * <a href="http://sourceforge.net/tracker/?atid=1127521&group_id=259994&func=add">Submit feature requests here</a>
+   * Please submit all feature requests to the mailing list
    *
    * <br><hr>
    *
@@ -401,6 +390,7 @@ namespace DBus
  *
  * \section quick_start_sections Sections:
  *
+ *  -# \ref quick_start_pkgconfig
  *  -# \ref quick_start_initial_concepts
  *  -# \ref quick_start_example_0
  *     -# \ref quick_start_server_0
@@ -409,6 +399,43 @@ namespace DBus
  *     -# \ref quick_start_client_0
  *        -# \ref quick_start_client_0_code
  *        -# \ref quick_start_client_0_discussion
+ */
+
+/**
+ * \page quick_start_pkgconfig Using pkgconfig
+ *
+ * \par Although this is a bit more in-depth than I planned for a quick start tutorial 
+ * I thought I'd include this little blurb on using pkgconfig to help with setting your application to use dbus-cxx.
+ * 
+ * \par dbus-cxx is distributed with two (at the current time) pkgconfig .pc files named dbus-cxx-1.0.pc and dbus-cxx-glibmm-1.0.pc. 
+ *  If you installed the Fedora dbus-cxx-devel or dbus-cxx-glibmm-devel packages you'll find these files installed in a directory 
+ *  named /pkgconfig under in your architecture's library directory (probably /usr/lib/pkgconfig or /usr/lib64/pkgconfig ).
+ *
+ * \section quick_start_pkgconfig_autotools Using pkg-config with autotools
+ * \par If you are using autotools,
+ *  modify configure.ac (or configure.in ) with the following lines:
+ * \code  PKG_CHECK_MODULES(PROJECT_DBUSCXX,[dbus-cxx-1.0 >= 0.7.0])
+ * AC_SUBST(PROJECT_DBUSCXX_LIBS)
+ * AC_SUBST(PROJECT_DBUSCXX_CFLAGS)
+ * \endcode
+ *
+ * \par You can then use the symbols PROJECT_DBUSCXX_LIBS and PROJECT_DBUSCXX_CFLAGS in your Makefile.am files.
+ * \par For example, if you have a application named fooapp your Makefile.am might look like this:
+ * \code  INCLUDES = $(PROJECT_DBUSCXX_CFLAGS)
+ * bin_PROGRAMS = fooapp
+ * fooapp_SOURCES = fooapp.cpp
+ * fooapp_LDADD = $(PROJECT_DBUSCXX_LIBS)
+ * \endcode
+ *
+ * \section quick_start_pkgconfig_qt Using pkg-config with QT
+ * \par Because of QTs signal/slot mechanism, dbus-cxx will not work directly with QT.  There are a few things that need to be
+ * modified in the .pro file of your project.  Add/change the following lines:
+ * \code CONFIG += no_keywords
+ * unix:CONFIG += link_pkgconfig
+ * unix:PKGCONFIG += dbus-cxx-1.0
+ * \endcode
+ * \par At any point in your QT program, you need to use QT signals or slots, use the macros Q_SIGNALS or Q_SLOTS to define 
+ * your signals/slots
  */
 
 /**
