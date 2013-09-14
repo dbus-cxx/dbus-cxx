@@ -17,10 +17,71 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "parsed_object.h"
+#include "dbus_signal.h"
 
 #include <cstring>
 #include <algorithm>
 #include <cctype>
+#include <dbus-cxx/types.h>
+
+
+/*
+static inline std::string dbuscxx_type_from_type( DBus::Type t ){
+ switch ( t )
+    {
+      case TYPE_BYTE:
+        return "byte";
+      case TYPE_BOOLEAN:
+        return "boolean";
+      case TYPE_INT16:
+        return "int16_t";
+      case TYPE_UINT16:
+        return "uint16_t";
+      case TYPE_INT32:
+        return "int32_t";
+      case TYPE_UINT32:
+        return "uint32_t";
+      case TYPE_INT64:
+        return "int64_t";
+      case TYPE_UINT64:
+        return "uint64_t";
+      case TYPE_DOUBLE:
+        return "double";
+      case TYPE_STRING:
+        return "std::string";
+      case TYPE_OBJECT_PATH:
+        return "DBus::Path";
+      case TYPE_SIGNATURE:
+        return "DBus::Signature";
+      case TYPE_ARRAY:
+        return "std::vector";
+      case TYPE_VARIANT:
+       return "Variant";
+      case TYPE_STRUCT:
+        return "Struct";
+      case TYPE_DICT_ENTRY:
+        return "Dict Entry";
+      default:
+        break;
+    }
+    return std::string("Invalid");
+
+}
+*/
+
+std::string cppTypeFromSignature( DBus::Signature sig ){
+  DBus::Signature::iterator sigIter = sig.begin();
+  std::string returnVal = "";
+ 
+  while( sigIter.is_valid() ){
+    std::cout << ((char)sigIter.type()) << std::endl;
+    //returnVal += cpp_dbus_type( sigIter.type() );
+    sigIter.next();
+  }
+
+  return returnVal;
+}
+
 
 char upper( char c ) { return std::toupper( c ); }
 
@@ -46,418 +107,8 @@ void merge( std::map<std::string,std::string>& tgt, const std::map<std::string,s
   }
 }
 
-Direction Arg::direction()
-{
-  if ( strcasecmp( direction_string.c_str(), "in" ) == 0 )
-    return DIRECTION_IN;
-  else if ( strcasecmp( direction_string.c_str(), "out" ) == 0 )
-    return DIRECTION_OUT;
-  return DIRECTION_NONE;
-}
-
-// std::string Arg::cpp_cast(const std::string& var)
-// {
-//   if ( cpp_type_override.empty() ) return var;
-//   return "static_cast< " + cpp_type_override + " >( " + var + " )";
-// }
-// 
-// std::string Arg::dbus_cast(const std::string& var)
-// {
-//   if ( cpp_type_override.empty() ) return var;
-//   return "static_cast< " + cpp_dbus_type() + " >( " + var + " )";
-// }
-
-std::string Arg::cpp_type(ProxyAdapter pa)
-{
-  std::string type;
-  
-  if ( cpp_type_override.empty() ) type = cpp_dbus_type();
-  else type = cpp_type_override;
-
-  if ( pa == PROXY_PARAM and is_const ) type = "const " + type;
-  if ( pa == PROXY_PARAM and is_ref )   type = type + "&";
-
-  return type;
-}
-
-std::string Arg::cpp_dbus_type()
-{
-  switch ( type() ) {
-    case DBus::TYPE_INVALID:     throw DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_BYTE:        return "uint8_t";
-    case DBus::TYPE_BOOLEAN:     return "bool";
-    case DBus::TYPE_INT16:       return "int16_t";
-    case DBus::TYPE_UINT16:      return "uint16_t";
-    case DBus::TYPE_INT32:       return "int32_t";
-    case DBus::TYPE_UINT32:      return "uint32_t";
-    case DBus::TYPE_INT64:       return "int64_t";
-    case DBus::TYPE_UINT64:      return "uint64_t";
-    case DBus::TYPE_DOUBLE:      return "double";
-    case DBus::TYPE_STRING:      return "std::string";
-    case DBus::TYPE_OBJECT_PATH: return "::DBus::Path";
-    case DBus::TYPE_SIGNATURE:   return "::DBus::Signature";
-    case DBus::TYPE_ARRAY:       throw DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_VARIANT:     throw DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_STRUCT:      throw DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_DICT_ENTRY:  throw DBus::ErrorInvalidMessageType::create();
-  }
-
-  throw DBus::ErrorInvalidMessageType::create();
-}
-
-std::string Arg::stubsignature()
-{
-  return DBus::signature( type() );
-}
-
-DBus::Type Arg::type()
-{
-  if ( not signature.is_singleton() ) return DBus::TYPE_INVALID;
-  if ( not signature.begin().is_basic() ) return DBus::TYPE_INVALID;
-  return signature.begin().type();
-}
-
-std::string Arg::strfmt( int depth )
-{
-  std::ostringstream sout;
-  out_tabs( sout, depth );
-  if ( direction() != DIRECTION_NONE )
-    sout << "Arg: " << dbus_name << "\t\tType: " << signature << "\t\tDir: " << direction_string << std::endl;
-  else
-    sout << "Arg: " << dbus_name << "\t\tType: " << signature << std::endl;
-  return sout.str();
-}
-
-std::string Method::strfmt( int depth )
-{
-  std::ostringstream sout;
-  out_tabs( sout, depth );
-  sout << "Method: " << name << std::endl;
-  for ( unsigned int i=0; i < in_args.size(); i++ ) sout << in_args[i].strfmt( depth+1 );
-  for ( unsigned int i=0; i < out_args.size(); i++ ) sout << out_args[i].strfmt( depth+1 );
-  return sout.str();
-}
-
-std::string Method::cpp_adapter_create()
-{
-  std::string s;
-  if ( args_valid() ) {
-    s = varname() + " = this->create_method< ";
-    if ( out_args.size() == 0 )
-      s += "void";
-    else
-      s += out_args[0].cpp_type(PROXY_RET);
-    for ( unsigned int i = 0; i < in_args.size(); i++ )
-      s += "," + in_args[i].cpp_type(PROXY_PARAM);
-    s += " >( ";
-    if ( interface != NULL )
-      s += "\"" + interface->name() + "\", ";
-    s += "\"" + name + "\" );";
-  }
-  return s;
-}
-
-std::string Method::cpp_proxy_method()
-{
-  std::ostringstream sout;
-  if ( args_valid() ) {
-    if ( is_virtual ) sout << "virtual ";
-    if ( out_args.size() == 0 )
-      sout << "void";
-    else
-      sout << out_args[0].cpp_type(PROXY_RET);
-    sout << " " << get_name() << "(";
-    for ( unsigned int i = 0; i < in_args.size(); i++ )
-      sout << (( i==0 )?" ":", " ) << in_args[i].cpp_type(PROXY_PARAM) << " " << in_args[i].name();
-    sout << " )";
-    if ( is_const ) sout << " const";
-    sout << " { return ";
-    sout << "(*" << varname() << ")(";
-    for ( unsigned int i = 0; i < in_args.size(); i++ )
-      sout << (( i==0 )?" ":", " ) << in_args[i].name();
-    sout << ")";
-    sout << "; }";
-  }
-  else {
-    sout << "/* can't create proxy for method " << name << " */";
-  }
-  return sout.str();
-}
-
-std::string Method::cpp_declare_proxy()
-{
-  std::string s;
-  if ( args_valid() ) {
-    s = "::DBus::MethodProxy<";
-    if ( out_args.size() == 0 )
-      s += "void";
-    else
-      s += out_args[0].cpp_type(PROXY_RET);
-    for ( unsigned int i = 0; i < in_args.size(); i++ )
-      s += "," + in_args[i].cpp_type(PROXY_PARAM);
-    s += ">::pointer " + varname() + ";";
-  }
-  return s;
-}
-
-std::string Method::stubsignature()
-{
-  std::string ss;
-  if ( out_args.size() == 0 ) ss += 'v';
-  else ss += out_args[0].stubsignature();
-  for ( size_t i = 0; i < in_args.size(); i++ )
-    ss += in_args[i].stubsignature();
-  return ss;
-}
-
-std::string Method::cpp_adapter_creation()
-{
-  std::ostringstream sout;
-  if ( args_valid() ) {
-    sout << "temp_method = this->create_method<";
-    if ( out_args.size() == 0 )
-      sout << "void";
-    else
-      sout << out_args[0].cpp_type(ADAPTER_RET);
-    for ( unsigned int i = 0; i < in_args.size(); i++ )
-      sout << "," << in_args[i].cpp_type(ADAPTER_PARAM);
-    sout << ">( ";
-    if ( interface != NULL )
-      sout << "\"" << interface->name() << "\", ";
-    sout << "\"" << name << "\", sigc::mem_fun(*this, &" << interface->node->name() << "Adapter::" << stubname() << ") );";
-  }
-  return sout.str();
-}
-
-std::vector<std::string> Method::adapter_arg_names()
-{
-  std::vector<std::string> decls;
-  std::ostringstream sout;
-  if ( out_args.size() > 0 )
-  {
-    sout << "temp_method->set_arg_name( " << 0 << ", \"" << out_args[0].dbus_name << "\" );";
-    decls.push_back(sout.str());
-    sout.str("");
-  }
-  for ( size_t i = 0; i < in_args.size(); i++ )
-  {
-    sout << "temp_method->set_arg_name( " << i+1 << ", \"" << in_args[i].dbus_name << "\" );";
-    decls.push_back(sout.str());
-    sout.str("");
-  }
-  return decls;
-}
 
 
-std::string Method::cpp_adapter_stub()
-{
-  std::ostringstream sout;
-  if ( args_valid() ) {
-    if ( out_args.size() == 0 )
-      sout << "void";
-    else
-      sout << out_args[0].cpp_type(ADAPTER_RET);
-    sout << " " << stubname() << "(";
-    for ( unsigned int i = 0; i < in_args.size(); i++ )
-      sout << (( i==0 )?" ":", " ) << in_args[i].cpp_type(ADAPTER_PARAM) << " " << in_args[i].name();
-    sout << " ) { this->check_adaptee(); ";
-    if (out_args.size() != 0 ) sout << "return ";
-    sout << "m_adaptee->";
-    if ( cppname.empty() ) sout << name;
-    else sout << cppname;
-    sout << "(";
-    for ( unsigned int i = 0; i < in_args.size(); i++ )
-      sout << (( i==0 )?" ":", " ) << in_args[i].name();
-    sout << "); }";
-  }
-  else {
-    sout << "/* can't create adapter for method " << name << " */";
-  }
-  return sout.str();
-}
-
-bool Method::args_valid()
-{
-  if ( in_args.size() > 7 ) return false;
-
-  for ( unsigned int i=0; i < in_args.size(); i++ )
-    if ( in_args[i].type() == DBus::TYPE_INVALID ) return false;
-
-  for ( unsigned int i=0; i < out_args.size(); i++ )
-    if ( out_args[i].type() == DBus::TYPE_INVALID ) return false;
-
-  if ( out_args.size() > 1 ) return false;
-
-  return true;
-}
-
-std::map<std::string,std::string> Method::iterator_support()
-{
-  std::map<std::string,std::string> need_support;
-  std::pair<std::string,std::string> support;
-  std::vector<Arg>::iterator a;
-
-  for ( a = in_args.begin(); a != in_args.end(); a++ )
-  {
-    if ( a->need_iterator_support() )
-    {
-      support = a->iterator_support();
-      std::map<std::string,std::string> tmp;
-      tmp[support.first] = support.second;
-      merge(need_support, tmp);
-    }
-  }
-  
-  for ( a = out_args.begin(); a != out_args.end(); a++ )
-  {
-    if ( a->need_iterator_support() )
-    {
-      support = a->iterator_support();
-      std::map<std::string,std::string> tmp;
-      tmp[support.first] = support.second;
-      merge(need_support, tmp);
-    }
-  }
-  
-  return need_support;
-}
-
-std::string Signal::cpp_adapter_create()
-{
-  std::ostringstream sout;
-  if ( args_valid() ) {
-    sout << varname() << " = this->create_signal<void";
-    for ( size_t i = 0; i < args.size(); i++ )
-      sout << "," << args[i].cpp_type(ADAPTER_PARAM);
-    sout << ">( ";
-    if ( interface == NULL ) throw("bad signal interface");
-    sout << "\"" << interface->name() << "\", ";
-    sout << "\"" << name << "\" );";
-  }
-  return sout.str();
-}
-
-std::vector<std::string> Signal::proxy_arg_names()
-{
-  std::vector<std::string> decls;
-  std::ostringstream sout;
-  for ( size_t i = 0; i < args.size(); i++ )
-  {
-    sout << varname() << "->set_arg_name( " << i << ", \"" << args[i].dbus_name << "\" );";
-    decls.push_back(sout.str());
-    sout.str("");
-  }
-  return decls;
-}
-
-std::string Signal::cpp_proxy_accessor()
-{
-  std::ostringstream sout;
-  if ( args_valid() ) {
-    sout << "::DBus::signal_proxy<void";
-    for ( unsigned int i = 0; i < args.size(); i++ )
-      sout << "," << args[i].cpp_type(PROXY_PARAM);
-    sout << " >& signal_" << name << "() { return *" << varname() << "; }";
-  }
-  else {
-    sout << "/* can't create proxy for signal " << name << " */";
-  }
-  return sout.str();
-}
-
-std::string Signal::cpp_declare_proxy()
-{
-  std::string s;
-  if ( args_valid() ) {
-    s = "::DBus::signal_proxy<void";
-    for ( unsigned int i = 0; i < args.size(); i++ )
-      s += "," + args[i].cpp_type(PROXY_PARAM);
-    s += ">::pointer " + varname() + ";";
-  }
-  return s;
-}
-
-bool Signal::args_valid()
-{
-  if ( args.size() > 7 ) return false;
-
-  for ( unsigned int i=0; i < args.size(); i++ )
-    if ( args[i].type() == DBus::TYPE_INVALID ) return false;
-
-  return true;
-}
-
-std::string Signal::strfmt( int depth )
-{
-  std::ostringstream sout;
-  out_tabs( sout, depth );
-  sout << "Signal: " << name << std::endl;
-  for ( unsigned int i=0; i < args.size(); i++ ) sout << args[i].strfmt( depth+1 );
-  return sout.str();
-}
-
-std::string Signal::adapter_signal_create()
-{
-  std::ostringstream sout;
-  if ( args_valid() ) {
-    sout << adapter_name() << " = this->create_signal<void";
-    for ( unsigned int i=0; i < args.size(); i++ ) sout << "," << args[i].cpp_type(ADAPTER_PARAM);
-    sout << ">(\"" << interface->name() << "\",\"" << name << "\");";
-  }
-  return sout.str();
-}
-
-std::vector<std::string> Signal::adapter_arg_names()
-{
-  std::vector<std::string> decls;
-  std::ostringstream sout;
-  for ( size_t i = 0; i < args.size(); i++ )
-  {
-    sout << adapter_name() << "->set_arg_name( " << i << ", \"" << args[i].dbus_name << "\" );";
-    decls.push_back(sout.str());
-    sout.str("");
-  }
-  return decls;
-}
-
-std::string Signal::adapter_signal_declare()
-{
-  std::ostringstream sout;
-  if ( args_valid() ) {
-    sout << "::DBus::signal<void";
-    for ( unsigned int i = 0; i < args.size(); i++ ) sout << "," << args[i].cpp_type(ADAPTER_PARAM);
-    sout << ">::pointer " << adapter_name() << ";";
-  }
-  return sout.str();
-}
-
-std::string Signal::adapter_signal_connect()
-{
-  if ( accessor.empty() ) return "";
-  std::ostringstream sout;
-  sout << "if ( m_adaptee ) " << adapter_conn_name() << " = m_adaptee->" << accessor << ".connect( *" << adapter_name() << " );";
-  return sout.str();
-}
-
-std::map<std::string,std::string> Signal::iterator_support()
-{
-  std::map<std::string,std::string> need_support;
-  std::pair<std::string,std::string> support;
-  std::vector<Arg>::iterator a;
-
-  for ( a = args.begin(); a != args.end(); a++ )
-  {
-    if ( a->need_iterator_support() )
-    {
-      support = a->iterator_support();
-      std::map<std::string,std::string> tmp;
-      tmp[support.first] = support.second;
-      merge(need_support, tmp);
-    }
-  }
-  
-  return need_support;
-}
 
 std::string Interface::strfmt( int depth )
 {
@@ -473,12 +124,12 @@ std::vector< std::string > Interface::cpp_adapter_methods_signals_create()
 {
   std::vector<std::string> strings;
   for ( unsigned int i = 0; i < methods.size(); i++ ) {
-    methods[i].interface = this;
+    methods[i].set_interface( this );
     if ( methods[i].args_valid() )
       strings.push_back( methods[i].cpp_adapter_create() );
   }
   for ( unsigned int i = 0; i < signals.size(); i++ ) {
-    signals[i].interface = this;
+    signals[i].set_interface( this );
     if ( signals[i].args_valid() )
       strings.push_back( signals[i].cpp_adapter_create() );
   }
@@ -489,11 +140,11 @@ std::vector< std::string > Interface::cpp_proxy_methods_signals()
 {
   std::vector<std::string> strings;
   for ( unsigned int i = 0; i < methods.size(); i++ ) {
-    methods[i].interface = this;
+    methods[i].set_interface( this );
     strings.push_back( methods[i].cpp_proxy_method() );
   }
   for ( unsigned int i = 0; i < signals.size(); i++ ) {
-    signals[i].interface = this;
+    signals[i].set_interface( this );
     strings.push_back( signals[i].cpp_proxy_accessor() );
   }
   return strings;
@@ -503,12 +154,12 @@ std::vector< std::string > Interface::cpp_declare_proxy_objects()
 {
   std::vector<std::string> strings;
   for ( unsigned int i = 0; i < methods.size(); i++ ) {
-    methods[i].interface = this;
+    methods[i].set_interface( this );
     if ( methods[i].args_valid() )
       strings.push_back( methods[i].cpp_declare_proxy() );
   }
   for ( unsigned int i = 0; i < signals.size(); i++ ) {
-    signals[i].interface = this;
+    signals[i].set_interface( this );
     if ( signals[i].args_valid() )
       strings.push_back( signals[i].cpp_declare_proxy() );
   }
@@ -519,7 +170,7 @@ std::vector< std::string > Interface::cpp_adapter_creation()
 {
   std::vector<std::string> strings;
   for ( unsigned int i = 0; i < methods.size(); i++ ) {
-    methods[i].interface = this;
+    methods[i].set_interface( this );
     if ( methods[i].args_valid() )
     {
       strings.push_back( methods[i].cpp_adapter_creation() );
@@ -528,7 +179,7 @@ std::vector< std::string > Interface::cpp_adapter_creation()
     }
   }
   for ( unsigned int i = 0; i < signals.size(); i++ ) {
-    signals[i].interface = this;
+    signals[i].set_interface( this );
     if ( signals[i].args_valid() )
     {
       strings.push_back( signals[i].adapter_signal_create() );
@@ -544,7 +195,7 @@ std::vector< std::string > Interface::cpp_adapter_signal_connection()
 {
   std::vector<std::string> strings;
   for ( size_t i = 0; i < signals.size(); i++ ) {
-    signals[i].interface = this;
+    signals[i].set_interface( this );
     if ( signals[i].args_valid() )
       strings.push_back( signals[i].adapter_signal_connect() );
   }
@@ -555,7 +206,7 @@ std::vector< std::string > Interface::cpp_adapter_signal_disconnection()
 {
   std::vector<std::string> strings;
   for ( size_t i = 0; i < signals.size(); i++ ) {
-    signals[i].interface = this;
+    signals[i].set_interface( this );
     if ( signals[i].args_valid() )
       strings.push_back( signals[i].adapter_signal_disconnect() );
   }
@@ -566,13 +217,13 @@ std::vector< std::string > Interface::cpp_adapter_stubs()
 {
   std::vector<std::string> strings;
   for ( unsigned int i = 0; i < methods.size(); i++ ) {
-    methods[i].interface = this;
+    methods[i].set_interface( this );
     if ( methods[i].args_valid() )
       strings.push_back( methods[i].cpp_adapter_stub() );
   }
   for ( unsigned int i = 0; i < signals.size(); i++ ) {
-    signals[i].interface = this;
-    if ( signals[i].args_valid() and not signals[i].ignored )
+    signals[i].set_interface( this );
+    if ( signals[i].args_valid() and not signals[i].get_ignored() )
     {
       strings.push_back( signals[i].adapter_signal_declare() );
       strings.push_back( signals[i].adapter_signal_conn_declare() );
@@ -585,7 +236,7 @@ std::map<std::string,std::string> Interface::iterator_support()
 {
   std::map<std::string,std::string> need_support, current;
   std::vector<Method>::iterator m;
-  std::vector<Signal>::iterator s;
+  std::vector<DBusSignal>::iterator s;
 
   for ( m = methods.begin(); m != methods.end(); m++ )
   {
@@ -737,3 +388,4 @@ std::vector< std::string > Node::other_proxy_parent_includes()
   }
   return result;
 }
+

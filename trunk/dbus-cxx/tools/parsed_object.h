@@ -19,113 +19,31 @@
 #ifndef PARSED_OBJECT_H
 #define PARSED_OBJECT_H
 
+
+#include <dbus-cxx.h>
+
 #include <cstring>
 #include <string>
 #include <vector>
 #include <sstream>
 
-#include <dbus-cxx.h>
 
-typedef enum Direction {
-  DIRECTION_NONE,
-  DIRECTION_IN,
-  DIRECTION_OUT
-} Direction;
+#include "method.h"
+#include "dbus_signal.h"
+
 
 inline void out_tabs( std::ostream& out, int depth )
 {
   for ( int i=0; i < depth; i++ ) out << "  ";
 }
 
-typedef enum ProxyAdapter { PROXY_RET, PROXY_PARAM, ADAPTER_RET, ADAPTER_PARAM } ProxyAdapter;
-
-struct Arg {
-  Arg(): is_const(false), is_ref(false) { }
-  
-  std::string dbus_name;
-  std::string cxx_name;
-  std::string direction_string;
-  std::string cpp_type_override;
-  DBus::Signature signature;
-  bool is_const;
-  bool is_ref;
-
-  std::string name() { if ( cxx_name.empty() ) return dbus_name; return cxx_name; }
-  Direction direction();
-  std::string cpp_type(ProxyAdapter pa);
-//   std::string cpp_cast(const std::string& var);
-//   std::string dbus_cast(const std::string& var);
-  std::string cpp_dbus_type();
-  std::string stubsignature();
-  DBus::Type type();
-  std::string strfmt(int depth=0);
-
-  bool need_iterator_support() { return not cpp_type_override.empty(); }
-  std::pair<std::string,std::string> iterator_support() { return std::make_pair(cpp_type(ADAPTER_RET), cpp_dbus_type()); }
-};
+void merge( std::map<std::string,std::string>& tgt, const std::map<std::string,std::string>& src );
 
 struct Interface;
 
-struct Method {
-  Method():interface(NULL), is_const(false), is_virtual(false) { }
-  Interface* interface;
-  std::string name;
-  std::string cppname;
-  bool is_const;
-  bool is_virtual;
-
-  std::vector<Arg> in_args;
-  std::vector<Arg> out_args;
-
-  std::string strfmt(int depth=0);
-
-  std::vector<std::string> adapter_arg_names();
-
-  std::string get_name() { if ( cppname.empty() ) return name; return cppname; }
-
-  std::string stubsignature();
-  std::string stubname() { return name + "_adapter_stub_" + stubsignature(); }
-  std::string varname()  { return "m_method_" + name + "_" + stubsignature(); }
-  std::string cpp_adapter_create();
-  std::string cpp_proxy_method();
-  std::string cpp_declare_proxy();
-  std::string cpp_adapter_creation();
-  std::string cpp_adapter_stub();
-  bool args_valid();
-
-  std::map<std::string,std::string> iterator_support();
-};
-
-struct Signal {
-  Signal():interface(NULL), ignored(0) { }
-  Interface* interface;
-  std::string name;
-  std::vector<Arg> args;
-  std::string accessor;
-  int ignored;
-
-  std::string strfmt(int depth=0);
-
-  std::string varname() { return "m_signal_" + name; }
-  std::string adapter_name() { return "m_signal_adapter_" + name; }
-  std::string adapter_conn_name() { return "m_signal_adapter_connection_" + name; }
-  std::string cpp_adapter_create();
-  std::vector<std::string> proxy_arg_names();
-  std::vector<std::string> adapter_arg_names();
-  std::string cpp_proxy_accessor();
-  std::string cpp_declare_proxy();
-  std::string adapter_signal_create();
-  std::string adapter_signal_declare();
-  std::string adapter_signal_conn_declare() { if (args_valid()) return "sigc::connection " + adapter_conn_name() + ";"; return ""; }
-  std::string adapter_signal_connect();
-  std::string adapter_signal_disconnect() { return adapter_conn_name() + ".disconnect();"; }
-  
-  bool args_valid();
-
-  std::map<std::string,std::string> iterator_support();
-};
-
 struct Node;
+
+struct DBusSignal;
 
 struct Interface {
   Interface(): node(NULL), ignored(false) { }
@@ -135,7 +53,7 @@ struct Interface {
   std::string dbus_name;
   bool ignored;
   std::vector<Method> methods;
-  std::vector<Signal> signals;
+  std::vector<DBusSignal> signals;
   
   std::string strfmt(int depth=0);
 
@@ -187,7 +105,7 @@ struct Node {
   std::vector<Interface> interfaces;
   std::vector<Node> children;
   std::vector<Method> methods;
-  std::vector<Signal> signals;
+  std::vector<DBusSignal> signals;
   
   std::string strfmt(int depth=0);
 

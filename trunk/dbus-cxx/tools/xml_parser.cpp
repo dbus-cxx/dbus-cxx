@@ -118,13 +118,13 @@ XMLNodeAttr xml_node_attr( const char* name )
   return NODE_UNKNOWN;
 }
 
-std::deque<XMLTag> tag_stack;
-Arg current_arg;
-Method current_method;
-bool use_current_method;
-Signal current_signal;
-Interface current_interface;
-std::deque<Node> node_stack;
+static std::deque<XMLTag> tag_stack;
+static Arg current_arg;
+static Method current_method;
+static bool use_current_method;
+static DBusSignal current_signal;
+static Interface current_interface;
+static std::deque<Node> node_stack;
 
 
 void start_element_handler( void* userData, const XML_Char* name, const XML_Char** attrs )
@@ -149,12 +149,12 @@ void start_element_handler( void* userData, const XML_Char* name, const XML_Char
         ptrvaluestring = *(ptr+1);
         switch ( xml_arg_attr( *ptr ) )
         {
-          case ARG_NAME:    current_arg.dbus_name = ptrvaluestring;          break;
-          case ARG_DIR:     current_arg.direction_string = ptrvaluestring;   break;
-          case ARG_TYPE:    current_arg.signature = ptrvaluestring;          break;
-          case ARG_CPPTYPE: current_arg.cpp_type_override = ptrvaluestring;  break;
-          case ARG_CONST:   current_arg.is_const = atoi(ptrvaluestring);     break;
-          case ARG_REF:     current_arg.is_ref = atoi(ptrvaluestring);       break;
+          case ARG_NAME:    current_arg.set_dbus_name( ptrvaluestring );          break;
+          case ARG_DIR:     current_arg.set_direction_string( ptrvaluestring );   break;
+          case ARG_TYPE:    current_arg.set_signature( ptrvaluestring );          break;
+          case ARG_CPPTYPE: current_arg.set_cpp_type_override( ptrvaluestring );  break;
+          case ARG_CONST:   current_arg.set_const( atoi(ptrvaluestring) );     break;
+          case ARG_REF:     current_arg.set_ref( atoi(ptrvaluestring) );       break;
           default:                                                           break;
         }
         ptr += 2;
@@ -168,26 +168,26 @@ void start_element_handler( void* userData, const XML_Char* name, const XML_Char
         ptrvaluestring = *(ptr+1);
         switch ( xml_method_attr( *ptr ) )
         {
-          case METHOD_NAME:    current_method.name = ptrvaluestring;             break;
-          case METHOD_CPPNAME: current_method.cppname = ptrvaluestring;          break;
-          case METHOD_CONST:   current_method.is_const = atoi(ptrvaluestring);   break;
-          case METHOD_VIRTUAL: current_method.is_virtual = atoi(ptrvaluestring); break;
+          case METHOD_NAME:    current_method.set_name( ptrvaluestring );             break;
+          case METHOD_CPPNAME: current_method.set_cppname( ptrvaluestring );          break;
+          case METHOD_CONST:   current_method.set_const( atoi(ptrvaluestring) );   break;
+          case METHOD_VIRTUAL: current_method.set_virtual( atoi(ptrvaluestring) ); break;
           default:                                                               break;
         }
         ptr += 2;
       }
       break;
     case TAG_SIGNAL:
-      current_signal = Signal();
+      current_signal = DBusSignal();
       
       while ( *ptr != NULL )
       {
         ptrvaluestring = *(ptr+1);
         switch ( xml_signal_attr( *ptr ) )
         {
-          case SIGNAL_NAME:     current_signal.name = ptrvaluestring;           break;
-          case SIGNAL_ACCESSOR: current_signal.accessor = ptrvaluestring;       break;
-          case SIGNAL_IGNORED:  current_signal.ignored = atoi(ptrvaluestring);  break;
+          case SIGNAL_NAME:     current_signal.set_name( ptrvaluestring );           break;
+          case SIGNAL_ACCESSOR: current_signal.set_accessor( ptrvaluestring );       break;
+          case SIGNAL_IGNORED:  current_signal.set_ignored( atoi(ptrvaluestring) );  break;
           default:                                                              break;
         }
         ptr += 2;
@@ -273,12 +273,12 @@ void end_element_handler( void* userData, const XML_Char* name )
     case TAG_ARG:
       switch ( tag_stack.front() )
       {
-        case TAG_SIGNAL: current_signal.args.push_back(current_arg); break;
+        case TAG_SIGNAL: current_signal.push_arg(current_arg); break;
         case TAG_METHOD:
           switch ( current_arg.direction() )
           {
-            case DIRECTION_IN:  current_method.in_args.push_back(current_arg);   break;
-            case DIRECTION_OUT: current_method.out_args.push_back(current_arg);  break;
+            case DIRECTION_IN:  current_method.push_in_arg(current_arg);   break;
+            case DIRECTION_OUT: current_method.push_out_arg(current_arg);  break;
             default: /* we shouldn't get here, but if we are do nothing */ break;
           }
           default: /* we shouldn't get here, but if we are do nothing */ break;
