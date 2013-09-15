@@ -24,20 +24,28 @@ std::string Arg::cpp_type(ProxyAdapter pa)
   
   if ( cpp_type_override.empty() ){
     //type = cppTypeFromSignature( signature );
-    /*if ( not signature.begin().is_basic() ){
+    if ( not signature.begin().is_basic() ){
       std::string complexType;
       DBus::Signature::iterator it = signature.begin().recurse();
-      if( it.is_array() ){
-        complexType = type_string_from_code( it.type() );
-      }
-      if( it.is_dict() ){
-        complexType = type_string_from_code( it.type() );
+      typestr += type_string_from_code( signature.begin().type() );
+      while( it.is_valid() ){
+        if( it.is_array() ){
+          complexType += type_string_from_code( it.type() );
+        } else if( it.is_dict() ){
+          complexType += type_string_from_code( it.type() );
+          it.next();
+          complexType += ",";
+          complexType = type_string_from_code( it.type() );
+        } else {
+          complexType += type_string_from_code( it.type() );
+        }
+        typestr += "<" + complexType + ">";
         it.next();
-        complexType += ",";
-        complexType = type_string_from_code( it.type() );
       }
-      type += "<" + complexType + ">";
-    }*/
+    } else {
+      DBus::Signature::iterator it = signature.begin();
+      typestr = type_string_from_code( it.type() );
+    }
   }else typestr = cpp_type_override;
 
   if ( pa == PROXY_PARAM and mis_const ) typestr = "const " + typestr;

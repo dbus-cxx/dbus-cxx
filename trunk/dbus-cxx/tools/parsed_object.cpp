@@ -309,7 +309,10 @@ std::string Node::cpp_namespace_begin( const std::string& tab )
   if ( ns.size() == 0 ) return "";
   for ( unsigned int i = 0; i < ns.size(); i++ ) {
     result += indent;
-    result += "namespace " + ns[i] + " {\n";
+    result += "namespace ";
+    if ( ns[i].size() == 0 ) result += "DBusGenerated";
+    else result += ns[i];
+    result += " {\n";
     indent += tab;
   }
   return result;
@@ -333,6 +336,8 @@ std::string Node::adaptee_fqn()
 {
   if ( not orig_namespace.empty() )
     return orig_namespace + "::" + name();
+  if ( name().empty() ) 
+    return "AdapterName";
   return name();
 }
 

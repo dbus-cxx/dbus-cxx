@@ -89,7 +89,7 @@ std::string generate_proxy_h(Node n)
     }
   }
   
-  sout << "\n" << n.cpp_namespace_begin(tab) + "\n";
+  sout << "\n" <<  n.cpp_namespace_begin( tab ) << "\n";
 
   // Class declaration
   if ( inherit_from_dbus_objectproxy )
