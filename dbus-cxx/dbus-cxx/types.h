@@ -126,7 +126,7 @@ template <class T>
     switch ( t )
     {
       case TYPE_BYTE:
-        return "byte";
+        return "uint8_t";
       case TYPE_BOOLEAN:
         return "boolean";
       case TYPE_INT16:
@@ -144,15 +144,15 @@ template <class T>
       case TYPE_DOUBLE:
         return "double";
       case TYPE_STRING:
-        return "string";
+        return "std::string";
       case TYPE_OBJECT_PATH:
-        return "Path";
+        return "DBus::Path";
       case TYPE_SIGNATURE:
-        return "Signature";
+        return "DBus::Signature";
       case TYPE_ARRAY:
-        return "Array";
+        return "std::vector";
       case TYPE_VARIANT:
-        return "Variant";
+        return "DBus::Variant";
       case TYPE_STRUCT:
         return "Struct";
       case TYPE_DICT_ENTRY:

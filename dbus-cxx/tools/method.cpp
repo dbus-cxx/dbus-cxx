@@ -59,14 +59,26 @@ std::string Method::cpp_proxy_method()
     else
       sout << out_args[0].cpp_type(PROXY_RET);
     sout << " " << get_name() << "(";
-    for ( unsigned int i = 0; i < in_args.size(); i++ )
-      sout << (( i==0 )?" ":", " ) << in_args[i].cpp_type(PROXY_PARAM) << " " << in_args[i].name();
+    for ( unsigned int i = 0; i < in_args.size(); i++ ) {
+      sout << (( i==0 )?" ":", " ) << in_args[i].cpp_type(PROXY_PARAM) << " ";
+      if( in_args[i].name().size() > 0 ){
+        sout << in_args[i].name();
+      } else {
+        sout << "arg" << (char)(i + 48) << " ";
+      }
+    }
     sout << " )";
     if ( mis_const ) sout << " const";
     sout << " { return ";
     sout << "(*" << varname() << ")(";
-    for ( unsigned int i = 0; i < in_args.size(); i++ )
-      sout << (( i==0 )?" ":", " ) << in_args[i].name();
+    for ( unsigned int i = 0; i < in_args.size(); i++ ){
+      sout << (( i==0 )?" ":", " );
+      if( in_args[i].name().size() > 0 ){
+        sout << in_args[i].name();
+      } else {
+        sout << "arg" << (char)(i + 48) << " ";
+      }
+    }
     sout << ")";
     sout << "; }";
   }
