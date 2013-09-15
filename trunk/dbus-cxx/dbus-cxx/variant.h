@@ -22,6 +22,13 @@
 
 namespace DBus{
 
+/**
+ * A Variant is a type of DBus object that can be one of several
+ * different types of normal DBus object.
+ *
+ * In other words, a variant can hold different values, but only
+ * one value at a time.
+ */
 template <class T>
 class Variant{
 	public:

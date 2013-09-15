@@ -44,7 +44,7 @@ namespace DBus
 
       typedef std::string::size_type size_type;
 
-      static const size_type npos;
+      static const size_type npos = std::string::npos;
 
       Signature();
 
