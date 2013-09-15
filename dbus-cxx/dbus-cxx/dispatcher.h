@@ -251,7 +251,7 @@ namespace DBus
    * \htmlonly <img src="sourcecode-small.png" alt=""/> \endhtmlonly
    * \par Source Code
    * \htmlonly <img src="download-small.png" alt=""/> \endhtmlonly
-   * \b Releases - (.bz2, .gz, .zip) can be found <a href="http://sourceforge.net/project/showfiles.php?group_id=259994">here</a>
+   * \b Releases - (.bz2, .gz, .zip) can be found <a href="http://sourceforge.net/project/dbus-cxx/files">here</a>
    *
    * \par
    * \b Subversion \b Repository
@@ -263,7 +263,7 @@ namespace DBus
    * <br><hr>
    *
    * \par Dependencies... and where to get them
-   * \b dbus: <a href="http://dbus.freedesktop.org">http://dbus.freedesktop.org</a> - Should be installed by default (runtime dependency)
+   * \b dbus: <a href="http://dbus.freedesktop.org">http://dbus.freedesktop.org</a> - Should be installed by default (runtime dependency) <br/>
    * \b libsigc++ <a href="http://libsigc.sourceforge.net/">http://libsigc.sourceforge.net/</a> (compile dependency)
    * See the README file for more information on compile-time dependencies
    *
@@ -404,38 +404,45 @@ namespace DBus
 /**
  * \page quick_start_pkgconfig Using pkgconfig
  *
- * \par Although this is a bit more in-depth than I planned for a quick start tutorial 
+ * Although this is a bit more in-depth than I planned for a quick start tutorial 
  * I thought I'd include this little blurb on using pkgconfig to help with setting your application to use dbus-cxx.
  * 
- * \par dbus-cxx is distributed with two (at the current time) pkgconfig .pc files named dbus-cxx-1.0.pc and dbus-cxx-glibmm-1.0.pc. 
+ *  dbus-cxx is distributed with two (at the current time) pkgconfig .pc files named dbus-cxx-1.0.pc and dbus-cxx-glibmm-1.0.pc. 
  *  If you installed the Fedora dbus-cxx-devel or dbus-cxx-glibmm-devel packages you'll find these files installed in a directory 
  *  named /pkgconfig under in your architecture's library directory (probably /usr/lib/pkgconfig or /usr/lib64/pkgconfig ).
  *
  * \section quick_start_pkgconfig_autotools Using pkg-config with autotools
- * \par If you are using autotools,
+ * If you are using autotools,
  *  modify configure.ac (or configure.in ) with the following lines:
- * \code  PKG_CHECK_MODULES(PROJECT_DBUSCXX,[dbus-cxx-1.0 >= 0.7.0])
+ * \code  
+ * PKG_CHECK_MODULES(PROJECT_DBUSCXX,[dbus-cxx-1.0 >= 0.7.0])
  * AC_SUBST(PROJECT_DBUSCXX_LIBS)
  * AC_SUBST(PROJECT_DBUSCXX_CFLAGS)
  * \endcode
  *
- * \par You can then use the symbols PROJECT_DBUSCXX_LIBS and PROJECT_DBUSCXX_CFLAGS in your Makefile.am files.
- * \par For example, if you have a application named fooapp your Makefile.am might look like this:
- * \code  INCLUDES = $(PROJECT_DBUSCXX_CFLAGS)
+ * You can then use the symbols PROJECT_DBUSCXX_LIBS and PROJECT_DBUSCXX_CFLAGS in your Makefile.am files.
+ * For example, if you have a application named fooapp your Makefile.am might look like this:
+ * \code  
+ * INCLUDES = $(PROJECT_DBUSCXX_CFLAGS)
  * bin_PROGRAMS = fooapp
  * fooapp_SOURCES = fooapp.cpp
  * fooapp_LDADD = $(PROJECT_DBUSCXX_LIBS)
  * \endcode
  *
  * \section quick_start_pkgconfig_qt Using pkg-config with QT
- * \par Because of QTs signal/slot mechanism, dbus-cxx will not work directly with QT.  There are a few things that need to be
+ * Because of QTs signal/slot mechanism, dbus-cxx will not work directly with QT.  There are a few things that need to be
  * modified in the .pro file of your project.  Add/change the following lines:
- * \code CONFIG += no_keywords
+ * \code 
+ * CONFIG += no_keywords
  * unix:CONFIG += link_pkgconfig
  * unix:PKGCONFIG += dbus-cxx-1.0
  * \endcode
- * \par At any point in your QT program, you need to use QT signals or slots, use the macros Q_SIGNALS or Q_SLOTS to define 
+ * At any point in your QT program, you need to use QT signals or slots, use the macros Q_SIGNALS or Q_SLOTS to define 
  * your signals/slots
+ *
+ * <b>Continue On:</b> \ref quick_start_initial_concepts
+ *
+ * <b>Go Back:</b> \ref quick_start
  */
 
 /**
@@ -529,7 +536,7 @@ namespace DBus
  *
  * <b>Continue On:</b> \ref quick_start_example_0
  *
- * <b>Go Back:</b> \ref quick_start
+ * <b>Go Back:</b> \ref quick_start_pkgconfig
  */
 
 /**
@@ -589,7 +596,7 @@ namespace DBus
  * \par
  * And now for the beginning of our \c main() function. We'll also declare a
  * variable \c ret that can be used to check the return value of functions.
- * \code
+ * \code{.cpp}
  * int main()
  * {
  *   int ret;
