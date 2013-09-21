@@ -21,7 +21,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 EXTRA_DIST = \
 	dbus-cxx.spec \
-	m4/ac_cxx_compile_stdcxx_0x.m4 \
+	m4/ax_cxx_compile_stdcxx_0x.m4 \
 	m4/ax_prefix_config_h.m4 \
 	ax_dbus_cxx_xml2cpp.m4 \
 	debian/changelog                debian/dbus-cxx-glibmm0.dirs		\
@@ -86,7 +86,7 @@ upload-release-only:
 
 upload-release: changelog release-notes dist upload-release-only
 
-spec:
+dbus-cxx.spec:
 	m4 -D PACKAGE_VERSION=$(PACKAGE_VERSION) \
 		-D PACKAGE_RELEASE=$(PACKAGE_RELEASE) \
 		-D PKGCONFIG_VERSION=$(PKGCONFIG_VERSION) \

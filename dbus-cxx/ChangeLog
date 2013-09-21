@@ -1,3 +1,158 @@
+2013-09-15  rm5248
+
+	* dbus-cxx/types.h, tools/arg.cpp, tools/generate_proxy.cpp,
+	  tools/method.cpp, tools/parsed_object.cpp: Updated the tools and
+	  types to generate some better code. Still needs some more work
+	* dbus-cxx/dispatcher.h, dbus-cxx/signature.h, dbus-cxx/variant.h,
+	  doc/Doxyfile, doc/images/ubuntu-logo-tiny.png[ADD]: Updated some
+	  of the doxygen documentation, updated DBus::Signature to have the
+	  proper npos variable
+
+2013-09-14  rm5248
+
+	* README, dbus-cxx/dispatcher.h: started documentation updates
+	* tools/Makefile.am, tools/arg.cpp[ADD], tools/arg.h[ADD],
+	  tools/dbus_signal.h[ADD], tools/method.cpp[ADD],
+	  tools/method.h[ADD], tools/parsed_object.cpp,
+	  tools/parsed_object.h, tools/signal.cpp[ADD],
+	  tools/xml_parser.cpp: Moving xml2cpp to be more object oriented
+
+2013-08-28  rm5248
+
+	* configure.ac, dbus-cxx-1.0.pc.in, dbus-cxx/dispatcher.cpp,
+	  dbus-cxx/messageappenditerator.h, dbus-cxx/messageiterator.h,
+	  dbus-cxx/signature.h, dbus-cxx/utility.h,
+	  examples/basics/methods/callee.cpp,
+	  examples/basics/methods/callee_2.cpp,
+	  examples/basics/methods/callee_dispatched.cpp,
+	  examples/basics/methods/callee_object.cpp,
+	  examples/basics/methods/callee_object_inherited.cpp,
+	  examples/basics/methods/callee_raw.cpp,
+	  examples/basics/methods/caller_dispatched.cpp,
+	  examples/basics/methods/caller_object.cpp,
+	  examples/basics/signals/signal_emitter_object.cpp,
+	  examples/basics/signals/signal_receiver.cpp,
+	  examples/basics/signals/signal_receiver_2.cpp,
+	  examples/basics/signals/signal_receiver_array.cpp,
+	  examples/basics/signals/signal_receiver_object.cpp,
+	  examples/basics/signals/signal_receiver_raw.cpp,
+	  examples/basics/types/ABOUT[ADD],
+	  examples/basics/types/time_client.cpp,
+	  examples/basics/types/time_server.cpp,
+	  examples/basics/types/timeval_dbus.cpp,
+	  examples/basics/types/timeval_dbus.h, examples/hal[DEL],
+	  examples/quick-start/quickstart_client_0.cpp,
+	  examples/quick-start/quickstart_server_0.cpp,
+	  examples/xml2cpp/Makefile.am,
+	  examples/xml2cpp/calculator-interface/calculator_server.cpp,
+	  examples/xml2cpp/calculator-interface/calculator_watcher.cpp,
+	  examples/xml2cpp/calculator/calculator.cpp,
+	  examples/xml2cpp/calculator/calculator_server.cpp,
+	  examples/xml2cpp/calculator/calculator_watcher.cpp,
+	  examples/xml2cpp/computer-has-a/computer_server.cpp,
+	  examples/xml2cpp/computer-has-a/computer_watcher.cpp,
+	  examples/xml2cpp/computer-is-a/computer_server.cpp,
+	  examples/xml2cpp/computer-is-a/computer_watcher.cpp,
+	  examples/xml2cpp/hal-proxy[DEL], tools/introspect.cpp,
+	  tools/xml2cpp.cpp, unit-tests/messageiteratortests.cpp,
+	  unit-tests/messageiteratortests.h: Added some comments to
+	  examples. Removed HAL example, as HAL is deprecated and no longer
+	  used. Made sure that all examples compile correctly. Fixed
+	  signature unit tests and added a few more unit tests. arrays
+	  should now be fully recursive-able and able to handle any type of
+	  data structure. Changed dictionary to a map, will have to revert
+	  this to an unordered map. updated xml2cpp to output an error
+	  message if it can't find the file to open. tools/introspect will
+	  now properly introspect on the session bus by default. when using
+	  c++ smart pointers, added variable to pkg-config script so
+	  pkg-config reports the proper variables.
+
+2012-11-25  rm5248
+
+	* configure.ac, dbus-cxx/utility.cpp: when configuring, you can
+	  turn off C++0x smart pointers if you don't want to use them -
+	  they are the default. Added a debug statement to init function,
+	  throw a different error if something bad happens
+
+2012-11-19  rm5248
+
+	* configure.ac, dbus-cxx/pointer.h,
+	  m4/ac_cxx_compile_stdcxx_0x.m4[DEL],
+	  m4/ax_cxx_compile_stdcxx_0x.m4[CPY]: updated M4 script for c++0x
+	  compilation. Updated DBusCxxPointer to error out if no smart
+	  pointers were found. Updated configure.ac to properly check for
+	  c++0x smart pointers
+
+2012-11-18  rm5248
+
+	* configure.ac, dbus-cxx/callmessage.cpp,
+	  dbus-cxx/interfaceproxy.cpp, dbus-cxx/messageiterator.h,
+	  dbus-cxx/methodproxybase.cpp, dbus-cxx/object.cpp,
+	  dbus-cxx/objectproxy.cpp, dbus-cxx/pointer.h,
+	  dbus-cxx/signature.h, dbus-cxx/types.h: partially fixed configure
+	  to check for c++0x. added patch from Andre Montag which fixes
+	  some pointer issues
+
+2012-08-27  rm5248
+
+	* dbus-cxx/pendingcall.cpp, tools/parsed_object.cpp,
+	  unit-tests/Makefile.am: pending call will probably not segfault
+	  now if nobody is listening. Updated the tools to compile with
+	  changes made to dbus-signatures. Updated unit tests to compile
+	  with CPPUnit.
+
+2012-03-09  rm5248
+
+	* dbus-cxx/dbus_signal.h.m4, dbus-cxx/messageappenditerator.h,
+	  dbus-cxx/messageiterator.h, dbus-cxx/method.h.m4,
+	  dbus-cxx/signature.h, dbus-cxx/types.h: updated method debug to
+	  properly tell if the method being called returns void or not.
+	  added a patch from Michal Rzechonek to allow use of an array of
+	  strings. all method signatures now call their signatures
+	  recursively.
+
+2012-03-01  rm5248
+
+	* dbus-cxx/signature.h, dbus-cxx/types.h: some fixes to arrays to
+	  make introspect work properly. added in support for floats, even
+	  though the dbus only uses doubles, as some support for floats was
+	  already in place
+	* dbus-cxx.h, dbus-cxx/Makefile.am,
+	  dbus-cxx/messageappenditerator.cpp,
+	  dbus-cxx/messageappenditerator.h, dbus-cxx/variant.cpp[DEL],
+	  dbus-cxx/variant.h: put implementations of template functions
+	  back into header files - needed because of how C++ templates
+	  work.
+
+2012-02-29  rm5248
+
+	* dbus-cxx/method.h.m4: fixed void method calls not returning
+	* dbus-cxx/dispatcher.cpp: fixed an error with the dispatcher
+	  throwning an error if select failed
+
+2012-02-25  rm5248
+
+	* dbus-cxx/Makefile.am, dbus-cxx/callmessage.cpp,
+	  dbus-cxx/connection.cpp, dbus-cxx/dispatcher.cpp,
+	  dbus-cxx/interfaceproxy.cpp, dbus-cxx/messageappenditerator.cpp,
+	  dbus-cxx/messageappenditerator.h, dbus-cxx/messageiterator.h,
+	  dbus-cxx/methodproxybase.cpp, dbus-cxx/object.cpp,
+	  dbus-cxx/objectproxy.cpp, dbus-cxx/pendingcall.cpp,
+	  dbus-cxx/signature.h, dbus-cxx/types.h,
+	  dbus-cxx/variant.cpp[ADD], dbus-cxx/variant.h[ADD]: merged
+	  changes. list of changes: added variants, added dictionary, fixed
+	  a few segfault bugs, dispatcher will continue on if select fails
+	  because it was interrupted, fixed pendingcall to not call its
+	  callback if there are no references to the object, fixed a bug
+	  where a segfault would happen if the interface that was called
+	  was NULL
+
+2010-03-18  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
+
+	* ChangeLog, configure.ac, dbus-cxx-glibmm.h, dbus-cxx.h,
+	  dbus-cxx.spec.m4, dbuscxx.kdevelop: ===== 0.7.0 =====
+	* dbus-cxx/utility.cpp, dbus-cxx/utility.h:
+
 2010-03-16  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
 	* tools/introspect.cpp:
@@ -36,9 +191,9 @@
 	  examples/xml2cpp/computer-is-a/computer_server.cpp,
 	  examples/xml2cpp/computer-is-a/computer_watcher.cpp,
 	  examples/xml2cpp/hal-proxy/hal_proxy.cpp:
-	* examples/quick-start, examples/quick-start/Makefile.am,
-	  examples/quick-start/quickstart_client_0.cpp,
-	  examples/quick-start/quickstart_server_0.cpp:
+	* examples/quick-start[ADD], examples/quick-start/Makefile.am[ADD],
+	  examples/quick-start/quickstart_client_0.cpp[ADD],
+	  examples/quick-start/quickstart_server_0.cpp[ADD]:
 	* dbus-cxx-glibmm/dispatcher.cpp, dbus-cxx-glibmm/dispatcher.h:
 	* dbus-cxx/accumulators.h, dbus-cxx/callmessage.cpp,
 	  dbus-cxx/callmessage.h, dbus-cxx/dbus_signal.h.m4,
@@ -113,8 +268,8 @@
 	  Added documentation.
 	  
 	  Add force parameter to add_child() method.
-	* dbus-cxx/types.h: Separate type handling from utility.h into a
-	  separate header with fewer include dependencies.
+	* dbus-cxx/types.h[ADD]: Separate type handling from utility.h into
+	  a separate header with fewer include dependencies.
 	* dbus-cxx/messageiterator.h: Remove unnecessary headers
 	* dbus-cxx/messageappenditerator.h: Remove unnecessary headers
 	* dbus-cxx/interface.h.m4: Separate templates into forward
@@ -123,9 +278,9 @@
 	  
 	  Added documentation.
 	* dbus-cxx/interface.cpp: Remove unnecessary headers
-	* dbus-cxx/forward_decls.h: Added forward decls header to improve
-	  management of forward declarations by co-locating them in one
-	  file.
+	* dbus-cxx/forward_decls.h[ADD]: Added forward decls header to
+	  improve management of forward declarations by co-locating them in
+	  one file.
 
 2010-01-22  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
@@ -196,8 +351,8 @@
 2009-09-29  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
 	* dbus-cxx/Makefile.am, dbus-cxx/connection.h[DEL],
-	  dbus-cxx/connection.h.m4, dbus-cxx/interfaceproxy.h[DEL],
-	  dbus-cxx/interfaceproxy.h.m4, dbus-cxx/object.h.m4,
+	  dbus-cxx/connection.h.m4[ADD], dbus-cxx/interfaceproxy.h[DEL],
+	  dbus-cxx/interfaceproxy.h.m4[ADD], dbus-cxx/object.h.m4,
 	  dbus-cxx/objectproxy.h.m4: Converted default template parameters
 	  to m4 generated templates
 	* dbus-cxx/interface.h.m4:
@@ -214,9 +369,9 @@
 	  unit-tests/messageiteratortests.h: Added initial support for
 	  arrays of fixed types
 	* examples/basics/signals, examples/basics/signals/Makefile.am,
-	  examples/basics/signals/signal_emitter_array.cpp,
-	  examples/basics/signals/signal_receiver_array.cpp: Added initial
-	  support for arrays of fixed types
+	  examples/basics/signals/signal_emitter_array.cpp[ADD],
+	  examples/basics/signals/signal_receiver_array.cpp[ADD]: Added
+	  initial support for arrays of fixed types
 	* dbus-cxx/messageappenditerator.cpp,
 	  dbus-cxx/messageappenditerator.h, dbus-cxx/messageiterator.h,
 	  dbus-cxx/utility.h: Added initial support for arrays of fixed
@@ -289,23 +444,28 @@
 2009-08-23  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
 	* Makefile.am, configure.ac:
-	* debian, debian/changelog, debian/compat, debian/control,
-	  debian/control.m4, debian/copyright, debian/dbus-cxx-dev.dirs,
-	  debian/dbus-cxx-dev.install, debian/dbus-cxx-dev.install.m4,
-	  debian/dbus-cxx-doc.install, debian/dbus-cxx-doc.install.m4,
-	  debian/dbus-cxx-glibmm-dev.dirs,
-	  debian/dbus-cxx-glibmm-dev.install,
-	  debian/dbus-cxx-glibmm-dev.install.m4,
-	  debian/dbus-cxx-glibmm0.dirs, debian/dbus-cxx-glibmm0.install,
-	  debian/dbus-cxx-tools.dirs, debian/dbus-cxx-tools.install,
-	  debian/dbus-cxx0.dirs, debian/dbus-cxx0.install, debian/dirs,
-	  debian/docs, debian/rules, debian/rules.m4:
+	* debian[ADD], debian/changelog[ADD], debian/compat[ADD],
+	  debian/control[ADD], debian/control.m4[ADD],
+	  debian/copyright[ADD], debian/dbus-cxx-dev.dirs[ADD],
+	  debian/dbus-cxx-dev.install[ADD],
+	  debian/dbus-cxx-dev.install.m4[ADD],
+	  debian/dbus-cxx-doc.install[ADD],
+	  debian/dbus-cxx-doc.install.m4[ADD],
+	  debian/dbus-cxx-glibmm-dev.dirs[ADD],
+	  debian/dbus-cxx-glibmm-dev.install[ADD],
+	  debian/dbus-cxx-glibmm-dev.install.m4[ADD],
+	  debian/dbus-cxx-glibmm0.dirs[ADD],
+	  debian/dbus-cxx-glibmm0.install[ADD],
+	  debian/dbus-cxx-tools.dirs[ADD],
+	  debian/dbus-cxx-tools.install[ADD], debian/dbus-cxx0.dirs[ADD],
+	  debian/dbus-cxx0.install[ADD], debian/dirs[ADD],
+	  debian/docs[ADD], debian/rules[ADD], debian/rules.m4[ADD]:
 
 2009-08-21  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
 	* configure.ac:
 	* configure.ac, dbus-cxx-glibmm/Makefile.am, dbuscxx.kdevelop:
-	* dbus-cxx-glibmm.h:
+	* dbus-cxx-glibmm.h[ADD]:
 	* configure.ac[CPY], configure.in[DEL]:
 
 2009-06-26  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
@@ -319,17 +479,17 @@
 	  examples/xml2cpp/calculator/calculator_client.cpp,
 	  examples/xml2cpp/computer-has-a/computer_client.cpp,
 	  examples/xml2cpp/computer-is-a/computer_client.cpp:
-	* examples/xml2cpp/calculator-interface,
-	  examples/xml2cpp/calculator-interface/Makefile.am,
-	  examples/xml2cpp/calculator-interface/README,
-	  examples/xml2cpp/calculator-interface/calculator.cpp,
-	  examples/xml2cpp/calculator-interface/calculator.h,
-	  examples/xml2cpp/calculator-interface/calculator.xml,
-	  examples/xml2cpp/calculator-interface/calculator_client.cpp,
-	  examples/xml2cpp/calculator-interface/calculator_interface.h,
-	  examples/xml2cpp/calculator-interface/calculator_server.cpp,
-	  examples/xml2cpp/calculator-interface/calculator_watcher.cpp,
-	  examples/xml2cpp/calculator-interface/client_popt.h: Added
+	* examples/xml2cpp/calculator-interface[ADD],
+	  examples/xml2cpp/calculator-interface/Makefile.am[ADD],
+	  examples/xml2cpp/calculator-interface/README[ADD],
+	  examples/xml2cpp/calculator-interface/calculator.cpp[ADD],
+	  examples/xml2cpp/calculator-interface/calculator.h[ADD],
+	  examples/xml2cpp/calculator-interface/calculator.xml[ADD],
+	  examples/xml2cpp/calculator-interface/calculator_client.cpp[ADD],
+	  examples/xml2cpp/calculator-interface/calculator_interface.h[ADD],
+	  examples/xml2cpp/calculator-interface/calculator_server.cpp[ADD],
+	  examples/xml2cpp/calculator-interface/calculator_watcher.cpp[ADD],
+	  examples/xml2cpp/calculator-interface/client_popt.h[ADD]: Added
 	  example of generating a proxy from a virtual parent interface
 	* dbus-cxx/connection.h: Documentation
 	* dbus-cxx/methodbase.h: Added missing return value to base
@@ -340,7 +500,7 @@
 2009-06-18  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
 	* ChangeLog, dbuscxx.kdevelop: 0.4.0
-	* examples/glibmm/caller_popt.h:
+	* examples/glibmm/caller_popt.h[ADD]:
 	* examples/glibmm/Makefile.am:
 	* dbus-cxx-glibmm/dispatcher.cpp, dbus-cxx-glibmm/dispatcher.h,
 	  dbus-cxx/dispatcher.cpp, dbus-cxx/dispatcher.h: Added support for
@@ -393,18 +553,18 @@
 	  
 	  Made dispatch thread virtual to allow classes to derive from
 	  DBus::Dispatcher and re-implement dispatching.
-	* examples/Makefile.am, examples/glibmm,
-	  examples/glibmm/Makefile.am,
-	  examples/glibmm/glibmm_callee_dispatched.cpp,
-	  examples/glibmm/glibmm_caller_dispatched.cpp: Added a new
+	* examples/Makefile.am, examples/glibmm[ADD],
+	  examples/glibmm/Makefile.am[ADD],
+	  examples/glibmm/glibmm_callee_dispatched.cpp[ADD],
+	  examples/glibmm/glibmm_caller_dispatched.cpp[ADD]: Added a new
 	  sublibrary dbus-cxx-glibmm with configure option --enable-glibmm
 	  to provide integration with glibmm applications.
-	* Makefile.am, configure.in, dbus-cxx-glibmm,
-	  dbus-cxx-glibmm-1.0.pc.in, dbus-cxx-glibmm/Makefile.am,
-	  dbus-cxx-glibmm/dispatcher.cpp, dbus-cxx-glibmm/dispatcher.h,
-	  dbus-cxx.spec.m4: Added a new sublibrary dbus-cxx-glibmm with
-	  configure option --enable-glibmm to provide integration with
-	  glibmm applications.
+	* Makefile.am, configure.in, dbus-cxx-glibmm[ADD],
+	  dbus-cxx-glibmm-1.0.pc.in[ADD], dbus-cxx-glibmm/Makefile.am[ADD],
+	  dbus-cxx-glibmm/dispatcher.cpp[ADD],
+	  dbus-cxx-glibmm/dispatcher.h[ADD], dbus-cxx.spec.m4: Added a new
+	  sublibrary dbus-cxx-glibmm with configure option --enable-glibmm
+	  to provide integration with glibmm applications.
 	* dbus-cxx-1.0.pc.in:
 
 2009-06-17  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
@@ -471,13 +631,14 @@
 	* dbus-cxx/object.cpp:
 	* dbus-cxx/dbus_signal.h.m4:
 	* examples/basics/Makefile.am:
-	* examples/basics/types, examples/basics/types/Makefile.am,
-	  examples/basics/types/time_client.cpp,
-	  examples/basics/types/time_server.cpp,
-	  examples/basics/types/timeval_dbus.cpp,
-	  examples/basics/types/timeval_dbus.h: Added example demonstrating
-	  how to extend Message::iterator and Message::append_iterator with
-	  operators << and >>
+	* examples/basics/types[ADD],
+	  examples/basics/types/Makefile.am[ADD],
+	  examples/basics/types/time_client.cpp[ADD],
+	  examples/basics/types/time_server.cpp[ADD],
+	  examples/basics/types/timeval_dbus.cpp[ADD],
+	  examples/basics/types/timeval_dbus.h[ADD]: Added example
+	  demonstrating how to extend Message::iterator and
+	  Message::append_iterator with operators << and >>
 	* unit-tests/messageiteratortests.cpp,
 	  unit-tests/messageiteratortests.h: Added tests for new types
 
@@ -495,39 +656,39 @@
 	* configure.in:
 	* examples/xml2cpp/Makefile.am,
 	  examples/xml2cpp/calculator/Makefile.am:
-	* examples/xml2cpp/computer-isa,
-	  examples/xml2cpp/computer-isa/Makefile.am,
-	  examples/xml2cpp/computer-isa/calculator.cpp,
-	  examples/xml2cpp/computer-isa/calculator.h,
-	  examples/xml2cpp/computer-isa/calculator.xml,
-	  examples/xml2cpp/computer-isa/client_popt.h,
-	  examples/xml2cpp/computer-isa/computer.cpp,
-	  examples/xml2cpp/computer-isa/computer.h,
-	  examples/xml2cpp/computer-isa/computer.xml,
-	  examples/xml2cpp/computer-isa/computer_client.cpp,
-	  examples/xml2cpp/computer-isa/computer_server.cpp,
-	  examples/xml2cpp/computer-isa/computer_watcher.cpp: Added example
-	  demonstrating is-a relationships with dbus-cxx-xml2cpp
-	* examples/xml2cpp/computer-hasa,
-	  examples/xml2cpp/computer-hasa/Makefile.am,
-	  examples/xml2cpp/computer-hasa/calculator.cpp,
-	  examples/xml2cpp/computer-hasa/calculator.h,
-	  examples/xml2cpp/computer-hasa/calculator.xml,
-	  examples/xml2cpp/computer-hasa/client_popt.h,
-	  examples/xml2cpp/computer-hasa/computer.cpp,
-	  examples/xml2cpp/computer-hasa/computer.h,
-	  examples/xml2cpp/computer-hasa/computer.xml,
-	  examples/xml2cpp/computer-hasa/computer_client.cpp,
-	  examples/xml2cpp/computer-hasa/computer_server.cpp,
-	  examples/xml2cpp/computer-hasa/computer_watcher.cpp: Added
+	* examples/xml2cpp/computer-isa[ADD],
+	  examples/xml2cpp/computer-isa/Makefile.am[ADD],
+	  examples/xml2cpp/computer-isa/calculator.cpp[ADD],
+	  examples/xml2cpp/computer-isa/calculator.h[ADD],
+	  examples/xml2cpp/computer-isa/calculator.xml[ADD],
+	  examples/xml2cpp/computer-isa/client_popt.h[ADD],
+	  examples/xml2cpp/computer-isa/computer.cpp[ADD],
+	  examples/xml2cpp/computer-isa/computer.h[ADD],
+	  examples/xml2cpp/computer-isa/computer.xml[ADD],
+	  examples/xml2cpp/computer-isa/computer_client.cpp[ADD],
+	  examples/xml2cpp/computer-isa/computer_server.cpp[ADD],
+	  examples/xml2cpp/computer-isa/computer_watcher.cpp[ADD]: Added
+	  example demonstrating is-a relationships with dbus-cxx-xml2cpp
+	* examples/xml2cpp/computer-hasa[ADD],
+	  examples/xml2cpp/computer-hasa/Makefile.am[ADD],
+	  examples/xml2cpp/computer-hasa/calculator.cpp[ADD],
+	  examples/xml2cpp/computer-hasa/calculator.h[ADD],
+	  examples/xml2cpp/computer-hasa/calculator.xml[ADD],
+	  examples/xml2cpp/computer-hasa/client_popt.h[ADD],
+	  examples/xml2cpp/computer-hasa/computer.cpp[ADD],
+	  examples/xml2cpp/computer-hasa/computer.h[ADD],
+	  examples/xml2cpp/computer-hasa/computer.xml[ADD],
+	  examples/xml2cpp/computer-hasa/computer_client.cpp[ADD],
+	  examples/xml2cpp/computer-hasa/computer_server.cpp[ADD],
+	  examples/xml2cpp/computer-hasa/computer_watcher.cpp[ADD]: Added
 	  example demonstrating has-a relationships with dbus-cxx-xml2cpp
 	* tools/generate_adapter.cpp, tools/generate_proxy.cpp,
 	  tools/parsed_object.cpp, tools/parsed_object.h,
 	  tools/xml2cpp.cpp, tools/xml_parser.cpp: Added support for node
 	  inheritance and containment
 	* unit-tests/Makefile.am, unit-tests/dbus_cxx_unit_tests.cpp,
-	  unit-tests/pathclasstests.cpp, unit-tests/pathclasstests.h: Added
-	  unit tests for DBus::Path
+	  unit-tests/pathclasstests.cpp[ADD],
+	  unit-tests/pathclasstests.h[ADD]: Added unit tests for DBus::Path
 	* dbus-cxx/dbus_signal.h.m4: Added support for introspection
 	* dbus-cxx/interface.cpp, dbus-cxx/interface.h.m4: Added support
 	  for introspection and DBus::Path
@@ -544,8 +705,8 @@
 	* dbus-cxx/objectproxy.cpp: Cleaup old commented out code
 	* dbus-cxx/signal_base.cpp, dbus-cxx/signal_base.h: Added support
 	  for introspection and converted some accessors to const
-	* dbus-cxx/path.cpp, dbus-cxx/path.h: Added support for dbus paths
-	  with a dedicated DBus::Path class
+	* dbus-cxx/path.cpp[ADD], dbus-cxx/path.h[ADD]: Added support for
+	  dbus paths with a dedicated DBus::Path class
 	* dbus-cxx/callmessage.cpp, dbus-cxx/callmessage.h,
 	  dbus-cxx/messageappenditerator.cpp,
 	  dbus-cxx/messageappenditerator.h, dbus-cxx/messageiterator.cpp,
@@ -576,9 +737,10 @@
 	  classes to avoid nested namespaces that include DBus in their
 	  hierarchy
 	* Makefile.am:
-	* m4, m4/ac_cxx_compile_stdcxx_0x.m4, m4/ax_prefix_config_h.m4:
+	* m4[ADD], m4/ac_cxx_compile_stdcxx_0x.m4[ADD],
+	  m4/ax_prefix_config_h.m4[ADD]:
 	* configure.in:
-	* ax_dbus_cxx_xml2cpp.m4:
+	* ax_dbus_cxx_xml2cpp.m4[ADD]:
 	* autogen.sh:
 	* acinclude.m4[DEL]:
 
@@ -590,10 +752,11 @@
 
 2009-05-13  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
-	* debug/doc, debug/examples/basics, debug/examples/basics/methods,
-	  debug/examples/basics/signals, debug/examples/hal, debug/tools,
-	  debug/unit-tests:
-	* ., TODO, dbuscxx.kdevelop:
+	* debug/doc[ADD], debug/examples/basics[ADD],
+	  debug/examples/basics/methods[ADD],
+	  debug/examples/basics/signals[ADD], debug/examples/hal[ADD],
+	  debug/tools[ADD], debug/unit-tests[ADD]:
+	* ., TODO[ADD], dbuscxx.kdevelop[ADD]:
 	* doc:
 	* unit-tests:
 	* tools:
@@ -601,13 +764,14 @@
 	* examples, examples/basics, examples/basics/methods,
 	  examples/basics/signals, examples/xml2cpp,
 	  examples/xml2cpp/calculator, examples/xml2cpp/hal-proxy:
-	* debug, debug/dbus-cxx, debug/dbus-cxx/template.macros.m4,
-	  debug/examples, debug/examples/xml2cpp,
-	  debug/examples/xml2cpp/calculator,
-	  debug/examples/xml2cpp/calculator/calculator.xml,
-	  debug/examples/xml2cpp/hal-proxy,
-	  debug/examples/xml2cpp/hal-proxy/hal_manager_introspection.xml:
-	* .folder.png:
+	* debug[ADD], debug/dbus-cxx[ADD],
+	  debug/dbus-cxx/template.macros.m4[ADD], debug/examples[ADD],
+	  debug/examples/xml2cpp[ADD],
+	  debug/examples/xml2cpp/calculator[ADD],
+	  debug/examples/xml2cpp/calculator/calculator.xml[ADD],
+	  debug/examples/xml2cpp/hal-proxy[ADD],
+	  debug/examples/xml2cpp/hal-proxy/hal_manager_introspection.xml[ADD]:
+	* .folder.png[ADD]:
 	* Makefile.am:
 	* README:
 	* NEWS:
@@ -621,108 +785,125 @@
 	* dbus-cxx/Makefile.am, examples/Makefile.am:
 	* dbus-cxx/connection.h: Removed types.h include
 	* dbus-cxx/utility.h: Removed types.h include
-	* ChangeLog, NEWS, README:
+	* ChangeLog[ADD], NEWS[ADD], README[ADD]:
 	* Makefile.am, configure.in:
 
 2009-05-12  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
-	* Makefile.am, dbus-cxx.spec.m4, doc/doxygen.css,
-	  doc/doxygen_footer.html, doc/doxygen_header.html,
-	  doc/doxygen_to_devhelp.xsl, doc/doxygen_to_devhelp.xsl.m4,
-	  examples/xml2cpp/calculator/calculator.cpp, svn2cl.authors:
-	* AUTHORS, COPYING, Makefile.am, acinclude.m4, autogen.sh,
-	  configure.in, dbus-cxx, dbus-cxx-1.0.pc.in, dbus-cxx.h,
-	  dbus-cxx.spec.m4, dbus-cxx/Makefile.am, dbus-cxx/accumulators.h,
-	  dbus-cxx/callmessage.cpp, dbus-cxx/callmessage.h,
-	  dbus-cxx/connection.cpp, dbus-cxx/connection.h,
-	  dbus-cxx/dbus_signal.h.m4, dbus-cxx/dispatcher.cpp,
-	  dbus-cxx/dispatcher.h, dbus-cxx/enums.h, dbus-cxx/error.cpp,
-	  dbus-cxx/error.h, dbus-cxx/errormessage.cpp,
-	  dbus-cxx/errormessage.h, dbus-cxx/interface.cpp,
-	  dbus-cxx/interface.h.m4, dbus-cxx/interfaceproxy.cpp,
-	  dbus-cxx/interfaceproxy.h, dbus-cxx/message.cpp,
-	  dbus-cxx/message.h, dbus-cxx/messageappenditerator.cpp,
-	  dbus-cxx/messageappenditerator.h, dbus-cxx/messagefilter.cpp,
-	  dbus-cxx/messagefilter.h, dbus-cxx/messagehandler.cpp,
-	  dbus-cxx/messagehandler.h, dbus-cxx/messageiterator.cpp,
-	  dbus-cxx/messageiterator.h, dbus-cxx/method.h.m4,
-	  dbus-cxx/method_impl.h.m4, dbus-cxx/methodbase.cpp,
-	  dbus-cxx/methodbase.h, dbus-cxx/methodproxy.h.m4,
-	  dbus-cxx/methodproxybase.cpp, dbus-cxx/methodproxybase.h.m4,
-	  dbus-cxx/object.cpp, dbus-cxx/object.h.m4,
-	  dbus-cxx/objectpathhandler.cpp, dbus-cxx/objectpathhandler.h,
-	  dbus-cxx/objectproxy.cpp, dbus-cxx/objectproxy.h.m4,
-	  dbus-cxx/pendingcall.cpp, dbus-cxx/pendingcall.h,
-	  dbus-cxx/pointer.h, dbus-cxx/returnmessage.cpp,
-	  dbus-cxx/returnmessage.h, dbus-cxx/signal_base.cpp,
-	  dbus-cxx/signal_base.h, dbus-cxx/signal_proxy.h.m4,
-	  dbus-cxx/signal_proxy_base.cpp, dbus-cxx/signal_proxy_base.h,
-	  dbus-cxx/signalmessage.cpp, dbus-cxx/signalmessage.h,
-	  dbus-cxx/signalreceiver.cpp, dbus-cxx/signalreceiver.h,
-	  dbus-cxx/signature.cpp, dbus-cxx/signature.h,
-	  dbus-cxx/signatureiterator.cpp, dbus-cxx/signatureiterator.h,
-	  dbus-cxx/template.macros.m4, dbus-cxx/timeout.cpp,
-	  dbus-cxx/timeout.h, dbus-cxx/utility.cpp, dbus-cxx/utility.h,
-	  dbus-cxx/watch.cpp, dbus-cxx/watch.h, doc, doc/Doxyfile,
-	  doc/Makefile.am, doc/images, doc/images/bug-small.png,
-	  doc/images/bugs-small.png, doc/images/dbus-cxx-logo-med.png,
-	  doc/images/dbus-cxx-logo.png, doc/images/dbus-cxx-logo.svg,
-	  doc/images/documents-small.png, doc/images/download-small.png,
-	  doc/images/fedora-logo-tiny.png, doc/images/gplv3.png,
-	  doc/images/sourcecode-small.png, examples, examples/Makefile.am,
-	  examples/basics, examples/basics/Makefile.am,
-	  examples/basics/methods, examples/basics/methods/Makefile.am,
-	  examples/basics/methods/callee.cpp,
-	  examples/basics/methods/callee_2.cpp,
-	  examples/basics/methods/callee_c.cpp,
-	  examples/basics/methods/callee_dispatched.cpp,
-	  examples/basics/methods/callee_object.cpp,
-	  examples/basics/methods/callee_object_inherited.cpp,
-	  examples/basics/methods/callee_raw.cpp,
-	  examples/basics/methods/caller.cpp,
-	  examples/basics/methods/caller_c.cpp,
-	  examples/basics/methods/caller_dispatched.cpp,
-	  examples/basics/methods/caller_object.cpp,
-	  examples/basics/methods/caller_popt.h,
-	  examples/basics/methods/caller_raw.cpp, examples/basics/signals,
-	  examples/basics/signals/Makefile.am,
-	  examples/basics/signals/signal_emitter.cpp,
-	  examples/basics/signals/signal_emitter_2.cpp,
-	  examples/basics/signals/signal_emitter_3.cpp,
-	  examples/basics/signals/signal_emitter_c.cpp,
-	  examples/basics/signals/signal_emitter_object.cpp,
-	  examples/basics/signals/signal_emitter_raw.cpp,
-	  examples/basics/signals/signal_receiver.cpp,
-	  examples/basics/signals/signal_receiver_2.cpp,
-	  examples/basics/signals/signal_receiver_c.cpp,
-	  examples/basics/signals/signal_receiver_object.cpp,
-	  examples/basics/signals/signal_receiver_raw.cpp, examples/hal,
-	  examples/xml2cpp, examples/xml2cpp/Makefile.am,
-	  examples/xml2cpp/calculator,
-	  examples/xml2cpp/calculator/Makefile.am,
-	  examples/xml2cpp/calculator/calculator.cpp,
-	  examples/xml2cpp/calculator/calculator.h,
-	  examples/xml2cpp/calculator/calculator.xml,
-	  examples/xml2cpp/calculator/calculator_client.cpp,
-	  examples/xml2cpp/calculator/calculator_server.cpp,
-	  examples/xml2cpp/calculator/calculator_watcher.cpp,
-	  examples/xml2cpp/calculator/client_popt.h,
-	  examples/xml2cpp/hal-proxy,
-	  examples/xml2cpp/hal-proxy/Makefile.am,
-	  examples/xml2cpp/hal-proxy/hal_manager_introspection.xml,
-	  examples/xml2cpp/hal-proxy/hal_proxy.cpp, templates,
-	  templates/cpp, templates/h, tools, tools/Makefile.am,
-	  tools/generate_adapter.cpp, tools/generate_adapter.h,
-	  tools/generate_proxy.cpp, tools/generate_proxy.h,
-	  tools/introspect.cpp, tools/parsed_object.cpp,
-	  tools/parsed_object.h, tools/xml2cpp.cpp, tools/xml_parser.cpp,
-	  tools/xml_parser.h, unit-tests, unit-tests/Makefile.am,
-	  unit-tests/callmessagetests.cpp, unit-tests/callmessagetests.h,
-	  unit-tests/dbus_cxx_unit_tests.cpp,
-	  unit-tests/messageiteratortests.cpp,
-	  unit-tests/messageiteratortests.h:
+	* Makefile.am, dbus-cxx.spec.m4, doc/doxygen.css[ADD],
+	  doc/doxygen_footer.html[ADD], doc/doxygen_header.html[ADD],
+	  doc/doxygen_to_devhelp.xsl[ADD],
+	  doc/doxygen_to_devhelp.xsl.m4[ADD],
+	  examples/xml2cpp/calculator/calculator.cpp, svn2cl.authors[ADD]:
+	* AUTHORS[ADD], COPYING[ADD], Makefile.am[ADD], acinclude.m4[ADD],
+	  autogen.sh[ADD], configure.in[ADD], dbus-cxx[ADD],
+	  dbus-cxx-1.0.pc.in[ADD], dbus-cxx.h[ADD], dbus-cxx.spec.m4[ADD],
+	  dbus-cxx/Makefile.am[ADD], dbus-cxx/accumulators.h[ADD],
+	  dbus-cxx/callmessage.cpp[ADD], dbus-cxx/callmessage.h[ADD],
+	  dbus-cxx/connection.cpp[ADD], dbus-cxx/connection.h[ADD],
+	  dbus-cxx/dbus_signal.h.m4[ADD], dbus-cxx/dispatcher.cpp[ADD],
+	  dbus-cxx/dispatcher.h[ADD], dbus-cxx/enums.h[ADD],
+	  dbus-cxx/error.cpp[ADD], dbus-cxx/error.h[ADD],
+	  dbus-cxx/errormessage.cpp[ADD], dbus-cxx/errormessage.h[ADD],
+	  dbus-cxx/interface.cpp[ADD], dbus-cxx/interface.h.m4[ADD],
+	  dbus-cxx/interfaceproxy.cpp[ADD], dbus-cxx/interfaceproxy.h[ADD],
+	  dbus-cxx/message.cpp[ADD], dbus-cxx/message.h[ADD],
+	  dbus-cxx/messageappenditerator.cpp[ADD],
+	  dbus-cxx/messageappenditerator.h[ADD],
+	  dbus-cxx/messagefilter.cpp[ADD], dbus-cxx/messagefilter.h[ADD],
+	  dbus-cxx/messagehandler.cpp[ADD], dbus-cxx/messagehandler.h[ADD],
+	  dbus-cxx/messageiterator.cpp[ADD],
+	  dbus-cxx/messageiterator.h[ADD], dbus-cxx/method.h.m4[ADD],
+	  dbus-cxx/method_impl.h.m4[ADD], dbus-cxx/methodbase.cpp[ADD],
+	  dbus-cxx/methodbase.h[ADD], dbus-cxx/methodproxy.h.m4[ADD],
+	  dbus-cxx/methodproxybase.cpp[ADD],
+	  dbus-cxx/methodproxybase.h.m4[ADD], dbus-cxx/object.cpp[ADD],
+	  dbus-cxx/object.h.m4[ADD], dbus-cxx/objectpathhandler.cpp[ADD],
+	  dbus-cxx/objectpathhandler.h[ADD], dbus-cxx/objectproxy.cpp[ADD],
+	  dbus-cxx/objectproxy.h.m4[ADD], dbus-cxx/pendingcall.cpp[ADD],
+	  dbus-cxx/pendingcall.h[ADD], dbus-cxx/pointer.h[ADD],
+	  dbus-cxx/returnmessage.cpp[ADD], dbus-cxx/returnmessage.h[ADD],
+	  dbus-cxx/signal_base.cpp[ADD], dbus-cxx/signal_base.h[ADD],
+	  dbus-cxx/signal_proxy.h.m4[ADD],
+	  dbus-cxx/signal_proxy_base.cpp[ADD],
+	  dbus-cxx/signal_proxy_base.h[ADD],
+	  dbus-cxx/signalmessage.cpp[ADD], dbus-cxx/signalmessage.h[ADD],
+	  dbus-cxx/signalreceiver.cpp[ADD], dbus-cxx/signalreceiver.h[ADD],
+	  dbus-cxx/signature.cpp[ADD], dbus-cxx/signature.h[ADD],
+	  dbus-cxx/signatureiterator.cpp[ADD],
+	  dbus-cxx/signatureiterator.h[ADD],
+	  dbus-cxx/template.macros.m4[ADD], dbus-cxx/timeout.cpp[ADD],
+	  dbus-cxx/timeout.h[ADD], dbus-cxx/utility.cpp[ADD],
+	  dbus-cxx/utility.h[ADD], dbus-cxx/watch.cpp[ADD],
+	  dbus-cxx/watch.h[ADD], doc[ADD], doc/Doxyfile[ADD],
+	  doc/Makefile.am[ADD], doc/images[ADD],
+	  doc/images/bug-small.png[ADD], doc/images/bugs-small.png[ADD],
+	  doc/images/dbus-cxx-logo-med.png[ADD],
+	  doc/images/dbus-cxx-logo.png[ADD],
+	  doc/images/dbus-cxx-logo.svg[ADD],
+	  doc/images/documents-small.png[ADD],
+	  doc/images/download-small.png[ADD],
+	  doc/images/fedora-logo-tiny.png[ADD], doc/images/gplv3.png[ADD],
+	  doc/images/sourcecode-small.png[ADD], examples[ADD],
+	  examples/Makefile.am[ADD], examples/basics[ADD],
+	  examples/basics/Makefile.am[ADD], examples/basics/methods[ADD],
+	  examples/basics/methods/Makefile.am[ADD],
+	  examples/basics/methods/callee.cpp[ADD],
+	  examples/basics/methods/callee_2.cpp[ADD],
+	  examples/basics/methods/callee_c.cpp[ADD],
+	  examples/basics/methods/callee_dispatched.cpp[ADD],
+	  examples/basics/methods/callee_object.cpp[ADD],
+	  examples/basics/methods/callee_object_inherited.cpp[ADD],
+	  examples/basics/methods/callee_raw.cpp[ADD],
+	  examples/basics/methods/caller.cpp[ADD],
+	  examples/basics/methods/caller_c.cpp[ADD],
+	  examples/basics/methods/caller_dispatched.cpp[ADD],
+	  examples/basics/methods/caller_object.cpp[ADD],
+	  examples/basics/methods/caller_popt.h[ADD],
+	  examples/basics/methods/caller_raw.cpp[ADD],
+	  examples/basics/signals[ADD],
+	  examples/basics/signals/Makefile.am[ADD],
+	  examples/basics/signals/signal_emitter.cpp[ADD],
+	  examples/basics/signals/signal_emitter_2.cpp[ADD],
+	  examples/basics/signals/signal_emitter_3.cpp[ADD],
+	  examples/basics/signals/signal_emitter_c.cpp[ADD],
+	  examples/basics/signals/signal_emitter_object.cpp[ADD],
+	  examples/basics/signals/signal_emitter_raw.cpp[ADD],
+	  examples/basics/signals/signal_receiver.cpp[ADD],
+	  examples/basics/signals/signal_receiver_2.cpp[ADD],
+	  examples/basics/signals/signal_receiver_c.cpp[ADD],
+	  examples/basics/signals/signal_receiver_object.cpp[ADD],
+	  examples/basics/signals/signal_receiver_raw.cpp[ADD],
+	  examples/hal[ADD], examples/xml2cpp[ADD],
+	  examples/xml2cpp/Makefile.am[ADD],
+	  examples/xml2cpp/calculator[ADD],
+	  examples/xml2cpp/calculator/Makefile.am[ADD],
+	  examples/xml2cpp/calculator/calculator.cpp[ADD],
+	  examples/xml2cpp/calculator/calculator.h[ADD],
+	  examples/xml2cpp/calculator/calculator.xml[ADD],
+	  examples/xml2cpp/calculator/calculator_client.cpp[ADD],
+	  examples/xml2cpp/calculator/calculator_server.cpp[ADD],
+	  examples/xml2cpp/calculator/calculator_watcher.cpp[ADD],
+	  examples/xml2cpp/calculator/client_popt.h[ADD],
+	  examples/xml2cpp/hal-proxy[ADD],
+	  examples/xml2cpp/hal-proxy/Makefile.am[ADD],
+	  examples/xml2cpp/hal-proxy/hal_manager_introspection.xml[ADD],
+	  examples/xml2cpp/hal-proxy/hal_proxy.cpp[ADD], templates[ADD],
+	  templates/cpp[ADD], templates/h[ADD], tools[ADD],
+	  tools/Makefile.am[ADD], tools/generate_adapter.cpp[ADD],
+	  tools/generate_adapter.h[ADD], tools/generate_proxy.cpp[ADD],
+	  tools/generate_proxy.h[ADD], tools/introspect.cpp[ADD],
+	  tools/parsed_object.cpp[ADD], tools/parsed_object.h[ADD],
+	  tools/xml2cpp.cpp[ADD], tools/xml_parser.cpp[ADD],
+	  tools/xml_parser.h[ADD], unit-tests[ADD],
+	  unit-tests/Makefile.am[ADD],
+	  unit-tests/callmessagetests.cpp[ADD],
+	  unit-tests/callmessagetests.h[ADD],
+	  unit-tests/dbus_cxx_unit_tests.cpp[ADD],
+	  unit-tests/messageiteratortests.cpp[ADD],
+	  unit-tests/messageiteratortests.h[ADD]:
 
 2009-05-04  Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 
-	* .:
+	* .[ADD]:
 
