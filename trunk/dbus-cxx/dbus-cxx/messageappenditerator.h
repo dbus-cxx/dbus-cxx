@@ -100,6 +100,10 @@ namespace DBus
         T type;
         success = this->open_container( CONTAINER_ARRAY, DBus::signature(type).c_str() );
 
+        if( not success ){
+          throw ErrorNoMemory::create();
+        }
+
         for ( size_t i=0; i < v.size(); i++ )
           *m_subiter << v[i];
 
@@ -123,7 +127,6 @@ namespace DBus
 
       template <typename T>
       bool append( const Variant<T> & var){
-        bool result;
         this->open_container( CONTAINER_VARIANT, signature(var.data)  );
         m_subiter->append(var.data);
         return this->close_container();
