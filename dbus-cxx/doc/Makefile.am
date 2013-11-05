@@ -74,7 +74,7 @@ docsdist: docs
 	zip -r $(docdistdir)-doc.zip $(docdistdir)/*
 	rm -rf $(docdistdir)
 
-PACKAGE_WWWHOST="${USER},dbus-cxx@web.sourceforge.net:htdocs/"
+PACKAGE_WWWHOST="${USER},dbus-cxx@web.sourceforge.net:/home/project-web/dbus-cxx/htdocs/"
 
 upload-docs: docs
 	rsync -avu --delete reference/html/ $(PACKAGE_WWWHOST)
