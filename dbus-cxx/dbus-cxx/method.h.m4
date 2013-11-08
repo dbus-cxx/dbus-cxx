@@ -55,16 +55,35 @@ ifelse(eval($1>0),1,[dnl
     }
 ],[])dnl
 
-    ifelse(RETURN_TYPE,[void],,[_retval = ])m_slot(LIST(LOOP(_val_%1, $1)));
-    ReturnMessage::pointer retmsg = message->create_reply();
+    try {
+      ifelse(RETURN_TYPE,[void],,[_retval = ])m_slot(LIST(LOOP(_val_%1, $1)));
+      ReturnMessage::pointer retmsg = message->create_reply();
 
-    if ( not retmsg ) return NOT_HANDLED;
+      if ( not retmsg ) return NOT_HANDLED;
 
 ifelse(RETURN_TYPE,[void],,[dnl
-    *retmsg << _retval;
+      *retmsg << _retval;
 ])dnl
 
-    connection->send(retmsg);
+      connection->send(retmsg);
+    }
+    catch ( const std::exception &e ) {
+      ErrorMessage::pointer errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, e.what() );
+
+      if ( not errmsg ) return NOT_HANDLED;
+
+      connection->send(errmsg);
+    }
+    catch ( ... ) {
+      std::ostringstream stream;
+      stream << "DBus-cxx " << DBUS_CXX_PACKAGE_MAJOR_VERSION << "." << 
+           DBUS_CXX_PACKAGE_MINOR_VERSION << "." << DBUS_CXX_PACKAGE_MICRO_VERSION << " unknown error.";
+      ErrorMessage::pointer errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, stream.str() );
+
+      if ( not errmsg ) return NOT_HANDLED;
+
+      connection->send(errmsg);
+    }
 
     return HANDLED;
   }
@@ -181,7 +200,10 @@ dnl
 #include <sstream>
 #include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/methodbase.h>
+#include <dbus-cxx/errormessage.h>
 #include <dbus-cxx/utility.h>
+#include <exception>
+#include <ostream>
     
 #ifndef DBUSCXX_METHOD_H
 #define DBUSCXX_METHOD_H
