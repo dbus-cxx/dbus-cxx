@@ -44,7 +44,7 @@ namespace DBus
 
       ErrorMessage( Message::pointer msg );
 
-      ErrorMessage( Message::pointer msg, const std::string& name, const std::string& message );
+      ErrorMessage( Message::const_pointer msg, const std::string& name, const std::string& message );
 
     public:
 
@@ -58,7 +58,7 @@ namespace DBus
 
       static pointer create( Message::pointer msg );
 
-      static pointer create( Message::pointer msg, const std::string& name, const std::string& message );
+      static pointer create( Message::const_pointer msg, const std::string& name, const std::string& message );
 
       const char* name() const;
 

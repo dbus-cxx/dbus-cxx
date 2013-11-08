@@ -50,7 +50,7 @@ namespace DBus
     }
   }
 
-  ErrorMessage::ErrorMessage( Message::pointer to_reply, const std::string& name, const std::string& message )
+  ErrorMessage::ErrorMessage( Message::const_pointer to_reply, const std::string& name, const std::string& message )
   {
     if ( to_reply and *to_reply )
       m_cobj = dbus_message_new_error( to_reply->cobj(), name.c_str(), message.c_str() );
@@ -77,7 +77,7 @@ namespace DBus
     return pointer(new ErrorMessage(msg) );
   }
 
-  ErrorMessage::pointer ErrorMessage::create(Message::pointer msg, const std::string & name, const std::string & message)
+  ErrorMessage::pointer ErrorMessage::create(Message::const_pointer msg, const std::string & name, const std::string & message)
   {
     return pointer(new ErrorMessage(msg, name, message) );
   }
