@@ -114,7 +114,11 @@ namespace DBus
     if ( not this->type() == CALL_MESSAGE ) return ReturnMessage::pointer();
     DBusMessage* rmcobj = dbus_message_new_method_return( this->cobj() );
     if ( not rmcobj ) return ReturnMessage::pointer();
-    return ReturnMessage::create(rmcobj);
+    //when we create a new return message, this will increment the ref count.
+    //make sure to decrement our ref count, as we don't need it anymore in this object
+    ReturnMessage::pointer rmPtr = ReturnMessage::create(rmcobj);
+    dbus_message_unref( rmcobj );
+    return rmPtr;
   }
 
   Message::~Message()
