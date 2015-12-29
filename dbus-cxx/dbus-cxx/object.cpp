@@ -355,8 +355,9 @@ namespace DBus
       // Set up the upper limit of interfaces
       upper = m_interfaces.upper_bound( callmessage->interface() );
 
-      DBUS_CXX_DEBUG("Object::handle_message: before handling lower bound interface is " << current->second->name() );
-      DBUS_CXX_DEBUG("Object::handle_message: before handling upper bound interface is " << upper->second->name() );
+
+    DBUS_CXX_DEBUG("Object::handle_message: before handling lower bound interface is " << current->second->name() );
+    DBUS_CXX_DEBUG("Object::handle_message: before handling upper bound interface is " << (upper->second ? upper->second->name() : ""));
 
       // Iterate through each interface with a matching name
       for ( ; current != upper; current++ )
