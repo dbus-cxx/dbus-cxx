@@ -22,7 +22,7 @@
 
 #include <dbus-cxx/signalmessage.h>
 
-#include <sys/select.h>
+#include <poll.h>
 #include <unistd.h>
 #include <errno.h>
 
@@ -33,21 +33,9 @@ namespace DBus
       m_running(false),
       m_dispatch_thread(0),
       m_watch_thread(0),
-      m_maximum_read_fd(-1),
-      m_maximum_write_fd(-1),
       m_dispatch_loop_limit(0),
       m_initiate_processing(false)
   {
-    pthread_mutex_init( &m_mutex_read_watches, NULL );
-    pthread_mutex_init( &m_mutex_write_watches, NULL );
-    
-    pthread_cond_init( &m_cond_initiate_processing, NULL );
-    pthread_mutex_init( &m_mutex_initiate_processing, NULL );
-    
-    FD_ZERO( &m_read_fd_set );
-    FD_ZERO( &m_write_fd_set );
-    FD_ZERO( &m_exception_fd_set );
-    
     m_responsiveness.tv_sec = 0;
     m_responsiveness.tv_usec = 100000;
 
@@ -62,10 +50,6 @@ namespace DBus
   Dispatcher::~Dispatcher()
   {
     if ( this->is_running() ) this->stop();
-    pthread_mutex_destroy( &m_mutex_read_watches );
-    pthread_mutex_destroy( &m_mutex_write_watches );
-    pthread_cond_destroy( &m_cond_initiate_processing );
-    pthread_mutex_destroy( &m_mutex_initiate_processing );
   }
 
   Connection::pointer Dispatcher::create_connection(DBusConnection * cobj, bool is_private)
@@ -129,8 +113,11 @@ namespace DBus
     
     m_running = true;
     
-    pthread_create( &m_dispatch_thread, NULL, Dispatcher::proxy_dispatch_thread_main, this );
-    pthread_create( &m_watch_thread, NULL, Dispatcher::proxy_watch_thread_main, this );
+    m_dispatch_thread = new std::thread( &Dispatcher::dispatch_thread_main, this );
+    m_watch_thread = new std::thread( &Dispatcher::watch_thread_main, this );
+
+    m_dispatch_thread->detach();
+    m_watch_thread->detach();
     
     return true;
   }
@@ -143,13 +130,20 @@ namespace DBus
 
     // The dispach thread may be sleeping, let's wake it up so it will terminate
     // We'll wrap this in mutexes to ensure that there isn't a race condition in waking up
-    pthread_mutex_lock( &m_mutex_initiate_processing );
-    pthread_cond_broadcast( &m_cond_initiate_processing );
-    pthread_mutex_unlock( &m_mutex_initiate_processing );
+    {
+      std::lock_guard<std::mutex> lock(m_mutex_initiate_processing);
+      m_cond_initiate_processing.notify_all();
+    }
     
-    pthread_join( m_dispatch_thread, NULL );
-    pthread_join( m_watch_thread, NULL );
+    if( m_dispatch_thread->joinable() ){
+      m_dispatch_thread->join();
+    }
+    if( m_watch_thread->joinable() ){
+      m_watch_thread->join();
+    }
     
+    delete m_dispatch_thread;
+    delete m_watch_thread;
     m_dispatch_thread = 0;
     m_watch_thread = 0;
     
@@ -177,34 +171,6 @@ namespace DBus
     m_responsiveness.tv_usec = usec;
   }
 
-  void Dispatcher::build_read_fd_set()
-  {
-    std::set<int>::iterator i;
-    pthread_mutex_lock( &m_mutex_read_watches );
-    FD_ZERO(&m_read_fd_set);
-    m_maximum_read_fd = -1;
-    for ( i = m_enabled_read_fds.begin(); i != m_enabled_read_fds.end(); i++ )
-    {
-      FD_SET( *i, &m_read_fd_set );
-      m_maximum_read_fd = std::max( m_maximum_read_fd, *i + 1 );
-    }
-    pthread_mutex_unlock( &m_mutex_read_watches );
-  }
-
-  void Dispatcher::build_write_fd_set()
-  {
-    std::set<int>::iterator i;
-    pthread_mutex_lock( &m_mutex_write_watches );
-    FD_ZERO(&m_write_fd_set);
-    m_maximum_write_fd = -1;
-    for ( i = m_enabled_write_fds.begin(); i != m_enabled_write_fds.end(); i++ )
-    {
-      FD_SET( *i, &m_write_fd_set );
-      m_maximum_write_fd = std::max( m_maximum_write_fd, *i + 1 );
-    }
-    pthread_mutex_unlock( &m_mutex_write_watches );
-  }
-
   void Dispatcher::dispatch_thread_main()
   {
     Connections::iterator ci;
@@ -218,24 +184,24 @@ namespace DBus
       // Here, we lock the mutex before checking m_initiate_processing
       // If something has changed m_initiate_processing there is no reason to wait on the condition
       // since we have some work to do
-      pthread_mutex_lock( &m_mutex_initiate_processing );
-      
-      if ( not m_initiate_processing )
-        // If we don't have any work to do we will wait here for someone to wake us up
-        pthread_cond_wait( &m_cond_initiate_processing, &m_mutex_initiate_processing );
-
-      // At this point we have one of two situations: either there is work for us to do, or we were
-      // sleeping waiting for the condition to wake us up.
-      // It's possible that we were woken up because we are shutting down processing.
-      // If that's the case we need out of the while loop, but we also need to unlock the mutex
-      if ( not m_running )
       {
-        pthread_mutex_unlock( &m_mutex_initiate_processing );
-        break;
-      }
+        std::unique_lock<std::mutex> lock( m_mutex_initiate_processing );
+      
+        if ( not m_initiate_processing ){
+          // If we don't have any work to do we will wait here for someone to wake us up
+          m_cond_initiate_processing.wait( lock );
+        }
 
-      m_initiate_processing = false;
-      pthread_mutex_unlock( &m_mutex_initiate_processing );
+        // At this point we have one of two situations: either there is work for us to do, or we were
+        // sleeping waiting for the condition to wake us up.
+        // It's possible that we were woken up because we are shutting down processing.
+        if ( not m_running )
+        {
+          break;
+        }
+
+        m_initiate_processing = false;
+      }
       
       for ( ci = m_connections.begin(); ci != m_connections.end(); ci++ )
       {
@@ -261,9 +227,8 @@ namespace DBus
           // If we still have more to process let's set the processing flag to true
           if ( (*ci)->dispatch_status() != DISPATCH_DATA_REMAINS )
           {
-            pthread_mutex_lock( &m_mutex_initiate_processing );
+            std::lock_guard<std::mutex> lock( m_mutex_initiate_processing );
             m_initiate_processing = true;
-            pthread_mutex_unlock( &m_mutex_initiate_processing );
           }
         }
 
@@ -274,35 +239,39 @@ namespace DBus
 
   void Dispatcher::watch_thread_main()
   {
-    fd_set read_fds, write_fds;
-    int max_fd;
     int selresult;
-    std::set<int>::iterator fditer;
     std::map<int,Watch::pointer>::iterator witer;
-    struct timeval timeout;
-    bool no_watches;
-    
+    int timeout;
+    std::vector<struct pollfd> fds;
+
     // HACK this is to alleviate a race condition between the read/write handling and dispatching
     bool need_initiate_processing_hack = false;
     
     while ( m_running )
     {
       // Lock the read/write/exception fd sets so that the sets for this iteration can be created
-      // TODO improve this by caching the max fd and only updating the cached version as fd's are added/removed/toggled
-      pthread_mutex_lock( &m_mutex_read_watches );
-      pthread_mutex_lock( &m_mutex_write_watches );
-      read_fds = m_read_fd_set;
-      write_fds = m_write_fd_set;
-      no_watches = m_enabled_read_fds.empty() and m_enabled_write_fds.empty();
-      // We can go ahead and unlock here since we have copies of the fds and the maximums from the read/write sets
-      pthread_mutex_unlock( &m_mutex_read_watches );
-      pthread_mutex_unlock( &m_mutex_write_watches );
+      {
+        std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
+        std::lock_guard<std::mutex> write_lock( m_mutex_write_watches );
+        fds.clear();
 
-      // Get the max fd from the max between the read and write sets
-      max_fd = std::max(m_maximum_read_fd, m_maximum_write_fd);
+        for( int i : m_enabled_read_fds ){
+          struct pollfd newfd;
+          newfd.fd = i;
+          newfd.events = POLLIN;
+          fds.push_back( newfd );
+        }
+ 
+        for( int i : m_enabled_write_fds ){
+          struct pollfd newfd;
+          newfd.fd = i;
+          newfd.events = POLLOUT;
+          fds.push_back( newfd );
+        }
+      }
 
       // If we have no watches we'll sleep for the timeout period and continue the loop
-      if ( no_watches )
+      if ( fds.empty() )
       {
         sleep( m_responsiveness.tv_sec );
         usleep( m_responsiveness.tv_usec );
@@ -310,8 +279,8 @@ namespace DBus
       }
       
       // Now we'll wait in the select call for activity or a timeout
-      timeout = m_responsiveness;
-      selresult = select(max_fd, &read_fds, &write_fds, NULL, &timeout);
+      timeout = (m_responsiveness.tv_sec * 1000) + (m_responsiveness.tv_usec / 1000 );
+      selresult = poll( fds.data(), fds.size(), timeout );
 
       // If we timed out we'll loop back and see if we should still be running
       if ( selresult == 0 ) continue;
@@ -325,43 +294,48 @@ namespace DBus
       // If we made it here we have some activity we need to handle
       //
       // We'll start by updating the fds that are ready for reading and add them to the set of read fds to handle
-      for ( fditer = m_enabled_read_fds.begin(); fditer != m_enabled_read_fds.end(); fditer++ )
-      {
-        if ( FD_ISSET( *fditer, &read_fds ) )
-        {
-          pthread_mutex_lock( &m_mutex_read_watches );
-          witer = m_read_watches.find(*fditer);
-          if ( witer != m_read_watches.end() ) {
-            Watch::pointer w = witer->second;
-            pthread_mutex_unlock( &m_mutex_read_watches );
-            w->handle_read();
+      for ( const struct pollfd& fd : fds ){
+          bool useit = false;
+          bool do_write;
+          Watch::pointer w;
+
+          if( (fd.events == POLLIN) && 
+              (fd.revents & POLLIN ) ){
+            useit = true;
+            do_write = false;
+          }else if( (fd.events == POLLOUT) && 
+              (fd.revents & POLLOUT ) ){
+            useit = true;
+            do_write = true;
+          }
+
+          if( !useit ){ 
+            continue;
+          }
+
+          if( do_write == false ){
+            std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
+            witer = m_read_watches.find( fd.fd );
+            if( witer != m_read_watches.end() ){
+              w = witer->second;
+            }else{
+              DBUS_CXX_DEBUG( "SHOULD NOT GET HERE" );
+            }
+          }else{
+            std::lock_guard<std::mutex> write_lock( m_mutex_write_watches );
+            witer = m_write_watches.find( fd.fd );
+            if( witer != m_write_watches.end() ){
+              w = witer->second;
+            }else{
+              DBUS_CXX_DEBUG( "SHOULD NOT GET HERE" );
+            }
+          }
+  
+          if( w ){
+            if( do_write ){ w->handle_write(); } else { w->handle_read(); }
             // HACK this is to alleviate a race condition between the read handling and dispatching
             need_initiate_processing_hack = true;
           }
-          else {
-            pthread_mutex_unlock( &m_mutex_read_watches );
-          }
-        }
-      }
-
-      // Now we'll check the fds that are ready for writing and add them to the set of write fds to handle
-      for ( fditer = m_enabled_write_fds.begin(); fditer != m_enabled_write_fds.end(); fditer++ )
-      {
-        if ( FD_ISSET( *fditer, &write_fds ) )
-        {
-          pthread_mutex_lock( &m_mutex_write_watches );
-          witer = m_write_watches.find(*fditer);
-          if ( witer != m_write_watches.end() ) {
-            Watch::pointer w = witer->second;
-            pthread_mutex_unlock( &m_mutex_write_watches );
-            w->handle_write();
-            // HACK this is to alleviate a race condition between the write handling and dispatching
-            need_initiate_processing_hack = true;
-          }
-          else {
-            pthread_mutex_unlock( &m_mutex_write_watches );
-          }
-        }
       }
       
       // HACK This is to alleviate a race condition between read/write handling and
@@ -373,11 +347,10 @@ namespace DBus
       {
         // We'll lock the initiate processing mutex before setting the initiate processing variable
         // to true and signalling the initiate processing condition
-        pthread_mutex_lock( &m_mutex_initiate_processing );
+        std::lock_guard<std::mutex> read_lock( m_mutex_initiate_processing );
         m_initiate_processing = true;
         need_initiate_processing_hack = false;
-        pthread_cond_broadcast( &m_cond_initiate_processing );
-        pthread_mutex_unlock( &m_mutex_initiate_processing );
+        m_cond_initiate_processing.notify_all();
       }
       
     }
@@ -391,34 +364,18 @@ namespace DBus
 
     if ( watch->is_readable() )
     {
-      pthread_mutex_lock( &m_mutex_read_watches );
+      std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
 
       m_read_watches[watch->unix_fd()] = watch;
-      
-      if ( watch->is_enabled() )
-      {
-        FD_SET( watch->unix_fd(), &m_read_fd_set );
-        m_enabled_read_fds.insert(watch->unix_fd());
-        m_maximum_read_fd = std::max( m_maximum_read_fd, watch->unix_fd() + 1 );
-      }
-
-      pthread_mutex_unlock( &m_mutex_read_watches );
+      if( watch->is_enabled() ) m_enabled_read_fds.insert( watch->unix_fd() );
     }
     
     if ( watch->is_writable() )
     {
-      pthread_mutex_lock( &m_mutex_write_watches );
+      std::lock_guard<std::mutex> read_lock( m_mutex_write_watches );
 
       m_write_watches[watch->unix_fd()] = watch;
-      
-      if ( watch->is_enabled() )
-      {
-        FD_SET( watch->unix_fd(), &m_write_fd_set );
-        m_enabled_write_fds.insert(watch->unix_fd());
-        m_maximum_write_fd = std::max( m_maximum_write_fd, watch->unix_fd() + 1 );
-      }
-      
-      pthread_mutex_unlock( &m_mutex_write_watches );
+      if( watch->is_enabled() ) m_enabled_write_fds.insert( watch->unix_fd() );
     }
     
     return true;
@@ -428,38 +385,23 @@ namespace DBus
   {
     if ( not watch or not watch->is_valid() ) return false;
     
+    //TODO has this ever actually worked??
     DBUS_CXX_DEBUG( "Dispatcher::on_remove_watch  fd:" << watch->unix_fd() );
   
     if ( watch->is_readable() )
     {
-      pthread_mutex_lock( &m_mutex_read_watches );
+      std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
 
       m_read_watches[watch->unix_fd()] = watch;
-      
-      if ( watch->is_enabled() )
-      {
-        FD_SET( watch->unix_fd(), &m_read_fd_set );
-        m_enabled_read_fds.insert(watch->unix_fd());
-        m_maximum_read_fd = std::max( m_maximum_read_fd, watch->unix_fd() + 1 );
-      }
-
-      pthread_mutex_unlock( &m_mutex_read_watches );
+      if( watch->is_enabled() ) m_enabled_read_fds.insert( watch->unix_fd() );
     }
     
     if ( watch->is_writable() )
     {
-      pthread_mutex_lock( &m_mutex_write_watches );
+      std::lock_guard<std::mutex> read_lock( m_mutex_write_watches );
 
       m_write_watches[watch->unix_fd()] = watch;
-      
-      if ( watch->is_enabled() )
-      {
-        FD_SET( watch->unix_fd(), &m_write_fd_set );
-        m_enabled_write_fds.insert(watch->unix_fd());
-        m_maximum_write_fd = std::max( m_maximum_write_fd, watch->unix_fd() + 1 );
-      }
-      
-      pthread_mutex_unlock( &m_mutex_write_watches );
+      if( watch->is_enabled() ) m_enabled_write_fds.insert( watch->unix_fd() );
     }
 
     return true;
@@ -477,58 +419,46 @@ namespace DBus
     {
       if ( watch->is_readable() )
       {
-        pthread_mutex_lock(&m_mutex_read_watches);
+        std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
         i = m_enabled_read_fds.find(watch->unix_fd());
         if ( i != m_enabled_read_fds.end() )
         {
-          pthread_mutex_unlock(&m_mutex_read_watches);
           return true;
         }
         m_enabled_read_fds.insert( watch->unix_fd() );
-        FD_SET( watch->unix_fd(), &m_read_fd_set );
-        pthread_mutex_unlock(&m_mutex_read_watches);
       }
       else if ( watch->is_writable() )
       {
-        pthread_mutex_lock(&m_mutex_write_watches);
+        std::lock_guard<std::mutex> read_lock( m_mutex_write_watches );
         i = m_enabled_write_fds.find(watch->unix_fd());
         if ( i != m_enabled_write_fds.end() )
         {
-          pthread_mutex_unlock(&m_mutex_write_watches);
           return true;
         }
         m_enabled_write_fds.insert( watch->unix_fd() );
-        FD_SET( watch->unix_fd(), &m_write_fd_set );
-        pthread_mutex_unlock(&m_mutex_write_watches);
       }
     }
     else
     {
       if ( watch->is_readable() )
       {
-        pthread_mutex_lock(&m_mutex_read_watches);
+        std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
         i = m_enabled_read_fds.find(watch->unix_fd());
         if ( i == m_enabled_read_fds.end() )
         {
-          pthread_mutex_unlock(&m_mutex_read_watches);
           return true;
         }
         m_enabled_read_fds.erase( i );
-        FD_CLR( watch->unix_fd(), &m_read_fd_set );
-        pthread_mutex_unlock(&m_mutex_read_watches);
       }
       else if ( watch->is_writable() )
       {
-        pthread_mutex_lock(&m_mutex_write_watches);
+        std::lock_guard<std::mutex> read_lock( m_mutex_write_watches );
         i = m_enabled_write_fds.find(watch->unix_fd());
         if ( i == m_enabled_write_fds.end() )
         {
-          pthread_mutex_unlock(&m_mutex_write_watches);
           return true;
         }
         m_enabled_write_fds.erase( i );
-        FD_CLR( watch->unix_fd(), &m_write_fd_set );
-        pthread_mutex_unlock(&m_mutex_write_watches);
       }
     }
 
@@ -565,10 +495,9 @@ namespace DBus
     
     // We'll lock the initiate processing mutex before setting the initiate processing variable
     // to true and signalling the initiate processing condition
-    pthread_mutex_lock( &m_mutex_initiate_processing );
+    std::lock_guard<std::mutex> read_lock( m_mutex_initiate_processing );
     m_initiate_processing = true;
-    pthread_cond_broadcast( &m_cond_initiate_processing );
-    pthread_mutex_unlock( &m_mutex_initiate_processing );
+    m_cond_initiate_processing.notify_all();
   }
 
   void Dispatcher::on_dispatch_status_changed(DispatchStatus status, Connection::pointer conn)
@@ -579,10 +508,9 @@ namespace DBus
     {
       // We'll lock the initiate processing mutex before setting the initiate processing variable
       // to true and signalling the initiate processing condition
-      pthread_mutex_lock( &m_mutex_initiate_processing );
+      std::lock_guard<std::mutex> read_lock( m_mutex_initiate_processing );
       m_initiate_processing = true;
-      pthread_cond_broadcast( &m_cond_initiate_processing );
-      pthread_mutex_unlock( &m_mutex_initiate_processing );
+      m_cond_initiate_processing.notify_all();
     }
 
   }
