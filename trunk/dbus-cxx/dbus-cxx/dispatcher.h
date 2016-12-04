@@ -19,6 +19,9 @@
 #include <map>
 #include <list>
 #include <set>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 #include <sys/select.h>
 
@@ -94,28 +97,20 @@ namespace DBus
       
       bool m_running;
       
-      pthread_t m_dispatch_thread;
-      pthread_t m_watch_thread;
+      std::thread* m_dispatch_thread;
+      std::thread* m_watch_thread;
 
-      pthread_mutex_t m_mutex_read_watches;
+      std::mutex m_mutex_read_watches;
       std::map<int, Watch::pointer> m_read_watches;
       std::set<int> m_enabled_read_fds;
-      fd_set m_read_fd_set;
-      int m_maximum_read_fd;
-
-      void build_read_fd_set();
       
-      pthread_mutex_t m_mutex_write_watches;
+      std::mutex m_mutex_write_watches;
       std::map<int, Watch::pointer> m_write_watches;
       std::set<int> m_enabled_write_fds;
-      fd_set m_write_fd_set;
-      int m_maximum_write_fd;
-
-      void build_write_fd_set();
       
-      fd_set m_exception_fd_set;
+      std::vector<int> m_exception_fd_set;
       
-      pthread_mutex_t m_mutex_exception_fd_set;
+      std::mutex m_mutex_exception_fd_set;
       
       struct timeval m_responsiveness;
 
@@ -128,9 +123,9 @@ namespace DBus
        */
       unsigned int m_dispatch_loop_limit;
       
-      bool m_initiate_processing;      
-      pthread_cond_t m_cond_initiate_processing;
-      pthread_mutex_t m_mutex_initiate_processing;
+      volatile bool m_initiate_processing;      
+      std::condition_variable m_cond_initiate_processing;
+      std::mutex m_mutex_initiate_processing;
       
       virtual void dispatch_thread_main();
       
