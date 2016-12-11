@@ -1,0 +1,12 @@
+This example shows how it is possible to use a custom type on the DBus.
+
+Because the DBus can only handle primitive types, we essentailly make a 
+DBus typedef for a struct timeval.  The server will return two integers,
+which we then put into a struct timeval on our side.  
+
+When we add a custom type, we need to know what the signature of it is;
+in our case, it is two ints.
+
+Note that this example may not work with all DBus bindings; the server
+sends back two ints, essentially two return values.  Other bindings may
+not have the capability to handle more than one return value.

@@ -1,0 +1,1 @@
+../../dbus-cxx/template.macros.m4

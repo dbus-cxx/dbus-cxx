@@ -1,0 +1,65 @@
+dbus-cxx (0.4.3-1) jaunty; urgency=low
+
+  * jaunty New release
+
+ -- Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>  Tue, 01 Sep 2009 01:36:06 -0600
+
+dbus-cxx (0.4.2-9) jaunty; urgency=low
+
+  * jaunty Add xsltproc to build requirements
+
+ -- Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>  Fri, 28 Aug 2009 01:36:06 -0600
+
+dbus-cxx (0.4.2-8) jaunty; urgency=low
+
+  * jaunty Add doxygen to build requirements
+
+ -- Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>  Fri, 28 Aug 2009 01:27:04 -0600
+
+dbus-cxx (0.4.2-7) jaunty; urgency=low
+
+  * jaunty Add libexpat1-dev to build requirements
+
+ -- Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>  Fri, 28 Aug 2009 01:10:51 -0600
+
+dbus-cxx (0.4.2-6) jaunty; urgency=low
+
+  * jaunty Add libpopt-dev to build requirements
+
+ -- Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>  Fri, 28 Aug 2009 00:55:59 -0600
+
+dbus-cxx (0.4.2-5) jaunty; urgency=low
+
+  * jaunty Add libglibmm-2.4-dev to build requirements
+
+ -- Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>  Fri, 28 Aug 2009 00:40:18 -0600
+
+dbus-cxx (0.4.2-4) jaunty; urgency=low
+
+  * jaunty Add libsigc++-2.0-dev to build requirements
+
+ -- Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>  Fri, 28 Aug 2009 00:32:02 -0600
+
+dbus-cxx (0.4.2-3) jaunty; urgency=low
+
+  * jaunty Add cdbs to build requirements
+
+ -- Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>  Fri, 28 Aug 2009 00:21:53 -0600
+
+dbus-cxx (0.4.2-2) jaunty; urgency=low
+
+  * Fixed distro tag
+
+ -- Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>  Mon, 24 Aug 2009 13:10:13 -0600
+
+dbus-cxx (0.4.2-1) jaunty; urgency=low
+
+  * New release
+
+ -- Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>  Mon, 24 Aug 2009 13:10:13 -0600
+
+dbus-cxx (0.4.1-1) jaunty; urgency=low
+
+  * Initial release
+
+ -- Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>  Fri, 21 Aug 2009 13:10:13 -0600

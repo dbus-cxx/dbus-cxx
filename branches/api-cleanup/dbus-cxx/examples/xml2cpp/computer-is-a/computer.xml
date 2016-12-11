@@ -1,0 +1,41 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node gen-namespace="DBus::Example" orig-namespace="Examples"
+      cppname="Computer" cppinclude="&quot;computer.h&quot;"
+      dest="dbuscxx.example.computer.server" path="/dbuscxx/example/Computer"
+      adapter-parent="CalculatorAdapter"
+      adapter-parent-include="&quot;calculator_adapter.h&quot;"
+      proxy-parent="CalculatorProxy"
+      proxy-parent-include="&quot;calculator_proxy.h&quot;"
+      >
+  <interface name="Computer.Basic">
+    <method name="compute">
+      <arg name="result" direction="out" type="t"/>
+      <arg name="op"     direction="in"  type="u" cpptype="Examples::Computer::Operation"/>
+      <arg name="n"      direction="in"  type="y"/>
+    </method>
+    <method name="factorial">
+      <arg name="result" direction="out" type="t"/>
+      <arg name="n"      direction="in"  type="y"/>
+    </method>
+    <method name="fibonacci">
+      <arg name="result" direction="out" type="t"/>
+      <arg name="n"      direction="in"  type="y"/>
+    </method>
+    <method name="thue_morse">
+      <arg name="result" direction="out" type="t"/>
+      <arg name="n"      direction="in"  type="y"/>
+    </method>
+    <method name="last_op">
+      <arg name="op" direction="out" type="u" cpptype="Examples::Computer::Operation"/>
+    </method>
+    <signal name="computation" accessor="signal_computation()">
+      <arg name="algorithm" type="s"/>
+      <arg name="result" type="t"/>
+      <arg name="n" type="y"/>
+    </signal>
+    <signal name="operation" accessor="signal_op()">
+      <arg name="type" type="u" cpptype="Examples::Computer::Operation"/>
+    </signal>
+  </interface>
+</node>
