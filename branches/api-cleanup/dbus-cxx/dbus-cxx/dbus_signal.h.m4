@@ -245,12 +245,8 @@ public:
     SignalMessage::pointer __msg = SignalMessage::create(m_path, m_interface, m_name);
     if ( not m_destination.empty() ) __msg->set_destination(m_destination);
     ifelse(eval($1>0),1,[*__msg FOR(1, $1,[ << arg%1]);],[])
-    #ifdef DBUS_CXX_DEBUG_ENABLED
-      bool result = this->handle_dbus_outgoing(__msg);
-      DBUS_CXX_DEBUG( "signal::internal_callback: result=" << result );
-    #else
-      this->handle_dbus_outgoing(__msg);
-    #endif
+    bool result = this->handle_dbus_outgoing(__msg);
+    SIMPLELOGGER_DEBUG_STDSTR( "dbus.signal", "signal::internal_callback: result=" << result );
   }
 
 };

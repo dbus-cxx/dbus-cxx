@@ -17,25 +17,22 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
+#ifdef DBUSCXX_INTERNAL
+  #ifndef SIMPLELOGGER_LOG_FUNCTION_NAME
+    #define SIMPLELOGGER_LOG_FUNCTION_NAME dbuscxx_log_function
+  #endif
+
+  #ifndef SIMPLELOGGER_ENABLE_AUTO_MACROS
+    #define SIMPLELOGGER_ENABLE_AUTO_MACROS
+  #endif
+#endif /* DBUSCXX_INTERNAL */
+
+#include <dbus-cxx/simplelogger.h>
 #include <dbus/dbus.h>
 #include <dbus-cxx/pointer.h>
 
 #ifndef DBUSCXX_UTILITY_H
 #define DBUSCXX_UTILITY_H
-
-#define DBUS_CXX_PARAM_LIMIT 7
-
-#ifdef DBUS_CXX_DEBUG_ENABLED
-  #include <iostream>
-
- #define DEBUG_OUT(x,y) if (DEBUG) std::cout << x << " " << pthread_self() << ": " << y << std::endl
- #define DBUS_CXX_DEBUG(x) std::cout << pthread_self() << ": " << x << std::endl
-//   #define DEBUG_OUT(x,y) ;
-//   #define DBUS_CXX_DEBUG(x) ;
-#else
-  #define DEBUG_OUT(x,y) ;
-  #define DBUS_CXX_DEBUG(x) ;
-#endif
 
 #define DBUS_CXX_INTROSPECTABLE_INTERFACE "org.freedesktop.DBus.Introspectable"
 
@@ -96,6 +93,27 @@ namespace DBus
    * @return \c true if the library is initialized, \c false otherwise
    */
   bool initialized();
+
+  /**
+   * Set the callback function that is used for printing log messages.
+   * Set this to either your provided function, or use the built-in function DBus::logStdErr.
+   */
+  void setLoggingFunction( simplelogger_log_function function );
+
+  /**
+   * Log messages to stderr(std::cerr).
+   *
+   * Format is: [thread-id] [logger-name] [level] - message(file:line)
+   */
+  void logStdErr( const char* logger_name, const struct SL_LogLocation* location,
+      const enum SL_LogLevel level,
+      const char* log_string );
+
+  /**
+   * When used in conjunction with DBus::logStdErr, will only print out log messages above the set level.
+   * By default, this is set to SL_INFO
+   */
+  void setLogLevel( const enum SL_LogLevel level );
 
 }
 

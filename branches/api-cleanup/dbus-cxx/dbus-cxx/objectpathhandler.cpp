@@ -16,6 +16,8 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#define DBUSCXX_INTERNAL
+#include "utility.h"
 #include "objectpathhandler.h"
 #include "connection.h"
 #include "dbus-cxx-config.h"
@@ -63,7 +65,7 @@ namespace DBus
     dbus_bool_t result;
     Error::pointer error = Error::create();
 
-    DBUS_CXX_DEBUG("ObjectPathHandler::register_with_connection");
+    SIMPLELOGGER_DEBUG("dbus.ObjectPathHandler","ObjectPathHandler::register_with_connection");
 
     if ( not conn or not conn->is_valid() ) return false;
 
@@ -117,7 +119,7 @@ namespace DBus
     if ( user_data == NULL ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     ObjectPathHandler* handler = static_cast<ObjectPathHandler*>(user_data);
     result = handler->handle_message(Connection::self(connection), Message::create(message));
-    DBUS_CXX_DEBUG("ObjectPathHandler::message_handler_callback: result = " << result );
+    SIMPLELOGGER_DEBUG("dbus.ObjectPathHandler","ObjectPathHandler::message_handler_callback: result = " << result );
     if ( result == HANDLED ) return DBUS_HANDLER_RESULT_HANDLED;
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }

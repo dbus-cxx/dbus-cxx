@@ -16,6 +16,8 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#define DBUSCXX_INTERNAL
+#include "utility.h"
 #include "dispatcher.h"
 #include <iostream>
 #include <dbus/dbus.h>
@@ -208,7 +210,7 @@ namespace DBus
         // If the dispatch loop limit is zero we will loop as long as status is DISPATCH_DATA_REMAINS
         if ( m_dispatch_loop_limit == 0 )
         {
-          DBUS_CXX_DEBUG( "Dispatch Status: " << (*ci)->dispatch_status() << "   Hints: DISPATCH_DATA_REMAINS=" << DISPATCH_DATA_REMAINS );
+          SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "Dispatch Status: " << (*ci)->dispatch_status() << "   Hints: DISPATCH_DATA_REMAINS=" << DISPATCH_DATA_REMAINS );
           while ( (*ci)->dispatch_status() == DISPATCH_DATA_REMAINS )
             (*ci)->dispatch();
         }
@@ -319,7 +321,7 @@ namespace DBus
             if( witer != m_read_watches.end() ){
               w = witer->second;
             }else{
-              DBUS_CXX_DEBUG( "SHOULD NOT GET HERE" );
+              SIMPLELOGGER_ERROR( "dbus.Dispatcher", "SHOULD NOT GET HERE" );
             }
           }else{
             std::lock_guard<std::mutex> write_lock( m_mutex_write_watches );
@@ -327,7 +329,7 @@ namespace DBus
             if( witer != m_write_watches.end() ){
               w = witer->second;
             }else{
-              DBUS_CXX_DEBUG( "SHOULD NOT GET HERE" );
+              SIMPLELOGGER_ERROR( "dbus.Dispatcher", "SHOULD NOT GET HERE" );
             }
           }
   
@@ -360,7 +362,7 @@ namespace DBus
   {
     if ( not watch or not watch->is_valid() ) return false;
     
-    DBUS_CXX_DEBUG( "Dispatcher::on_add_watch  fd:" << watch->unix_fd() << "  readable: " << watch->is_readable() << "  writable: " << watch->is_writable() );
+    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "add watch  fd:" << watch->unix_fd() << "  readable: " << watch->is_readable() << "  writable: " << watch->is_writable() );
 
     if ( watch->is_readable() )
     {
@@ -386,7 +388,7 @@ namespace DBus
     if ( not watch or not watch->is_valid() ) return false;
     
     //TODO has this ever actually worked??
-    DBUS_CXX_DEBUG( "Dispatcher::on_remove_watch  fd:" << watch->unix_fd() );
+    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "remove watch  fd:" << watch->unix_fd() );
   
     if ( watch->is_readable() )
     {
@@ -413,7 +415,7 @@ namespace DBus
     
     std::set<int>::iterator i;
     
-    DBUS_CXX_DEBUG( "Dispatcher::on_watch_toggled  fd:" << watch->unix_fd() << "  enabled: " << watch->is_enabled() );
+    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "toggle watch  fd:" << watch->unix_fd() << "  enabled: " << watch->is_enabled() );
 
     if ( watch->is_enabled() )
     {
@@ -469,7 +471,7 @@ namespace DBus
   {
     if ( not timeout or not timeout->is_valid() ) return false;
     
-    DBUS_CXX_DEBUG( "Dispatcher::on_add_timeout  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
+    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "add timeout  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
     return true;
   }
 
@@ -477,7 +479,7 @@ namespace DBus
   {
     if ( not timeout or not timeout->is_valid() ) return false;
     
-    DBUS_CXX_DEBUG( "Dispatcher::on_remove_timeout  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
+    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "remove timeout  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
     return true;
   }
 
@@ -485,13 +487,13 @@ namespace DBus
   {
     if ( not timeout or not timeout->is_valid() ) return false;
     
-    DBUS_CXX_DEBUG( "Dispatcher::on_timeout_toggled  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
+    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "timeout toggled  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
     return true;
   }
 
   void Dispatcher::on_wakeup_main(Connection::pointer conn)
   {
-    DBUS_CXX_DEBUG( "Dispatcher::on_wakeup_main" );
+    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "wakeup main" );
     
     // We'll lock the initiate processing mutex before setting the initiate processing variable
     // to true and signalling the initiate processing condition
@@ -502,7 +504,7 @@ namespace DBus
 
   void Dispatcher::on_dispatch_status_changed(DispatchStatus status, Connection::pointer conn)
   {
-    DBUS_CXX_DEBUG( "Dispatcher::on_dispatch_status_changed: " << status );
+    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "dispatch status changed: " << status );
 
     if ( status == DISPATCH_DATA_REMAINS )
     {

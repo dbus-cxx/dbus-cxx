@@ -16,6 +16,8 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#define DBUSCXX_INTERNAL
+#include "utility.h"
 #include "interface.h"
 
 #include <sstream>
@@ -189,7 +191,7 @@ namespace DBus
 
     if ( not sig ) return false;
 
-    DBUS_CXX_DEBUG("Interface(" << this->name() << ")::add_signal (" << sig->name() << ")");
+    SIMPLELOGGER_DEBUG("dbus.Interface", "Interface(" << this->name() << ")::add_signal (" << sig->name() << ")");
     
     // ========== WRITE LOCK ==========
     pthread_rwlock_wrlock( &m_signals_rwlock );
@@ -197,13 +199,13 @@ namespace DBus
     // Do we already have the signal?
     if ( m_signals.find(sig) != m_signals.end() )
     {
-      DBUS_CXX_DEBUG("Interface(" << this->name() << ")::add_signal (" << sig->name() << ") failed since signal is already present");
+      SIMPLELOGGER_DEBUG("dbus.Interface", "Interface(" << this->name() << ")::add_signal (" << sig->name() << ") failed since signal is already present");
       // If so, we won't add it again
       result = false;
     }
     else
     {
-      DBUS_CXX_DEBUG("Interface(" << this->name() << ")::add_signal (" << sig->name() << ") succeeded");
+      SIMPLELOGGER_DEBUG("dbus.Interface", "Interface(" << this->name() << ")::add_signal (" << sig->name() << ") succeeded");
       m_signals.insert(sig);
       sig->set_connection( this->connection() );
       sig->set_path( this->path() );
@@ -362,7 +364,7 @@ namespace DBus
 
   HandlerResult Interface::handle_call_message( Connection::pointer connection, CallMessage::const_pointer message )
   {
-    DBUS_CXX_DEBUG( "Interface::handle_call_message  interface=" << m_name );
+    SIMPLELOGGER_DEBUG( "dbus.Interface", "handle_call_message  interface=" << m_name );
     
     Methods::iterator current, upper;
     MethodBase::pointer method;
@@ -437,7 +439,7 @@ namespace DBus
 
   void Interface::set_connection(Connection::pointer conn)
   {
-    DBUS_CXX_DEBUG("Interface(" << this->name() << ")::set_connection for " << m_signals.size() << " sub signals");
+    SIMPLELOGGER_DEBUG("dbus.Interface", "Interface(" << this->name() << ")::set_connection for " << m_signals.size() << " sub signals");
     for (Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++)
       (*i)->set_connection(conn);
   }

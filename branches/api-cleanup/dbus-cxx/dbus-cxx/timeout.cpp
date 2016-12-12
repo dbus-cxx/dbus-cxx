@@ -18,6 +18,7 @@
  ***************************************************************************/
 #include "timeout.h"
 #include "error.h"
+#define DBUSCXX_INTERNAL
 #include "utility.h"
 
 namespace DBus
@@ -136,7 +137,7 @@ namespace DBus
   }
 
   void Timeout::timer_callback_proxy( sigval_t sv ) {
-    DBUS_CXX_DEBUG( "Timeout::timer_callback_proxy" );
+    SIMPLELOGGER_DEBUG( "dbus.Timeout","Timeout::timer_callback_proxy" );
     Timeout* t;
     t = ( Timeout* ) sv.sival_ptr;
 

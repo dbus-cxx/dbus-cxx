@@ -16,11 +16,9 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-
 #include "signalreceiver.h"
-
 #include "signalmessage.h"
-
+#define DBUSCXX_INTERNAL
 #include "utility.h"
 
 namespace DBus
@@ -50,7 +48,7 @@ namespace DBus
 
   HandlerResult SignalReceiver::handle_message(DBusCxxPointer< Connection > conn, Message::const_pointer msg)
   {
-    DBUS_CXX_DEBUG( "SignalReceiver::handle_message" );
+    SIMPLELOGGER_DEBUG( "dbus.SignalReceiver","SignalReceiver::handle_message" );
     
     if ( not this->matches(msg) ) return NOT_HANDLED;
 

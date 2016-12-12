@@ -17,8 +17,9 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#include "connection.h"
+#define DBUSCXX_INTERNAL
 #include "utility.h"
+#include "connection.h"
 
 #include <iostream>
 #include <sys/time.h>
@@ -606,7 +607,7 @@ namespace DBus
 
   bool Connection::register_object(Object::pointer object)
   {
-    DBUS_CXX_DEBUG("Connection::register_object");
+    SIMPLELOGGER_DEBUG("dbus.Connection", "Connection::register_object");
     if ( not object ) return false;
     object->register_with_connection( this->self() );
     return true;
@@ -668,13 +669,13 @@ namespace DBus
     const std::string& name = signal->name();
     if ( interface.empty() or name.empty() ) return signal_proxy_base::pointer();
 
-    DBUS_CXX_DEBUG( "Adding signal " << interface << ":" << name );
+    SIMPLELOGGER_DEBUG( "dbus.Connection", "Adding signal " << interface << ":" << name );
 
     if ( signal->connection() ) signal->connection()->remove_signal_proxy(signal);
 
-    DBUS_CXX_DEBUG( "m_proxy_signal_interface_map.size(): " << m_proxy_signal_interface_map.size() );
-    DBUS_CXX_DEBUG( "m_proxy_signal_interface_map[" << interface << "].size(): " << m_proxy_signal_interface_map[interface].size() );
-    DBUS_CXX_DEBUG( "m_proxy_signal_interface_map[" << interface << "][" << name << "].size(): " << m_proxy_signal_interface_map[interface][name].size() );
+    SIMPLELOGGER_DEBUG( "dbus.Connection", "m_proxy_signal_interface_map.size(): " << m_proxy_signal_interface_map.size() );
+    SIMPLELOGGER_DEBUG( "dbus.Connection", "m_proxy_signal_interface_map[" << interface << "].size(): " << m_proxy_signal_interface_map[interface].size() );
+    SIMPLELOGGER_DEBUG( "dbus.Connection", "m_proxy_signal_interface_map[" << interface << "][" << name << "].size(): " << m_proxy_signal_interface_map[interface][name].size() );
     m_proxy_signal_interface_map[interface][name].push_back(signal);
     this->add_match( signal->match_rule() );
     signal->set_connection(this->self());
@@ -686,7 +687,7 @@ namespace DBus
   {
     if ( not signal ) return false;
 
-    DBUS_CXX_DEBUG( "remove_signal_proxy" );
+    SIMPLELOGGER_DEBUG( "dbus.Connection", "remove_signal_proxy" );
 
     const std::string& interface = signal->interface();
     const std::string& name = signal->name();
@@ -865,7 +866,7 @@ namespace DBus
     bool result;
     Connection* conn = static_cast<Connection*>(data);
     Timeout::pointer timeout = Timeout::create(ctimeout);
-    DBUS_CXX_DEBUG( "Connection::on_add_timeout_callback  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
+    SIMPLELOGGER_DEBUG( "dbus.Connection", "Connection::on_add_timeout_callback  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
 
     // We'll give a signal callback a chance to handle the timeout
     result = conn->signal_add_timeout().emit(timeout);
@@ -894,7 +895,7 @@ namespace DBus
   {
     Connection* conn = static_cast<Connection*>(data);
     Timeout::pointer timeout = Timeout::create(ctimeout);
-    DBUS_CXX_DEBUG( "Connection::on_remove_timeout_callback  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
+    SIMPLELOGGER_DEBUG( "dbus.Connection", "Remove timeout callback. enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
 
     // Erase the timeout if this connection handled it
     // Otherwise, this has no effect
@@ -907,7 +908,7 @@ namespace DBus
   {
     Connection* conn = static_cast<Connection*>(data);
     Timeout::pointer timeout = Timeout::create(ctimeout);
-    DBUS_CXX_DEBUG( "Connection::on_timeout_toggled_callback  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
+    SIMPLELOGGER_DEBUG( "dbus.Connection", "Timeout toggled.  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
 
     // If we handled the timeout we'll handle the enabling/disabling
     Timeouts::iterator i;
@@ -947,7 +948,7 @@ namespace DBus
 
     filter_result = conn->signal_filter().emit(conn, msg);
 
-    DBUS_CXX_DEBUG( "Connection::on_filter_callback:  filter_result: " << filter_result );
+    SIMPLELOGGER_DEBUG( "dbus.Connection", "Filter callback.  filter_result: " << filter_result );
 
     // Deliver signals to signal proxies
     if ( filter_result != FILTER and msg->type() == SIGNAL_MESSAGE )

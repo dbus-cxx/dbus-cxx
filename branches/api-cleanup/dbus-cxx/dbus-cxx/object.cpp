@@ -16,6 +16,8 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#define DBUSCXX_INTERNAL
+#include "utility.h"
 #include "object.h"
 
 #include <map>
@@ -46,7 +48,7 @@ namespace DBus
 
   bool Object::register_with_connection(Connection::pointer conn)
   {
-    DBUS_CXX_DEBUG("Object::register_with_connection");
+    SIMPLELOGGER_DEBUG("dbus.Object","Object::register_with_connection");
     if ( not ObjectPathHandler::register_with_connection(conn) ) return false;
 
     for (Interfaces::iterator i = m_interfaces.begin(); i != m_interfaces.end(); i++)
@@ -86,7 +88,7 @@ namespace DBus
 
     if ( not interface ) return false;
     
-    DBUS_CXX_DEBUG("Object::add_interface " << interface->name() );
+    SIMPLELOGGER_DEBUG("dbus.Object","Object::add_interface " << interface->name() );
 
     // ========== WRITE LOCK ==========
     pthread_rwlock_wrlock( &m_interfaces_rwlock );
@@ -116,7 +118,7 @@ namespace DBus
     // TODO allow control over this
     if ( not m_default_interface ) this->set_default_interface( interface->name() );
 
-    DBUS_CXX_DEBUG("Object::add_interface " << interface->name() << " successful: " << result);
+    SIMPLELOGGER_DEBUG("dbus.Object","Object::add_interface " << interface->name() << " successful: " << result);
 
     return result;
   }
@@ -307,7 +309,7 @@ namespace DBus
     Interface::pointer interface;
     HandlerResult result = NOT_HANDLED;
 
-    DBUS_CXX_DEBUG("Object::handle_message: before call message test");
+    SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: before call message test");
 
     CallMessage::const_pointer callmessage;
     try{
@@ -318,7 +320,7 @@ namespace DBus
 
     if ( not callmessage ) return NOT_HANDLED;
 
-    DBUS_CXX_DEBUG("Object::handle_message: message is good (it's a call message) for interface '" << callmessage->interface() << "'");
+    SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: message is good (it's a call message) for interface '" << callmessage->interface() << "'");
 
     if ( callmessage->interface() == NULL ){
         //If for some reason the message that we are getting has a NULL interface, we will segfault.
@@ -328,7 +330,7 @@ namespace DBus
     // Handle the introspection interface
     if ( strcmp(callmessage->interface(), DBUS_CXX_INTROSPECTABLE_INTERFACE) == 0 )
     {
-      DBUS_CXX_DEBUG("Object::handle_message: introspection interface called");
+      SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: introspection interface called");
       ReturnMessage::pointer return_message = callmessage->create_reply();
       std::string introspection = DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE;
       introspection += this->introspect();
@@ -345,7 +347,7 @@ namespace DBus
     // Do we have an interface or do we need to use the default???
     if ( current == m_interfaces.end() )
     {
-      DBUS_CXX_DEBUG("Object::handle_message: trying to handle with the default interface");
+      SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: trying to handle with the default interface");
       // Do we have have a default to use, if so use it to try and handle the message
       if ( m_default_interface )
         result = m_default_interface->handle_call_message(connection, callmessage);
@@ -356,13 +358,13 @@ namespace DBus
       upper = m_interfaces.upper_bound( callmessage->interface() );
 
 
-    DBUS_CXX_DEBUG("Object::handle_message: before handling lower bound interface is " << current->second->name() );
-    DBUS_CXX_DEBUG("Object::handle_message: before handling upper bound interface is " << (upper->second ? upper->second->name() : ""));
+    SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: before handling lower bound interface is " << current->second->name() );
+    SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: before handling upper bound interface is " << (upper->second ? upper->second->name() : ""));
 
       // Iterate through each interface with a matching name
       for ( ; current != upper; current++ )
       {
-        DBUS_CXX_DEBUG("Object::handle_message: trying to handle with interface " << current->second->name() );
+        SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: trying to handle with interface " << current->second->name() );
         // If an interface handled the message unlock and return
         if ( current->second->handle_call_message(connection, callmessage) == HANDLED )
         {
@@ -378,7 +380,7 @@ namespace DBus
     // ========== UNLOCK ==========
     pthread_rwlock_unlock( &m_interfaces_rwlock );
 
-    DBUS_CXX_DEBUG("Object::handle_message: message was " << ((result==HANDLED)?"handled":"not handled"));
+    SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: message was " << ((result==HANDLED)?"handled":"not handled"));
 
     return result;
   }
