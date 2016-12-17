@@ -165,7 +165,6 @@ namespace DBus
       add_read_and_write_watches( &fds );
 
       // wait forever until some file descriptor has events
-SIMPLELOGGER_DEBUG_STDSTR( "dbus.Dispatcher", "About to poll()" );
       selresult = poll( fds.data(), fds.size(), -1 );
 
       // Oops, poll had a serious error
@@ -422,7 +421,6 @@ SIMPLELOGGER_DEBUG_STDSTR( "dbus.Dispatcher", "About to poll()" );
   
   void Dispatcher::wakeup_thread(){
     char to_write = '0';
-SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "about to write to process_fd[ 0 ]" );
     if( write( process_fd[ 0 ], &to_write, sizeof( char ) ) < 0 ){
         SIMPLELOGGER_ERROR( "dbus.Dispatcher", "Can't write to socketpair?!" );
     }
