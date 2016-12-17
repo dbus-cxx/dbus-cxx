@@ -52,7 +52,7 @@ ifelse($1, $2,[dnl
 
     T_return operator()(LIST(LOOP(T_arg%1 _val_%1, $1)))
     {
-      SIMPLELOGGER_DEBUG_STDSTR( "dbus.MethodProxy", "Method<LIST(T_return, LOOP(T_arg%1, $1))>::operator()   method=" << m_name );
+      DBUSCXX_DEBUG_STDSTR( "dbus.MethodProxy", "Method<LIST(T_return, LOOP(T_arg%1, $1))>::operator()   method=" << m_name );
       CallMessage::pointer _callmsg = this->create_call_message();
       ifelse(eval($1>0),1,[*_callmsg FOR(1, $1,[ << _val_%1]);],[])
       ReturnMessage::const_pointer retmsg = this->call( _callmsg );
@@ -85,7 +85,7 @@ define([METHODPROXY_VOID],[dnl
 
     void operator()(LIST(LOOP(T_arg%1 _val_%1, $1)))
     {
-      SIMPLELOGGER_DEBUG_STDSTR("dbus.MethodProxy", "Method<LIST(T_return, LOOP(T_arg%1, $1))>::operator()   method=" << m_name );
+      DBUSCXX_DEBUG_STDSTR("dbus.MethodProxy", "Method<LIST(T_return, LOOP(T_arg%1, $1))>::operator()   method=" << m_name );
       CallMessage::pointer _callmsg = this->create_call_message();
       *_callmsg FOR(1, $1,[ << _val_%1]);
       _callmsg->set_no_reply();
@@ -122,6 +122,7 @@ dnl
 #include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/methodproxybase.h>
 #include <dbus-cxx/utility.h>
+#include <dbus-cxx/headerlog.h>
 
 #ifndef DBUSCXX_METHODPROXY_H
 #define DBUSCXX_METHODPROXY_H

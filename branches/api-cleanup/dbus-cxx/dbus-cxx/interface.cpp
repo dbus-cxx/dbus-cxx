@@ -16,9 +16,9 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#define DBUSCXX_INTERNAL
 #include "utility.h"
 #include "interface.h"
+#include "dbus-cxx-private.h"
 
 #include <sstream>
 #include <map>

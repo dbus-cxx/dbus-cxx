@@ -19,13 +19,6 @@
 #ifndef DBUSCXX_DBUS_H
 #define DBUSCXX_DBUS_H
 
-#ifdef SIMPLELOGGER_LOG_FUNCTION_NAME
-  #define OLD_SIMPLELOGGER SIMPLELOGGER_LOG_FUNCTION_NAME
-  #undef SIMPLELOGGER_LOG_FUNCTION_NAME
-  #define SIMPLELOGGER_LOG_FUNCTION_NAME dbuscxx_log_function
-#else
-  #define SIMPLELOGGER_LOG_FUNCTION_NAME dbuscxx_log_function
-#endif
 
 #include <dbus-cxx/dbus-cxx-config.h>
 #include <dbus-cxx/accumulators.h>
@@ -64,10 +57,6 @@
 #include <dbus-cxx/utility.h>
 #include <dbus-cxx/watch.h>
 #include <dbus-cxx/variant.h>
-
-#ifdef OLD_SIMPLELOGGER 
-  #define SIMPLELOGGER_LOG_FUNCTION_NAME OLD_SIMPLELOGGER
-  #undef OLD_SIMPLELOGGER
-#endif
+#include <dbus-cxx/simplelogger_defs.h>
 
 #endif

@@ -20,10 +20,10 @@
 #include <thread>
 #include <iostream>
 
-#define DBUSCXX_INTERNAL
 #include "utility.h"
 #include "error.h"
 #include "connection.h"
+#include "dbus-cxx-private.h"
 
 simplelogger_log_function dbuscxx_log_function = nullptr;
 

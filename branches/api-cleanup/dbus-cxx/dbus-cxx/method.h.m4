@@ -33,8 +33,8 @@ define([MESSAGE_HANDLER_BODY],[dnl
 define([RETURN_TYPE],ifelse($3,[void],[void],[T_return]))dnl
   {
     ifelse($3,[void],
-    [SIMPLELOGGER_DEBUG_STDSTR("dbus.Method", "Method<void, LOOP(T_arg%1, $1)>::handle_call_message method=" << m_name);],
-    [SIMPLELOGGER_DEBUG_STDSTR("dbus.Method", "Method<LIST(T_return, LOOP(T_arg%1, $1))>::handle_call_message   method=" << m_name );])
+    [DBUSCXX_DEBUG_STDSTR("dbus.Method", "Method<void, LOOP(T_arg%1, $1)>::handle_call_message method=" << m_name);],
+    [DBUSCXX_DEBUG_STDSTR("dbus.Method", "Method<LIST(T_return, LOOP(T_arg%1, $1))>::handle_call_message   method=" << m_name );])
       
     if ( not connection or not message ) return NOT_HANDLED;
 
@@ -198,14 +198,11 @@ dnl
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/]
 #include <sstream>
-#ifndef DBUSCXX_INTERNAL
-  #define DBUSCXX_INTERNAL
-  #define UNDEF_INTERNAL
-#endif
 #include <dbus-cxx/utility.h>
 #include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/methodbase.h>
 #include <dbus-cxx/errormessage.h>
+#include <dbus-cxx/headerlog.h>
 #include <exception>
 #include <ostream>
     
@@ -232,8 +229,4 @@ FOR(0,eval(CALL_SIZE),[[DECLARE_METHOD(%1,[void],[void])]])
 
 
 #endif /* DBUS_CXX_METHOD_H */
-
-#ifdef UNDEF_INTERNAL
-  #undef DBUSCXX_INTERNAL
-#endif
 

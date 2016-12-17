@@ -18,8 +18,8 @@
  ***************************************************************************/
 #include "timeout.h"
 #include "error.h"
-#define DBUSCXX_INTERNAL
 #include "utility.h"
+#include "dbus-cxx-private.h"
 
 namespace DBus
 {

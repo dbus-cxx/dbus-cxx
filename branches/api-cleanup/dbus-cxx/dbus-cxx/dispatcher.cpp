@@ -16,17 +16,18 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#define DBUSCXX_INTERNAL
 #include "utility.h"
 #include "dispatcher.h"
+#include "dbus-cxx-private.h"
 #include <iostream>
 #include <dbus/dbus.h>
+#include <dbus-cxx/error.h>
 
 #include <dbus-cxx/signalmessage.h>
 
-#include <poll.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/socket.h>
 
 namespace DBus
 {
@@ -34,12 +35,15 @@ namespace DBus
   Dispatcher::Dispatcher(bool is_running):
       m_running(false),
       m_dispatch_thread(0),
-      m_watch_thread(0),
-      m_dispatch_loop_limit(0),
-      m_initiate_processing(false)
+      m_dispatch_loop_limit(0)
   {
     m_responsiveness.tv_sec = 0;
     m_responsiveness.tv_usec = 100000;
+
+    if( socketpair( AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, process_fd ) < 0 ){
+        SIMPLELOGGER_ERROR( "dbus.Dispatcher", "error creating socket pair" );
+        throw ErrorDispatcherInitFailed::create();
+    }
 
     if ( is_running ) this->start();
   }
@@ -116,10 +120,8 @@ namespace DBus
     m_running = true;
     
     m_dispatch_thread = new std::thread( &Dispatcher::dispatch_thread_main, this );
-    m_watch_thread = new std::thread( &Dispatcher::watch_thread_main, this );
 
     m_dispatch_thread->detach();
-    m_watch_thread->detach();
     
     return true;
   }
@@ -129,25 +131,15 @@ namespace DBus
     if ( not m_running ) return false;
 
     m_running = false;
-
-    // The dispach thread may be sleeping, let's wake it up so it will terminate
-    // We'll wrap this in mutexes to ensure that there isn't a race condition in waking up
-    {
-      std::lock_guard<std::mutex> lock(m_mutex_initiate_processing);
-      m_cond_initiate_processing.notify_all();
-    }
     
+    wakeup_thread();
+
     if( m_dispatch_thread->joinable() ){
       m_dispatch_thread->join();
     }
-    if( m_watch_thread->joinable() ){
-      m_watch_thread->join();
-    }
     
     delete m_dispatch_thread;
-    delete m_watch_thread;
-    m_dispatch_thread = 0;
-    m_watch_thread = 0;
+    m_dispatch_thread = nullptr;
     
     return true;
   }
@@ -156,205 +148,118 @@ namespace DBus
   {
     return m_running;
   }
-  
-  const struct timeval & Dispatcher::responsiveness()
-  {
-    return m_responsiveness;
-  }
-
-  void Dispatcher::set_responsiveness(const struct timeval & r)
-  {
-    m_responsiveness = r;
-  }
-
-  void Dispatcher::set_responsiveness(time_t sec, suseconds_t usec)
-  {
-    m_responsiveness.tv_sec = sec;
-    m_responsiveness.tv_usec = usec;
-  }
 
   void Dispatcher::dispatch_thread_main()
   {
-    Connections::iterator ci;
-    unsigned int loop_count;
+    int selresult;
+    std::vector<struct pollfd> fds;
+    struct pollfd thread_wakeup;
 
-    // Setting this guarantees that we will not stop on the condition
-    m_initiate_processing = true;
+    thread_wakeup.fd = process_fd[ 1 ];
+    thread_wakeup.events = POLLIN;
     
     while ( m_running ) {
+      fds.clear();
+      fds.push_back( thread_wakeup );
 
-      // Here, we lock the mutex before checking m_initiate_processing
-      // If something has changed m_initiate_processing there is no reason to wait on the condition
-      // since we have some work to do
-      {
-        std::unique_lock<std::mutex> lock( m_mutex_initiate_processing );
-      
-        if ( not m_initiate_processing ){
-          // If we don't have any work to do we will wait here for someone to wake us up
-          m_cond_initiate_processing.wait( lock );
-        }
+      add_read_and_write_watches( &fds );
 
-        // At this point we have one of two situations: either there is work for us to do, or we were
-        // sleeping waiting for the condition to wake us up.
-        // It's possible that we were woken up because we are shutting down processing.
-        if ( not m_running )
-        {
-          break;
-        }
+      // wait forever until some file descriptor has events
+SIMPLELOGGER_DEBUG_STDSTR( "dbus.Dispatcher", "About to poll()" );
+      selresult = poll( fds.data(), fds.size(), -1 );
 
-        m_initiate_processing = false;
-      }
-      
-      for ( ci = m_connections.begin(); ci != m_connections.end(); ci++ )
-      {
-        // If the dispatch loop limit is zero we will loop as long as status is DISPATCH_DATA_REMAINS
-        if ( m_dispatch_loop_limit == 0 )
-        {
-          SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "Dispatch Status: " << (*ci)->dispatch_status() << "   Hints: DISPATCH_DATA_REMAINS=" << DISPATCH_DATA_REMAINS );
-          while ( (*ci)->dispatch_status() == DISPATCH_DATA_REMAINS )
-            (*ci)->dispatch();
-        }
-        // Otherwise, we will only perform a number of dispatches up to the loop limit
-        else
-        {
-          for ( loop_count = 0; loop_count < m_dispatch_loop_limit; loop_count++ )
-          {
-            // Make sure we need to dispatch before calling it
-            if ( (*ci)->dispatch_status() != DISPATCH_COMPLETE ) (*ci)->dispatch();
-
-            // Are we done? If so, let's break out of the loop.
-            if ( (*ci)->dispatch_status() != DISPATCH_DATA_REMAINS ) break;
-          }
-
-          // If we still have more to process let's set the processing flag to true
-          if ( (*ci)->dispatch_status() != DISPATCH_DATA_REMAINS )
-          {
-            std::lock_guard<std::mutex> lock( m_mutex_initiate_processing );
-            m_initiate_processing = true;
-          }
-        }
-
-      }
-      
-    }
-  }
-
-  void Dispatcher::watch_thread_main()
-  {
-    int selresult;
-    std::map<int,Watch::pointer>::iterator witer;
-    int timeout;
-    std::vector<struct pollfd> fds;
-
-    // HACK this is to alleviate a race condition between the read/write handling and dispatching
-    bool need_initiate_processing_hack = false;
-    
-    while ( m_running )
-    {
-      // Lock the read/write/exception fd sets so that the sets for this iteration can be created
-      {
-        std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
-        std::lock_guard<std::mutex> write_lock( m_mutex_write_watches );
-        fds.clear();
-
-        for( int i : m_enabled_read_fds ){
-          struct pollfd newfd;
-          newfd.fd = i;
-          newfd.events = POLLIN;
-          fds.push_back( newfd );
-        }
- 
-        for( int i : m_enabled_write_fds ){
-          struct pollfd newfd;
-          newfd.fd = i;
-          newfd.events = POLLOUT;
-          fds.push_back( newfd );
-        }
-      }
-
-      // If we have no watches we'll sleep for the timeout period and continue the loop
-      if ( fds.empty() )
-      {
-        sleep( m_responsiveness.tv_sec );
-        usleep( m_responsiveness.tv_usec );
-        continue;
-      }
-      
-      // Now we'll wait in the select call for activity or a timeout
-      timeout = (m_responsiveness.tv_sec * 1000) + (m_responsiveness.tv_usec / 1000 );
-      selresult = poll( fds.data(), fds.size(), timeout );
-
-      // If we timed out we'll loop back and see if we should still be running
-      if ( selresult == 0 ) continue;
-
-      // Oops, select had a serious error
+      // Oops, poll had a serious error
       if ( selresult == -1 && errno == EINTR ){
         //if we were interrupted, continue on
         continue;
       } else if( selresult == -1 ) throw(errno);
 
-      // If we made it here we have some activity we need to handle
-      //
-      // We'll start by updating the fds that are ready for reading and add them to the set of read fds to handle
-      for ( const struct pollfd& fd : fds ){
-          bool useit = false;
-          bool do_write;
-          Watch::pointer w;
+      // Discard data from process_fd if we were woken up by that
+      if( fds[ 0 ].revents & POLLIN ){
+        char discard;
+        read( process_fd[ 1 ], &discard, sizeof(char) );
+      }
 
-          if( (fd.events == POLLIN) && 
-              (fd.revents & POLLIN ) ){
-            useit = true;
-            do_write = false;
-          }else if( (fd.events == POLLOUT) && 
-              (fd.revents & POLLOUT ) ){
-            useit = true;
-            do_write = true;
-          }
+      handle_read_and_write_watches( &fds );
 
-          if( !useit ){ 
-            continue;
-          }
+      dispatch_connections();
+    }
+  }
 
-          if( do_write == false ){
-            std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
-            witer = m_read_watches.find( fd.fd );
-            if( witer != m_read_watches.end() ){
-              w = witer->second;
-            }else{
-              SIMPLELOGGER_ERROR( "dbus.Dispatcher", "SHOULD NOT GET HERE" );
-            }
-          }else{
-            std::lock_guard<std::mutex> write_lock( m_mutex_write_watches );
-            witer = m_write_watches.find( fd.fd );
-            if( witer != m_write_watches.end() ){
-              w = witer->second;
-            }else{
-              SIMPLELOGGER_ERROR( "dbus.Dispatcher", "SHOULD NOT GET HERE" );
-            }
+  void Dispatcher::add_read_and_write_watches( std::vector<struct pollfd>* fds ){
+      std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
+      std::lock_guard<std::mutex> write_lock( m_mutex_write_watches );
+
+      for( int i : m_enabled_read_fds ){
+        struct pollfd newfd;
+        newfd.fd = i;
+        newfd.events = POLLIN;
+        fds->push_back( newfd );
+      }
+ 
+      for( int i : m_enabled_write_fds ){
+        struct pollfd newfd;
+        newfd.fd = i;
+        newfd.events = POLLOUT;
+        fds->push_back( newfd );
+      }
+  }
+
+  void Dispatcher::handle_read_and_write_watches( std::vector<struct pollfd>* fds ){
+    std::map<int,Watch::pointer>::iterator witer;
+
+    for ( const struct pollfd& fd : *fds ){
+      if( (fd.events == POLLIN) && 
+          (fd.revents & POLLIN ) ){
+          std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
+          witer = m_read_watches.find( fd.fd );
+          if( witer != m_read_watches.end() ){
+            witer->second->handle_read();
           }
-  
-          if( w ){
-            if( do_write ){ w->handle_write(); } else { w->handle_read(); }
-            // HACK this is to alleviate a race condition between the read handling and dispatching
-            need_initiate_processing_hack = true;
+      }else if( (fd.events == POLLOUT) && 
+             (fd.revents & POLLOUT ) ){
+          std::lock_guard<std::mutex> write_lock( m_mutex_write_watches );
+          witer = m_write_watches.find( fd.fd );
+          if( witer != m_write_watches.end() ){
+            witer->second->handle_write();
           }
       }
-      
-      // HACK This is to alleviate a race condition between read/write handling and
-      // dispatching. The problem occurs when the read/write handler acquires the IO
-      // lock and the dispatcher silently queues a response.
-      // This should guarantee that the dispatch loop wakes up after reading/writing
-      // and if nothing is to be done will go back to sleep.
-      if ( need_initiate_processing_hack )
+
+    }
+  }
+
+  void Dispatcher::dispatch_connections(){
+    unsigned int loop_count;
+    Connections::iterator ci;
+
+    for ( ci = m_connections.begin(); ci != m_connections.end(); ci++ )
+    {
+      // If the dispatch loop limit is zero we will loop as long as status is DISPATCH_DATA_REMAINS
+      if ( m_dispatch_loop_limit == 0 )
       {
-        // We'll lock the initiate processing mutex before setting the initiate processing variable
-        // to true and signalling the initiate processing condition
-        std::lock_guard<std::mutex> read_lock( m_mutex_initiate_processing );
-        m_initiate_processing = true;
-        need_initiate_processing_hack = false;
-        m_cond_initiate_processing.notify_all();
+        SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "Dispatch Status: " << (*ci)->dispatch_status() << "   Hints: DISPATCH_DATA_REMAINS=" << DISPATCH_DATA_REMAINS );
+        while ( (*ci)->dispatch_status() == DISPATCH_DATA_REMAINS )
+          (*ci)->dispatch();
       }
-      
+      // Otherwise, we will only perform a number of dispatches up to the loop limit
+      else
+      {
+        for ( loop_count = 0; loop_count < m_dispatch_loop_limit; loop_count++ )
+        {
+          // Make sure we need to dispatch before calling it
+          if ( (*ci)->dispatch_status() != DISPATCH_COMPLETE ) (*ci)->dispatch();
+
+          // Are we done? If so, let's break out of the loop.
+          if ( (*ci)->dispatch_status() != DISPATCH_DATA_REMAINS ) break;
+        }
+
+        // If we still have more to process let's set the processing flag to true
+        if ( (*ci)->dispatch_status() != DISPATCH_DATA_REMAINS )
+        {
+          wakeup_thread();
+        }
+      }
+
     }
   }
 
@@ -362,8 +267,8 @@ namespace DBus
   {
     if ( not watch or not watch->is_valid() ) return false;
     
-    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "add watch  fd:" << watch->unix_fd() << "  readable: " << watch->is_readable() << "  writable: " << watch->is_writable() );
-
+    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "add watch  fd:" << watch->unix_fd() );
+  
     if ( watch->is_readable() )
     {
       std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
@@ -379,7 +284,9 @@ namespace DBus
       m_write_watches[watch->unix_fd()] = watch;
       if( watch->is_enabled() ) m_enabled_write_fds.insert( watch->unix_fd() );
     }
-    
+
+    wakeup_thread();
+
     return true;
   }
 
@@ -405,6 +312,8 @@ namespace DBus
       m_write_watches[watch->unix_fd()] = watch;
       if( watch->is_enabled() ) m_enabled_write_fds.insert( watch->unix_fd() );
     }
+
+    wakeup_thread();
 
     return true;
   }
@@ -464,6 +373,8 @@ namespace DBus
       }
     }
 
+    wakeup_thread();
+
     return true;
   }
 
@@ -495,11 +406,7 @@ namespace DBus
   {
     SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "wakeup main" );
     
-    // We'll lock the initiate processing mutex before setting the initiate processing variable
-    // to true and signalling the initiate processing condition
-    std::lock_guard<std::mutex> read_lock( m_mutex_initiate_processing );
-    m_initiate_processing = true;
-    m_cond_initiate_processing.notify_all();
+    wakeup_thread();
   }
 
   void Dispatcher::on_dispatch_status_changed(DispatchStatus status, Connection::pointer conn)
@@ -508,27 +415,16 @@ namespace DBus
 
     if ( status == DISPATCH_DATA_REMAINS )
     {
-      // We'll lock the initiate processing mutex before setting the initiate processing variable
-      // to true and signalling the initiate processing condition
-      std::lock_guard<std::mutex> read_lock( m_mutex_initiate_processing );
-      m_initiate_processing = true;
-      m_cond_initiate_processing.notify_all();
+      wakeup_thread();
     }
 
   }
-
-  void * Dispatcher::proxy_dispatch_thread_main(void *arg)
-  {
-    Dispatcher* dispatcher = static_cast<Dispatcher*>(arg);
-    dispatcher->dispatch_thread_main();
-    return NULL;
-  }
-
-  void * Dispatcher::proxy_watch_thread_main(void *arg)
-  {
-    Dispatcher* dispatcher = static_cast<Dispatcher*>(arg);
-    dispatcher->watch_thread_main();
-    return NULL;
-  }
   
+  void Dispatcher::wakeup_thread(){
+    char to_write = '0';
+SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "about to write to process_fd[ 0 ]" );
+    if( write( process_fd[ 0 ], &to_write, sizeof( char ) ) < 0 ){
+        SIMPLELOGGER_ERROR( "dbus.Dispatcher", "Can't write to socketpair?!" );
+    }
+  }
 }

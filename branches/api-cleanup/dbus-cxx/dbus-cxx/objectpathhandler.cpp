@@ -16,11 +16,11 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#define DBUSCXX_INTERNAL
 #include "utility.h"
 #include "objectpathhandler.h"
 #include "connection.h"
 #include "dbus-cxx-config.h"
+#include "dbus-cxx-private.h"
 
 namespace DBus
 {

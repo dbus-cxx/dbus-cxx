@@ -246,7 +246,7 @@ public:
     if ( not m_destination.empty() ) __msg->set_destination(m_destination);
     ifelse(eval($1>0),1,[*__msg FOR(1, $1,[ << arg%1]);],[])
     bool result = this->handle_dbus_outgoing(__msg);
-    SIMPLELOGGER_DEBUG_STDSTR( "dbus.signal", "signal::internal_callback: result=" << result );
+    DBUSCXX_DEBUG_STDSTR( "dbus.signal", "signal::internal_callback: result=" << result );
   }
 
 };
@@ -276,6 +276,7 @@ divert(0)
 #include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/utility.h>
 #include <dbus-cxx/signal_base.h>
+#include <dbus-cxx/headerlog.h>
 
 #ifndef DBUSCXX_DBUS_SIGNAL_H_
 #define DBUSCXX_DBUS_SIGNAL_H_

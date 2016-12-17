@@ -17,9 +17,9 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#define DBUSCXX_INTERNAL
 #include "utility.h"
 #include "connection.h"
+#include "dbus-cxx-private.h"
 
 #include <iostream>
 #include <sys/time.h>

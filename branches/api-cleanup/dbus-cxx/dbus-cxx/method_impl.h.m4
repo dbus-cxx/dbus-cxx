@@ -38,7 +38,7 @@ define([METHOD_VOID],[dnl
 
     virtual HandlerResult handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message )
     {
-      SIMPLELOGGER_DEBUG_STDSTR("dbus.Method", "Method<LIST(void, LOOP(T_arg%1, $1))>::handle_call_message   method=" << m_name );
+      DBUSCXX_DEBUG_STDSTR("dbus.Method", "Method<LIST(void, LOOP(T_arg%1, $1))>::handle_call_message   method=" << m_name );
       
       if ( not connection or not message ) return NOT_HANDLED;
 
@@ -133,9 +133,7 @@ dnl
  ***************************************************************************/]
 #include <dbus-cxx/method.h>
 #include <dbus-cxx/connection.h>
-#ifndef SIMPLELOGGER_LOG_FUNCTION_NAME
-  #define SIMPLELOGGER_LOG_FUNCTION_NAME dbuscxx_log_function
-#endif
+#include <dbus-cxx/headerlog.h>
     
 #ifndef DBUSCXX_METHOD_IMPL_H
 #define DBUSCXX_METHOD_IMPL_H

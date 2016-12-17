@@ -18,8 +18,8 @@
  ***************************************************************************/
 #include "signalreceiver.h"
 #include "signalmessage.h"
-#define DBUSCXX_INTERNAL
 #include "utility.h"
+#include "dbus-cxx-private.h"
 
 namespace DBus
 {
