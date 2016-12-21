@@ -535,7 +535,7 @@ namespace DBus
     return m_remove_watch_signal;
   }
 
-  sigc::signal<bool,Watch::pointer>& Connection::signal_watch_toggled()
+  sigc::signal<void,Watch::pointer>& Connection::signal_watch_toggled()
   {
     return m_watch_toggled_signal;
   }

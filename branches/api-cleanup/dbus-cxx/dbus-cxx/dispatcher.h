@@ -92,20 +92,13 @@ namespace DBus
       
       std::thread* m_dispatch_thread;
 
-      std::mutex m_mutex_read_watches;
-      std::map<int, Watch::pointer> m_read_watches;
-      std::set<int> m_enabled_read_fds;
-      
-      std::mutex m_mutex_write_watches;
-      std::map<int, Watch::pointer> m_write_watches;
-      std::set<int> m_enabled_write_fds;
-      
-      std::vector<int> m_exception_fd_set;
+      std::mutex m_mutex_watches;
+      std::list<Watch::pointer> m_watches;
+      std::map<int,Watch::pointer> m_watches_map;
       
       std::mutex m_mutex_exception_fd_set;
+      std::vector<int> m_exception_fd_set;
       
-      struct timeval m_responsiveness;
-
       /* socketpair for telling the thread to process data */
       int process_fd[ 2 ];
 
@@ -124,7 +117,7 @@ namespace DBus
       
       bool on_remove_watch(Watch::pointer);
       
-      bool on_watch_toggled(Watch::pointer);
+      void on_watch_toggled(Watch::pointer);
       
       bool on_add_timeout(Timeout::pointer);
       

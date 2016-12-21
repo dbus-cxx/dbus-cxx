@@ -37,9 +37,6 @@ namespace DBus
       m_dispatch_thread(0),
       m_dispatch_loop_limit(0)
   {
-    m_responsiveness.tv_sec = 0;
-    m_responsiveness.tv_usec = 100000;
-
     if( socketpair( AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, process_fd ) < 0 ){
         SIMPLELOGGER_ERROR( "dbus.Dispatcher", "error creating socket pair" );
         throw ErrorDispatcherInitFailed::create();
@@ -186,20 +183,18 @@ namespace DBus
   }
 
   void Dispatcher::add_read_and_write_watches( std::vector<struct pollfd>* fds ){
-      std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
-      std::lock_guard<std::mutex> write_lock( m_mutex_write_watches );
+      std::lock_guard<std::mutex> watch_lock( m_mutex_watches );
 
-      for( int i : m_enabled_read_fds ){
+      for( Watch::pointer watch : m_watches ){
+        if( !watch->is_enabled() ) continue; 
+
         struct pollfd newfd;
-        newfd.fd = i;
-        newfd.events = POLLIN;
-        fds->push_back( newfd );
-      }
- 
-      for( int i : m_enabled_write_fds ){
-        struct pollfd newfd;
-        newfd.fd = i;
-        newfd.events = POLLOUT;
+        newfd.fd = watch->unix_fd();
+        if( watch->is_readable() ){
+          newfd.events = POLLIN;
+        }else{
+          newfd.events = POLLOUT;
+        }
         fds->push_back( newfd );
       }
   }
@@ -210,16 +205,16 @@ namespace DBus
     for ( const struct pollfd& fd : *fds ){
       if( (fd.events == POLLIN) && 
           (fd.revents & POLLIN ) ){
-          std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
-          witer = m_read_watches.find( fd.fd );
-          if( witer != m_read_watches.end() ){
+          std::lock_guard<std::mutex> watch_lock( m_mutex_watches );
+          witer = m_watches_map.find( fd.fd );
+          if( witer != m_watches_map.end() ){
             witer->second->handle_read();
           }
       }else if( (fd.events == POLLOUT) && 
              (fd.revents & POLLOUT ) ){
-          std::lock_guard<std::mutex> write_lock( m_mutex_write_watches );
-          witer = m_write_watches.find( fd.fd );
-          if( witer != m_write_watches.end() ){
+          std::lock_guard<std::mutex> watch_lock( m_mutex_watches );
+          witer = m_watches_map.find( fd.fd );
+          if( witer != m_watches_map.end() ){
             witer->second->handle_write();
           }
       }
@@ -268,21 +263,9 @@ namespace DBus
     
     SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "add watch  fd:" << watch->unix_fd() );
   
-    if ( watch->is_readable() )
-    {
-      std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
-
-      m_read_watches[watch->unix_fd()] = watch;
-      if( watch->is_enabled() ) m_enabled_read_fds.insert( watch->unix_fd() );
-    }
-    
-    if ( watch->is_writable() )
-    {
-      std::lock_guard<std::mutex> read_lock( m_mutex_write_watches );
-
-      m_write_watches[watch->unix_fd()] = watch;
-      if( watch->is_enabled() ) m_enabled_write_fds.insert( watch->unix_fd() );
-    }
+    std::lock_guard<std::mutex> watch_lock( m_mutex_watches );
+    m_watches.push_back( watch );
+    m_watches_map[ watch->unix_fd() ] = watch;
 
     wakeup_thread();
 
@@ -295,86 +278,25 @@ namespace DBus
     
     //TODO has this ever actually worked??
     SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "remove watch  fd:" << watch->unix_fd() );
+
+    std::lock_guard<std::mutex> watch_lock( m_mutex_watches );
+    m_watches.push_back( watch );
+    m_watches_map[ watch->unix_fd() ] = watch;
   
-    if ( watch->is_readable() )
-    {
-      std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
-
-      m_read_watches[watch->unix_fd()] = watch;
-      if( watch->is_enabled() ) m_enabled_read_fds.insert( watch->unix_fd() );
-    }
-    
-    if ( watch->is_writable() )
-    {
-      std::lock_guard<std::mutex> read_lock( m_mutex_write_watches );
-
-      m_write_watches[watch->unix_fd()] = watch;
-      if( watch->is_enabled() ) m_enabled_write_fds.insert( watch->unix_fd() );
-    }
-
     wakeup_thread();
 
     return true;
   }
 
-  bool Dispatcher::on_watch_toggled(Watch::pointer watch)
+  void Dispatcher::on_watch_toggled(Watch::pointer watch)
   {
-    if ( not watch or not watch->is_valid() ) return false;
-    
-    std::set<int>::iterator i;
-    
-    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "toggle watch  fd:" << watch->unix_fd() << "  enabled: " << watch->is_enabled() );
+    if ( not watch or not watch->is_valid() ) return;
 
-    if ( watch->is_enabled() )
-    {
-      if ( watch->is_readable() )
-      {
-        std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
-        i = m_enabled_read_fds.find(watch->unix_fd());
-        if ( i != m_enabled_read_fds.end() )
-        {
-          return true;
-        }
-        m_enabled_read_fds.insert( watch->unix_fd() );
-      }
-      else if ( watch->is_writable() )
-      {
-        std::lock_guard<std::mutex> read_lock( m_mutex_write_watches );
-        i = m_enabled_write_fds.find(watch->unix_fd());
-        if ( i != m_enabled_write_fds.end() )
-        {
-          return true;
-        }
-        m_enabled_write_fds.insert( watch->unix_fd() );
-      }
-    }
-    else
-    {
-      if ( watch->is_readable() )
-      {
-        std::lock_guard<std::mutex> read_lock( m_mutex_read_watches );
-        i = m_enabled_read_fds.find(watch->unix_fd());
-        if ( i == m_enabled_read_fds.end() )
-        {
-          return true;
-        }
-        m_enabled_read_fds.erase( i );
-      }
-      else if ( watch->is_writable() )
-      {
-        std::lock_guard<std::mutex> read_lock( m_mutex_write_watches );
-        i = m_enabled_write_fds.find(watch->unix_fd());
-        if ( i == m_enabled_write_fds.end() )
-        {
-          return true;
-        }
-        m_enabled_write_fds.erase( i );
-      }
-    }
+    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "toggle watch  fd:" << watch->unix_fd() << "  enabled: " << watch->is_enabled() );
 
     wakeup_thread();
 
-    return true;
+    return;
   }
 
   bool Dispatcher::on_add_timeout(Timeout::pointer timeout)
