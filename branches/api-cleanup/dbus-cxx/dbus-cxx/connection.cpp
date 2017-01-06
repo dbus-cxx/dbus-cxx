@@ -369,13 +369,22 @@ namespace DBus
 
     reply = dbus_connection_send_with_reply_and_block( m_cobj, message->cobj(), timeout_milliseconds, error->cobj() );
 
-    if ( error->is_set() ) throw error;
+    if ( error->is_set() ){ 
+/*
+      SIMPLELOGGER_ERROR( "dbus.Connection", "Message: [" 
+        << error->message() 
+        << "] Name: ["
+        << error->name()
+        << "]" ); 
+*/
+      throw error; 
+    }
 
-//     DBUS_CXX_DEBUG("Reply signature: " << dbus_message_get_signature(reply) );
-
+    SIMPLELOGGER_DEBUG("dbus.Connection", "Reply signature: " << dbus_message_get_signature(reply) );
+    
     ReturnMessage::pointer retmsg = ReturnMessage::create(reply);
 
-//     DBUS_CXX_DEBUG("Return Message signature: " << retmsg->signature());
+    SIMPLELOGGER_DEBUG("dbus.Connection", "Return Signature: " << retmsg->signature() );
 
     return retmsg;
   }
