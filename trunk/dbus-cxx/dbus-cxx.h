@@ -19,6 +19,7 @@
 #ifndef DBUSCXX_DBUS_H
 #define DBUSCXX_DBUS_H
 
+
 #include <dbus-cxx/dbus-cxx-config.h>
 #include <dbus-cxx/accumulators.h>
 #include <dbus-cxx/callmessage.h>
@@ -56,5 +57,6 @@
 #include <dbus-cxx/utility.h>
 #include <dbus-cxx/watch.h>
 #include <dbus-cxx/variant.h>
+#include <dbus-cxx/simplelogger_defs.h>
 
 #endif

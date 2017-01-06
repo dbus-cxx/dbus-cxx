@@ -305,7 +305,7 @@ namespace DBus
 
       sigc::signal<bool,Watch::pointer>& signal_remove_watch();
 
-      sigc::signal<bool,Watch::pointer>& signal_watch_toggled();
+      sigc::signal<void,Watch::pointer>& signal_watch_toggled();
 
       typedef sigc::signal1<bool,Timeout::pointer,InterruptablePredicateAccumulatorDefaultFalse> AddTimeoutSignal;
       
@@ -433,7 +433,7 @@ FOR(0, eval(CALL_SIZE),[[CREATE_SIGNAL_PIN(%1)
       
       sigc::signal<bool,Watch::pointer> m_remove_watch_signal;
       
-      sigc::signal<bool,Watch::pointer> m_watch_toggled_signal;
+      sigc::signal<void,Watch::pointer> m_watch_toggled_signal;
       
       AddTimeoutSignal m_add_timeout_signal;
       

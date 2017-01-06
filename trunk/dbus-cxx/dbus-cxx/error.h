@@ -395,6 +395,13 @@ namespace DBus
    */
   DBUSCXX_ERROR( ErrorInvalidAdaptee, "DBus adapter method called, but adaptee is invalid" );
 
+  /**
+   * @class ErrorDispatcherInitFailed
+   * @ingroup errors
+   */
+  DBUSCXX_ERROR( ErrorDispatcherInitFailed, "DBus::Dispatcher initialization failed" );
+  
+
 }
 
 #endif
