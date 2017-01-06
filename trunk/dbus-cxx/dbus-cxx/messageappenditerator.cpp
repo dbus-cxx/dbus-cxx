@@ -81,6 +81,19 @@ namespace DBus
     return result;
   }
 
+  bool MessageAppendIterator::protected_append( const FileDescriptor& fd ){
+    bool result;
+    int raw_fd = fd.getDescriptor();
+
+    if ( not this->is_valid() ) return false;
+
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::type( fd ), &raw_fd );
+
+    if ( ! result ) m_message->invalidate();
+
+    return result;
+  }
+
   MessageAppendIterator::MessageAppendIterator():
       m_message( NULL ), m_subiter( NULL )
   {
@@ -226,6 +239,10 @@ namespace DBus
     return this->protected_append( d );
   }
 
+  bool MessageAppendIterator::append( const FileDescriptor& fd ){
+    return this->protected_append( fd );
+  }
+
 #if DBUS_CXX_SIZEOF_LONG_INT == 4
   
   bool MessageAppendIterator::append( long int v )
@@ -275,8 +292,6 @@ namespace DBus
   {
     return m_subiter;
   }
-
-
 
 }
 

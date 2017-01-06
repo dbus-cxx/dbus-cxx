@@ -25,6 +25,7 @@
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/path.h>
 #include <dbus-cxx/signature.h>
+#include <dbus-cxx/filedescriptor.h>
 
 #ifndef DBUSCXX_TYPES_H
 #define DBUSCXX_TYPES_H
@@ -49,6 +50,7 @@ namespace DBus
   inline Type type( Signature )          { return TYPE_SIGNATURE; }
 template <class T>
   inline Type type( Variant<T> )            { return TYPE_VARIANT; }
+  inline Type type( FileDescriptor )     { return TYPE_UNIX_FD; }
   
   inline Type type( char )               { return TYPE_BYTE; }
   inline Type type( int8_t )             { return TYPE_BYTE; }

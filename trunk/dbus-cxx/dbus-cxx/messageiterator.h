@@ -267,6 +267,7 @@ namespace DBus
       int64_t     get_int64();
       double      get_double();
       const char* get_string();
+      FileDescriptor get_filedescriptor();
 
       template <typename T>
       void get_array_simple( std::vector<T>& array ) {

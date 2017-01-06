@@ -57,6 +57,7 @@ namespace DBus {
     TYPE_VARIANT = DBUS_TYPE_VARIANT,
     TYPE_STRUCT = DBUS_TYPE_STRUCT,
     TYPE_DICT_ENTRY = DBUS_TYPE_DICT_ENTRY,
+    TYPE_UNIX_FD = DBUS_TYPE_UNIX_FD,
   } Type;
 
   typedef enum ContainerType
