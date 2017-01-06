@@ -33,8 +33,8 @@ define([MESSAGE_HANDLER_BODY],[dnl
 define([RETURN_TYPE],ifelse($3,[void],[void],[T_return]))dnl
   {
     ifelse($3,[void],
-    [DBUS_CXX_DEBUG("Method<void, LOOP(T_arg%1, $1)>::handle_call_message method=" << m_name);],
-    [DBUS_CXX_DEBUG("Method<LIST(T_return, LOOP(T_arg%1, $1))>::handle_call_message   method=" << m_name );])
+    [DBUSCXX_DEBUG_STDSTR("dbus.Method", "Method<void, LOOP(T_arg%1, $1)>::handle_call_message method=" << m_name);],
+    [DBUSCXX_DEBUG_STDSTR("dbus.Method", "Method<LIST(T_return, LOOP(T_arg%1, $1))>::handle_call_message   method=" << m_name );])
       
     if ( not connection or not message ) return NOT_HANDLED;
 
@@ -198,15 +198,17 @@ dnl
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/]
 #include <sstream>
+#include <dbus-cxx/utility.h>
 #include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/methodbase.h>
 #include <dbus-cxx/errormessage.h>
-#include <dbus-cxx/utility.h>
+#include <dbus-cxx/headerlog.h>
 #include <exception>
 #include <ostream>
     
 #ifndef DBUSCXX_METHOD_H
 #define DBUSCXX_METHOD_H
+
 
 namespace DBus {
 
@@ -224,6 +226,7 @@ FOR(0,eval(CALL_SIZE-1),[[DEFINE_METHOD(%1)]])
 FOR(0,eval(CALL_SIZE),[[DECLARE_METHOD(%1,[void],[void])]])
 
 } /* namespace DBus */
+
 
 #endif /* DBUS_CXX_METHOD_H */
 

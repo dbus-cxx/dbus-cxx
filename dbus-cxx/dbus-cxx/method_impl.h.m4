@@ -38,7 +38,7 @@ define([METHOD_VOID],[dnl
 
     virtual HandlerResult handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message )
     {
-      DBUS_CXX_DEBUG("Method<LIST(void, LOOP(T_arg%1, $1))>::handle_call_message   method=" << m_name );
+      DBUSCXX_DEBUG_STDSTR("dbus.Method", "Method<LIST(void, LOOP(T_arg%1, $1))>::handle_call_message   method=" << m_name );
       
       if ( not connection or not message ) return NOT_HANDLED;
 
@@ -62,7 +62,6 @@ define([METHOD_VOID],[dnl
 
       if ( message->expects_reply() )
       {
-        DBUS_CXX_DEBUG( "REPLY EXPECTED" );
         retmsg = message->create_reply();
         if ( not retmsg ) return NOT_HANDLED;
         connection << retmsg;
@@ -134,6 +133,7 @@ dnl
  ***************************************************************************/]
 #include <dbus-cxx/method.h>
 #include <dbus-cxx/connection.h>
+#include <dbus-cxx/headerlog.h>
     
 #ifndef DBUSCXX_METHOD_IMPL_H
 #define DBUSCXX_METHOD_IMPL_H

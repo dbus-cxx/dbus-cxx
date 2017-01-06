@@ -21,9 +21,8 @@
 #include <set>
 #include <thread>
 #include <mutex>
-#include <condition_variable>
 
-#include <sys/select.h>
+#include <poll.h>
 
 #include <dbus/dbus.h>
 #include <dbus-cxx/connection.h>
@@ -84,12 +83,6 @@ namespace DBus
       
       bool is_running();
 
-      const struct timeval& responsiveness();
-      
-      void set_responsiveness( const struct timeval& r );
-      
-      void set_responsiveness( time_t sec, suseconds_t usec );
-      
     protected:
       
       typedef std::list<Connection::pointer> Connections;
@@ -98,21 +91,16 @@ namespace DBus
       bool m_running;
       
       std::thread* m_dispatch_thread;
-      std::thread* m_watch_thread;
 
-      std::mutex m_mutex_read_watches;
-      std::map<int, Watch::pointer> m_read_watches;
-      std::set<int> m_enabled_read_fds;
-      
-      std::mutex m_mutex_write_watches;
-      std::map<int, Watch::pointer> m_write_watches;
-      std::set<int> m_enabled_write_fds;
-      
-      std::vector<int> m_exception_fd_set;
+      std::mutex m_mutex_watches;
+      std::list<Watch::pointer> m_watches;
+      std::map<int,Watch::pointer> m_watches_map;
       
       std::mutex m_mutex_exception_fd_set;
+      std::vector<int> m_exception_fd_set;
       
-      struct timeval m_responsiveness;
+      /* socketpair for telling the thread to process data */
+      int process_fd[ 2 ];
 
       /**
        * This is the maximum number of dispatches that will occur for a
@@ -123,35 +111,13 @@ namespace DBus
        */
       unsigned int m_dispatch_loop_limit;
       
-      volatile bool m_initiate_processing;      
-      std::condition_variable m_cond_initiate_processing;
-      std::mutex m_mutex_initiate_processing;
-      
       virtual void dispatch_thread_main();
-      
-      void watch_thread_main();
-      
-      /**
-       * Since pthread_create cannot take a class method as the
-       * thread-main parameter this function is called with an
-       * argument pointing to the Dispatcher instance to start
-       * in the thread.
-       */
-      static void* proxy_dispatch_thread_main(void*);
-      
-      /**
-       * Since pthread_create cannot take a class method as the
-       * thread-main parameter this function is called with an
-       * argument pointing to the Dispatcher instance to start
-       * in the thread.
-       */
-      static void* proxy_watch_thread_main(void*);
       
       bool on_add_watch(Watch::pointer);
       
       bool on_remove_watch(Watch::pointer);
       
-      bool on_watch_toggled(Watch::pointer);
+      void on_watch_toggled(Watch::pointer);
       
       bool on_add_timeout(Timeout::pointer);
       
@@ -162,6 +128,23 @@ namespace DBus
       void on_wakeup_main(Connection::pointer);
       
       void on_dispatch_status_changed(DispatchStatus, Connection::pointer);
+
+      void wakeup_thread();
+
+      /**
+       * Add all read and write watch FDs to the given vector to watch.
+       */
+      void add_read_and_write_watches( std::vector<struct pollfd>* fds );
+
+      /**
+       * Handle all of the read and write watches if the given FD needs to be serviced.
+       */
+      void handle_read_and_write_watches( std::vector<struct pollfd>* fds );
+
+      /**
+       * Dispatch all of our connections
+       */
+      void dispatch_connections();
   };
 
 }
