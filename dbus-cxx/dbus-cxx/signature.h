@@ -23,7 +23,7 @@
 #include <dbus-cxx/signatureiterator.h>
 #include <dbus-cxx/path.h>
 #include <dbus-cxx/variant.h>
-
+#include <dbus-cxx/filedescriptor.h>
 
 #ifndef DBUSCXX_SIGNATURE_H
 #define DBUSCXX_SIGNATURE_H
@@ -104,7 +104,8 @@ namespace DBus
   inline std::string signature( Signature& )   { return DBUS_TYPE_SIGNATURE_AS_STRING;   }
   inline std::string signature( Path& )        { return DBUS_TYPE_OBJECT_PATH_AS_STRING; }
 template <class T>
-   inline std::string signature( Variant<T>& )     { return DBUS_TYPE_VARIANT_AS_STRING; }
+   inline std::string signature( const Variant<T>& )     { return DBUS_TYPE_VARIANT_AS_STRING; }
+  inline std::string signature( const FileDescriptor& )  { return DBUS_TYPE_UNIX_FD_AS_STRING; }
 
   inline std::string signature( char& )        { return DBUS_TYPE_BYTE_AS_STRING;        }
   inline std::string signature( int8_t& )      { return DBUS_TYPE_BYTE_AS_STRING;        }
