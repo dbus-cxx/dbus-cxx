@@ -65,11 +65,6 @@ namespace DBus
         virtual void dispatch_thread_main();
 
         void on_glibmm_dispatch();
-
-        pthread_cond_t m_cond_glibmm_processing;
-        pthread_mutex_t m_mutex_glibmm_processing;
-
-
     };
 
   }
