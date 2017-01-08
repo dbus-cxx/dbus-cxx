@@ -22,7 +22,7 @@ include /usr/share/dpkg/default.mk
 	dh $@  --with autotools-dev
 
 override_dh_auto_configure:
-	if [ ! -a ./configure ]; then ./autogen.sh; fi
+	if [ ! -e ./configure ]; then ./autogen.sh; fi
 	dh_auto_configure -- \
 	--enable-tools \
 	--enable-glibmm \
