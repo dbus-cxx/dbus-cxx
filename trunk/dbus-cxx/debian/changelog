@@ -1,3 +1,9 @@
+dbus-cxx (0.8.0) UNRELEASED; urgency=medium
+
+  * Re-packaged for debian distributions
+
+ -- Robert Middleton <robert.middleton@rm5248.com>  Sun, 08 Jan 2017 13:13:08 -0500
+
 dbus-cxx (0.4.3-1) jaunty; urgency=low
 
   * jaunty New release
