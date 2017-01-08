@@ -29,4 +29,6 @@ dbus_cxx_unit_tests_SOURCES = callmessagetests.cpp dbus_cxx_unit_tests.cpp \
 	messageiteratortests.cpp pathclasstests.cpp
 noinst_HEADERS = callmessagetests.h messageiteratortests.h pathclasstests.h
 
+TESTS=./dbus-cxx-unit-tests
+
 endif
