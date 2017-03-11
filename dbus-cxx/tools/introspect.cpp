@@ -37,7 +37,7 @@ int main( int argc, const char** argv )
   struct poptOption option_table[] = {
     { "system",  0, POPT_ARG_NONE,   &use_system,  'y', "Use the system bus for introspection" },
     { "session", 0, POPT_ARG_NONE,   &use_session, 's', "Use the session bus for introspection [default]" },
-    { "dest",    0, POPT_ARG_STRING, &dest,        'd', "The name of the connection to perform the introspection on" },
+    { "dest",    0, POPT_ARG_STRING, &dest,        'd', "The name of the connection to perform the introspection on.  Must be provided" },
     POPT_AUTOHELP
     { NULL, 0, 0, NULL, 0 }
   };
