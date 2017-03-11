@@ -288,6 +288,10 @@ namespace DBus
           *   - <a href="http://sourceforge.net/mailarchive/forum.php?forum_name=dbus-cxx-devel">Archives</a>
           *   - <a href="http://lists.sourceforge.net/mailman/listinfo/dbus-cxx-devel">Subscribe/Unsubscribe</a>
    *
+   * - If the sourceforge mailing lists are not working for you, check out the Google group
+   *   - <a href="https://groups.google.com/forum/#!forum/dbus-cxx">Dbus-cxx Google Group</a>
+   * 
+   *
    * <br><hr>
    *
    * \par Bugs

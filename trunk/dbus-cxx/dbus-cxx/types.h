@@ -90,7 +90,7 @@ template <class T>
 
   inline std::string type_string( uint8_t& )     { return "byte"; }
   inline std::string type_string( int8_t& )      { return "byte"; }
-  inline std::string type_string( bool& )        { return "boolean"; }
+  inline std::string type_string( bool& )        { return "bool"; }
   inline std::string type_string( int16_t& )     { return "int16_t"; }
   inline std::string type_string( uint16_t& )    { return "uint16_t"; }
   inline std::string type_string( int32_t& )     { return "int32_t"; }
@@ -130,7 +130,7 @@ template <class T>
       case TYPE_BYTE:
         return "uint8_t";
       case TYPE_BOOLEAN:
-        return "boolean";
+        return "bool";
       case TYPE_INT16:
         return "int16_t";
       case TYPE_UINT16:
@@ -154,11 +154,11 @@ template <class T>
       case TYPE_ARRAY:
         return "std::vector";
       case TYPE_VARIANT:
-        return "DBus::Variant";
+        return "DBus::Variant<>";
       case TYPE_STRUCT:
         return "Struct";
       case TYPE_DICT_ENTRY:
-        return "Dict Entry";
+        return "std::pair<>";
       default:
         break;
     }
