@@ -1,3 +1,92 @@
+2017-03-19  rm5248
+
+	* Makefile.am: Removed m4 files in debian dir
+	* configure.ac: Updated version for release
+
+2017-03-11  rm5248
+
+	* debian/changelog: Mark debian version as released
+	* dbus-cxx/dispatcher.h, dbus-cxx/types.h, tools/introspect.cpp:
+	  Minor changes to help introspection work better, but it needs to
+	  be re-written
+
+2017-01-08  rm5248
+
+	* unit-tests/Makefile.am: make sure that make check actually works
+	* debian/rules: wrong operator for checking if file exists
+	* debian/rules: run autogen if building from SVN
+	* debian/rules, debian/source[ADD], debian/source/format[ADD]:
+	  Rules executable, added source/format
+	* Makefile.am, dbus-cxx-glibmm/dispatcher.cpp,
+	  dbus-cxx-glibmm/dispatcher.h, debian/changelog, debian/compat,
+	  debian/control[CPY], debian/control.m4[DEL],
+	  debian/dbus-cxx-dev.install[CPY],
+	  debian/dbus-cxx-dev.install.m4[DEL],
+	  debian/dbus-cxx-doc.install[CPY],
+	  debian/dbus-cxx-doc.install.m4[DEL],
+	  debian/dbus-cxx-glibmm-dev.install[CPY],
+	  debian/dbus-cxx-glibmm-dev.install.m4[DEL],
+	  debian/dbus-cxx-glibmm0.install, debian/dbus-cxx0.install,
+	  debian/rules[CPY], debian/rules.m4[DEL]: Updated Debian packaging
+
+2017-01-06  rm5248
+
+	* dbus-cxx.h, dbus-cxx/Makefile.am, dbus-cxx/enums.h,
+	  dbus-cxx/filedescriptor.h[ADD],
+	  dbus-cxx/messageappenditerator.cpp,
+	  dbus-cxx/messageappenditerator.h, dbus-cxx/messageiterator.cpp,
+	  dbus-cxx/messageiterator.h, dbus-cxx/signature.h,
+	  dbus-cxx/simplelogger.h, dbus-cxx/types.h: Added in file
+	  descriptor passing
+	* ., dbus-cxx.h, dbus-cxx/Makefile.am, dbus-cxx/connection.cpp,
+	  dbus-cxx/connection.h.m4, dbus-cxx/dbus-cxx-private.h[CPY],
+	  dbus-cxx/dbus_signal.h.m4, dbus-cxx/dispatcher.cpp,
+	  dbus-cxx/dispatcher.h, dbus-cxx/error.h,
+	  dbus-cxx/headerlog.h[CPY], dbus-cxx/interface.cpp,
+	  dbus-cxx/interfaceproxy.cpp, dbus-cxx/messageiterator.h,
+	  dbus-cxx/method.h.m4, dbus-cxx/method_impl.h.m4,
+	  dbus-cxx/methodproxy.h.m4, dbus-cxx/methodproxybase.cpp,
+	  dbus-cxx/object.cpp, dbus-cxx/objectpathhandler.cpp,
+	  dbus-cxx/objectproxy.cpp, dbus-cxx/signalreceiver.cpp,
+	  dbus-cxx/simplelogger.h[ADD], dbus-cxx/simplelogger_defs.h[CPY],
+	  dbus-cxx/timeout.cpp, dbus-cxx/utility.cpp, dbus-cxx/utility.h:
+	  Brought changes in branch back into trunk
+
+2016-12-04  rm5248
+
+	* dbus-cxx/dispatcher.cpp, dbus-cxx/dispatcher.h: Re-wrote the
+	  Dispatcher class to use cpp11 features for threads and mutex.
+	  Will maybe fix a segfault and/or race condition
+
+2015-12-29  rm5248
+
+	* dbus-cxx/object.cpp: added debug patch from Marco Garzola
+
+2015-12-22  rm5248
+
+	* dbus-cxx/message.cpp: fixed memory leak when replying to a
+	  message
+
+2013-11-08  rm5248
+
+	* dbus-cxx/errormessage.cpp, dbus-cxx/errormessage.h,
+	  dbus-cxx/method.h.m4: Will now propogate errors back over the bus
+	  if an exception is thrown while executing a handler. Thanks to
+	  Emmanuel Raulo-Kumagai
+
+2013-11-05  rm5248
+
+	* doc/Makefile.am: updated doc upload target, should be correct now
+
+2013-11-04  rm5248
+
+	* dbus-cxx/messageappenditerator.h, dbus-cxx/signature.h,
+	  dbus-cxx/types.h: fixed compiler warnings
+
+2013-09-21  rm5248
+
+	* ChangeLog, Makefile.am, configure.ac: ===== 0.8.0 =====
+
 2013-09-15  rm5248
 
 	* dbus-cxx/types.h, tools/arg.cpp, tools/generate_proxy.cpp,
