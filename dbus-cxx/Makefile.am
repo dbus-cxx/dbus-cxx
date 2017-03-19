@@ -27,15 +27,15 @@ EXTRA_DIST = \
 	debian/changelog                debian/dbus-cxx-glibmm0.dirs		\
 	debian/compat                   debian/dbus-cxx-glibmm0.install		\
 	debian/control                  debian/dbus-cxx-glibmm-dev.dirs		\
-	debian/control.m4               debian/dbus-cxx-glibmm-dev.install	\
-	debian/copyright                debian/dbus-cxx-glibmm-dev.install.m4	\
+	debian/dbus-cxx-glibmm-dev.install	\
+	debian/copyright                \
 	debian/dbus-cxx0.dirs           debian/dbus-cxx-tools.dirs		\
 	debian/dbus-cxx0.install        debian/dbus-cxx-tools.install		\
 	debian/dbus-cxx-dev.dirs        debian/dirs				\
 	debian/dbus-cxx-dev.install     debian/docs				\
-	debian/dbus-cxx-dev.install.m4  debian/rules				\
-	debian/dbus-cxx-doc.install     debian/rules.m4				\
-	debian/dbus-cxx-doc.install.m4
+	debian/rules				\
+	debian/dbus-cxx-doc.install  
+	
 
 
 SUBDIRS = dbus-cxx dbus-cxx-glibmm tools doc examples unit-tests
