@@ -32,6 +32,14 @@
 namespace DBus
 {
 
+  /* Debug output strings */
+  static constexpr const char* dispatch_status_string[] =
+  {
+    "DISPATCH_DATA_REMAINS",
+    "DISPATCH_COMPLETE",
+    "DISPATCH_NEED_MEMORY",
+  };
+
   Dispatcher::Dispatcher(bool is_running):
       m_running(false),
       m_dispatch_thread(0),
@@ -185,38 +193,58 @@ namespace DBus
   void Dispatcher::add_read_and_write_watches( std::vector<struct pollfd>* fds ){
       std::lock_guard<std::mutex> watch_lock( m_mutex_watches );
 
-      for( Watch::pointer watch : m_watches ){
-        if( !watch->is_enabled() ) continue; 
-
+      for( std::pair<int,WatchPair> entry : m_watches_map ){
         struct pollfd newfd;
-        newfd.fd = watch->unix_fd();
-        if( watch->is_readable() ){
-          newfd.events = POLLIN;
-        }else{
-          newfd.events = POLLOUT;
+        newfd.fd = entry.first;
+        newfd.events = 0;
+
+        Watch::pointer read = entry.second.read_watch;
+        Watch::pointer write = entry.second.write_watch;
+
+        if( read != nullptr && 
+            read->is_enabled() ){
+          newfd.events |= POLLIN;
+        }
+        if( write != nullptr &&
+            write->is_enabled() ){
+          newfd.events |= POLLOUT;
         }
         fds->push_back( newfd );
       }
   }
 
   void Dispatcher::handle_read_and_write_watches( std::vector<struct pollfd>* fds ){
-    std::map<int,Watch::pointer>::iterator witer;
+    std::map<int,WatchPair>::iterator witer;
 
     for ( const struct pollfd& fd : *fds ){
-      if( (fd.events == POLLIN) && 
-          (fd.revents & POLLIN ) ){
-          std::lock_guard<std::mutex> watch_lock( m_mutex_watches );
-          witer = m_watches_map.find( fd.fd );
-          if( witer != m_watches_map.end() ){
-            witer->second->handle_read();
-          }
-      }else if( (fd.events == POLLOUT) && 
-             (fd.revents & POLLOUT ) ){
-          std::lock_guard<std::mutex> watch_lock( m_mutex_watches );
-          witer = m_watches_map.find( fd.fd );
-          if( witer != m_watches_map.end() ){
-            witer->second->handle_write();
-          }
+      std::lock_guard<std::mutex> watch_lock( m_mutex_watches );
+      witer = m_watches_map.find( fd.fd );
+
+      if( fd.revents & POLLERR ){
+        SIMPLELOGGER_ERROR( "dbus.Dispatcher", "got POLLERR back from fd" );
+      }
+      if( fd.revents & POLLHUP ){
+        SIMPLELOGGER_ERROR( "dbus.Dispatcher", "got POLLHUP back from fd" );
+      }
+      if( fd.revents & POLLNVAL ){
+        SIMPLELOGGER_ERROR( "dbus.Dispatcher", "got POLLNVAL back from fd" );
+      }
+
+      if( witer == m_watches_map.end() ) continue;
+      
+      bool read_good = witer->second.read_watch != nullptr && 
+                       witer->second.read_watch->is_enabled();
+      bool write_good = witer->second.write_watch != nullptr && 
+                        witer->second.write_watch->is_enabled();
+
+      if( (fd.events & POLLIN) && 
+          (fd.revents & POLLIN ) &&
+          read_good ){
+          witer->second.read_watch->handle_read( true, true );
+      }else if( (fd.events & POLLOUT) && 
+             (fd.revents & POLLOUT ) &&
+              write_good ){
+          witer->second.write_watch->handle_write( true, true );
       }
 
     }
@@ -231,7 +259,7 @@ namespace DBus
       // If the dispatch loop limit is zero we will loop as long as status is DISPATCH_DATA_REMAINS
       if ( m_dispatch_loop_limit == 0 )
       {
-        SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "Dispatch Status: " << (*ci)->dispatch_status() << "   Hints: DISPATCH_DATA_REMAINS=" << DISPATCH_DATA_REMAINS );
+        SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "Dispatch Status: " << dispatch_status_string[ (*ci)->dispatch_status() ] );
         while ( (*ci)->dispatch_status() == DISPATCH_DATA_REMAINS )
           (*ci)->dispatch();
       }
@@ -259,13 +287,22 @@ namespace DBus
 
   bool Dispatcher::on_add_watch(Watch::pointer watch)
   {
-    if ( not watch or not watch->is_valid() ) return false;
+    if ( not watch or not watch->is_valid() ){ 
+      SIMPLELOGGER_ERROR( "dbus.Dispatcher", "Tried to add invalid watch" );
+      return false;
+    }
     
     SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "add watch  fd:" << watch->unix_fd() );
   
     std::lock_guard<std::mutex> watch_lock( m_mutex_watches );
-    m_watches.push_back( watch );
-    m_watches_map[ watch->unix_fd() ] = watch;
+    /* If an element does not exist, it will get created with default constructor */
+    WatchPair& watchPair = m_watches_map[ watch->unix_fd() ];
+    if( watch->is_readable() ){
+      watchPair.read_watch = watch;
+    }
+    if( watch->is_writable() ){
+      watchPair.write_watch = watch;
+    }
 
     wakeup_thread();
 
@@ -274,14 +311,29 @@ namespace DBus
 
   bool Dispatcher::on_remove_watch(Watch::pointer watch)
   {
-    if ( not watch or not watch->is_valid() ) return false;
+    if ( not watch or not watch->is_valid() ){
+      SIMPLELOGGER_ERROR( "dbus.Dispatcher", "Tried to remove invalid watch" );
+      return false;
+    }
     
-    //TODO has this ever actually worked??
     SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "remove watch  fd:" << watch->unix_fd() );
 
     std::lock_guard<std::mutex> watch_lock( m_mutex_watches );
-    m_watches.push_back( watch );
-    m_watches_map[ watch->unix_fd() ] = watch;
+    std::map<int,WatchPair>::iterator it = m_watches_map.find( watch->unix_fd() );
+    if( it != m_watches_map.end() ){
+      if( watch->is_readable() ){
+        it->second.read_watch = nullptr;
+      }
+      if( watch->is_writable() ){
+        it->second.write_watch = nullptr;
+      }
+
+      // no watches left - erase entry
+      if( it->second.read_watch == nullptr &&
+          it->second.write_watch == nullptr ){
+        m_watches_map.erase( it );
+      }
+    }
   
     wakeup_thread();
 
