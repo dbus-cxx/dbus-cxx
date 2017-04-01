@@ -92,9 +92,18 @@ namespace DBus
       
       std::thread* m_dispatch_thread;
 
+      class WatchPair {
+      public:
+          WatchPair() : read_watch( NULL ), write_watch( NULL ){}
+          WatchPair( Watch::pointer read, Watch::pointer write ) :
+              read_watch( read ),
+              write_watch( write ) {}
+
+          Watch::pointer read_watch;
+          Watch::pointer write_watch;
+      };
       std::mutex m_mutex_watches;
-      std::list<Watch::pointer> m_watches;
-      std::map<int,Watch::pointer> m_watches_map;
+      std::map<int,WatchPair> m_watches_map;
       
       std::mutex m_mutex_exception_fd_set;
       std::vector<int> m_exception_fd_set;
