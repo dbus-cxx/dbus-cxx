@@ -237,6 +237,7 @@ namespace DBus
         operator long int();
         operator unsigned long int();
       #endif
+      operator FileDescriptor();
         
       template <typename T>
       operator std::vector<T>() {
@@ -256,6 +257,7 @@ namespace DBus
 
         return get_dict<Key,Data>();
       }
+
 
       bool        get_bool();
       uint8_t     get_uint8();

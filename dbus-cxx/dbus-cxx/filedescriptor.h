@@ -33,9 +33,9 @@ public:
 		m_fd = -1;
 	}
 
-	FileDescriptor( int fd ){
-		m_fd = fd;
-	}
+        FileDescriptor( const FileDescriptor& other ){
+            m_fd = other.m_fd;
+        }
 
 	~FileDescriptor(){}
 
