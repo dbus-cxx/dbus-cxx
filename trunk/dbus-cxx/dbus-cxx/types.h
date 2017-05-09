@@ -35,32 +35,32 @@ namespace DBus
 
   typedef sigc::nil nil;
 
-  inline Type type( uint8_t )            { return TYPE_BYTE; }
-  inline Type type( bool )               { return TYPE_BOOLEAN; }
-  inline Type type( int16_t )            { return TYPE_INT16; }
-  inline Type type( uint16_t )           { return TYPE_UINT16; }
-  inline Type type( int32_t )            { return TYPE_INT32; }
-  inline Type type( uint32_t )           { return TYPE_UINT32; }
-  inline Type type( int64_t )            { return TYPE_INT64; }
-  inline Type type( uint64_t )           { return TYPE_UINT64; }
-  inline Type type( double )             { return TYPE_DOUBLE; }
+  inline Type type( const uint8_t& )            { return TYPE_BYTE; }
+  inline Type type( const bool& )               { return TYPE_BOOLEAN; }
+  inline Type type( const int16_t& )            { return TYPE_INT16; }
+  inline Type type( const uint16_t& )           { return TYPE_UINT16; }
+  inline Type type( const int32_t& )            { return TYPE_INT32; }
+  inline Type type( const uint32_t& )           { return TYPE_UINT32; }
+  inline Type type( const int64_t& )            { return TYPE_INT64; }
+  inline Type type( const uint64_t& )           { return TYPE_UINT64; }
+  inline Type type( const double& )             { return TYPE_DOUBLE; }
   inline Type type( const std::string& ) { return TYPE_STRING; }
   inline Type type( const char* )        { return TYPE_STRING; }
-  inline Type type( Path )               { return TYPE_OBJECT_PATH; }
-  inline Type type( Signature )          { return TYPE_SIGNATURE; }
+  inline Type type( const Path& )               { return TYPE_OBJECT_PATH; }
+  inline Type type( const Signature& )          { return TYPE_SIGNATURE; }
 template <class T>
-  inline Type type( Variant<T> )            { return TYPE_VARIANT; }
-  inline Type type( FileDescriptor )     { return TYPE_UNIX_FD; }
+  inline Type type( const Variant<T>& )            { return TYPE_VARIANT; }
+  inline Type type( const FileDescriptor& )     { return TYPE_UNIX_FD; }
   
-  inline Type type( char )               { return TYPE_BYTE; }
-  inline Type type( int8_t )             { return TYPE_BYTE; }
+  inline Type type( const char& )               { return TYPE_BYTE; }
+  inline Type type( const int8_t& )             { return TYPE_BYTE; }
 
 #if DBUS_CXX_SIZEOF_LONG_INT == 4
-  inline Type type( long int )            { return TYPE_INT32; }
-  inline Type type( long unsigned int )   { return TYPE_UINT32; }
+  inline Type type( const long int& )            { return TYPE_INT32; }
+  inline Type type( const long unsigned int& )   { return TYPE_UINT32; }
 #endif
   
-  inline Type type( float )               { return TYPE_DOUBLE; }
+  inline Type type( const float& )               { return TYPE_DOUBLE; }
 
   template <typename T> 
   inline Type type(const std::vector<T>&) { return TYPE_ARRAY; }
@@ -88,24 +88,25 @@ template <class T>
 //   template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
 //   inline Type type( const Struct<T0,T1,T2,T3,T4,T5,T6>& ) { return TYPE_STRUCT; }
 
-  inline std::string type_string( uint8_t& )     { return "byte"; }
-  inline std::string type_string( int8_t& )      { return "byte"; }
-  inline std::string type_string( bool& )        { return "bool"; }
-  inline std::string type_string( int16_t& )     { return "int16_t"; }
-  inline std::string type_string( uint16_t& )    { return "uint16_t"; }
-  inline std::string type_string( int32_t& )     { return "int32_t"; }
-  inline std::string type_string( uint32_t& )    { return "uint32_t"; }
-  inline std::string type_string( int64_t& )     { return "int64_t"; }
-  inline std::string type_string( uint64_t& )    { return "uint64_t"; }
-  inline std::string type_string( double& )      { return "double"; }
-  inline std::string type_string( float& )       { return "double"; }
-  inline std::string type_string( std::string& ) { return "std::string"; }
-  inline std::string type_string( Path& )        { return "Path"; }
-  inline std::string type_string( Signature& )   { return "Signature"; }
+  inline std::string type_string( const uint8_t& )     { return "byte"; }
+  inline std::string type_string( const int8_t& )      { return "byte"; }
+  inline std::string type_string( const bool& )        { return "bool"; }
+  inline std::string type_string( const int16_t& )     { return "int16_t"; }
+  inline std::string type_string( const uint16_t& )    { return "uint16_t"; }
+  inline std::string type_string( const int32_t& )     { return "int32_t"; }
+  inline std::string type_string( const uint32_t& )    { return "uint32_t"; }
+  inline std::string type_string( const int64_t& )     { return "int64_t"; }
+  inline std::string type_string( const uint64_t& )    { return "uint64_t"; }
+  inline std::string type_string( const double& )      { return "double"; }
+  inline std::string type_string( const float& )       { return "double"; }
+  inline std::string type_string( const std::string& ) { return "std::string"; }
+  inline std::string type_string( const Path& )        { return "Path"; }
+  inline std::string type_string( const Signature& )   { return "Signature"; }
 template <class T>
-  inline std::string type_string( Variant<T>& )     { return "Variant"; }
+  inline std::string type_string( const Variant<T>& )     { return "Variant"; }
 template <class T>
-  inline std::string type_string( std::vector<T>& ) { return "Array"; }
+  inline std::string type_string( const std::vector<T>& ) { return "Array"; }
+  inline std::string type_string( const FileDescriptor& ) { return "FileDescriptor"; }
 //  template <typename T> inline std::string type_string()   { return 1; /* This is invalid; you must use one of the specializations only */}
 /*  template<> inline std::string type_string<uint8_t>()     { return "byte"; }
   template<> inline std::string type_string<int8_t>()      { return "byte"; }
@@ -159,6 +160,8 @@ template <class T>
         return "Struct";
       case TYPE_DICT_ENTRY:
         return "std::pair<>";
+      case TYPE_UNIX_FD:
+        return "FileDescriptor";
       default:
         break;
     }

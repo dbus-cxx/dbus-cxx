@@ -49,6 +49,7 @@ class MessageIteratorTests : public  CppUnit::TestFixture {
     CPPUNIT_TEST( call_message_append_extract_iterator_array_int );
     CPPUNIT_TEST( call_message_append_extract_iterator_array_string );
     CPPUNIT_TEST( call_message_append_extract_iterator_array_array_string );
+    CPPUNIT_TEST( call_message_append_extract_iterator_filedescriptor );
     
     CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_bool );
     CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_byte );
@@ -68,6 +69,7 @@ class MessageIteratorTests : public  CppUnit::TestFixture {
     CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_long_int );
     CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_unsigned_long_int );
     CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_array_string );
+    CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_filedescriptor );
 
     CPPUNIT_TEST( call_message_append_extract_iterator_multiple );
     CPPUNIT_TEST( call_message_iterator_insertion_extraction_operator_multiple );
@@ -100,6 +102,7 @@ class MessageIteratorTests : public  CppUnit::TestFixture {
     void call_message_append_extract_iterator_array_int();
     void call_message_append_extract_iterator_array_string();
     void call_message_append_extract_iterator_array_array_string();
+    void call_message_append_extract_iterator_filedescriptor();
     
     void call_message_iterator_insertion_extraction_operator_bool();
     void call_message_iterator_insertion_extraction_operator_byte();
@@ -120,6 +123,7 @@ class MessageIteratorTests : public  CppUnit::TestFixture {
     void call_message_iterator_insertion_extraction_operator_unsigned_long_int();
     void call_message_iterator_insertion_extraction_operator_array_int();
     void call_message_iterator_insertion_extraction_operator_array_string();
+    void call_message_iterator_insertion_extraction_operator_filedescriptor();
 
     void call_message_append_extract_iterator_multiple();
     void call_message_iterator_insertion_extraction_operator_multiple();

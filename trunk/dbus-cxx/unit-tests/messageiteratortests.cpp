@@ -19,6 +19,7 @@
 #include "messageiteratortests.h"
 
 #include <cstring>
+#include <unistd.h>
 
 void MessageIteratorTests::setUp()
 { }
@@ -243,6 +244,88 @@ void MessageIteratorTests::call_message_append_extract_iterator_array_array_stri
     }
   }
   
+}
+
+void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_filedescriptor(){
+  DBus::FileDescriptor v;
+  DBus::FileDescriptor v2;
+  int pipes[2];
+  const char* firstString = "FirstString";
+  const char* secondString = "SecondString";
+  const char* appended = "FirstStringSecondString";
+  char readData[ 24 ];
+
+  memset( readData, 0, 24 );
+
+  if( pipe( pipes ) < 0 ){
+      CPPUNIT_ASSERT( false );
+      return;
+  }
+  v.setDescriptor( pipes[1] );
+
+  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  DBus::MessageAppendIterator iter1(msg);
+  iter1.append( v );
+
+  DBus::MessageIterator iter2(msg);
+  v2 = (DBus::FileDescriptor)iter2;
+
+  if( write( v.getDescriptor(), firstString, strlen( firstString ) ) < 0 ){
+      CPPUNIT_ASSERT( false );
+      return;
+  }
+  if( write( v2.getDescriptor(), secondString, strlen( secondString ) ) < 0 ){
+      CPPUNIT_ASSERT( false );
+      return;
+  }
+
+  if( read( pipes[ 0 ], readData, 23 ) != 23 ){
+      CPPUNIT_ASSERT( false );
+      return;
+  }
+  
+  CPPUNIT_ASSERT_EQUAL( memcmp( appended, readData, 23 ), 0 );
+}
+
+void MessageIteratorTests::call_message_append_extract_iterator_filedescriptor(){
+  DBus::FileDescriptor v;
+  DBus::FileDescriptor v2;
+  int pipes[2];
+  const char* firstString = "FirstString";
+  const char* secondString = "SecondString";
+  const char* appended = "FirstStringSecondString";
+  char readData[ 24 ];
+
+  memset( readData, 0, 24 );
+
+  if( pipe( pipes ) < 0 ){
+      CPPUNIT_ASSERT( false );
+      return;
+  }
+  v.setDescriptor( pipes[1] );
+
+  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  DBus::MessageAppendIterator iter1(msg);
+  iter1.append( v );
+
+  DBus::MessageIterator iter2(msg);
+  iter2 >> v2;
+
+  if( write( v.getDescriptor(), firstString, strlen( firstString ) ) < 0 ){
+      CPPUNIT_ASSERT( false );
+      return;
+  }
+  if( write( v2.getDescriptor(), secondString, strlen( secondString ) ) < 0 ){
+      CPPUNIT_ASSERT( false );
+      return;
+  }
+
+  if( read( pipes[ 0 ], readData, 23 ) != 23 ){
+      CPPUNIT_ASSERT( false );
+      return;
+  }
+  
+  CPPUNIT_ASSERT_EQUAL( memcmp( appended, readData, 23 ), 0 );
 }
 
 template <typename T>

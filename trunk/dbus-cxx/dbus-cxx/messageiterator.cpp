@@ -419,6 +419,15 @@ namespace DBus
         throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
+
+  MessageIterator::operator FileDescriptor(){
+    switch ( this->arg_type() )
+    {
+      case TYPE_UNIX_FD: return get_filedescriptor();
+      default:
+        throw ErrorInvalidTypecast::create("MessageIterator:: casting non-numeric type to numeric value");
+    }
+  }
   
 #if DBUS_CXX_SIZEOF_LONG_INT == 4
   MessageIterator::operator unsigned long int()
