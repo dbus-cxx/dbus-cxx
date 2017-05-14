@@ -44,23 +44,20 @@ int main( int argc, char** argv ){
    * byte string to it.
    */
 
-  DBus::setLoggingFunction( mylog );
+  //uncomment the following line to enable logging from the library.
+  //DBus::setLoggingFunction( mylog );
+
   DBus::init();
   DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
   DBus::Connection::pointer conn = dispatcher->create_connection(DBus::BUS_SESSION);
-  DBus::ObjectProxy::pointer object = conn->create_object_proxy("dbuscxx.example.filedescriptor.server", "/dbuscxx/example/fildescriptor");
+  DBus::ObjectProxy::pointer object = conn->create_object_proxy("dbuscxx.example.filedescriptor.server", "/dbuscxx/example/FileDescriptor");
 
   DBus::MethodProxy<DBus::FileDescriptor::pointer>& methodref = *(object->create_method<DBus::FileDescriptor::pointer>("Filedescriptor.basic", "getFiledescriptor"));
 
   std::cout << "Running..." << std::flush;
 
   DBus::FileDescriptor::pointer fd;
-try{
   fd = methodref();
-}catch( DBusCxxPointer<DBus::Error> ex ){
-std::cerr << "error : " << ex->what() << std::endl;
-    return 1;
-}
   
   if( write( fd->getDescriptor(), "A String 0", 10 ) < 0 ){
     std::cerr << "Error writing to file descriptor: " << strerror( errno ) << std::endl;

@@ -53,7 +53,9 @@ int main( int argc, char** argv ){
       std::cerr << "Unable to create pipes: " << strerror( errno ) << std::endl;
   }
 
-  DBus::setLoggingFunction( mylog );
+  //uncomment the following line to enable logging from the library.
+  //DBus::setLoggingFunction( mylog );
+
   DBus::init();
   DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
   DBus::Connection::pointer conn = dispatcher->create_connection(DBus::BUS_SESSION);
@@ -76,7 +78,8 @@ int main( int argc, char** argv ){
     if( poll( &poll_fd, 1, 1000 * 20 ) < 0 ){
       std::cerr << "Unable to poll: " << strerror( errno ) << std::endl;
     }else{
-        char buffer[ 10 ];
+        char buffer[ 11 ];
+        buffer[ 10 ] = 0;
         int got = read( pipes[ 0 ], buffer, 10 );
         std::cout << "Got " << got << " bytes.  As string: " << buffer << std::endl;
     }

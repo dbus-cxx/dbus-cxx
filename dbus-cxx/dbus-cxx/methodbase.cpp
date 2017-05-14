@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "methodbase.h"
+#include "dbus-cxx-private.h"
 
 namespace DBus
 {
@@ -26,6 +27,7 @@ namespace DBus
       m_name(name)
   {
     pthread_mutex_init( &m_name_mutex, NULL );
+    SIMPLELOGGER_DEBUG( "dbus.MethodBase", "Creating new method with name " << name );
   }
 
   MethodBase::MethodBase(const MethodBase& other):

@@ -65,7 +65,7 @@ namespace DBus
     dbus_bool_t result;
     Error::pointer error = Error::create();
 
-    SIMPLELOGGER_DEBUG("dbus.ObjectPathHandler","ObjectPathHandler::register_with_connection");
+    SIMPLELOGGER_DEBUG("dbus.ObjectPathHandler","Registering path " << m_path << " with connection");
 
     if ( not conn or not conn->is_valid() ) return false;
 
