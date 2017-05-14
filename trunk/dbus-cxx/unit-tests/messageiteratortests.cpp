@@ -247,8 +247,8 @@ void MessageIteratorTests::call_message_append_extract_iterator_array_array_stri
 }
 
 void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_filedescriptor(){
-  DBus::FileDescriptor v;
-  DBus::FileDescriptor v2;
+  DBus::FileDescriptor::pointer v;
+  DBus::FileDescriptor::pointer v2;
   int pipes[2];
   const char* firstString = "FirstString";
   const char* secondString = "SecondString";
@@ -261,20 +261,20 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_f
       CPPUNIT_ASSERT( false );
       return;
   }
-  v.setDescriptor( pipes[1] );
+  v = DBus::FileDescriptor::create( pipes[1] );
 
   DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1.append( v );
 
   DBus::MessageIterator iter2(msg);
-  v2 = (DBus::FileDescriptor)iter2;
+  v2 = (DBus::FileDescriptor::pointer)iter2;
 
-  if( write( v.getDescriptor(), firstString, strlen( firstString ) ) < 0 ){
+  if( write( v->getDescriptor(), firstString, strlen( firstString ) ) < 0 ){
       CPPUNIT_ASSERT( false );
       return;
   }
-  if( write( v2.getDescriptor(), secondString, strlen( secondString ) ) < 0 ){
+  if( write( v2->getDescriptor(), secondString, strlen( secondString ) ) < 0 ){
       CPPUNIT_ASSERT( false );
       return;
   }
@@ -288,8 +288,8 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_f
 }
 
 void MessageIteratorTests::call_message_append_extract_iterator_filedescriptor(){
-  DBus::FileDescriptor v;
-  DBus::FileDescriptor v2;
+  DBus::FileDescriptor::pointer v;
+  DBus::FileDescriptor::pointer v2;
   int pipes[2];
   const char* firstString = "FirstString";
   const char* secondString = "SecondString";
@@ -302,7 +302,7 @@ void MessageIteratorTests::call_message_append_extract_iterator_filedescriptor()
       CPPUNIT_ASSERT( false );
       return;
   }
-  v.setDescriptor( pipes[1] );
+  v = DBus::FileDescriptor::create( pipes[1] );
 
   DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
@@ -311,11 +311,11 @@ void MessageIteratorTests::call_message_append_extract_iterator_filedescriptor()
   DBus::MessageIterator iter2(msg);
   iter2 >> v2;
 
-  if( write( v.getDescriptor(), firstString, strlen( firstString ) ) < 0 ){
+  if( write( v->getDescriptor(), firstString, strlen( firstString ) ) < 0 ){
       CPPUNIT_ASSERT( false );
       return;
   }
-  if( write( v2.getDescriptor(), secondString, strlen( secondString ) ) < 0 ){
+  if( write( v2->getDescriptor(), secondString, strlen( secondString ) ) < 0 ){
       CPPUNIT_ASSERT( false );
       return;
   }
