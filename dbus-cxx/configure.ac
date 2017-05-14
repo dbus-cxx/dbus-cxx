@@ -230,6 +230,7 @@ AC_OUTPUT(Makefile dbus-cxx-1.0.pc dbus-cxx-glibmm-1.0.pc dbus-cxx-glibmm/Makefi
 	dbus-cxx/Makefile doc/Makefile examples/Makefile examples/basics/Makefile \
 	examples/basics/methods/Makefile examples/basics/signals/Makefile examples/basics/types/Makefile \
 	examples/glibmm/Makefile examples/quick-start/Makefile examples/xml2cpp/Makefile \
+	examples/basics/filedescriptors/Makefile\
 	examples/xml2cpp/calculator-interface/Makefile examples/xml2cpp/calculator/Makefile \
 	examples/xml2cpp/computer-has-a/Makefile examples/xml2cpp/computer-is-a/Makefile \
 	tools/Makefile unit-tests/Makefile)

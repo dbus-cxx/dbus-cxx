@@ -48,7 +48,7 @@ INCLUDES = -I$(top_srcdir)/. $(PROJECT_CFLAGS)
 toplevel_includedir = $(includedir)/dbus-cxx-$(PACKAGE_RELEASE)
 toplevel_include_HEADERS = dbus-cxx-glibmm.h dbus-cxx.h
 
-PACKAGE_RELEASEHOST="${USER},dbus-cxx@frs.sourceforge.net:/home/frs/project/d/db/dbus-cxx/dbus-cxx"
+PACKAGE_RELEASEHOST="rm5248@frs.sourceforge.net:/home/frs/project/d/db/dbus-cxx/dbus-cxx"
 
 docs:
 	cd doc && make docs

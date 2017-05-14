@@ -420,7 +420,7 @@ namespace DBus
     }
   }
 
-  MessageIterator::operator FileDescriptor(){
+  MessageIterator::operator FileDescriptor::pointer(){
     switch ( this->arg_type() )
     {
       case TYPE_UNIX_FD: return get_filedescriptor();
@@ -569,13 +569,13 @@ namespace DBus
     return ptr;
   }
 
-  FileDescriptor MessageIterator::get_filedescriptor(){
-    FileDescriptor fd;
+  FileDescriptor::pointer MessageIterator::get_filedescriptor(){
+    FileDescriptor::pointer fd;
     int raw_fd;
     if( this->arg_type() != TYPE_UNIX_FD )
       throw ErrorInvalidTypecast::create("MessageIterator: getting FileDescriptor and type is not TYPE_UNIX_FD");
     dbus_message_iter_get_basic( &m_cobj, &raw_fd );
-    fd.setDescriptor( raw_fd );
+    fd = FileDescriptor::create( raw_fd );
     return fd;
   }
 
