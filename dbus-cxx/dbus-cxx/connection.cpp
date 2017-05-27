@@ -384,6 +384,8 @@ namespace DBus
     
     ReturnMessage::pointer retmsg = ReturnMessage::create(reply);
 
+    dbus_message_unref(reply);
+
     SIMPLELOGGER_DEBUG("dbus.Connection", "Return Signature: " << retmsg->signature() );
 
     return retmsg;
