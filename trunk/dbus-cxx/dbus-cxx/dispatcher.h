@@ -88,7 +88,7 @@ namespace DBus
       typedef std::list<Connection::pointer> Connections;
       Connections m_connections;
       
-      bool m_running;
+      volatile bool m_running;
       
       std::thread* m_dispatch_thread;
 

@@ -60,7 +60,7 @@ namespace DBus
 
   Dispatcher::~Dispatcher()
   {
-    if ( this->is_running() ) this->stop();
+    this->stop();
   }
 
   Connection::pointer Dispatcher::create_connection(DBusConnection * cobj, bool is_private)
@@ -125,8 +125,6 @@ namespace DBus
     m_running = true;
     
     m_dispatch_thread = new std::thread( &Dispatcher::dispatch_thread_main, this );
-
-    m_dispatch_thread->detach();
     
     return true;
   }
