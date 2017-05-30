@@ -17,7 +17,7 @@
 ##   along with this software. If not see <http://www.gnu.org/licenses/>.  ##
 #############################################################################
 
-INCLUDES = $(PROJECT_CFLAGS) -I$(top_srcdir)/.
+AM_CPPFLAGS = $(PROJECT_CFLAGS) -I$(top_srcdir)/.
 METASOURCES = AUTO
 noinst_PROGRAMS = callee callee-2 callee-c callee-dispatched \
 	callee-object caller-object callee-object-inherited callee-raw caller caller-c caller-dispatched \

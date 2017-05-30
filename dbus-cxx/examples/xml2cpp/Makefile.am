@@ -17,7 +17,7 @@
 ##   along with this software. If not see <http://www.gnu.org/licenses/>.  ##
 #############################################################################
 
-INCLUDES = -I$(top_srcdir)/. $(PROJECT_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/. $(PROJECT_CFLAGS)
 
 if DBUS_CXX_TOOLS
 

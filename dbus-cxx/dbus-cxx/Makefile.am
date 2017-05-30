@@ -17,7 +17,7 @@
 ##   along with this software. If not see <http://www.gnu.org/licenses/>.  ##
 #############################################################################
 
-INCLUDES = -I$(top_builddir)/. -I$(top_srcdir)/. $(PROJECT_CFLAGS)
+AM_CPPFLAGS = -I$(top_builddir)/. -I$(top_srcdir)/. $(PROJECT_CFLAGS)
 METASOURCES = AUTO
 lib_LTLIBRARIES = libdbus-cxx.la
 library_includedir = $(includedir)/@PACKAGE_NAME@-@PACKAGE_RELEASE@/@PACKAGE_NAME@

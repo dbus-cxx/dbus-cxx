@@ -17,7 +17,7 @@
 ##   along with this software. If not see <http://www.gnu.org/licenses/>.  ##
 #############################################################################
 
-INCLUDES = $(PROJECT_CFLAGS) -I$(top_srcdir)/.
+AM_CPPFLAGS = $(PROJECT_CFLAGS) -I$(top_srcdir)/.
 METASOURCES = AUTO
 noinst_PROGRAMS = signal-emitter signal-emitter-2 signal-emitter-3 \
 	signal-emitter-c signal-emitter-raw signal-receiver signal-receiver-2 signal-receiver-c \
