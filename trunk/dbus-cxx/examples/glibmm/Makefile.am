@@ -17,7 +17,7 @@
 ##   along with this software. If not see <http://www.gnu.org/licenses/>.  ##
 #############################################################################
 
-INCLUDES = $(PROJECT_CFLAGS) $(DBUS_CXX_GLIBMM_CFLAGS) -I$(top_srcdir)/.
+AM_CPPFLAGS = $(PROJECT_CFLAGS) $(DBUS_CXX_GLIBMM_CFLAGS) -I$(top_srcdir)/.
 METASOURCES = AUTO
 
 if DBUS_CXX_GLIBMM

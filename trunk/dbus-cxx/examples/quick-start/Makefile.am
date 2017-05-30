@@ -1,4 +1,4 @@
-INCLUDES = $(PROJECT_CFLAGS) -I$(top_srcdir)/.  $(PROJECT_CFLAGS)
+AM_CPPFLAGS = $(PROJECT_CFLAGS) -I$(top_srcdir)/.  $(PROJECT_CFLAGS)
 METASOURCES = AUTO
 noinst_PROGRAMS = \
 	quickstart-client-0 quickstart-server-0

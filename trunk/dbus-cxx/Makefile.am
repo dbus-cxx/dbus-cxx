@@ -43,7 +43,7 @@ SUBDIRS = dbus-cxx dbus-cxx-glibmm tools doc examples unit-tests
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = dbus-cxx-$(PKGCONFIG_VERSION).pc dbus-cxx-glibmm-$(PKGCONFIG_VERSION).pc
 
-INCLUDES = -I$(top_srcdir)/. $(PROJECT_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/. $(PROJECT_CFLAGS)
 
 toplevel_includedir = $(includedir)/dbus-cxx-$(PACKAGE_RELEASE)
 toplevel_include_HEADERS = dbus-cxx-glibmm.h dbus-cxx.h
