@@ -1,3 +1,9 @@
+dbus-cxx (0.10.0) UNRELEASED; urgency=medium
+
+  * Added file descriptor passing
+
+ -- Robert Middleton <robert.middleton@rm5248.com>  Fri, 16 Feb 2018 20:18:21 -0500
+
 dbus-cxx (0.8.0) jessie; urgency=medium
 
   [ Robert Middleton ]
