@@ -1,0 +1,38 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node gen-namespace="DBus::Example" orig-namespace="Examples" cppname="Calculator" cppinclude="&quot;calculator.h&quot;" dest="dbuscxx.example.calculator.server" path="/dbuscxx/example/Calculator" >
+  <interface name="Calculator.Basic">
+    <method name="add">
+      <arg name="result" direction="out" type="d"/>
+      <arg name="a" direction="in" type="d"/>
+      <arg name="b" direction="in" type="d"/>
+    </method>
+    <method name="sub" cppname="subtract">
+      <arg name="result" direction="out" type="d"/>
+      <arg name="a" direction="in" type="d"/>
+      <arg name="b" direction="in" type="d"/>
+    </method>
+    <method name="mul" cppname="multiply">
+      <arg name="result" direction="out" type="d"/>
+      <arg name="a" direction="in" type="d"/>
+      <arg name="b" direction="in" type="d"/>
+    </method>
+    <method name="div" cppname="divide">
+      <arg name="result" direction="out" type="d"/>
+      <arg name="a" direction="in" type="d"/>
+      <arg name="b" direction="in" type="d"/>
+    </method>
+    <method name="pi">
+      <arg name="result" direction="out" type="d"/>
+    </method>
+    <method name="print_pi">
+    </method>
+    <signal name="calculation" accessor="signal_calculation()">
+      <arg name="op" type="s"/>
+      <arg name="opsym" type="s"/>
+      <arg name="result" type="d"/>
+      <arg name="a" type="d"/>
+      <arg name="b" type="d"/>
+    </signal>
+  </interface>
+</node>

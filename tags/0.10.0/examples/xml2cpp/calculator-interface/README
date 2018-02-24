@@ -1,0 +1,2 @@
+To introspect the calculator use:
+	dbus-cxx-introspect --session --dest dbuscxx.example.calculator.server /dbuscxx/example/Calculator
