@@ -17,108 +17,55 @@
 ##   along with this software. If not see <http://www.gnu.org/licenses/>.  ##
 #############################################################################
 
-ACLOCAL_AMFLAGS = -I m4
+AM_CPPFLAGS = -I$(top_builddir)/. -I$(top_srcdir)/. $(PROJECT_CFLAGS)
+METASOURCES = AUTO
+lib_LTLIBRARIES = libdbus-cxx.la
+library_includedir = $(includedir)/@PACKAGE_NAME@-@PACKAGE_RELEASE@/@PACKAGE_NAME@
 
-EXTRA_DIST = \
-	dbus-cxx.spec \
-	m4/ax_cxx_compile_stdcxx_0x.m4 \
-	m4/ax_prefix_config_h.m4 \
-	ax_dbus_cxx_xml2cpp.m4 \
-	debian/changelog                debian/dbus-cxx-glibmm0.dirs		\
-	debian/compat                   debian/dbus-cxx-glibmm0.install		\
-	debian/control                  debian/dbus-cxx-glibmm-dev.dirs		\
-	debian/dbus-cxx-glibmm-dev.install	\
-	debian/copyright                \
-	debian/dbus-cxx0.dirs           debian/dbus-cxx-tools.dirs		\
-	debian/dbus-cxx0.install        debian/dbus-cxx-tools.install		\
-	debian/dbus-cxx-dev.dirs        debian/dirs				\
-	debian/dbus-cxx-dev.install     debian/docs				\
-	debian/rules				\
-	debian/dbus-cxx-doc.install  
-	
+dbus_cxx_m4 = dbus_signal.h.m4 connection.h.m4 interfaceproxy.h.m4 signal_proxy.h.m4 method.h.m4 method_impl.h.m4 interface.h.m4 object.h.m4 methodproxybase.h.m4 methodproxy.h.m4
+EXTRA_DIST = dbus_signal.h.m4 connection.h.m4 interfaceproxy.h.m4 signal_proxy.h.m4 method.h.m4 method_impl.h.m4 interface.h.m4 object.h.m4 objectproxy.h.m4  methodproxybase.h.m4 methodproxy.h.m4 template.macros.m4
+
+nodist_libdbus_cxx_la_SOURCES = dbus_signal.h connection.h interfaceproxy.h signal_proxy.h method.h method_impl.h interface.h object.h objectproxy.h methodproxybase.h methodproxy.h
+BUILT_SOURCES = dbus_signal.h connection.h interfaceproxy.h signal_proxy.h method.h method_impl.h interface.h object.h objectproxy.h methodproxybase.h methodproxy.h
+CLEANFILES = dbus_signal.h connection.h interfaceproxy.h signal_proxy.h method.h method_impl.h interface.h object.h objectproxy.h methodproxybase.h methodproxy.h
+
+# Rules to generate .h and .cc from .h.m4 and .cpp.m4:
+%.h: %.h.m4 template.macros.m4
+	        $(M4) $<  > $@
+
+%.cpp: %.cpp.m4 template.macros.m4
+	        $(M4) $<  > $@
+
+gen: dbus_signal.h connection.h signal_proxy.h method.h method_impl.h interface.h object.h objectproxy.h methodproxybase.h methodproxy.h
+
+library_include_HEADERS = accumulators.h callmessage.h connection.h \
+	dbus-cxx-config.h dbus_signal.h dispatcher.h enums.h error.h errormessage.h forward_decls.h interface.h \
+	interfaceproxy.h message.h messageappenditerator.h messagefilter.h messagehandler.h \
+	messageiterator.h method.h method_impl.h methodbase.h methodproxy.h methodproxybase.h \
+	object.h objectpathhandler.h objectproxy.h path.h pendingcall.h pointer.h \
+	returnmessage.h signal_base.h signal_proxy.h signal_proxy_base.h signalmessage.h \
+	signalreceiver.h signature.h signatureiterator.h timeout.h types.h utility.h watch.h variant.h \
+	simplelogger_defs.h headerlog.h filedescriptor.h
+
+libdbus_cxx_la_SOURCES = callmessage.cpp connection.cpp dispatcher.cpp \
+	error.cpp errormessage.cpp interface.cpp interfaceproxy.cpp message.cpp \
+	messageappenditerator.cpp messagefilter.cpp messagehandler.cpp messageiterator.cpp methodbase.cpp \
+	methodproxybase.cpp object.cpp objectpathhandler.cpp objectproxy.cpp path.cpp \
+	pendingcall.cpp returnmessage.cpp signal_base.cpp signal_proxy_base.cpp \
+	signalmessage.cpp signalreceiver.cpp signature.cpp signatureiterator.cpp timeout.cpp \
+	utility.cpp watch.cpp
 
 
-SUBDIRS = dbus-cxx dbus-cxx-glibmm tools doc examples unit-tests
+libdbus_cxx_la_LDFLAGS = -version-info @LIBTOOL_SO_VERSION@
 
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = dbus-cxx-$(PKGCONFIG_VERSION).pc dbus-cxx-glibmm-$(PKGCONFIG_VERSION).pc
+libdbus_cxx_la_LIBADD = $(PROJECT_LIBS)
 
-AM_CPPFLAGS = -I$(top_srcdir)/. $(PROJECT_CFLAGS)
+#libdbus_c___1_la_LIBADD = $(dbus_LIBS) $(xml_LIBS)
 
-toplevel_includedir = $(includedir)/dbus-cxx-$(PACKAGE_RELEASE)
-toplevel_include_HEADERS = dbus-cxx-glibmm.h dbus-cxx.h
+#AM_CPPFLAGS = \
+#	$(dbus_CFLAGS) \
+#	$(xml_CFLAGS) \
+#	-DDBUS_API_SUBJECT_TO_CHANGE
 
-PACKAGE_RELEASEHOST="rm5248@frs.sourceforge.net:/home/frs/project/d/db/dbus-cxx/dbus-cxx"
-
-docs:
-	cd doc && make docs
-
-upload-docs:
-	cd doc && make upload-docs
-
-upload-docs-only:
-	cd doc && make upload-docs-only
-
-TO_UPLOAD = $(PACKAGE)-$(VERSION).tar.bz2 $(PACKAGE)-$(VERSION).tar.gz $(PACKAGE)-$(VERSION).zip $(PACKAGE)-$(VERSION)-doc.tar.bz2 $(PACKAGE)-$(VERSION)-doc.tar.gz $(PACKAGE)-$(VERSION)-doc.zip
-RELEASE_NOTES = $(PACKAGE)-$(VERSION)-release-notes.txt
-TO_UPLOAD_RN = $(TO_UPLOAD) $(RELEASE_NOTES)
-
-release-notes:
-	echo "dbus-cxx is a C++ wrapper for the dbus library" > $(RELEASE_NOTES)
-	echo "http://dbus-cxx.sourceforge.net" >> $(RELEASE_NOTES)
-	echo >> $(RELEASE_NOTES)
-	echo ===== $(VERSION) ===== >> $(RELEASE_NOTES)
-	echo >> $(RELEASE_NOTES)
-	echo >> $(RELEASE_NOTES)
-	gedit $(RELEASE_NOTES) ChangeLog
-
-upload-release-only:
-	rm -rf $(VERSION)
-	mkdir $(VERSION)
-	if test -e $(RELEASE_NOTES); \
-          then \
-            cp -a $(TO_UPLOAD_RN) $(VERSION); \
-          else \
-            cp -a $(TO_UPLOAD) $(VERSION); \
-        fi
-	scp -Crp $(VERSION) $(PACKAGE_RELEASEHOST)
-	rm -rf $(VERSION)
-
-upload-release: changelog release-notes dist upload-release-only
-
-dbus-cxx.spec:
-	m4 -D PACKAGE_VERSION=$(PACKAGE_VERSION) \
-		-D PACKAGE_RELEASE=$(PACKAGE_RELEASE) \
-		-D PKGCONFIG_VERSION=$(PKGCONFIG_VERSION) \
-		-D API_VERSION=$(PACKAGE_RELEASE) \
-		dbus-cxx.spec.m4 >dbus-cxx.spec
-
-changelog:
-	svn2cl --authors=svn2cl.authors -r HEAD:1 --group-by-day -a
-
-rpm: spec dist-bzip2
-	cp $(PACKAGE)-$(VERSION).tar.bz2 $(PACKAGE)-$(VERSION)-doc.tar.bz2 ~/rpmbuild/SOURCES/
-	cp $(PACKAGE_NAME).spec ~/rpmbuild/SPECS/
-	rpmbuild -ba $(PACKAGE_NAME).spec
-
-srpm: spec dist-bzip2
-	cp $(PACKAGE)-$(VERSION).tar.bz2 ~/rpmbuild/SOURCES/
-	cp $(PACKAGE)-$(VERSION)-doc.tar.bz2 ~/rpmbuild/SOURCES/
-	cp $(PACKAGE_NAME).spec ~/rpmbuild/SPECS/
-	rpmbuild -bs $(PACKAGE_NAME).spec
-
-srpm-md5: spec dist-bzip2
-	cp $(PACKAGE)-$(VERSION).tar.bz2 ~/rpmbuild/SOURCES/
-	cp $(PACKAGE)-$(VERSION)-doc.tar.bz2 ~/rpmbuild/SOURCES/
-	cp $(PACKAGE_NAME).spec ~/rpmbuild/SPECS/
-	rpmbuild-md5 -bs $(PACKAGE_NAME).spec
-
-mockbuild: srpm
-	mock --rebuild ~/rpmbuild/SRPMS/$(PACKAGE)-$(VERSION)*.src.rpm
-
-dist-hook:
-	cd doc && make docsdist
-	mv doc/$(PACKAGE)-$(VERSION)-doc.tar.gz .
-	mv doc/$(PACKAGE)-$(VERSION)-doc.tar.bz2 .
-	mv doc/$(PACKAGE)-$(VERSION)-doc.zip .
-
+MAINTAINERCLEANFILES = \
+	Makefile.in
