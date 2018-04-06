@@ -22,12 +22,14 @@ allows an object-oriented way of exporting methods onto the DBus.
 2. What are the requirements to build from source?
 ======================================
 
+DBus-cxx requires support of at least C++11.
+
 The requirements are very low.  In order to build, you will need the 
 following tools to be installed:
 
+cmake(>=3.1)
 make
-m4
-libtool
+g++
 
 DBus-cxx depends on only two libraries:
 
@@ -39,15 +41,26 @@ dbus-1
 On Debian-based systems, you should be able to install with the following
 commands(as root/sudo):
 
-apt-get install libsigc++-1.2-dev
-apt-get install libdbus-1-dev
+```
+apt-get install libsigc++-1.2-dev libdbus-1-dev cmake
+```
+
+NOTE: On Debian 8(Jessie) and below, you will have to enable the 
+jessie-backports repository to install cmake:
+
+```
+apt-get install cmake -t jessie-backports
+```
 
 When checking out from SVN, build as such:
 
-./autogen.sh
-./configure
+```
+mkdir build
+cd build
+cmake ..
 make
 make install
+```
 
 ======================================
 3. What are the requirements to build the tools?
@@ -89,6 +102,6 @@ xsltproc
 On Debian-based systems, you should be able to install with the following 
 commands(as root/sudo):
 
-apt-get install doxygen
-apt-get install graphviz
-apt-get install xsltproc
+```
+apt-get install doxygen graphviz xsltproc
+```
