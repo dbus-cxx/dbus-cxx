@@ -40,6 +40,7 @@ set( CMAKE_CXX_STANDARD_REQUIRED ON )
 #
 option( ENABLE_TESTS "Enable the unit tests" OFF )
 option( ENABLE_EXAMPLES "Enable the examples" OFF )
+option( ENABLE_TOOLS "Enable dbus-cxx tools" OFF )
 
 #
 # Configure our compile options
@@ -87,9 +88,8 @@ set( DBUS_CXX_HEADERS1
 
 # headers that need to go in the include/dbus-cxx directory
 set( DBUS_CXX_HEADERS
-    dbus-cxx/connection.h
-    dbus-cxx/object.h
-
+    ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/connection.h
+    ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/object.h
     dbus-cxx/accumulators.h
     dbus-cxx/callmessage.h
     dbus-cxx/dbus-cxx-private.h
@@ -223,9 +223,17 @@ INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-2.0.pc"
 
 #
 # Include the directory for the examples
+#
 if( ENABLE_EXAMPLES )
     add_subdirectory( examples )
 endif( ENABLE_EXAMPLES )
+
+#
+# Include the directory for the tools
+#
+if( ENABLE_TOOLS )
+    add_subdirectory( tools )
+endif( ENABLE_TOOLS )
 
 #
 # Print configuration information for the user
@@ -237,6 +245,8 @@ message(STATUS "")
 
 message(STATUS "  Build type ...................... : ${CMAKE_BUILD_TYPE}")
 message(STATUS "  Install prefix .................. : ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "  Library location ................ : ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 message(STATUS "  C++ compiler .................... : ${CMAKE_CXX_COMPILER}")
 message(STATUS "  Build examples .................. : ${ENABLE_EXAMPLES}")
 message(STATUS "  Build tests ..................... : ${ENABLE_TESTS}")
+message(STATUS "  Build tools ..................... : ${ENABLE_TOOLS}")
