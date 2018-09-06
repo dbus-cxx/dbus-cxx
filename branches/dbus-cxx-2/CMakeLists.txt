@@ -125,32 +125,6 @@ set( DBUS_CXX_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
 )
 
-# We need to run m4 on some files
-#foreach( filename 
-#    dbus-cxx/dbus_signal.h.m4
-#    dbus-cxx/interface.h.m4
-#    dbus-cxx/interfaceproxy.h.m4
-#    dbus-cxx/method.h.m4
-#    dbus-cxx/method_impl.h.m4
-#    dbus-cxx/methodproxybase.h.m4
-#    dbus-cxx/methodproxy.h.m4
-#    dbus-cxx/objectproxy.h.m4
-#    dbus-cxx/signal_proxy.h.m4
-#    dbus-cxx/template.macros.m4 )
-#
-#    string( REPLACE ".m4" "" sanitized_file ${filename} )
-#    # Due to how the dependency tracking works, we must generate the m4 files when cmake is run
-#    execute_process( COMMAND m4 ${CMAKE_CURRENT_SOURCE_DIR}/${filename} 
-#        OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/${sanitized_file} )
-    # But we also add it to a custom command if the file changes
-    #add_custom_command( OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${sanitized_file}
-    #    COMMAND m4 -P -s ${filename} > ${CMAKE_CURRENT_BINARY_DIR}/${sanitized_file}
-    #    MAIN_DEPENDENCY ${filename}
-    #    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    #    VERBATIM
-    #)
-#endforeach( filename )
-
 set( DBUS_CXX_INCLUDE_DIRECTORIES 
     ${CMAKE_CURRENT_SOURCE_DIR} 
     ${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx
@@ -166,6 +140,48 @@ include_directories( ${DBUS_CXX_INCLUDE_DIRECTORIES}
 add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} )
 #add_library( dbus-cxx-static STATIC ${DBUS_CXX_SOURCES} )
 set_target_properties( dbus-cxx PROPERTIES VERSION 1.0.0 SOVERSION 1 )
+
+#
+# gnerate files with m4
+#
+# https://samthursfield.wordpress.com/2015/11/21/cmake-dependencies-between-targets-and-files-and-custom-commands/
+# https://gist.github.com/socantre/7ee63133a0a3a08f3990
+foreach( filename 
+    dbus_signal.h.m4
+    interface.h.m4
+    interfaceproxy.h.m4
+    method.h.m4
+    method_impl.h.m4
+    methodproxybase.h.m4
+    methodproxy.h.m4
+    objectproxy.h.m4
+    signal_proxy.h.m4
+    connection.h.m4
+    object.h.m4 )
+
+    string( REPLACE ".m4" "" sanitized_file ${filename} )
+
+    set( output_file ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/${sanitized_file} )
+    set( input_file ${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx ${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx/${filename} )
+
+    # Add the custom command which calls m4 to generate the headers
+    add_custom_command(
+        OUTPUT
+            ${output_file}
+        COMMAND
+            m4 -I ${input_file} > ${output_file}
+        VERBATIM
+    )
+
+    # The custom target tells cmake that we need to generate this
+    add_custom_target( generate-${sanitized_file} 
+        DEPENDS 
+            ${output_file}
+    )
+
+    # we need to add a dependecy to the library to ensure that the files get regenerated
+    add_dependencies( dbus-cxx generate-${sanitized_file} )
+endforeach( filename )
 
 #
 # Library install information
