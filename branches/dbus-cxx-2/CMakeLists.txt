@@ -38,6 +38,8 @@ set( CMAKE_CXX_STANDARD_REQUIRED ON )
 #
 # Check our options
 #
+option( ENABLE_TESTS "Enable the unit tests" OFF )
+option( ENABLE_EXAMPLES "Enable the examples" OFF )
 
 #
 # Configure our compile options
@@ -206,7 +208,7 @@ SET(PKG_CONFIG_LIBS
     "-L\${libdir} -ldbus-cxx"
 )
 SET(PKG_CONFIG_CFLAGS
-    "-I\${includedir} -std=c++11"
+    "-I\${includedir}"
 )
 SET(PKG_CONFIG_REQUIRES
     "dbus-1 >= 1.3, sigc++-2.0"
@@ -218,3 +220,23 @@ CONFIGURE_FILE(
 )
 INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-2.0.pc"
         DESTINATION lib/pkgconfig)
+
+#
+# Include the directory for the examples
+if( ENABLE_EXAMPLES )
+    add_subdirectory( examples )
+endif( ENABLE_EXAMPLES )
+
+#
+# Print configuration information for the user
+#
+message(STATUS "")
+message(STATUS "")
+message(STATUS "dbus-cxx configuration summary:")
+message(STATUS "")
+
+message(STATUS "  Build type ...................... : ${CMAKE_BUILD_TYPE}")
+message(STATUS "  Install prefix .................. : ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "  C++ compiler .................... : ${CMAKE_CXX_COMPILER}")
+message(STATUS "  Build examples .................. : ${ENABLE_EXAMPLES}")
+message(STATUS "  Build tests ..................... : ${ENABLE_TESTS}")
