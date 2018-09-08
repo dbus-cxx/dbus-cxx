@@ -22,7 +22,7 @@ add_executable( dbus-cxx-xml2cpp
     arg.cpp
     method.cpp
     signal.cpp  )
-target_link_libraries( dbus-cxx-xml2cpp ${TOOLS_LINK} )
+target_link_libraries( dbus-cxx-xml2cpp ${TOOLS_LINK} ${cppgenerate_LDFLAGS} )
 install( TARGETS dbus-cxx-xml2cpp DESTINATION bin )
 
 add_executable( dbus-cxx-introspect
