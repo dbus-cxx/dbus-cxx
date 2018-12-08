@@ -106,7 +106,7 @@ namespace DBus
       nsec = (intv % 1000) * 1000000;
       struct itimerspec its = { {sec, nsec}, {sec, nsec} };
 
-      timer_settime( &m_timer_id, 0, &its, NULL );
+      timer_settime( m_timer_id, 0, &its, NULL );
 
       m_is_armed = true;
     }
