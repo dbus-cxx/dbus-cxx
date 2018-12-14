@@ -29,165 +29,8 @@
 #include "parsed_object.h"
 #include "generate_adapter.h"
 #include "generate_proxy.h"
+#include "code-generator.h"
 
-static std::stack<std::string> tagStack;
-static std::vector<cppgenerate::Class> classes;
-static std::string currentInterface;
-static cppgenerate::Method currentMethod;
-
-static void start_element_handler(void* user_data, const XML_Char* name, const XML_Char** attrs ){
-    std::string tagName = std::string( name );
-    std::map<std::string,std::string> tagAttrs;
-    int i = 0;
-
-    while( attrs[ i ] != NULL ){
-        std::string attrKey( attrs[ i ] );
-        std::string attrValue( attrs[ i + 1 ] );
-
-        tagAttrs.insert( std::make_pair( attrKey, attrValue ) );
-
-        i += 2;
-    }
-
-    tagStack.push( tagName );
-
-    if( tagName.compare( "node" ) == 0 ){
-        cppgenerate::Class newclass;
-        std::string dest;
-        std::string path;
-
-        if( tagAttrs.find( "gen-namespace" ) != tagAttrs.end() ){
-            newclass.setNamespace( tagAttrs.find( "gen-namespace" )->second );
-        }
-
-        if( tagAttrs.find( "dest" ) != tagAttrs.end() ){
-            dest = "\"" + tagAttrs[ "dest" ] + "\"";
-        }else{
-            std::cerr << "WARNING: Did not find 'dest' in XML for node" << std::endl;
-        }
-
-        if( tagAttrs.find( "path" ) != tagAttrs.end() ){
-            path = "\"" + tagAttrs[ "path" ] + "\"";
-        }else{
-            std::cerr << "WARNING: Did not find 'path' in xml for node" << std::endl;
-        }
-
-        if( tagAttrs.find( "cppname" ) != tagAttrs.end() ){
-            newclass.setName( tagAttrs[ "cppname" ] + "Proxy" );
-        }else{
-            newclass.setName( "NONAME" );
-        }
-
-
-        newclass.addSystemInclude( "dbus-cxx.h" )
-          .addParentClass( "DBus::ObjectProxy", cppgenerate::AccessModifier::PUBLIC, "conn, dest, path" )
-          .addConstructor( cppgenerate::Constructor::create()
-            .addArgument( cppgenerate::Argument::create()
-              .setType( "DBus::Connection::Pointer" )
-              .setName( "conn" ) )
-            .addArgument( cppgenerate::Argument::create()
-              .setType( "std::string" )
-              .setName( "dest" )
-              .setDefaultValue( dest ) )
-            .addArgument( cppgenerate::Argument::create()
-              .setType( "std::string" )
-              .setName( "path" )
-              .setDefaultValue( path ) ) );
-              
-        classes.push_back( newclass );
-    }else if( tagName.compare( "interface" ) == 0 ){
-        if( tagAttrs.find( "name" ) == tagAttrs.end() ){
-            std::cerr << "WARNING: No name for interface found" << std::endl;
-            return;
-        }
-        currentInterface = tagAttrs[ "name" ];
-    }else if( tagName.compare( "method" ) == 0 ){
-        if( tagAttrs.find( "name" ) == tagAttrs.end() ){
-            std::cerr << "WARNING: No name for method found" << std::endl;
-            return;
-        }
-        currentMethod = cppgenerate::Method().setName( tagAttrs[ "name" ] );
-    }else if( tagName.compare( "arg" ) == 0 ){
-        cppgenerate::Argument arg;
-
-        if( tagAttrs.find( "direction" ) == tagAttrs.end() ){
-            //XML_GetCurrentLineNumber
-            std::cerr << "WARNING: No direction for arg found(assuming in)." << std::endl;
-        }
-
-        DBus::Signature signature( tagAttrs[ "type" ] );
-
-        DBus::Signature::iterator it = signature.begin();
-        //typestr = type_string_from_code( it.type() );
-
-        arg.setName( tagAttrs[ "name" ] )
-           .setType( type_string_from_code( it.type() ) );
-
-        if( tagAttrs[ "direction" ] == "out" ){
-            currentMethod.setReturnType( type_string_from_code( it.type() ) );
-        }else{
-            currentMethod.addArgument( arg );
-        }
-    }
-}
-
-void end_element_handler( void* userData, const XML_Char* name ){
-    std::string tagName = std::string( name );
-
-    tagStack.pop();
-
-    if( tagName == "method" ){
-        /* Add a method to the class, along with its implementation
-         * to actually call over the bus
-         */
-        cppgenerate::MemberVariable memberVar;
-        std::vector<cppgenerate::Argument> args = currentMethod.arguments();
-        std::string dbusSig;
-        /* method proxy type = template args */
-        std::string methodProxyType;
-        /* methodArguments = arguments to proxy method */
-        std::string methodArguments;
-        bool argumentComma = false;
-
-        methodProxyType += "DBus::MethodProxy<" + currentMethod.returnType();
-        for( cppgenerate::Argument arg : args ){
-            methodProxyType += ",";
-            methodProxyType += arg.type();
-
-            if( argumentComma ) methodArguments += ",";
-            methodArguments += arg.name();
-            argumentComma = true;
-        }
-        methodProxyType += ">";
-
-        memberVar.setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
-                 .setName( "m_method_" + currentMethod.name() )
-                 .setType( methodProxyType );
-
-        currentMethod.addCode( cppgenerate::CodeBlock::create()
-            .addLine( "return (*" + memberVar.name() + ")(" +  methodArguments + ");" ) );
-
-        classes.data()[ classes.size() - 1 ]
-            .addMethod( currentMethod )
-            .addMemberVariable( memberVar );
-    }
-}
-
-static void parse_new( const std::string& xml ){
-  XML_Parser parser = XML_ParserCreate(NULL);
-
-  XML_SetElementHandler( parser, start_element_handler, end_element_handler );
-
-  XML_Parse( parser, xml.c_str(), xml.size(), 1 );
-
-  XML_ParserFree(parser);
-
-
-    for( cppgenerate::Class c : classes ){
-        c.print( std::cout, std::cout );
-    }
-static std::vector<cppgenerate::Class> classes;
-}
 
 int main( int argc, const char** argv )
 {
@@ -200,6 +43,7 @@ int main( int argc, const char** argv )
   const char* xml_file=NULL;
   const char* file_prefix = "";
   char c;
+  DBus::CodeGenerator generator;
 
   struct poptOption option_table[] = {
     { "xml",          'x', POPT_ARG_STRING, &xml_file,       0, "The file containing the XML specification" },
@@ -249,7 +93,15 @@ int main( int argc, const char** argv )
     }
     fin.close();
 
-    parse_new( specification );
+    generator.setXML( specification );
+
+    if( !generator.parse() ){
+        return 1;
+    }
+
+    if( make_proxy ){
+        generator.generateProxyClasses();
+    }
 return 0;
 
     Nodes nodes;
