@@ -100,7 +100,11 @@ int main( int argc, const char** argv )
     }
 
     if( make_proxy ){
-        generator.generateProxyClasses();
+        generator.generateProxyClasses( output_to_file );
+    }
+
+    if( make_adapter ){
+        generator.generateAdapterClasses( output_to_file );
     }
 return 0;
 

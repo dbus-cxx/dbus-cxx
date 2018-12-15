@@ -19,6 +19,7 @@
 #include <iostream>
 #include <fstream>
 #include <dbus-cxx.h>
+#include <string>
 
 #include "code-generator.h"
 
@@ -53,6 +54,8 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
 
     if( tagName.compare( "node" ) == 0 ){
         cppgenerate::Class newclass;
+        cppgenerate::Class newAdapterClass;
+        cppgenerate::Class newAdapteeClass;
         std::string dest;
         std::string path;
 
@@ -63,22 +66,33 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
         if( tagAttrs.find( "dest" ) != tagAttrs.end() ){
             dest = "\"" + tagAttrs[ "dest" ] + "\"";
         }else{
-            std::cerr << "WARNING: Did not find 'dest' in XML for node" << std::endl;
+            std::cerr << "WARNING: Did not find 'dest' in XML for node \'" 
+                      << tagName << "\'.  Line:" 
+                      << XML_GetCurrentLineNumber( m_parser )
+                      << std::endl;
         }
 
         if( tagAttrs.find( "path" ) != tagAttrs.end() ){
             path = "\"" + tagAttrs[ "path" ] + "\"";
         }else{
-            std::cerr << "WARNING: Did not find 'path' in xml for node" << std::endl;
+            std::cerr << "WARNING: Did not find 'path' in xml for node \'"
+                      << tagName << "\'.  Line:" 
+                      << XML_GetCurrentLineNumber( m_parser )
+                      << std::endl;
         }
 
         if( tagAttrs.find( "cppname" ) != tagAttrs.end() ){
-            newclass.setName( tagAttrs[ "cppname" ] );
+            newclass.setName( tagAttrs[ "cppname" ] + "Proxy" );
+            newAdapterClass.setName( tagAttrs[ "cppname" ] + "Adapter" );
+            newAdapteeClass.setName( tagAttrs[ "cppname" ] + "Adaptee" );
         }else{
-            newclass.setName( "NONAME" );
+            newclass.setName( "NONAME_Proxy" );
+            newAdapterClass.setName( "NONAME_Adapter" );
+            newAdapteeClass.setName( "NONAME_Adaptee" );
         }
 
 
+        /* Add new proxy class */
         newclass.addSystemInclude( "dbus-cxx.h" )
           .addSystemInclude( "stdint.h" )
           .addSystemInclude( "string" )
@@ -119,6 +133,44 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
               .setDefaultValue( path ) );
               
         m_proxyClasses.push_back( newclass );
+
+        /* Add new adapter class */
+        newAdapterClass.addSystemInclude( "dbus-cxx.h" )
+          .addSystemInclude( "stdint.h" )
+          .addSystemInclude( "string" )
+          .addSystemInclude( "memory" )
+          .addLocalInclude( newAdapteeClass.getName() + ".h" )
+          .addParentClass( "DBus::Object", cppgenerate::AccessModifier::PUBLIC, "path" );
+
+        newAdapterClass.addMethod( cppgenerate::Method::create()
+            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+            .setName( "create" )
+            .setStatic( true )
+            .setReturnType( "std::shared_ptr<" + newAdapterClass.getName() + ">" )
+            .addCode( cppgenerate::CodeBlock::create()
+                .addLine( "return std::shared_ptr<" + newAdapterClass.getName() + ">( new " + newAdapterClass.getName() + "( adaptee, path );" ) )
+            .addArgument( cppgenerate::Argument::create()
+              .setType( newAdapteeClass.getName() + "*" )
+              .setName( "adaptee" ) )
+            .addArgument( cppgenerate::Argument::create()
+              .setType( "std::string" )
+              .setName( "path" )
+              .setDefaultValue( path ) ) );
+
+        m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
+            .addLine( "DBus::MethodBase::pointer temp_method;" ) )
+            .setAccessModifier( cppgenerate::AccessModifier::PROTECTED );
+
+        m_currentAdapterConstructor.addArgument( cppgenerate::Argument::create()
+            .setType( newAdapteeClass.getName() + "*" )
+            .setName( "adaptee" ) )
+            .addArgument( cppgenerate::Argument::create()
+              .setType( "std::string" )
+              .setName( "path" )
+              .setDefaultValue( path )  );
+
+        m_adapterClasses.push_back( newAdapterClass );
+        m_adapteeClasses.push_back( newAdapteeClass );
     }else if( tagName.compare( "interface" ) == 0 ){
         if( tagAttrs.find( "name" ) == tagAttrs.end() ){
             std::cerr << "WARNING: No name for interface found" << std::endl;
@@ -134,6 +186,10 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             .setName( tagAttrs[ "name" ] )
             .setAccessModifier( cppgenerate::AccessModifier::PUBLIC );
 
+        m_currentAdapteeMethod = cppgenerate::Method()
+            .setName( tagAttrs[ "name" ] )
+            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+            .setPureVirtual( true );
     }else if( tagName.compare( "arg" ) == 0 ){
         cppgenerate::Argument arg;
 
@@ -152,8 +208,10 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
 
         if( tagAttrs[ "direction" ] == "out" ){
             m_currentProxyMethod.setReturnType( type_string_from_code( it.type() ) );
+            m_currentAdapteeMethod.setReturnType( type_string_from_code( it.type() ) );
         }else{
             m_currentProxyMethod.addArgument( arg );
+            m_currentAdapteeMethod.addArgument( arg );
         }
     }
 }
@@ -173,6 +231,7 @@ void CodeGenerator::end_element( std::string tagName ){
         /* methodArguments = arguments to proxy method */
         std::string methodArguments;
         bool argumentComma = false;
+        int argNum = 0;
 
         methodProxyType += "<" + m_currentProxyMethod.returnType();
         for( cppgenerate::Argument arg : args ){
@@ -200,9 +259,29 @@ void CodeGenerator::end_element( std::string tagName ){
             .addLine( "m_method_" + m_currentProxyMethod.name() + 
                       " = this->create_method" + methodProxyType + 
                       "(\"" + m_currentInterface + "\",\"" + m_currentProxyMethod.name() + "\");" ) );
+
+        /* Add our new virtual method that needs to be implemented to our adaptee */
+        m_adapteeClasses.data()[ m_adapteeClasses.size() - 1 ]
+            .addMethod( m_currentAdapteeMethod );
+
+        /* Add our internal construction of the adaptee method */
+        m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
+            .addLine( "temp_method = this->create_method" + methodProxyType + 
+                      "( \"" + m_currentInterface + "\", \"" + 
+                      m_currentAdapteeMethod.name() + "\"," +
+                      "sigc::mem_fun( adaptee, &" + m_adapteeClasses.data()[ m_adapteeClasses.size() - 1 ].getName() +
+                      "::" + m_currentAdapteeMethod.name() + " ) );" ) );
+        for( cppgenerate::Argument arg : args ){
+            m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
+                .addLine( "temp_method->set_arg_name( " + std::to_string( argNum ) + ", \"" + arg.name() + "\" );" ) );
+            argNum++;
+        }
     }else if( tagName == "node" ){
         m_proxyClasses.data()[ m_proxyClasses.size() - 1 ]
             .addConstructor( m_currentProxyConstructor );
+
+        m_adapterClasses.data()[ m_adapterClasses.size() - 1 ]
+            .addConstructor( m_currentAdapterConstructor );
     }
 }
 
@@ -231,16 +310,52 @@ void CodeGenerator::end_element_handler( void* userData, const XML_Char* name ){
     generator->end_element( tagName );
 }
 
-void CodeGenerator::generateProxyClasses(){
+void CodeGenerator::generateProxyClasses( bool outputToFile ){
     for( cppgenerate::Class c : m_proxyClasses ){
-        std::string headerFilename = c.getName() + std::string( "_proxy.h" );
-        std::string implFilename = c.getName() + std::string( "_proxy.cpp" );
-        std::ofstream header;
-        std::ofstream impl;
+        if( outputToFile ){
+            std::string headerFilename = c.getName() + std::string( ".h" );
+            std::string implFilename = c.getName() + std::string( ".cpp" );
+            std::ofstream header;
+            std::ofstream impl;
 
-        header.open( headerFilename );
-        impl.open( implFilename );
+            header.open( headerFilename );
+            impl.open( implFilename );
 
-        c.print( header, impl );
+            c.print( header, impl );
+        }else{
+            c.printAsHeaderOnly( std::cout );
+        }
+    }
+
+}
+
+void CodeGenerator::generateAdapterClasses( bool outputToFile ){
+    for( cppgenerate::Class c : m_adapterClasses ){
+        if( outputToFile ){
+            std::string headerFilename = c.getName() + std::string( ".h" );
+            std::string implFilename = c.getName() + std::string( ".cpp" );
+            std::ofstream header;
+            std::ofstream impl;
+
+            header.open( headerFilename );
+            impl.open( implFilename );
+
+            c.print( header, impl );
+        }else{
+            c.printAsHeaderOnly( std::cout );
+        }
+    }
+
+    for( cppgenerate::Class c : m_adapteeClasses ){
+        if( outputToFile ){
+            std::string headerFilename = c.getName() + std::string( ".h" );
+            std::ofstream header;
+
+            header.open( headerFilename );
+
+            c.printAsHeaderOnly( header );
+        }else{
+            c.printAsHeaderOnly( std::cout );
+        }
     }
 }
