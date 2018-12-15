@@ -21,11 +21,16 @@
 #include <fstream>
 #include <dbus-cxx.h>
 #include <cstring>
+#include <expat.h>
+#include <stack>
+#include <cppgenerate/class.h>
 
 #include "xml_parser.h"
 #include "parsed_object.h"
 #include "generate_adapter.h"
 #include "generate_proxy.h"
+#include "code-generator.h"
+
 
 int main( int argc, const char** argv )
 {
@@ -38,13 +43,16 @@ int main( int argc, const char** argv )
   const char* xml_file=NULL;
   const char* file_prefix = "";
   char c;
+  DBus::CodeGenerator generator;
 
   struct poptOption option_table[] = {
     { "xml",          'x', POPT_ARG_STRING, &xml_file,       0, "The file containing the XML specification" },
     { "prefix",       'p', POPT_ARG_STRING, &file_prefix,    0, "A prefix to place on all output files" },
     { "file",         'f', POPT_ARG_NONE,   &output_to_file, 0, "Output to files [default=no]" },
-    { "proxy",          0, POPT_ARG_NONE,   &make_proxy,     0, "Make a proxy class for the specification [default=no]" },
-    { "adapter",        0, POPT_ARG_NONE,   &make_adapter,   0, "Make an adapter class for the specification [default=no]" },
+    { "proxy",          0, POPT_ARG_NONE,   &make_proxy,     0, "Make a proxy class for the specification.  "
+         "Proxies are used when you want to talk with a DBus service [default=no]" },
+    { "adapter",        0, POPT_ARG_NONE,   &make_adapter,   0, "Make an adapter class for the specification.  "
+         "Adapters are used when you want to implement a service [default=no]" },
     { "verbose",        0, POPT_ARG_NONE,   &verbose,        0, "Verbose printing of output" },
     POPT_AUTOHELP
     { NULL, 0, 0, NULL, 0 }
@@ -85,6 +93,20 @@ int main( int argc, const char** argv )
     }
     fin.close();
 
+    generator.setXML( specification );
+
+    if( !generator.parse() ){
+        return 1;
+    }
+
+    if( make_proxy ){
+        generator.generateProxyClasses( output_to_file );
+    }
+
+    if( make_adapter ){
+        generator.generateAdapterClasses( output_to_file );
+    }
+return 0;
 
     Nodes nodes;
 

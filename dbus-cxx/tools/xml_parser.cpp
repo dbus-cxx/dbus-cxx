@@ -127,7 +127,7 @@ static Interface current_interface;
 static std::deque<Node> node_stack;
 
 
-void start_element_handler( void* userData, const XML_Char* name, const XML_Char** attrs )
+static void start_element_handler( void* userData, const XML_Char* name, const XML_Char** attrs )
 {
   const XML_Char** ptr = attrs;
 
@@ -248,7 +248,7 @@ void start_element_handler( void* userData, const XML_Char* name, const XML_Char
   }
 }
 
-void end_element_handler( void* userData, const XML_Char* name )
+static void end_element_handler( void* userData, const XML_Char* name )
 {
   XMLTag current_tag = xml_tag(name);
 
