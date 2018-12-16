@@ -1,4 +1,4 @@
-DBus-cxx
+#DBus-cxx
 
 Table of contents:
 
@@ -9,9 +9,7 @@ Table of contents:
 5. Documentation Generation
 6. Tools
 
-======================================
-1. What is DBus-cxx?
-======================================
+## 1. What is DBus-cxx?
 
 DBus-cxx is a C++ wrapper for DBus.  DBus is a Linux-specific RPC(remote
 procedure call) and IPC(inter-process communications) mechanism.  
@@ -19,9 +17,7 @@ DBus-cxx provides an object-oriented view of all programs on the DBus, and
 allows an object-oriented way of exporting methods onto the DBus.
 
 
-======================================
-2. What are the requirements to build from source?
-======================================
+## 2. What are the requirements to build from source?
 
 DBus-cxx requires support of at least C++11.
 
@@ -63,9 +59,7 @@ make
 make install
 ```
 
-======================================
-3. What are the requirements to build the tools?
-======================================
+## 3. What are the requirements to build the tools?
 
 In order to build the tools, you will need the following libraries, in addition
 to the above:
@@ -84,16 +78,12 @@ In order to configure the tools, set -DENABLE_TOOLS=ON when calling CMake
 
 libcppgenerate can be found here: https://github.com/rm5248/libcppgenerate
 
-======================================
-4. Smart Pointer information
-======================================
+## 4. Smart Pointer information
 
 DBus-cxx requires at least C++11 to work properly.  Because the library makes
 extensive use of smart pointers, it will use C++11 for the implementation.
 
-======================================
-5. Documentation Generation
-======================================
+## 5. Documentation Generation
 
 To generate the documentation, you will need:
 
@@ -109,9 +99,7 @@ commands(as root/sudo):
 apt-get install doxygen graphviz xsltproc
 ```
 
-======================================
-6. Tools
-======================================
+## 6. Tools
 
 There are two tools provided with dbus-cxx:
 
