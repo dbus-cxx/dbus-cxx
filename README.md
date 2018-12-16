@@ -1,4 +1,4 @@
-#DBus-cxx
+# DBus-cxx
 
 Table of contents:
 
