@@ -13,6 +13,7 @@ Build-Depends: cmake,
                libglibmm-2.4-dev,
                libpopt-dev,
                libsigc++-2.0-dev,
+               m4,
                quilt,
                xsltproc
 Standards-Version: 3.9.5
