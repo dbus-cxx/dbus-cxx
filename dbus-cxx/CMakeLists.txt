@@ -216,7 +216,7 @@ SET(PKG_CONFIG_REQUIRES
 
 CONFIGURE_FILE(
     "${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx-1.0.pc.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-2.0.pc"
+    "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-1.0.pc"
 )
 INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-1.0.pc"
         DESTINATION lib/pkgconfig)
