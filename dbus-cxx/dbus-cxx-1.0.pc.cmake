@@ -1,6 +1,6 @@
 Name: dbus-cxx
 Description: C++ bindings for dbus
-Version: ${PROJECT_VERSION}
+Version: ${PKG_VERSION}
 Requires: ${PKG_CONFIG_REQUIRES}
 prefix=${CMAKE_INSTALL_PREFIX}
 includedir=${PKG_CONFIG_INCLUDEDIR}

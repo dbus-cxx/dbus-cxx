@@ -41,6 +41,7 @@ set( CMAKE_CXX_STANDARD_REQUIRED ON )
 option( ENABLE_TESTS "Enable the unit tests" OFF )
 option( ENABLE_EXAMPLES "Enable the examples" OFF )
 option( ENABLE_TOOLS "Enable dbus-cxx tools" OFF )
+option( ENABLE_GLIBMM "Enable GLibMM support" OFF )
 
 #
 # Configure our compile options
@@ -136,12 +137,32 @@ include_directories( ${DBUS_CXX_INCLUDE_DIRECTORIES}
     ${dbus_INCLUDE_DIRS} 
     ${sigc_INCLUDE_DIRS} )
 
+
 #
 # Target for the library
 #
 add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} )
 #add_library( dbus-cxx-static STATIC ${DBUS_CXX_SOURCES} )
 set_target_properties( dbus-cxx PROPERTIES VERSION 1.0.0 SOVERSION 1 )
+
+#
+# If GLIBMM is used, add in the appropriate packages
+#
+if( ENABLE_GLIBMM )
+    pkg_check_modules( glibmm-2.4 REQUIRED glibmm-2.4 )
+
+    add_library( dbus-cxx-glibmm SHARED dbus-cxx-glibmm/dispatcher.cpp )
+    set_target_properties( dbus-cxx-glibmm PROPERTIES VERSION 1.0.0 SOVERSION 1 )
+    target_include_directories( dbus-cxx-glibmm PRIVATE ${glibmm-2.4_INCLUDE_DIRS} )
+    add_dependencies( dbus-cxx-glibmm dbus-cxx )
+
+    set( install_targets ${install_targets} dbus-cxx-glibmm )
+    install( TARGETS ${install_targets}
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
+    install( FILES dbus-cxx-glibmm.h DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION} )
+    install( FILES dbus-cxx-glibmm/dispatcher.h DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/dbus-cxx-glibmm/ )
+endif( ENABLE_GLIBMM )
 
 #
 # gnerate files with m4
@@ -207,6 +228,9 @@ SET(PKG_CONFIG_INCLUDEDIR
 SET(PKG_CONFIG_LIBS
     "-L\${libdir} -ldbus-cxx"
 )
+SET(PKG_CONFIG_LIBS_MM
+    "-L\${libdir} -ldbus-cxx-glibmm"
+)
 SET(PKG_CONFIG_CFLAGS
     "-I\${includedir}"
 )
@@ -219,7 +243,16 @@ CONFIGURE_FILE(
     "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-1.0.pc"
 )
 INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-1.0.pc"
-        DESTINATION lib/pkgconfig)
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+
+if( ENABLE_GLIBMM )
+    CONFIGURE_FILE(
+        "${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx-glibmm-1.0.pc.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-glibmm-1.0.pc"
+    )
+    INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-glibmm-1.0.pc"
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+endif( ENABLE_GLIBMM )
 
 #
 # Include the directory for the examples
@@ -250,3 +283,4 @@ message(STATUS "  C++ compiler .................... : ${CMAKE_CXX_COMPILER}")
 message(STATUS "  Build examples .................. : ${ENABLE_EXAMPLES}")
 message(STATUS "  Build tests ..................... : ${ENABLE_TESTS}")
 message(STATUS "  Build tools ..................... : ${ENABLE_TOOLS}")
+message(STATUS "  Enable GLibmm support ........... : ${ENABLE_GLIBMM}")

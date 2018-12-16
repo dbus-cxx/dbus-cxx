@@ -30,7 +30,8 @@ override_dh_auto_configure:
 	dh_auto_configure -- \
 	-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH) \
 	-DENABLE_TOOLS=on \
-	-DENABLE_TESTS=on
+	-DENABLE_TESTS=on \
+	-DENABLE_GLIBMM=on
 
 
 
