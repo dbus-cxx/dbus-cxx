@@ -42,6 +42,7 @@ option( ENABLE_TESTS "Enable the unit tests" OFF )
 option( ENABLE_EXAMPLES "Enable the examples" OFF )
 option( ENABLE_TOOLS "Enable dbus-cxx tools" OFF )
 option( ENABLE_GLIBMM "Enable GLibMM support" OFF )
+option( BUILD_SITE "Build the dbus-cxx website reference" OFF )
 
 #
 # Configure our compile options
@@ -270,6 +271,30 @@ if( ENABLE_TOOLS )
 endif( ENABLE_TOOLS )
 
 #
+# If we want to build the site, we must have doxygen
+#
+if( BUILD_SITE )
+    find_package( Doxygen 
+                  REQUIRED dot )
+    file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/doc/
+          DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/doc/ )
+    configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile
+                    ${CMAKE_CURRENT_BINARY_DIR}/doc @ONLY )
+
+    add_custom_target( doc_doxygen ALL
+        COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
+        DEPENDS dbus-cxx
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM )
+    add_custom_target( tar_site ALL
+        COMMAND tar -czf dbus-cxx-website-${PKG_VERSION}.tar.gz -C doc/reference/html .
+        DEPENDS doc_doxygen
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        VERBATIM )
+endif( BUILD_SITE )
+
+#
 # Print configuration information for the user
 #
 message(STATUS "")
@@ -285,3 +310,4 @@ message(STATUS "  Build examples .................. : ${ENABLE_EXAMPLES}")
 message(STATUS "  Build tests ..................... : ${ENABLE_TESTS}")
 message(STATUS "  Build tools ..................... : ${ENABLE_TOOLS}")
 message(STATUS "  Enable GLibmm support ........... : ${ENABLE_GLIBMM}")
+message(STATUS "  Build website ................... : ${BUILD_SITE}")
