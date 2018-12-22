@@ -88,9 +88,8 @@ set( DBUS_CXX_HEADERS1
 )
 
 # headers that need to go in the include/dbus-cxx directory
+# Auto-generated files are added later
 set( DBUS_CXX_HEADERS
-    ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/connection.h
-    ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/object.h
     dbus-cxx/accumulators.h
     dbus-cxx/callmessage.h
     dbus-cxx/dbus-cxx-private.h
@@ -186,6 +185,7 @@ foreach( filename
 
     set( output_file ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/${sanitized_file} )
     set( input_file ${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx ${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx/${filename} )
+    set( DBUS_CXX_HEADERS ${DBUS_CXX_HEADERS} ${output_file} )
 
     # Add the custom command which calls m4 to generate the headers
     add_custom_command(
