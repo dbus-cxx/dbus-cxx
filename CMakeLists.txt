@@ -143,6 +143,7 @@ include_directories( ${DBUS_CXX_INCLUDE_DIRECTORIES}
 add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} )
 #add_library( dbus-cxx-static STATIC ${DBUS_CXX_SOURCES} )
 set_target_properties( dbus-cxx PROPERTIES VERSION 1.0.0 SOVERSION 1 )
+target_link_libraries( dbus-cxx ${dbus_LIBS} ${sigc_LIBS} -lrt )
 
 #
 # If GLIBMM is used, add in the appropriate packages
