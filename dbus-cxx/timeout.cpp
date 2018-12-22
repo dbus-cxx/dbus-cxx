@@ -29,7 +29,6 @@ namespace DBus
       m_is_armed(false)
   {
     if ( m_cobj ) dbus_timeout_set_data( cobj, this, NULL );
-    pthread_mutex_init( &m_arming_mutex, NULL );
   }
 
   Timeout::pointer Timeout::create(DBusTimeout * cobj)
@@ -39,10 +38,8 @@ namespace DBus
     
   Timeout::~Timeout()
   {
-    pthread_mutex_lock( &m_arming_mutex );
+    std::unique_lock<std::mutex> lock( m_arming_mutex );
     if ( m_is_armed ) timer_delete( m_timer_id );
-    pthread_mutex_unlock( &m_arming_mutex );
-    pthread_mutex_destroy( &m_arming_mutex );
   }
 
   bool Timeout::is_valid() const
@@ -85,7 +82,7 @@ namespace DBus
 
   void Timeout::arm(bool should_arm)
   {
-    pthread_mutex_lock( &m_arming_mutex );
+    std::unique_lock<std::mutex> lock( m_arming_mutex );
     if ( should_arm )
     {
       if ( not m_is_armed )
@@ -118,7 +115,6 @@ namespace DBus
           timer_delete( m_timer_id );
       }
     }
-    pthread_mutex_unlock( &m_arming_mutex );
   }
 
   bool Timeout::is_armed()

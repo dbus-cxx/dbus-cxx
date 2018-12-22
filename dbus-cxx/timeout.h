@@ -20,6 +20,7 @@
 #include <sys/time.h>
 #include <sys/signal.h>
 #include <dbus-cxx/pointer.h>
+#include <mutex>
 
 #ifndef DBUSCXX_TIMEOUT_H
 #define DBUSCXX_TIMEOUT_H
@@ -80,7 +81,7 @@ namespace DBus
 
       bool m_is_armed;
 
-      pthread_mutex_t m_arming_mutex;
+      std::mutex m_arming_mutex;
 
       static void timer_callback_proxy( sigval_t sv );
 
