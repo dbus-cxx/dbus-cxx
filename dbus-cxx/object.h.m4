@@ -58,6 +58,8 @@ define([DECLARE_CREATE_INTERFACE_METHOD],[dnl
       /**
        * Creates a method with a signature based on the @param slot parameter signature and adds it to the named interface
        * @return A smart pointer to the newly created method
+       * @param interface_name The DBus interface, in org.example.Foo style
+       * @param method_name The name of the method that this is for.
        * @param slot This slot will be called with the given signature when the method is invoked
        *
        * Template parameters of the sigc::slot will determine the signature of

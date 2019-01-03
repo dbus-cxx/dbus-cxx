@@ -766,7 +766,8 @@ WARN_LOGFILE           =
 INPUT                  = ../dbus-cxx/ \
                          ../dbus-cxx-glibmm \
                          @CMAKE_CURRENT_SOURCE_DIR@/dbus-cxx \
-                         @CMAKE_CURRENT_SOURCE_DIR@/dbus-cxx-glibmm
+                         @CMAKE_CURRENT_SOURCE_DIR@/dbus-cxx-glibmm \
+                         @CMAKE_CURRENT_SOURCE_DIR@/doc
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -786,52 +787,7 @@ INPUT_ENCODING         = UTF-8
 # *.md, *.mm, *.dox, *.py, *.f90, *.f, *.for, *.tcl, *.vhd, *.vhdl, *.ucf,
 # *.qsf, *.as and *.js.
 
-FILE_PATTERNS          = *.c \
-                         *.cc \
-                         *.cxx \
-                         *.cpp \
-                         *.c++ \
-                         *.java \
-                         *.ii \
-                         *.ixx \
-                         *.ipp \
-                         *.i++ \
-                         *.inl \
-                         *.h \
-                         *.hh \
-                         *.hxx \
-                         *.hpp \
-                         *.h++ \
-                         *.idl \
-                         *.odl \
-                         *.cs \
-                         *.php \
-                         *.php3 \
-                         *.inc \
-                         *.m \
-                         *.mm \
-                         *.dox \
-                         *.C \
-                         *.CC \
-                         *.C++ \
-                         *.II \
-                         *.I++ \
-                         *.H \
-                         *.HH \
-                         *.H++ \
-                         *.CS \
-                         *.PHP \
-                         *.PHP3 \
-                         *.M \
-                         *.MM \
-                         *.C \
-                         *.H \
-                         *.tlh \
-                         *.diff \
-                         *.patch \
-                         *.moc \
-                         *.xpm \
-                         *.dox
+FILE_PATTERNS          = 
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
 # be searched for input files as well.
