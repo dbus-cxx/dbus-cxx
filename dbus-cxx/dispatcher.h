@@ -172,8 +172,8 @@ namespace DBus
    * introspection-like documents.
    * 
    * \htmlonly
-   * <script type="text/javascript" src="http://www.ohloh.net/p/330958/widgets/project_users.js?style=red"></script><br>
-   * <script type="text/javascript" src="http://www.ohloh.net/p/330958/widgets/project_partner_badge.js"></script>
+   * <script type="text/javascript" src="https://www.ohloh.net/p/330958/widgets/project_users.js?style=red"></script><br>
+   * <script type="text/javascript" src="https://www.ohloh.net/p/330958/widgets/project_partner_badge.js"></script>
    * \endhtmlonly
    *
    * <br><hr>
@@ -183,76 +183,49 @@ namespace DBus
    * 
    * <br><hr>
    * 
-   * \par dbus-cxx Sourceforge Project Page
-   * The dbus-cxx sourceforge project page can be found here:
+   * \par dbus-cxx Github Project Page
+   * The dbus-cxx Github project page can be found here:
    *
    * \par
-   * <a href="http://sourceforge.net/projects/dbus-cxx">http://sourceforge.net/projects/dbus-cxx</a>
-   *
-   * \par
-   * <a href="http://sourceforge.net/news/?group_id=259994">News</a>
+   * <a href="https://dbus-cxx.github.io">https://dbus-cxx.github.io</a>
    *
    * <br><hr>
    *
    * <h2>Download dbus-cxx packages or get the source code</h2>
-   *
    * 
-   * \htmlonly <img src="fedora-logo-tiny.png" alt="Fedora"/> \endhtmlonly
-   * \par
-   * dbus-cxx is available in Fedora 9 and higher.
    *
-   * \par
-   * Fedora package description
-   * - \b dbus-cxx - Libraries needed to run applications
-   * - \b dbus-cxx-devel - Headers and libraries for developing applications with dbus-cxx
-   * - \b dbus-cxx-doc - Developer's documentation including devhelp docs
-   * - \b dbus-cxx-tools - Development tools, et. al. such as \c dbus-cxx-xml2cpp
-   * - \b dbus-cxx-glibmm - Libraries need to run applications that integrate dbus-cxx into glibmm
-   * - \b dbus-cxx-glibmm-devel - Headers and libraries for developing applications that will integrate dbus-cxx into glibmm
+   * \b Pre-built packages
    *
-   * \htmlonly <img src="ubuntu-logo-tiny.png" alt="Ubuntu"/> \endhtmlonly
-   * \par
-   * dbus-cxx is available for Ubuntu via launchpad.
+   * Pre-built Debian packages may be found here: <a href="http://apt.rm5248.com/">http://apt.rm5248.com/</a>.  These may or may not work properly with Ubuntu.
    *
-   * \par 
-   * Installing from Launchpad
-   * - Here is a useful page on setting up a Launchpad PPA in Ubuntu: 
-   *   <a href="http://launchpad.net/+help/soyuz/ppa-sources-list.html">http://launchpad.net/+help/soyuz/ppa-sources-list.html</a>
-   * - Here is the Launchpad PPA page: 
-   *   <a href="http://launchpad.net/~rvinyard/+archive/ppa">https://launchpad.net/~rvinyard/+archive/ppa</a>
-   * - If you just want the basic PPA info:
-   *   \code 
-   *   deb http://ppa.launchpad.net/rvinyard/ppa/ubuntu jaunty main 
-   *   deb-src http://ppa.launchpad.net/rvinyard/ppa/ubuntu jaunty main
-   *   \endcode
-   * 
-   * \par
-   * Ubuntu package description
+   * Debian/Ubuntu package description
    * - \b dbus-cxx0 - Libraries needed to run applications
    * - \b dbus-cxx-dev - Headers and libraries for developing applications with dbus-cxx
    * - \b dbus-cxx-doc - Developer's documentation including devhelp docs
    * - \b dbus-cxx-tools - Development tools, et. al. such as \c dbus-cxx-xml2cpp
    * - \b dbus-cxx-glibmm0 - Libraries need to run applications that integrate dbus-cxx into glibmm
    * - \b dbus-cxx-glibmm-dev - Headers and libraries for developing applications that will integrate dbus-cxx into glibmm
+   * 
    *
    * \htmlonly <img src="sourcecode-small.png" alt=""/> \endhtmlonly
    * \par Source Code
    * \htmlonly <img src="download-small.png" alt=""/> \endhtmlonly
-   * \b Releases - (.bz2, .gz, .zip) can be found <a href="http://sourceforge.net/project/dbus-cxx/files">here</a>
+   * \b Releases - (.bz2, .gz, .zip) can be found on <a href="http://sourceforge.net/project/dbus-cxx/files">Sourceforge</a> and <a href="https://github.com/dbus-cxx/dbus-cxx/releases">Github</a>
    *
    * \par
-   * \b Subversion \b Repository
-   * - You can browse the subversion repository at this url:
-   *   - <a href="http://sourceforge.net/p/dbus-cxx/code/HEAD/tree/">http://sourceforge.net/p/dbus-cxx/code/HEAD/tree/</a>
+   * \b Git \b Repository
+   * - You can browse the git repository at this url:
+   *   - <a href="https://github.com/dbus-cxx/dbus-cxx">https://github.com/dbus-cxx/dbus-cxx</a>
    * - You can also check out a copy of the repository with this command:
-   *   - \verbatim svn checkout svn://svn.code.sf.net/p/dbus-cxx/code/trunk dbus-cxx-code \endverbatim
+   *   - \verbatim git clone https://github.com/dbus-cxx/dbus-cxx.git \endverbatim
    *
    * <br><hr>
    *
    * \par Dependencies... and where to get them
    * \b dbus: <a href="http://dbus.freedesktop.org">http://dbus.freedesktop.org</a> - Should be installed by default (runtime dependency) <br/>
    * \b libsigc++ <a href="http://libsigc.sourceforge.net/">http://libsigc.sourceforge.net/</a> (compile dependency)
-   * See the README file for more information on compile-time dependencies
+   * See the README file for more information on compile-time dependencies <br/>
+   * \b libcppgenerate <a href="https://github.com/rm5248/libcppgenerate">https://github.com/rm5248/libcppgenerate</a> (compile dependency)
    *
    * <br><hr>
    *
@@ -277,7 +250,7 @@ namespace DBus
    *
    * \par
    * The most current documentation for dbus-cxx is available online here:
-   * - dbus-cxx - <a href="http://dbus-cxx.sourceforge.net">http://dbus-cxx.sourceforge.net</a>
+   * - dbus-cxx - <a href="https://dbus-cxx.github.io">https://dbus-cxx.github.io</a>
    *
    * \par Key sections within the API reference
    * - Namespaces
@@ -290,15 +263,17 @@ namespace DBus
    *
    * \htmlonly <img src="envelope-small.png" alt=""/> \endhtmlonly
    * \par Mailing Lists
-   * - Users List (for those using dbus-cxx in their applications)
+   * <b>Note that the old Sourceforge mailing lists are monitored, but new users should use the Google group.</b>
+   * <br/>
+   * - Google group(preferred)
+   *   - <a href="https://groups.google.com/forum/#!forum/dbus-cxx">Dbus-cxx Google Group</a>
+   * - Sourceforge Users List (for those using dbus-cxx in their applications)
    *   - <a href="http://sourceforge.net/mailarchive/forum.php?forum_name=dbus-cxx-users">Archives</a>
    *   - <a href="http://lists.sourceforge.net/mailman/listinfo/dbus-cxx-users">Subscribe/Unsubscribe</a>
-   * - Development List (for discussion related to the development of dbus-cxx itself)
+   * - Sourceforge Development List (for discussion related to the development of dbus-cxx itself)
           *   - <a href="http://sourceforge.net/mailarchive/forum.php?forum_name=dbus-cxx-devel">Archives</a>
           *   - <a href="http://lists.sourceforge.net/mailman/listinfo/dbus-cxx-devel">Subscribe/Unsubscribe</a>
    *
-   * - If the sourceforge mailing lists are not working for you, check out the Google group
-   *   - <a href="https://groups.google.com/forum/#!forum/dbus-cxx">Dbus-cxx Google Group</a>
    * 
    *
    * <br><hr>
@@ -306,7 +281,8 @@ namespace DBus
    * \par Bugs
    *
    * \par 
-   * Please submit all bugs to the mailing list
+   * Found a bug?  Open a bug on our Github bug tracker: <a href="https://github.com/dbus-cxx/dbus-cxx/issues">https://github.com/dbus-cxx/dbus-cxx/issues</a>
+   * If you need help using the library, the mailing list is the better location to ask for help.
    *
    * <br><hr>
    *
@@ -314,14 +290,15 @@ namespace DBus
    * Patches are always welcome!!!
    *
    * \par 
-   * Please submit all patches to the mailing list
+   * You can either submit a patch through the mailing list, or create a pull request on Github.
    *
    * <br><hr>
    *
    * \par Feature Requests
    *
    * \par
-   * Please submit all feature requests to the mailing list
+   * Either open a bug in the issue tracker, or provide your request to the mailing list.  If it is a complicated feature request,
+   * the mailing list may be better to discuss what needs to be done.
    *
    * <br><hr>
    *
