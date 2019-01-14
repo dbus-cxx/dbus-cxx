@@ -20,6 +20,14 @@
 #include <math.h>
 #include <popt.h>
 
+#ifndef __cplusplus
+#include <math.h>
+#define ISNAN(val) isnan(val)
+#else
+#include <cmath>
+#define ISNAN(val) std::isnan(val)
+#endif
+
 // Parse command line options
 // This is boilerplate for all the caller-* examples
 // Useful symbols declared:
@@ -52,9 +60,9 @@
                                                                                                                                                  \
   if ( op == NULL ) op = strdup("add");                                                                                                          \
                                                                                                                                                  \
-  if ( isnan(param1) ) param1 = 3.3;                                                                                                             \
+  if ( ISNAN(param1) ) param1 = 3.3;                                                                                                             \
                                                                                                                                                  \
-  if ( isnan(param2) ) param2 = 4.4;                                                                                                             \
+  if ( ISNAN(param2) ) param2 = 4.4;                                                                                                             \
                                                                                                                                                  \
   bool valid_op = false;                                                                                                                         \
                                                                                                                                                  \

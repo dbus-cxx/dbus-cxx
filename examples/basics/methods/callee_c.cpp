@@ -19,7 +19,7 @@
 #include <dbus/dbus.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <math.h>
+#include <cmath>
 
 void reply_to_method_call( DBusMessage* msg, DBusConnection* conn );
 
@@ -100,7 +100,7 @@ void reply_to_method_call( DBusMessage* msg, DBusConnection* conn )
   else if ( dbus_message_is_method_call( msg, "Calculator.Basic", "mul" ) ) answer = param1 * param2;
   else if ( dbus_message_is_method_call( msg, "Calculator.Basic", "div" ) ) answer = param1 / param2;
 
-  if ( not isnan(answer) )
+  if ( not std::isnan(answer) )
   {
 
     // create a reply from the message

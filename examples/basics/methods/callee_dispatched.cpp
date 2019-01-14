@@ -72,7 +72,7 @@ DBus::HandlerResult reply_to_method_call( DBus::Connection::pointer conn, DBus::
   else if ( msg->is_call( "Calculator.Basic", "mul" ) ) answer = param1 * param2;
   else if ( msg->is_call( "Calculator.Basic", "div" ) ) answer = param1 / param2;
 
-  if ( not isnan(answer) )
+  if ( not std::isnan(answer) )
   {
     // create a reply from the message
     reply = msg->create_reply( );

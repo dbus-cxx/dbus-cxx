@@ -17,8 +17,15 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <string.h>
-#include <math.h>
 #include <popt.h>
+
+#ifndef __cplusplus
+#include <math.h>
+#define ISNAN(val) isnan(val)
+#else
+#include <cmath>
+#define ISNAN(val) std::isnan(val)
+#endif
 
 // Parse command line options
 // This is boilerplate for all the caller-* examples
@@ -48,9 +55,9 @@
                                                                                                                                                  \
   if ( op == NULL ) op = strdup("add");                                                                                                          \
                                                                                                                                                  \
-  if ( isnan(param1) ) param1 = 3.3;                                                                                                             \
+  if ( ISNAN(param1) ) param1 = 3.3;                                                                                                             \
                                                                                                                                                  \
-  if ( isnan(param2) ) param2 = 4.4;                                                                                                             \
+  if ( ISNAN(param2) ) param2 = 4.4;                                                                                                             \
                                                                                                                                                  \
   if ( not (strcmp(op,"add")==0 or strcmp(op,"sub")==0 or strcmp(op,"mul")==0 or strcmp(op,"div")==0) ) {                                        \
     fprintf( stderr, "ERROR: Operation '%s' is invalid.\n\nOperation is case sensitive and must be one of:\n\tadd\n\tsub\n\tmul\n\tdiv\n", op ); \

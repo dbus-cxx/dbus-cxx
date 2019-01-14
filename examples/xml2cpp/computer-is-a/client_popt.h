@@ -52,9 +52,9 @@
                                                                                                                                                                   \
   if ( op == NULL ) op = strdup("fibonacci");                                                                                                                     \
                                                                                                                                                                   \
-  if ( isnan(param1) ) param1 = 3.3;                                                                                                                              \
+  if ( std::isnan(param1) ) param1 = 3.3;                                                                                                                              \
                                                                                                                                                                   \
-  if ( isnan(param2) ) param2 = 4.4;                                                                                                                              \
+  if ( std::isnan(param2) ) param2 = 4.4;                                                                                                                              \
                                                                                                                                                                   \
   bool valid_op = false;                                                                                                                                          \
                                                                                                                                                                   \

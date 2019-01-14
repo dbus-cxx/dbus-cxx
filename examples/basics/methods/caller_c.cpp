@@ -21,7 +21,7 @@
 #include <unistd.h>
 
 #include <string.h>
-#include <math.h>
+#include <cmath>
 #include <popt.h>
 
 
@@ -47,9 +47,9 @@ int main(int argc, const char** argv)
 
   if ( op == NULL ) op = strdup("add");
 
-  if ( isnan(param1) ) param1 = 3.3;
+  if ( std::isnan(param1) ) param1 = 3.3;
 
-  if ( isnan(param2) ) param2 = 4.4;
+  if ( std::isnan(param2) ) param2 = 4.4;
 
   if ( not (strcmp(op,"add")==0 or strcmp(op,"sub")==0 or strcmp(op,"mul")==0 or strcmp(op,"div")==0) ) {
     fprintf( stderr, "ERROR: Operation '%s' is invalid.\n\nOperation is case sensitive and must be one of:\n\tadd\n\tsub\n\tmul\n\tdiv\n", op );
