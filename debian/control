@@ -31,7 +31,7 @@ Description: C++ bindings for the D-Bus library
 Package: dbus-cxx-dev
 Section: libdevel
 Architecture: any
-Depends: dbus-cxx0 (= ${binary:Version})
+Depends: dbus-cxx0 (= ${binary:Version}), libsigc++-2.0-dev, libdbus-1-dev
 Description: C++ development headers for dbus-cxx
  This package contains the C++ libraries and header files needed for
  developing dbus-cxx applications.
