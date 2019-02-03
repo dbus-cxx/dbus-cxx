@@ -49,6 +49,8 @@ introspection-like documents.
  \htmlonly <img src="download-small.png" alt=""/> \endhtmlonly
  \b Releases - (.bz2, .gz, .zip) can be found on <a href="http://sourceforge.net/project/dbus-cxx/files">Sourceforge</a> and <a href="https://github.com/dbus-cxx/dbus-cxx/releases">Github</a>
 
+  [Source building directions](@ref building-from-source)
+
  \par
  \b Git \b Repository
  - You can browse the git repository at this url:
@@ -108,8 +110,8 @@ introspection-like documents.
    - <a href="http://sourceforge.net/mailarchive/forum.php?forum_name=dbus-cxx-users">Archives</a>
    - <a href="http://lists.sourceforge.net/mailman/listinfo/dbus-cxx-users">Subscribe/Unsubscribe</a>
  - Sourceforge Development List (for discussion related to the development of dbus-cxx itself)
-      *   - <a href="http://sourceforge.net/mailarchive/forum.php?forum_name=dbus-cxx-devel">Archives</a>
-      *   - <a href="http://lists.sourceforge.net/mailman/listinfo/dbus-cxx-devel">Subscribe/Unsubscribe</a>
+   - <a href="http://sourceforge.net/mailarchive/forum.php?forum_name=dbus-cxx-devel">Archives</a>
+   - <a href="http://lists.sourceforge.net/mailman/listinfo/dbus-cxx-devel">Subscribe/Unsubscribe</a>
 
  
 
@@ -118,7 +120,7 @@ introspection-like documents.
  \par Bugs
 
  \par 
- Found a bug?  Open a bug on our Github bug tracker: <a href="https://github.com/dbus-cxx/dbus-cxx/issues">https://github.com/dbus-cxx/dbus-cxx/issues</a>
+ Found a bug?  Open a bug on our [Github bug tracker.](https://github.com/dbus-cxx/dbus-cxx/issues)
  If you need help using the library, the mailing list is the better location to ask for help.
 
  <br><hr>
