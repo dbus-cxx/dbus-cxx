@@ -16,19 +16,14 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include "messageiteratortests.h"
-
 #include <cstring>
 #include <unistd.h>
+#include <dbus-cxx.h>
 
-void MessageIteratorTests::setUp()
-{ }
-
-void MessageIteratorTests::tearDown()
-{ }
+#include "test_macros.h"
 
 template <typename T>
-void test_numeric_call_message_append_extract_iterator( T v )
+bool test_numeric_call_message_append_extract_iterator( T v )
 {
   T v2 = 0;
 
@@ -39,64 +34,64 @@ void test_numeric_call_message_append_extract_iterator( T v )
   DBus::MessageIterator iter2(msg);
   v2 = (T)iter2;
 
-  CPPUNIT_ASSERT_EQUAL( v, v2 );
+  return TEST_EQUALS( v, v2 );
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_bool()
+bool call_message_append_extract_iterator_bool()
 {
   bool v = true;
-  test_numeric_call_message_append_extract_iterator(v);
+  return test_numeric_call_message_append_extract_iterator(v);
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_byte()
+bool call_message_append_extract_iterator_byte()
 {
   uint8_t v = 67;
-  test_numeric_call_message_append_extract_iterator(v);
+  return test_numeric_call_message_append_extract_iterator(v);
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_int16()
+bool call_message_append_extract_iterator_int16()
 {
   int16_t v = -16782;
-  test_numeric_call_message_append_extract_iterator(v);
+  return test_numeric_call_message_append_extract_iterator(v);
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_uint16()
+bool call_message_append_extract_iterator_uint16()
 {
   uint16_t v = 16794;
-  test_numeric_call_message_append_extract_iterator(v);
+  return test_numeric_call_message_append_extract_iterator(v);
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_int32()
+bool call_message_append_extract_iterator_int32()
 {
   int32_t v = -47892;
-  test_numeric_call_message_append_extract_iterator(v);
+  return test_numeric_call_message_append_extract_iterator(v);
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_uint32()
+bool call_message_append_extract_iterator_uint32()
 {
   uint32_t v = 53938;
-  test_numeric_call_message_append_extract_iterator(v);
+  return test_numeric_call_message_append_extract_iterator(v);
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_int64()
+bool call_message_append_extract_iterator_int64()
 {
   int64_t v = -378983;
-  test_numeric_call_message_append_extract_iterator(v);
+  return test_numeric_call_message_append_extract_iterator(v);
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_uint64()
+bool call_message_append_extract_iterator_uint64()
 {
   uint64_t v = 4924953;
-  test_numeric_call_message_append_extract_iterator(v);
+  return test_numeric_call_message_append_extract_iterator(v);
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_double()
+bool call_message_append_extract_iterator_double()
 {
   double v = 3.141592654;
-  test_numeric_call_message_append_extract_iterator(v);
+  return test_numeric_call_message_append_extract_iterator(v);
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_cstring()
+bool call_message_append_extract_iterator_cstring()
 {
   const char* v = "Hello World";
   const char* v2 = NULL;
@@ -108,10 +103,10 @@ void MessageIteratorTests::call_message_append_extract_iterator_cstring()
   DBus::MessageIterator iter2(msg);
   v2 = (const char*)iter2;
 
-  CPPUNIT_ASSERT_EQUAL( 0, strcmp(v, v2) );
+  return TEST_EQUALS( 0, strcmp(v, v2) );
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_string()
+bool call_message_append_extract_iterator_string()
 {
   std::string v("Hello World");
   std::string v2;
@@ -123,10 +118,10 @@ void MessageIteratorTests::call_message_append_extract_iterator_string()
   DBus::MessageIterator iter2(msg);
   v2 = (const char*)iter2;
 
-  CPPUNIT_ASSERT_EQUAL( v, v2 );
+  return TEST_EQUALS( v, v2 );
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_signature()
+bool call_message_append_extract_iterator_signature()
 {
   DBus::Signature v("a{iq}");
   DBus::Signature v2;
@@ -138,40 +133,40 @@ void MessageIteratorTests::call_message_append_extract_iterator_signature()
   DBus::MessageIterator iter2(msg);
   v2 = (DBus::Signature)iter2;
 
-  CPPUNIT_ASSERT_EQUAL( v, v2 );
+  return TEST_EQUALS( v, v2 );
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_char()
+bool call_message_append_extract_iterator_char()
 {
   char v = 'a';
-  test_numeric_call_message_append_extract_iterator(v);
+  return test_numeric_call_message_append_extract_iterator(v);
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_int8()
+bool call_message_append_extract_iterator_int8()
 {
   int8_t v = -120;
-  test_numeric_call_message_append_extract_iterator(v);
+  return test_numeric_call_message_append_extract_iterator(v);
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_float()
+bool call_message_append_extract_iterator_float()
 {
   float v = -2.8983;
-  test_numeric_call_message_append_extract_iterator(v);
+  return test_numeric_call_message_append_extract_iterator(v);
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_long_int()
+bool call_message_append_extract_iterator_long_int()
 {
   long int v = -48321;
-  test_numeric_call_message_append_extract_iterator(v);
+  return test_numeric_call_message_append_extract_iterator(v);
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_unsigned_long_int()
+bool call_message_append_extract_iterator_unsigned_long_int()
 {
   unsigned long int v = 95382;
-  test_numeric_call_message_append_extract_iterator(v);
+  return test_numeric_call_message_append_extract_iterator(v);
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_array_int( )
+bool call_message_append_extract_iterator_array_int( )
 {
   std::vector<int> v, v2;
   
@@ -185,13 +180,15 @@ void MessageIteratorTests::call_message_append_extract_iterator_array_int( )
   DBus::MessageIterator iter2(msg);
   iter2 >> v2;
 
-  CPPUNIT_ASSERT_EQUAL( v.size(), v2.size() );
+  TEST_EQUALS_RET_FAIL( v.size(), v2.size() );
   
   for ( int i = 0; i < 35; i++ )
-    CPPUNIT_ASSERT_EQUAL( v[i], v2[i] );
+    TEST_EQUALS_RET_FAIL( v[i], v2[i] );
+
+  return true;
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_array_string( )
+bool call_message_append_extract_iterator_array_string( )
 {
   std::vector<std::string> v, v2;
   char string[ 30 ];
@@ -208,13 +205,15 @@ void MessageIteratorTests::call_message_append_extract_iterator_array_string( )
   DBus::MessageIterator iter2(msg);
   iter2 >> v2;
 
-  CPPUNIT_ASSERT_EQUAL( v.size(), v2.size() );
+  TEST_EQUALS_RET_FAIL( v.size(), v2.size() );
   
   for ( int i = 0; i < 35; i++ )
-    CPPUNIT_ASSERT_EQUAL( v[i], v2[i] );
+    TEST_EQUALS_RET_FAIL( v[i], v2[i] );
+
+  return true;
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_array_array_string( )
+bool call_message_append_extract_iterator_array_array_string( )
 {
   std::vector<std::vector<std::string>> sv, sv2;
   std::vector<std::string> v, v2;
@@ -236,17 +235,18 @@ void MessageIteratorTests::call_message_append_extract_iterator_array_array_stri
   DBus::MessageIterator iter2(msg);
   iter2 >> sv2;
 
-  CPPUNIT_ASSERT_EQUAL( sv.size(), sv2.size() );
+  TEST_EQUALS_RET_FAIL( sv.size(), sv2.size() );
 
   for( int y = 0; y < 6; y++ ){
     for( int i = 0; i < 35; i++ ){
-      CPPUNIT_ASSERT_EQUAL( (sv[ y ])[i], (sv2[y])[i] );
+      TEST_EQUALS_RET_FAIL( (sv[ y ])[i], (sv2[y])[i] );
     }
   }
   
+  return true;
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_filedescriptor(){
+bool call_message_iterator_insertion_extraction_operator_filedescriptor(){
   DBus::FileDescriptor::pointer v;
   DBus::FileDescriptor::pointer v2;
   int pipes[2];
@@ -258,8 +258,7 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_f
   memset( readData, 0, 24 );
 
   if( pipe( pipes ) < 0 ){
-      CPPUNIT_ASSERT( false );
-      return;
+    return false;
   }
   v = DBus::FileDescriptor::create( pipes[1] );
 
@@ -271,23 +270,20 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_f
   v2 = (DBus::FileDescriptor::pointer)iter2;
 
   if( write( v->getDescriptor(), firstString, strlen( firstString ) ) < 0 ){
-      CPPUNIT_ASSERT( false );
-      return;
+      return false;
   }
   if( write( v2->getDescriptor(), secondString, strlen( secondString ) ) < 0 ){
-      CPPUNIT_ASSERT( false );
-      return;
+      return false;
   }
 
   if( read( pipes[ 0 ], readData, 23 ) != 23 ){
-      CPPUNIT_ASSERT( false );
-      return;
+      return false;
   }
   
-  CPPUNIT_ASSERT_EQUAL( memcmp( appended, readData, 23 ), 0 );
+  return TEST_EQUALS( memcmp( appended, readData, 23 ), 0 );
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_filedescriptor(){
+bool call_message_append_extract_iterator_filedescriptor(){
   DBus::FileDescriptor::pointer v;
   DBus::FileDescriptor::pointer v2;
   int pipes[2];
@@ -299,8 +295,7 @@ void MessageIteratorTests::call_message_append_extract_iterator_filedescriptor()
   memset( readData, 0, 24 );
 
   if( pipe( pipes ) < 0 ){
-      CPPUNIT_ASSERT( false );
-      return;
+      return false;
   }
   v = DBus::FileDescriptor::create( pipes[1] );
 
@@ -312,24 +307,21 @@ void MessageIteratorTests::call_message_append_extract_iterator_filedescriptor()
   iter2 >> v2;
 
   if( write( v->getDescriptor(), firstString, strlen( firstString ) ) < 0 ){
-      CPPUNIT_ASSERT( false );
-      return;
+      return false;
   }
   if( write( v2->getDescriptor(), secondString, strlen( secondString ) ) < 0 ){
-      CPPUNIT_ASSERT( false );
-      return;
+      return false;
   }
 
   if( read( pipes[ 0 ], readData, 23 ) != 23 ){
-      CPPUNIT_ASSERT( false );
-      return;
+      return false;
   }
   
-  CPPUNIT_ASSERT_EQUAL( memcmp( appended, readData, 23 ), 0 );
+  return TEST_EQUALS( memcmp( appended, readData, 23 ), 0 );
 }
 
 template <typename T>
-    void test_numeric_call_message_iterator_insertion_extraction_operator( T v )
+    bool test_numeric_call_message_iterator_insertion_extraction_operator( T v )
 {
   T v2 = 0;
 
@@ -340,64 +332,64 @@ template <typename T>
   DBus::MessageIterator iter2(msg);
   iter2 >> v2;
 
-  CPPUNIT_ASSERT_EQUAL( v, v2 );
+  return TEST_EQUALS( v, v2 );
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_bool()
+bool call_message_iterator_insertion_extraction_operator_bool()
 {
   bool v = true;
-  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_byte()
+bool call_message_iterator_insertion_extraction_operator_byte()
 {
   uint8_t v = 67;
-  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_int16()
+bool call_message_iterator_insertion_extraction_operator_int16()
 {
   int16_t v = -16782;
-  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_uint16()
+bool call_message_iterator_insertion_extraction_operator_uint16()
 {
   uint16_t v = 16794;
-  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_int32()
+bool call_message_iterator_insertion_extraction_operator_int32()
 {
   int32_t v = -47892;
-  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_uint32()
+bool call_message_iterator_insertion_extraction_operator_uint32()
 {
   uint32_t v = 53938;
-  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_int64()
+bool call_message_iterator_insertion_extraction_operator_int64()
 {
   int64_t v = -378983;
-  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_uint64()
+bool call_message_iterator_insertion_extraction_operator_uint64()
 {
   uint64_t v = 4924953;
-  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_double()
+bool call_message_iterator_insertion_extraction_operator_double()
 {
   double v = 3.141592654;
-  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_cstring()
+bool call_message_iterator_insertion_extraction_operator_cstring()
 {
   const char* v = "Hello World";
   const char* v2;
@@ -409,10 +401,10 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_c
   DBus::MessageIterator iter2(msg);
   iter2 >> v2;
 
-  CPPUNIT_ASSERT_EQUAL( 0, strcmp(v, v2) );
+  return TEST_EQUALS( 0, strcmp(v, v2) );
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_string()
+bool call_message_iterator_insertion_extraction_operator_string()
 {
   std::string v("Hello World");
   std::string v2;
@@ -424,10 +416,10 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_s
   DBus::MessageIterator iter2(msg);
   iter2 >> v2;
 
-  CPPUNIT_ASSERT_EQUAL( v, v2 );
+  return TEST_EQUALS( v, v2 );
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_signature()
+bool call_message_iterator_insertion_extraction_operator_signature()
 {
   DBus::Signature v("a{iq}");
   DBus::Signature v2;
@@ -439,40 +431,40 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_s
   DBus::MessageIterator iter2(msg);
   iter2 >> v2;
 
-  CPPUNIT_ASSERT_EQUAL( v, v2 );
+  return TEST_EQUALS( v, v2 );
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_char()
+bool call_message_iterator_insertion_extraction_operator_char()
 {
   char v = 'a';
-  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_int8()
+bool call_message_iterator_insertion_extraction_operator_int8()
 {
   int8_t v = -112;
-  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_float()
+bool call_message_iterator_insertion_extraction_operator_float()
 {
   float v = -2984.3933;
-  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_long_int()
+bool call_message_iterator_insertion_extraction_operator_long_int()
 {
   long int v = -67445;
-  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_unsigned_long_int()
+bool call_message_iterator_insertion_extraction_operator_unsigned_long_int()
 {
   unsigned long int v = 343673;
-  test_numeric_call_message_iterator_insertion_extraction_operator(v);
+  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_array_string()
+bool call_message_iterator_insertion_extraction_operator_array_string()
 {
   std::vector<std::string> v, v2;
 
@@ -487,13 +479,15 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_a
   DBus::MessageIterator iter2(msg);
   iter2 >> v2;
 
-  CPPUNIT_ASSERT_EQUAL( v.size(), v2.size() );
+  TEST_EQUALS_RET_FAIL( v.size(), v2.size() );
 
   for( int i = 0; i < 2; i++ )
-    CPPUNIT_ASSERT_EQUAL( v[i], v2[i] );
+    TEST_EQUALS_RET_FAIL( v[i], v2[i] );
+
+  return true;
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_array_int( )
+bool call_message_iterator_insertion_extraction_operator_array_int( )
 {
   std::vector<int> v, v2;
   
@@ -507,13 +501,15 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_a
   DBus::MessageIterator iter2(msg);
   iter2 >> v2;
 
-  CPPUNIT_ASSERT_EQUAL( v.size(), v2.size() );
+  TEST_EQUALS_RET_FAIL( v.size(), v2.size() );
   
   for ( int i = 0; i < 35; i++ )
-    CPPUNIT_ASSERT_EQUAL( v[i], v2[i] );
+    TEST_EQUALS_RET_FAIL( v[i], v2[i] );
+
+  return true;
 }
 
-void MessageIteratorTests::call_message_append_extract_iterator_multiple( )
+bool call_message_append_extract_iterator_multiple( )
 {
   bool            b_1    = false       , b_2    = true;
   uint8_t         ui8_1  = 67          , ui8_2  = 0;
@@ -580,30 +576,32 @@ void MessageIteratorTests::call_message_append_extract_iterator_multiple( )
   iter2 >> ad_2;
   /*iter2.get_array(ad_2);*/             iter2.next();
 
-  CPPUNIT_ASSERT_EQUAL( b_1, b_2 );
-  CPPUNIT_ASSERT_EQUAL( ui8_1, ui8_2 );
-  CPPUNIT_ASSERT_EQUAL( i16_1, i16_2 );
-  CPPUNIT_ASSERT_EQUAL( ui16_1, ui16_2 );
-  CPPUNIT_ASSERT_EQUAL( i32_1, i32_2 );
-  CPPUNIT_ASSERT_EQUAL( ui32_1, ui32_2 );
-  CPPUNIT_ASSERT_EQUAL( i64_1, i64_2 );
-  CPPUNIT_ASSERT_EQUAL( ui64_1, ui64_2 );
-  CPPUNIT_ASSERT_EQUAL( d_1, d_2 );
-  CPPUNIT_ASSERT_EQUAL( 0, strcmp( cs_1, cs_2 ) );
-  CPPUNIT_ASSERT_EQUAL( s_1, s_2 );
-  CPPUNIT_ASSERT_EQUAL( sig_1, sig_2 );
-  CPPUNIT_ASSERT_EQUAL( c_1, c_2 );
-  CPPUNIT_ASSERT_EQUAL( i8_1, i8_2 );
-  CPPUNIT_ASSERT_EQUAL( f_1, f_2 );
-  CPPUNIT_ASSERT_EQUAL( li_1, li_2 );
-  CPPUNIT_ASSERT_EQUAL( uli_1, uli_2 );
+  TEST_EQUALS_RET_FAIL( b_1, b_2 );
+  TEST_EQUALS_RET_FAIL( ui8_1, ui8_2 );
+  TEST_EQUALS_RET_FAIL( i16_1, i16_2 );
+  TEST_EQUALS_RET_FAIL( ui16_1, ui16_2 );
+  TEST_EQUALS_RET_FAIL( i32_1, i32_2 );
+  TEST_EQUALS_RET_FAIL( ui32_1, ui32_2 );
+  TEST_EQUALS_RET_FAIL( i64_1, i64_2 );
+  TEST_EQUALS_RET_FAIL( ui64_1, ui64_2 );
+  TEST_EQUALS_RET_FAIL( d_1, d_2 );
+  TEST_EQUALS_RET_FAIL( 0, strcmp( cs_1, cs_2 ) );
+  TEST_EQUALS_RET_FAIL( s_1, s_2 );
+  TEST_EQUALS_RET_FAIL( sig_1, sig_2 );
+  TEST_EQUALS_RET_FAIL( c_1, c_2 );
+  TEST_EQUALS_RET_FAIL( i8_1, i8_2 );
+  TEST_EQUALS_RET_FAIL( f_1, f_2 );
+  TEST_EQUALS_RET_FAIL( li_1, li_2 );
+  TEST_EQUALS_RET_FAIL( uli_1, uli_2 );
   
-  CPPUNIT_ASSERT_EQUAL( ad_1.size(), ad_2.size() );
+  TEST_EQUALS_RET_FAIL( ad_1.size(), ad_2.size() );
   for ( int i=0; i < 35; i++ )
-    CPPUNIT_ASSERT_EQUAL( ad_1[i], ad_2[i] );
+    TEST_EQUALS_RET_FAIL( ad_1[i], ad_2[i] );
+
+  return true;
 }
 
-void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_multiple( )
+bool call_message_iterator_insertion_extraction_operator_multiple( )
 {
   bool            b_1    = false       , b_2    = true;
   uint8_t         ui8_1  = 67          , ui8_2  = 0;
@@ -634,25 +632,92 @@ void MessageIteratorTests::call_message_iterator_insertion_extraction_operator_m
   DBus::MessageIterator iter2(msg);
   iter2 >> b_2 >> ui8_2 >> i16_2 >> ui16_2 >> i32_2 >> ui32_2 >> i64_2 >> ui64_2 >> d_2 >> cs_2 >> s_2 >> sig_2 >> c_2 >> i8_2 >> f_2 >> li_2 >> uli_2 >> ad_2;
 
-  CPPUNIT_ASSERT_EQUAL( b_1, b_2 );
-  CPPUNIT_ASSERT_EQUAL( ui8_1, ui8_2 );
-  CPPUNIT_ASSERT_EQUAL( i16_1, i16_2 );
-  CPPUNIT_ASSERT_EQUAL( ui16_1, ui16_2 );
-  CPPUNIT_ASSERT_EQUAL( i32_1, i32_2 );
-  CPPUNIT_ASSERT_EQUAL( ui32_1, ui32_2 );
-  CPPUNIT_ASSERT_EQUAL( i64_1, i64_2 );
-  CPPUNIT_ASSERT_EQUAL( ui64_1, ui64_2 );
-  CPPUNIT_ASSERT_EQUAL( d_1, d_2 );
-  CPPUNIT_ASSERT_EQUAL( 0, strcmp( cs_1, cs_2 ) );
-  CPPUNIT_ASSERT_EQUAL( s_1, s_2 );
-  CPPUNIT_ASSERT_EQUAL( sig_1, sig_2 );
-  CPPUNIT_ASSERT_EQUAL( c_1, c_2 );
-  CPPUNIT_ASSERT_EQUAL( i8_1, i8_2 );
-  CPPUNIT_ASSERT_EQUAL( f_1, f_2 );
-  CPPUNIT_ASSERT_EQUAL( li_1, li_2 );
-  CPPUNIT_ASSERT_EQUAL( uli_1, uli_2 );
+  TEST_EQUALS_RET_FAIL( b_1, b_2 );
+  TEST_EQUALS_RET_FAIL( ui8_1, ui8_2 );
+  TEST_EQUALS_RET_FAIL( i16_1, i16_2 );
+  TEST_EQUALS_RET_FAIL( ui16_1, ui16_2 );
+  TEST_EQUALS_RET_FAIL( i32_1, i32_2 );
+  TEST_EQUALS_RET_FAIL( ui32_1, ui32_2 );
+  TEST_EQUALS_RET_FAIL( i64_1, i64_2 );
+  TEST_EQUALS_RET_FAIL( ui64_1, ui64_2 );
+  TEST_EQUALS_RET_FAIL( d_1, d_2 );
+  TEST_EQUALS_RET_FAIL( 0, strcmp( cs_1, cs_2 ) );
+  TEST_EQUALS_RET_FAIL( s_1, s_2 );
+  TEST_EQUALS_RET_FAIL( sig_1, sig_2 );
+  TEST_EQUALS_RET_FAIL( c_1, c_2 );
+  TEST_EQUALS_RET_FAIL( i8_1, i8_2 );
+  TEST_EQUALS_RET_FAIL( f_1, f_2 );
+  TEST_EQUALS_RET_FAIL( li_1, li_2 );
+  TEST_EQUALS_RET_FAIL( uli_1, uli_2 );
   
-  CPPUNIT_ASSERT_EQUAL( ad_1.size(), ad_2.size() );
+  TEST_EQUALS_RET_FAIL( ad_1.size(), ad_2.size() );
   for ( int i=0; i < 35; i++ )
-    CPPUNIT_ASSERT_EQUAL( ad_1[i], ad_2[i] );
+    TEST_EQUALS_RET_FAIL( ad_1[i], ad_2[i] );
+
+  return true;
+}
+
+#define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
+  ret = call_message_append_extract_iterator_##name();\
+} \
+} while( 0 )
+
+#define ADD_TEST2(name) do{ if( test_name == STRINGIFY(name)"-2" ){ \
+  ret = call_message_iterator_insertion_extraction_operator_##name();\
+} \
+} while( 0 )
+
+int main(int argc, char** argv){
+  if(argc < 1)
+    return 1;
+
+  std::string test_name = argv[1];
+  bool ret = false;
+
+  ADD_TEST(bool);
+  ADD_TEST(byte);
+  ADD_TEST(int16);
+  ADD_TEST(uint16);
+  ADD_TEST(int32);
+  ADD_TEST(uint32);
+  ADD_TEST(int64);
+  ADD_TEST(uint64);
+  ADD_TEST(double);
+  ADD_TEST(cstring);
+  ADD_TEST(string);
+  ADD_TEST(signature);
+  ADD_TEST(char);
+  ADD_TEST(int8);
+  ADD_TEST(float);
+  ADD_TEST(long_int);
+  ADD_TEST(unsigned_long_int);
+  ADD_TEST(array_int);
+  ADD_TEST(array_string);
+  ADD_TEST(array_array_string);
+  ADD_TEST(filedescriptor);
+  ADD_TEST(multiple);
+
+  ADD_TEST2(bool);
+  ADD_TEST2(byte);
+  ADD_TEST2(int16);
+  ADD_TEST2(uint16);
+  ADD_TEST2(int32);
+  ADD_TEST2(uint32);
+  ADD_TEST2(int64);
+  ADD_TEST2(uint64);
+  ADD_TEST2(double);
+  ADD_TEST2(cstring);
+  ADD_TEST2(string);
+  ADD_TEST2(signature);
+  ADD_TEST2(char);
+  ADD_TEST2(int8);
+  ADD_TEST2(float);
+  ADD_TEST2(long_int);
+  ADD_TEST2(unsigned_long_int);
+  ADD_TEST2(array_int);
+  ADD_TEST2(array_string);
+  ADD_TEST2(filedescriptor);
+  ADD_TEST2(multiple);
+
+  return !ret;
 }

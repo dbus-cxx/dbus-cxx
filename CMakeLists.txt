@@ -295,6 +295,14 @@ if( BUILD_SITE )
 endif( BUILD_SITE )
 
 #
+# Check if tests are enabled
+#
+if( ENABLE_TESTS )
+    enable_testing()
+    add_subdirectory( unit-tests )
+endif( ENABLE_TESTS )
+
+#
 # Print configuration information for the user
 #
 message(STATUS "")

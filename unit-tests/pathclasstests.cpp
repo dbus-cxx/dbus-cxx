@@ -16,148 +16,187 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include "pathclasstests.h"
-
 #include <cstring>
+#include <dbus-cxx.h>
 
-void PathClassTests::setUp()
-{ }
+#include "test_macros.h"
 
-void PathClassTests::tearDown()
-{ }
-
-void PathClassTests::path_test_valid()
+bool path_test_valid()
 {
   DBus::Path path = "/this/1/is/a/valid/path";
-  CPPUNIT_ASSERT(path.is_valid() == true );
+  TEST_ASSERT_RET_FAIL(path.is_valid() == true );
+  return true;
 }
 
-void PathClassTests::path_test_invalid_characters()
+bool path_test_invalid_characters()
 {
   DBus::Path path = "/this/is/an invalid/path";
-  CPPUNIT_ASSERT(path.is_valid() == false );
+  TEST_ASSERT_RET_FAIL(path.is_valid() == false );
+  return true;
 }
 
-void PathClassTests::path_test_invalid_trailing_slash()
+bool path_test_invalid_trailing_slash()
 {
   DBus::Path path = "/this/1/is/an/invalid/path/";
-  CPPUNIT_ASSERT(path.is_valid() == false );
+  TEST_ASSERT_RET_FAIL(path.is_valid() == false );
+  return true;
 }
 
-void PathClassTests::path_test_invalid_empty_path()
+bool path_test_invalid_empty_path()
 {
   DBus::Path path = "";
-  CPPUNIT_ASSERT(path.is_valid() == false );
+  TEST_ASSERT_RET_FAIL(path.is_valid() == false );
+  return true;
 }
 
-void PathClassTests::path_test_invalid_double_slash()
+bool path_test_invalid_double_slash()
 {
   DBus::Path path = "/this/1/is/an//invalid/path/";
-  CPPUNIT_ASSERT(path.is_valid() == false );
+  TEST_ASSERT_RET_FAIL(path.is_valid() == false );
+  return true;
 }
 
-void PathClassTests::path_test_invalid_missing_leading_slash()
+bool path_test_invalid_missing_leading_slash()
 {
   DBus::Path path = "this/1/is/an/invalid/path/";
-  CPPUNIT_ASSERT(path.is_valid() == false );
+  TEST_ASSERT_RET_FAIL(path.is_valid() == false );
+  return true;
 }
 
-void PathClassTests::path_decompose_valid()
+bool path_decompose_valid()
 {
   DBus::Path path = "/this/1/is/a/valid/path";
   DBus::Path::Decomposed decomposed = path.decomposed();
-  CPPUNIT_ASSERT( decomposed.size() == 6 );
-  CPPUNIT_ASSERT_EQUAL( std::string("this"),  decomposed[0] );
-  CPPUNIT_ASSERT_EQUAL( std::string("1"),     decomposed[1] );
-  CPPUNIT_ASSERT_EQUAL( std::string("is"),    decomposed[2] );
-  CPPUNIT_ASSERT_EQUAL( std::string("a"),     decomposed[3] );
-  CPPUNIT_ASSERT_EQUAL( std::string("valid"), decomposed[4] );
-  CPPUNIT_ASSERT_EQUAL( std::string("path"),  decomposed[5] );
+  TEST_ASSERT_RET_FAIL( decomposed.size() == 6 );
+  TEST_EQUALS_RET_FAIL( std::string("this"),  decomposed[0] );
+  TEST_EQUALS_RET_FAIL( std::string("1"),     decomposed[1] );
+  TEST_EQUALS_RET_FAIL( std::string("is"),    decomposed[2] );
+  TEST_EQUALS_RET_FAIL( std::string("a"),     decomposed[3] );
+  TEST_EQUALS_RET_FAIL( std::string("valid"), decomposed[4] );
+  TEST_EQUALS_RET_FAIL( std::string("path"),  decomposed[5] );
+
+  return true;
 }
 
-void PathClassTests::path_decompose_root()
+bool path_decompose_root()
 {
   DBus::Path path = "/";
   DBus::Path::Decomposed decomposed = path.decomposed();
-  CPPUNIT_ASSERT( decomposed.size() == 1 );
-  CPPUNIT_ASSERT( decomposed[0].empty() );
+  TEST_EQUALS_RET_FAIL( decomposed.size(), 1 );
+  TEST_EQUALS_RET_FAIL( decomposed[0].empty(), true );
+
+  return true;
 }
 
-void PathClassTests::path_decompose_invalid()
+bool path_decompose_invalid()
 {
   DBus::Path path = "this/1/is/an/invalid/path/";
   DBus::Path::Decomposed decomposed = path.decomposed();
-  CPPUNIT_ASSERT( decomposed.empty() );
+  TEST_ASSERT_RET_FAIL( decomposed.empty() );
+  return true;
 }
 
-void PathClassTests::path_decompose_empty()
+bool path_decompose_empty()
 {
   DBus::Path path = "";
   DBus::Path::Decomposed decomposed = path.decomposed();
-  CPPUNIT_ASSERT( decomposed.empty() );
+  TEST_ASSERT_RET_FAIL( decomposed.empty() );
+  return true;
 }
 
-void PathClassTests::path_append_valid()
+bool path_append_valid()
 {
   DBus::Path path = "/this/1/is/a/valid/path";
   path.append_element("too");
-  CPPUNIT_ASSERT_EQUAL(DBus::Path("/this/1/is/a/valid/path/too"), path);
+  return TEST_EQUALS(DBus::Path("/this/1/is/a/valid/path/too"), path);
 }
 
-void PathClassTests::path_append_valid_multiple()
+bool path_append_valid_multiple()
 {
   DBus::Path path = "/this/1/is/a/valid/path";
   path.append_element("as/well");
-  CPPUNIT_ASSERT_EQUAL(DBus::Path("/this/1/is/a/valid/path/as/well"), path);
+  return TEST_EQUALS(DBus::Path("/this/1/is/a/valid/path/as/well"), path);
 }
 
-void PathClassTests::path_append_valid_leading_slash()
+bool path_append_valid_leading_slash()
 {
   DBus::Path path = "/this/1/is/a/valid/path";
   path.append_element("/too");
-  CPPUNIT_ASSERT_EQUAL(DBus::Path("/this/1/is/a/valid/path/too"), path);
+  return TEST_EQUALS(DBus::Path("/this/1/is/a/valid/path/too"), path);
 }
 
-void PathClassTests::path_append_valid_trailing_slash()
+bool path_append_valid_trailing_slash()
 {
   DBus::Path path = "/this/1/is/a/valid/path";
   path.append_element("too/");
-  CPPUNIT_ASSERT_EQUAL(DBus::Path("/this/1/is/a/valid/path/too"), path);
+  return TEST_EQUALS(DBus::Path("/this/1/is/a/valid/path/too"), path);
 }
 
-void PathClassTests::path_append_valid_leading_trailing_slash()
+bool path_append_valid_leading_trailing_slash()
 {
   DBus::Path path = "/this/1/is/a/valid/path";
   path.append_element("/too/");
-  CPPUNIT_ASSERT_EQUAL(DBus::Path("/this/1/is/a/valid/path/too"), path);
+  return TEST_EQUALS(DBus::Path("/this/1/is/a/valid/path/too"), path);
 }
 
-void PathClassTests::path_append_invalid_empty()
+bool path_append_invalid_empty()
 {
   DBus::Path path = "/this/1/is/a/valid/path";
-  CPPUNIT_ASSERT( path.append_element("") == false );
-  CPPUNIT_ASSERT_EQUAL(DBus::Path("/this/1/is/a/valid/path"), path);
+  TEST_ASSERT_RET_FAIL( path.append_element("") == false );
+  return TEST_EQUALS(DBus::Path("/this/1/is/a/valid/path"), path);
 }
 
-void PathClassTests::path_append_invalid_chars()
+bool path_append_invalid_chars()
 {
   DBus::Path path = "/this/1/is/a/valid/path";
-  CPPUNIT_ASSERT( path.append_element("as well") == false );
-  CPPUNIT_ASSERT_EQUAL(DBus::Path("/this/1/is/a/valid/path"), path);
+  TEST_ASSERT_RET_FAIL( path.append_element("as well") == false );
+  return TEST_EQUALS(DBus::Path("/this/1/is/a/valid/path"), path);
 }
 
-void PathClassTests::path_append_invalid_double_slash()
+bool path_append_invalid_double_slash()
 {
   DBus::Path path = "/this/1/is/a/valid/path";
-  CPPUNIT_ASSERT( path.append_element("as//well") == false );
-  CPPUNIT_ASSERT_EQUAL(DBus::Path("/this/1/is/a/valid/path"), path);
+  TEST_ASSERT_RET_FAIL( path.append_element("as//well") == false );
+  return TEST_EQUALS(DBus::Path("/this/1/is/a/valid/path"), path);
 }
 
-void PathClassTests::path_append_invalid_root()
+bool path_append_invalid_root()
 {
   DBus::Path path = "/this/1/is/a/valid/path";
-  CPPUNIT_ASSERT( path.append_element("/") == false );
-  CPPUNIT_ASSERT_EQUAL(DBus::Path("/this/1/is/a/valid/path"), path);
+  TEST_ASSERT_RET_FAIL( path.append_element("/") == false );
+  return TEST_EQUALS(DBus::Path("/this/1/is/a/valid/path"), path);
 }
 
+#define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
+  ret = path_##name();\
+} \
+} while( 0 )
 
+int main(int argc, char** argv){
+  if(argc < 1)
+    return 1;
+
+  std::string test_name = argv[1];
+  bool ret = false;
+
+  ADD_TEST(test_valid);
+  ADD_TEST(test_invalid_characters);
+  ADD_TEST(test_invalid_trailing_slash);
+  ADD_TEST(test_invalid_empty_path);
+  ADD_TEST(test_invalid_double_slash);
+  ADD_TEST(test_invalid_missing_leading_slash);
+  ADD_TEST(decompose_valid);
+  ADD_TEST(decompose_root);
+  ADD_TEST(decompose_invalid);
+  ADD_TEST(decompose_empty);
+  ADD_TEST(append_valid);
+  ADD_TEST(append_valid_multiple);
+  ADD_TEST(append_valid_leading_slash);
+  ADD_TEST(append_valid_trailing_slash);
+  ADD_TEST(append_invalid_empty);
+  ADD_TEST(append_invalid_chars);
+  ADD_TEST(append_invalid_double_slash);
+  ADD_TEST(append_invalid_root);
+
+  return !ret;
+}

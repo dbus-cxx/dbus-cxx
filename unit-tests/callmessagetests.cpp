@@ -16,18 +16,14 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include "callmessagetests.h"
 
+#include <dbus-cxx.h>
 #include <cstring>
 
-void CallMessageTests::setUp()
-{ }
-
-void CallMessageTests::tearDown()
-{ }
+#include "test_macros.h"
 
 template <typename T>
-void test_numeric_call_message_insertion_extraction_operator( T v )
+bool test_numeric_call_message_insertion_extraction_operator( T v )
 {
   T v2 = 0;
 
@@ -37,64 +33,64 @@ void test_numeric_call_message_insertion_extraction_operator( T v )
 
   msg >> v2;
 
-  CPPUNIT_ASSERT_EQUAL( v, v2 );
+  return TEST_EQUALS( v, v2 );
 }
 
-void CallMessageTests::call_message_insertion_extraction_operator_bool()
+bool call_message_insertion_extraction_operator_bool()
 {
   bool v = true;
-  test_numeric_call_message_insertion_extraction_operator(v);
+  return test_numeric_call_message_insertion_extraction_operator(v);
 }
 
-void CallMessageTests::call_message_insertion_extraction_operator_byte()
+bool call_message_insertion_extraction_operator_byte()
 {
   uint8_t v = 67;
-  test_numeric_call_message_insertion_extraction_operator(v);
+  return test_numeric_call_message_insertion_extraction_operator(v);
 }
 
-void CallMessageTests::call_message_insertion_extraction_operator_int16()
+bool call_message_insertion_extraction_operator_int16()
 {
   int16_t v = -16782;
-  test_numeric_call_message_insertion_extraction_operator(v);
+  return test_numeric_call_message_insertion_extraction_operator(v);
 }
 
-void CallMessageTests::call_message_insertion_extraction_operator_uint16()
+bool call_message_insertion_extraction_operator_uint16()
 {
   uint16_t v = 16794;
-  test_numeric_call_message_insertion_extraction_operator(v);
+  return test_numeric_call_message_insertion_extraction_operator(v);
 }
 
-void CallMessageTests::call_message_insertion_extraction_operator_int32()
+bool call_message_insertion_extraction_operator_int32()
 {
   int32_t v = -47892;
-  test_numeric_call_message_insertion_extraction_operator(v);
+  return test_numeric_call_message_insertion_extraction_operator(v);
 }
 
-void CallMessageTests::call_message_insertion_extraction_operator_uint32()
+bool call_message_insertion_extraction_operator_uint32()
 {
   uint32_t v = 53938;
-  test_numeric_call_message_insertion_extraction_operator(v);
+  return test_numeric_call_message_insertion_extraction_operator(v);
 }
 
-void CallMessageTests::call_message_insertion_extraction_operator_int64()
+bool call_message_insertion_extraction_operator_int64()
 {
   int64_t v = -378983;
-  test_numeric_call_message_insertion_extraction_operator(v);
+  return test_numeric_call_message_insertion_extraction_operator(v);
 }
 
-void CallMessageTests::call_message_insertion_extraction_operator_uint64()
+bool call_message_insertion_extraction_operator_uint64()
 {
   uint64_t v = 4924953;
-  test_numeric_call_message_insertion_extraction_operator(v);
+  return test_numeric_call_message_insertion_extraction_operator(v);
 }
 
-void CallMessageTests::call_message_insertion_extraction_operator_double()
+bool call_message_insertion_extraction_operator_double()
 {
   double v = 3.141592654;
-  test_numeric_call_message_insertion_extraction_operator(v);
+  return test_numeric_call_message_insertion_extraction_operator(v);
 }
 
-void CallMessageTests::call_message_insertion_extraction_operator_cstring()
+bool call_message_insertion_extraction_operator_cstring()
 {
   const char* v = "Hello World";
   const char* v2;
@@ -105,10 +101,10 @@ void CallMessageTests::call_message_insertion_extraction_operator_cstring()
 
   msg >> v2;
 
-  CPPUNIT_ASSERT_EQUAL( 0, strcmp(v, v2) );
+  return TEST_EQUALS( 0, strcmp(v, v2) );
 }
 
-void CallMessageTests::call_message_insertion_extraction_operator_string()
+bool call_message_insertion_extraction_operator_string()
 {
   std::string v("Hello World");
   std::string v2;
@@ -119,12 +115,13 @@ void CallMessageTests::call_message_insertion_extraction_operator_string()
 
   msg >> v2;
 
-  CPPUNIT_ASSERT_EQUAL( v, v2 );
+  return TEST_EQUALS( v, v2 );
 }
 
-void CallMessageTests::call_message_insertion_extraction_operator_array_double()
+bool call_message_insertion_extraction_operator_array_double()
 {
   std::vector<double> v, v2;
+  bool good = true;
   
   for ( int i = 0; i < 35; i++ )
     v.push_back( (double)rand()/(double)rand() );
@@ -135,13 +132,18 @@ void CallMessageTests::call_message_insertion_extraction_operator_array_double()
   
   msg >> v2;
   
-  CPPUNIT_ASSERT_EQUAL( v.size(), v2.size() );
+  good = TEST_EQUALS( v.size(), v2.size() );
+  if(!good) return false;
   
-  for ( int i = 0; i < 35; i++ )
-    CPPUNIT_ASSERT_EQUAL( v[i], v2[i] );
+  for ( int i = 0; i < 35; i++ ){
+    TEST_EQUALS( v[i], v2[i] );
+    if(!good) return false;
+  }
+
+  return good;
 }
 
-void CallMessageTests::call_message_insertion_extraction_operator_multiple( )
+bool call_message_insertion_extraction_operator_multiple( )
 {
   bool        b_1    = false       , b_2    = true;
   uint8_t     ui8_1  = 67          , ui8_2  = 0;
@@ -164,20 +166,49 @@ void CallMessageTests::call_message_insertion_extraction_operator_multiple( )
 
   msg >> b_2 >> ui8_2 >> i16_2 >> ui16_2 >> i32_2 >> ui32_2 >> i64_2 >> ui64_2 >> d_2 >> cs_2 >> s_2 >> ad_2;
 
-  CPPUNIT_ASSERT_EQUAL( b_1, b_2 );
-  CPPUNIT_ASSERT_EQUAL( ui8_1, ui8_2 );
-  CPPUNIT_ASSERT_EQUAL( i16_1, i16_2 );
-  CPPUNIT_ASSERT_EQUAL( ui16_1, ui16_2 );
-  CPPUNIT_ASSERT_EQUAL( i32_1, i32_2 );
-  CPPUNIT_ASSERT_EQUAL( ui32_1, ui32_2 );
-  CPPUNIT_ASSERT_EQUAL( i64_1, i64_2 );
-  CPPUNIT_ASSERT_EQUAL( ui64_1, ui64_2 );
-  CPPUNIT_ASSERT_EQUAL( d_1, d_2 );
+  TEST_EQUALS_RET_FAIL( b_1, b_2 );
+  TEST_EQUALS_RET_FAIL( ui8_1, ui8_2 );
+  TEST_EQUALS_RET_FAIL( i16_1, i16_2 );
+  TEST_EQUALS_RET_FAIL( ui16_1, ui16_2 );
+  TEST_EQUALS_RET_FAIL( i32_1, i32_2 );
+  TEST_EQUALS_RET_FAIL( ui32_1, ui32_2 );
+  TEST_EQUALS_RET_FAIL( i64_1, i64_2 );
+  TEST_EQUALS_RET_FAIL( ui64_1, ui64_2 );
+  TEST_EQUALS_RET_FAIL( d_1, d_2 );
   
-  CPPUNIT_ASSERT_EQUAL( ad_1.size(), ad_2.size() );
+  TEST_EQUALS_RET_FAIL( ad_1.size(), ad_2.size() );
   for ( int i=0; i < 35; i++ )
-    CPPUNIT_ASSERT_EQUAL( ad_1[i], ad_2[i] );
+    TEST_EQUALS_RET_FAIL( ad_1[i], ad_2[i] );
 
+  return true;
 }
 
+#define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
+  ret = call_message_insertion_extraction_operator_##name();\
+} \
+} while( 0 )
+
+int main(int argc, char** argv){
+  if(argc < 1)
+    return 1;
+
+  std::string test_name = argv[1];
+  bool ret = false;
+
+  ADD_TEST(bool);
+  ADD_TEST(byte);
+  ADD_TEST(int16);
+  ADD_TEST(uint16);
+  ADD_TEST(int32);
+  ADD_TEST(uint32);
+  ADD_TEST(int64);
+  ADD_TEST(uint64);
+  ADD_TEST(double);
+  ADD_TEST(cstring);
+  ADD_TEST(string);
+  ADD_TEST(array_double);
+  ADD_TEST(multiple);
+
+  return !ret;
+}
 
