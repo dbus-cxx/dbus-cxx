@@ -101,3 +101,12 @@ add_test( NAME path-append-invalid-empty COMMAND test-path append_invalid_empty)
 add_test( NAME path-append-invalid-chars COMMAND test-path append_invalid_empty)
 add_test( NAME path-append-invalid-double_slash COMMAND test-path append_invalid_double_slash)
 add_test( NAME path-append-invalid-root COMMAND test-path append_invalid_root)
+
+add_executable( test-connection connectiontests.cpp )
+target_link_libraries( test-connection ${TEST_LINK} )
+target_include_directories( test-connection PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( test-connection PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+
+add_test( NAME connection-proxy-create1 COMMAND test-connection create_signal_proxy)
+add_test( NAME connection-proxy-get-iface COMMAND test-connection get_signal_proxy_by_iface)
+add_test( NAME connection-proxy-get-iface-name COMMAND test-connection get_signal_proxy_by_iface_and_name)

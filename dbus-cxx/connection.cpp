@@ -766,7 +766,7 @@ namespace DBus
   {
     InterfaceToNameProxySignalMap::iterator i = m_proxy_signal_interface_map.find(interface);
     if ( i == m_proxy_signal_interface_map.end() ) return ProxySignals();
-    NameToProxySignalMap::iterator j = i->second.find(interface);
+    NameToProxySignalMap::iterator j = i->second.find(member);
     if ( j == i->second.end() ) return ProxySignals();
     return j->second;
   }
