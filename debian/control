@@ -4,6 +4,7 @@ Maintainer: Robert Middleton <robert.middleton@rm5248.com>
 XSBC-Original-Maintainer: Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>
 Build-Depends: cmake,
                dbus,
+               dbus-x11,
                debhelper (>= 9),
                doxygen,
                graphviz,
