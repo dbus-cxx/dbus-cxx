@@ -1,4 +1,4 @@
-pkg_check_modules( cppgenerate REQUIRED cppgenerate )
+pkg_check_modules( cppgenerate REQUIRED cppgenerate-static )
 pkg_check_modules( popt REQUIRED popt )
 pkg_check_modules( expat REQUIRED expat )
 
