@@ -19,6 +19,7 @@ cmake_minimum_required( VERSION 3.1 )
 include( CheckIncludeFiles )
 include( GNUInstallDirs )
 include( FindPkgConfig )
+include( CheckTypeSize )
 
 # version information
 set( DBUS_CXX_PACKAGE_MAJOR_VERSION 0 )
@@ -47,6 +48,8 @@ option( BUILD_SITE "Build the dbus-cxx website reference" OFF )
 #
 # Configure our compile options
 #
+set( DBUS_CXX_HAVE_DBUS_12 1 )
+CHECK_TYPE_SIZE( "long int" DBUS_CXX_SIZEOF_LONG_INT )
 configure_file( dbus-cxx-config.h.cmake dbus-cxx/dbus-cxx-config.h )
 
 # 
