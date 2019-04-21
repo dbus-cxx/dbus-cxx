@@ -105,9 +105,9 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             .setStatic( true )
             .setReturnType( "std::shared_ptr<" + newclass.getName() + ">" )
             .addCode( cppgenerate::CodeBlock::create()
-                .addLine( "return std::shared_ptr<" + newclass.getName() + ">( new " + newclass.getName() + "( conn, dest, path );" ) )
+                .addLine( "return std::shared_ptr<" + newclass.getName() + ">( new " + newclass.getName() + "( conn, dest, path ) );" ) )
             .addArgument( cppgenerate::Argument::create()
-              .setType( "DBus::Connection::Pointer" )
+              .setType( "DBus::Connection::pointer" )
               .setName( "conn" ) )
             .addArgument( cppgenerate::Argument::create()
               .setType( "std::string" )
@@ -121,7 +121,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
         m_currentProxyConstructor = cppgenerate::Constructor::create()
             .setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
             .addArgument( cppgenerate::Argument::create()
-              .setType( "DBus::Connection::Pointer" )
+              .setType( "DBus::Connection::pointer" )
               .setName( "conn" ) )
             .addArgument( cppgenerate::Argument::create()
               .setType( "std::string" )
@@ -148,7 +148,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             .setStatic( true )
             .setReturnType( "std::shared_ptr<" + newAdapterClass.getName() + ">" )
             .addCode( cppgenerate::CodeBlock::create()
-                .addLine( "return std::shared_ptr<" + newAdapterClass.getName() + ">( new " + newAdapterClass.getName() + "( adaptee, path );" ) )
+                .addLine( "return std::shared_ptr<" + newAdapterClass.getName() + ">( new " + newAdapterClass.getName() + "( adaptee, path ) );" ) )
             .addArgument( cppgenerate::Argument::create()
               .setType( newAdapteeClass.getName() + "*" )
               .setName( "adaptee" ) )
@@ -246,7 +246,7 @@ void CodeGenerator::end_element( std::string tagName ){
 
         memberVar.setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
                  .setName( "m_method_" + m_currentProxyMethod.name() )
-                 .setType( "DBus::MethodProxy " + methodProxyType );
+                 .setType( "DBus::MethodProxy" + methodProxyType + "::pointer " );
 
         m_currentProxyMethod.addCode( cppgenerate::CodeBlock::create()
             .addLine( "return (*" + memberVar.name() + ")(" +  methodArguments + ");" ) );
