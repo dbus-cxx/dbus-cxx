@@ -14,7 +14,7 @@
 
 project( dbus-cxx )
 
-cmake_minimum_required( VERSION 3.1 )
+cmake_minimum_required( VERSION 3.8 )
 
 include( CheckIncludeFiles )
 include( GNUInstallDirs )
@@ -22,19 +22,16 @@ include( FindPkgConfig )
 include( CheckTypeSize )
 
 # version information
-set( DBUS_CXX_PACKAGE_MAJOR_VERSION 0 )
-set( DBUS_CXX_PACKAGE_MINOR_VERSION 10 )
+set( DBUS_CXX_PACKAGE_MAJOR_VERSION 1 )
+set( DBUS_CXX_PACKAGE_MINOR_VERSION 0 )
 set( DBUS_CXX_PACKAGE_MICRO_VERSION 0 )
 set( PKG_VERSION ${DBUS_CXX_PACKAGE_MAJOR_VERSION}.${DBUS_CXX_PACKAGE_MINOR_VERSION}.${DBUS_CXX_PACKAGE_MICRO_VERSION} )
 set( DBUS_CXX_MAJMIN_VERSION ${DBUS_CXX_PACKAGE_MAJOR_VERSION}.${DBUS_CXX_PACKAGE_MINOR_VERSION} )
 
 # Our required dependencies are libdbus and libsigc++
 pkg_check_modules( dbus REQUIRED dbus-1>=1.3 )
-pkg_check_modules( sigc REQUIRED sigc++-2.0 )
+pkg_check_modules( sigc REQUIRED sigc++-3.0 )
 
-# Dbus-cxx requires at least C++11
-set( CMAKE_CXX_STANDARD 11 )
-set( CMAKE_CXX_STANDARD_REQUIRED ON )
 
 #
 # Check our options
@@ -126,7 +123,6 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/timeout.h
     dbus-cxx/types.h
     dbus-cxx/utility.h
-    dbus-cxx/variant.h
     dbus-cxx/watch.h
     ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
 )
@@ -146,8 +142,11 @@ include_directories( ${DBUS_CXX_INCLUDE_DIRECTORIES}
 #
 add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} )
 #add_library( dbus-cxx-static STATIC ${DBUS_CXX_SOURCES} )
-set_target_properties( dbus-cxx PROPERTIES VERSION 1.0.0 SOVERSION 1 )
+set_target_properties( dbus-cxx PROPERTIES VERSION 2.0.0 SOVERSION 2 )
 target_link_libraries( dbus-cxx ${dbus_LIBS} ${sigc_LIBS} -lrt )
+
+# Dbus-cxx requires at least C++17 due to libsigc++-3.0
+set_property( TARGET dbus-cxx PROPERTY CXX_STANDARD 17 )
 
 #
 # If GLIBMM is used, add in the appropriate packages
@@ -156,7 +155,7 @@ if( ENABLE_GLIBMM )
     pkg_check_modules( glibmm-2.4 REQUIRED glibmm-2.4 )
 
     add_library( dbus-cxx-glibmm SHARED dbus-cxx-glibmm/dispatcher.cpp )
-    set_target_properties( dbus-cxx-glibmm PROPERTIES VERSION 1.0.0 SOVERSION 1 )
+    set_target_properties( dbus-cxx-glibmm PROPERTIES VERSION 2.0.0 SOVERSION 2 )
     target_include_directories( dbus-cxx-glibmm PRIVATE ${glibmm-2.4_INCLUDE_DIRS} )
     add_dependencies( dbus-cxx-glibmm dbus-cxx )
 
@@ -240,22 +239,22 @@ SET(PKG_CONFIG_CFLAGS
     "-I\${includedir}"
 )
 SET(PKG_CONFIG_REQUIRES
-    "dbus-1 >= 1.3, sigc++-2.0"
+    "dbus-1 >= 1.3, sigc++-3.0"
 )
 
 CONFIGURE_FILE(
-    "${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx-1.0.pc.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-1.0.pc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx-2.0.pc.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-2.0.pc"
 )
-INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-1.0.pc"
+INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-2.0.pc"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
 if( ENABLE_GLIBMM )
     CONFIGURE_FILE(
-        "${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx-glibmm-1.0.pc.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-glibmm-1.0.pc"
+        "${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx-glibmm-2.0.pc.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-glibmm-2.0.pc"
     )
-    INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-glibmm-1.0.pc"
+    INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-glibmm-2.0.pc"
             DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 endif( ENABLE_GLIBMM )
 

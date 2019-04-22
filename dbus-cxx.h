@@ -19,8 +19,8 @@
 #ifndef DBUSCXX_DBUS_H
 #define DBUSCXX_DBUS_H
 
-#if !(__cplusplus >= 201103L)
-#error "dbus-cxx requires at least C++11."
+#if !(__cplusplus >= 201703L)
+#error "dbus-cxx requires at least C++17."
 #endif
 
 #include <dbus-cxx/dbus-cxx-config.h>
@@ -59,7 +59,6 @@
 #include <dbus-cxx/timeout.h>
 #include <dbus-cxx/utility.h>
 #include <dbus-cxx/watch.h>
-#include <dbus-cxx/variant.h>
 #include <dbus-cxx/filedescriptor.h>
 #include <dbus-cxx/simplelogger_defs.h>
 
