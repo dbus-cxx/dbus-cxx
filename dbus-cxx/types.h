@@ -168,6 +168,36 @@ template <class T>
     return std::string("Invalid");
   }
 
+  inline std::string include_file_for_type( DBus::Type t ){
+    switch ( t )
+    {
+      case TYPE_BYTE:
+      case TYPE_INT16:
+      case TYPE_UINT16:
+      case TYPE_INT32:
+      case TYPE_UINT32:
+      case TYPE_INT64:
+      case TYPE_UINT64:
+        return "stdint.h";
+      case TYPE_STRING:
+        return "string";
+      case TYPE_ARRAY:
+        return "vector";
+      case TYPE_DICT_ENTRY:
+        return "utility";
+    }
+    return std::string("");
+  }
+
+  inline bool type_is_templated( DBus::Type t ){
+    switch( t )
+    {
+        case TYPE_ARRAY:
+          return true;
+    }
+    return false;
+  }
+
   inline
   Type checked_type_cast(int n)
   {

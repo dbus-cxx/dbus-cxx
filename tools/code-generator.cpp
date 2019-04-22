@@ -192,6 +192,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             .setPureVirtual( true );
     }else if( tagName.compare( "arg" ) == 0 ){
         cppgenerate::Argument arg;
+        std::string include_file;
 
         if( tagAttrs.find( "direction" ) == tagAttrs.end() ){
             //XML_GetCurrentLineNumber
@@ -201,10 +202,33 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
         DBus::Signature signature( tagAttrs[ "type" ] );
 
         DBus::Signature::iterator it = signature.begin();
-        //typestr = type_string_from_code( it.type() );
+        std::string typestr = type_string_from_code( it.type() );
+        std::vector<std::string> template_args;
+
+        if( type_is_templated( it.type() ) ){
+            it.next();
+            template_args.push_back( type_string_from_code( it.type() ) );
+        }
+
+        if( template_args.size() > 0 ){
+            typestr += "<";
+            for( size_t x = 0; x < template_args.size(); x++ ){
+                typestr += template_args[x];
+                if( (x + 1) != template_args.size() ){
+                    typestr += ",";
+                }
+            }
+            typestr += ">";
+        }
 
         arg.setName( tagAttrs[ "name" ] )
-           .setType( type_string_from_code( it.type() ) );
+           .setType( typestr );
+
+        include_file = include_file_for_type( it.type() );
+        if( include_file.size() > 1 ){
+            m_adapteeClasses[ m_adapteeClasses.size() - 1 ].addSystemInclude( include_file );
+            m_adapterClasses[ m_adapterClasses.size() - 1 ].addSystemInclude( include_file );
+        }
 
         if( tagAttrs[ "direction" ] == "out" ){
             m_currentProxyMethod.setReturnType( type_string_from_code( it.type() ) );
