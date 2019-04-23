@@ -207,8 +207,8 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
            .setType( typestr );
 
         if( tagAttrs[ "direction" ] == "out" ){
-            m_currentProxyMethod.setReturnType( type_string_from_code( it.type() ) );
-            m_currentAdapteeMethod.setReturnType( type_string_from_code( it.type() ) );
+            m_currentProxyMethod.setReturnType( typestr );
+            m_currentAdapteeMethod.setReturnType( typestr );
         }else{
             m_currentProxyMethod.addArgument( arg );
             m_currentAdapteeMethod.addArgument( arg );
