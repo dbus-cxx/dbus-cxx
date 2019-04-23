@@ -184,7 +184,7 @@ template <class T>
       case TYPE_ARRAY:
         return "vector";
       case TYPE_DICT_ENTRY:
-        return "utility";
+        return "map";
     }
     return std::string("");
   }
@@ -193,6 +193,8 @@ template <class T>
     switch( t )
     {
         case TYPE_ARRAY:
+          return true;
+        case TYPE_DICT_ENTRY:
           return true;
     }
     return false;

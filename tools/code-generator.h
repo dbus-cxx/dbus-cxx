@@ -25,6 +25,7 @@
 #include <stack>
 #include <vector>
 #include <cppgenerate/class.h>
+#include <dbus-cxx/signatureiterator.h>
 
 namespace DBus{
 
@@ -47,6 +48,8 @@ private:
 
     static void start_element_handler(void* user_data, const XML_Char* name, const XML_Char** attrs );
     static void end_element_handler( void* userData, const XML_Char* name );
+
+    std::string getTemplateArgsFromSignature( SignatureIterator iter );
 
 private:
     XML_Parser m_parser;
