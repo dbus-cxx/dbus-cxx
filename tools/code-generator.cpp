@@ -178,6 +178,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
         }
         m_currentInterface = tagAttrs[ "name" ];
     }else if( tagName.compare( "method" ) == 0 ){
+        m_argNum = 0;
         if( tagAttrs.find( "name" ) == tagAttrs.end() ){
             std::cerr << "WARNING: No name for method found" << std::endl;
             return;
@@ -203,8 +204,14 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
         DBus::Signature::iterator it = signature.begin();
         std::string typestr = getTemplateArgsFromSignature( it );
 
-        arg.setName( tagAttrs[ "name" ] )
-           .setType( typestr );
+        arg.setType( typestr );
+        if( tagAttrs[ "name" ].length() == 0 ){
+           char buffer[10];
+           snprintf( buffer, 10, "arg%d", m_argNum );
+           arg.setName( std::string( buffer ) );
+        }else{
+            arg.setName( tagAttrs[ "name" ] );
+        }
 
         if( tagAttrs[ "direction" ] == "out" ){
             m_currentProxyMethod.setReturnType( typestr );
@@ -213,6 +220,8 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             m_currentProxyMethod.addArgument( arg );
             m_currentAdapteeMethod.addArgument( arg );
         }
+
+        m_argNum++;
     }
 }
 
@@ -232,6 +241,7 @@ void CodeGenerator::end_element( std::string tagName ){
         std::string methodArguments;
         bool argumentComma = false;
         int argNum = 0;
+        std::string block;
 
         methodProxyType += "<" + m_currentProxyMethod.returnType();
         for( cppgenerate::Argument arg : args ){
@@ -248,8 +258,12 @@ void CodeGenerator::end_element( std::string tagName ){
                  .setName( "m_method_" + m_currentProxyMethod.name() )
                  .setType( "DBus::MethodProxy" + methodProxyType + "::pointer " );
 
+        if( m_currentProxyMethod.returnType() != "void" ){
+            block = "return ";
+        }
+        block += "(*" + memberVar.name() + ")(" +  methodArguments + ");";
         m_currentProxyMethod.addCode( cppgenerate::CodeBlock::create()
-            .addLine( "return (*" + memberVar.name() + ")(" +  methodArguments + ");" ) );
+            .addLine( block ) );
 
         m_proxyClasses.data()[ m_proxyClasses.size() - 1 ]
             .addMethod( m_currentProxyMethod )

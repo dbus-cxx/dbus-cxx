@@ -63,6 +63,7 @@ private:
     cppgenerate::Method m_currentAdapteeMethod;
     cppgenerate::Constructor m_currentProxyConstructor;
     cppgenerate::Constructor m_currentAdapterConstructor;
+    int m_argNum;
 };
 
 }
