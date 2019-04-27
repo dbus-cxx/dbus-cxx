@@ -144,6 +144,23 @@ template <class T>
      return sig;
    }
 
+   template<typename... argn> class sig;
+
+   template<> class sig<>{
+   public:
+   std::string sigg() const {
+     return "";
+   }
+   };
+
+   template<typename arg1, typename... argn> 
+   class sig<arg1, argn...> : public sig<argn...> {
+   public:
+   std::string sigg() const{
+     arg1 arg;
+     return signature(arg) + sig<argn...>::sigg();
+   }
+   };
 
 //   template <typename T1>
 //   inline std::string signature( const Struct<T1>& )
