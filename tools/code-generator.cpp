@@ -324,11 +324,11 @@ void CodeGenerator::end_element_handler( void* userData, const XML_Char* name ){
     generator->end_element( tagName );
 }
 
-void CodeGenerator::generateProxyClasses( bool outputToFile ){
+void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& output_directory ){
     for( cppgenerate::Class c : m_proxyClasses ){
         if( outputToFile ){
-            std::string headerFilename = c.getName() + std::string( ".h" );
-            std::string implFilename = c.getName() + std::string( ".cpp" );
+            std::string headerFilename = output_directory + c.getName() + std::string( ".h" );
+            std::string implFilename = output_directory + c.getName() + std::string( ".cpp" );
             std::ofstream header;
             std::ofstream impl;
 
@@ -343,11 +343,11 @@ void CodeGenerator::generateProxyClasses( bool outputToFile ){
 
 }
 
-void CodeGenerator::generateAdapterClasses( bool outputToFile ){
+void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string& output_directory ){
     for( cppgenerate::Class c : m_adapterClasses ){
         if( outputToFile ){
-            std::string headerFilename = c.getName() + std::string( ".h" );
-            std::string implFilename = c.getName() + std::string( ".cpp" );
+            std::string headerFilename = output_directory + c.getName() + std::string( ".h" );
+            std::string implFilename = output_directory + c.getName() + std::string( ".cpp" );
             std::ofstream header;
             std::ofstream impl;
 
@@ -362,7 +362,7 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile ){
 
     for( cppgenerate::Class c : m_adapteeClasses ){
         if( outputToFile ){
-            std::string headerFilename = c.getName() + std::string( ".h" );
+            std::string headerFilename = output_directory + c.getName() + std::string( ".h" );
             std::ofstream header;
 
             header.open( headerFilename );

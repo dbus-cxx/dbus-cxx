@@ -38,9 +38,9 @@ public:
 
     bool parse();
 
-    void generateProxyClasses( bool outputToFile );
+    void generateProxyClasses( bool outputToFile, const std::string& output_directory );
 
-    void generateAdapterClasses( bool outputToFile );
+    void generateAdapterClasses( bool outputToFile, const std::string& output_directory );
 
 private:
     void start_element( std::string name, std::map<std::string,std::string> attrs );
