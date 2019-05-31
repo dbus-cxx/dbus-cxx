@@ -307,6 +307,14 @@ if( ENABLE_TESTS )
 endif( ENABLE_TESTS )
 
 #
+# Cpack for creating the dist files
+#
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "dbus-cxx-${PKG_VERSION}")
+set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_SOURCE_IGNORE_FILES ".git/;build/")
+include(CPack)
+
+#
 # Print configuration information for the user
 #
 message(STATUS "")
