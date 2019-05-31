@@ -9,8 +9,11 @@
 # Release Process:
 #
 # 1. Mark the debian version as released
-# 2. Create a tag of the release version
-# 3. Run this script
+# 2. Ensure that the debian version and the version in CMakeLists.txt agree with each other
+# 3. Commit changes(if needed).
+# 4. Create a tag of the release version
+# 5. Run this script
+# 6. Go to sourceforge and set the default download to be the newly uploaded file
 
 TAG_NAME=
 
@@ -36,6 +39,8 @@ build_source_package() {
 
 upload_files_to_sourceforge() {
 	cd build
+	mkdir "$TAG_NAME"
+	cp *.tar.gz "$TAG_NAME"
 	scp -Crp "$TAG_NAME" rm5248,dbus-cxx@frs.sourceforge.net:/home/frs/project/d/db/dbus-cxx/dbus-cxx/
 	cd ..
 }
