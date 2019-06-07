@@ -21,6 +21,11 @@ checkout_tag() {
 	git clone git@github.com:dbus-cxx/dbus-cxx.git dbus-cxx-release
 	cd dbus-cxx-release
 	git checkout tags/"$TAG_NAME"
+	if [ $? -ne 0 ]
+	then
+		echo "ERROR: Unable to checkout tag $TAG_NAME"
+		exit $?
+	fi
 }
 
 build_docs() {
