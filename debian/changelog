@@ -1,8 +1,8 @@
-dbus-cxx (0.11.0) UNRELEASED; urgency=medium
+dbus-cxx (0.11.0) jessie; urgency=medium
 
   * Bumped file for release
 
- -- robert <robert@debian>  Sat, 11 May 2019 09:30:04 -0400
+ -- robert <robert@debian>  Thu, 06 Jun 2019 20:38:27 -0400
 
 dbus-cxx (0.10.0) jessie; urgency=medium
 
