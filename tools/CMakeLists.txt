@@ -24,7 +24,8 @@ link_directories( ${CMAKE_BINARY_DIR} )
 include_directories( ${CMAKE_SOURCE_DIR}/dbus-cxx
     ${CMAKE_BINARY_DIR}/dbus-cxx 
     ${dbus_INCLUDE_DIRS} 
-    ${sigc_INCLUDE_DIRS} )
+    ${sigc_INCLUDE_DIRS}
+    ${cppgenerate_INCLUDE_DIRS} )
 
 add_executable( dbus-cxx-xml2cpp 
     generate_adapter.cpp
