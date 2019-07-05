@@ -5,7 +5,7 @@
 #
 cmake_minimum_required( VERSION 3.1 )
 
-project( libcppgenerate VERSION 0.1)
+project( libcppgenerate VERSION 0.2)
 
 # We require at least C++11
 set( CMAKE_CXX_STANDARD 11 )
@@ -17,7 +17,7 @@ set( CMAKE_CXX_STANDARD_REQUIRED ON )
 #
 set( CPPGENERATE_MAJOR 0 )
 set( CPPGENERATE_MINOR 0 )
-set( CPPGENERATE_MICRO 1 )
+set( CPPGENERATE_MICRO 2 )
 set( CPPGENERATE_VERSION ${CPPGENERATE_MAJOR}.${CPPGENERATE_MINOR}.${CPPGENERATE_MICRO} )
 
 #

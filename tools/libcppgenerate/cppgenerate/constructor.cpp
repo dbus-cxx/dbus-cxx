@@ -3,7 +3,8 @@
 
 using cppgenerate::Constructor;
 
-Constructor::Constructor(){
+Constructor::Constructor() :
+    m_accessModifier( AccessModifier::PUBLIC ) {
 }
 
 Constructor::Constructor( const Constructor& other ){
@@ -123,7 +124,10 @@ void Constructor::printConstructorSignature( std::ostream& stream, std::string c
 
     for( Argument argument : m_arguments ){
         if( addComma ) stream << ", ";
-        stream << argument;
+        if( !qualify )
+            argument.printWithDefaultValue( stream );
+        else
+            argument.printWithoutDefaultValue( stream );
         addComma = true;
     }
 

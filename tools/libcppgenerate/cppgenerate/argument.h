@@ -36,36 +36,17 @@ class Argument{
 
     Argument& setPassType( ArgumentPassType passType );
 
-    friend std::ostream& operator<<( std::ostream& stream, const Argument& argument ){
-        if( argument.m_isConst ){
-            stream << "const ";
-        }
-
-        stream << argument.m_type;
-        switch( argument.m_argPassType ){
-        case ArgumentPassType::REFERENCE:
-            stream << "&";
-            break;
-        case ArgumentPassType::POINTER:
-            stream << "*";
-            break;
-        default:
-            break;
-        }
-
-        stream << " " << argument.m_name;
-
-        if( argument.m_defaultValue.size() ){
-            stream << " = " << argument.m_defaultValue;
-        }
-        return stream;
-    }
-
     std::string type() const;
 
     std::string name() const;
 
+    void printWithDefaultValue( std::ostream& stream ) const;
+    void printWithoutDefaultValue( std::ostream& stream ) const;
+
     static Argument create();
+
+  private:
+    void print( std::ostream& stream, bool withDefaultValue ) const;
 
   private:
     std::string m_type;

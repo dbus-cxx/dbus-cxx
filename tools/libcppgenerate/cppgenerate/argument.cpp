@@ -68,3 +68,35 @@ std::string Argument::name() const {
 std::string Argument::type() const {
     return m_type;
 }
+
+void Argument::printWithDefaultValue( std::ostream& stream ) const {
+    print( stream, true );
+}
+
+void Argument::printWithoutDefaultValue( std::ostream& stream ) const {
+    print( stream, false );
+}
+
+void Argument::print( std::ostream& stream, bool withDefaultValue ) const {
+    if( m_isConst ){
+        stream << "const ";
+    }
+
+    stream << m_type;
+    switch( m_argPassType ){
+    case ArgumentPassType::REFERENCE:
+        stream << "&";
+        break;
+    case ArgumentPassType::POINTER:
+        stream << "*";
+        break;
+    default:
+        break;
+    }
+
+    stream << " " << m_name;
+
+    if( withDefaultValue && m_defaultValue.size() ){
+        stream << " = " << m_defaultValue;
+    }
+}

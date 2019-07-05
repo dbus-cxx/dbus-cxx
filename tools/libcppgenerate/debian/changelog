@@ -1,3 +1,9 @@
+libcppgenerate (0.2) unstable; urgency=medium
+
+  * Bumping version after release
+
+ -- Robert Middleton <robert.middleton@rm5248.com>  Fri, 05 Jul 2019 15:52:36 -0400
+
 libcppgenerate (0.1) unstable; urgency=low
 
   * Initial Release.

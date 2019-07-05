@@ -95,7 +95,7 @@ class Method{
     static Method create();
 
   private:
-    void printMethodSignature( std::ostream& stream, std::string className ) const;
+    void printMethodSignature( std::ostream& stream, std::string className, bool withDefaultValue ) const;
 
   private:
     std::string m_name;

@@ -108,7 +108,7 @@ void Method::printSignature( std::ostream& stream, int indent, bool withAccessMo
     cppgenerate::insertSpaces( stream, indent );
     if( m_isStatic ) stream << "static ";
     if( m_isVirtual ) stream << "virtual ";
-    printMethodSignature( stream, "" );
+    printMethodSignature( stream, "", true );
 
     if( m_isPureVirtual ) stream << " = 0";
     stream << ";" << std::endl;
@@ -122,7 +122,7 @@ void Method::printImplementation( const cppgenerate::Class* parent, std::ostream
     if( !inHeader && parent != nullptr ) parentName = parent->getName();
     if( inHeader && m_isVirtual ) stream << "virtual ";
 
-    printMethodSignature( stream, parentName );
+    printMethodSignature( stream, parentName, false );
 
     if( !m_isPureVirtual ){
         stream << "{" << std::endl;
@@ -140,7 +140,7 @@ Method Method::create(){
     return Method();
 }
 
-void Method::printMethodSignature( std::ostream& stream, std::string className ) const {
+void Method::printMethodSignature( std::ostream& stream, std::string className, bool withDefaultValue ) const {
     bool addComma = false;
 
     stream << m_returnType << " ";
@@ -153,7 +153,10 @@ void Method::printMethodSignature( std::ostream& stream, std::string className )
 
     for( Argument argument : m_arguments ){
         if( addComma ) stream << ", ";
-        stream << argument;
+        if( withDefaultValue )
+            argument.printWithDefaultValue( stream );
+        else
+            argument.printWithoutDefaultValue( stream );
         addComma = true;
     }
 
