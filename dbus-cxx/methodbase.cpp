@@ -26,19 +26,16 @@ namespace DBus
   MethodBase::MethodBase(const std::string& name):
       m_name(name)
   {
-    pthread_mutex_init( &m_name_mutex, NULL );
     SIMPLELOGGER_DEBUG( "dbus.MethodBase", "Creating new method with name " << name );
   }
 
   MethodBase::MethodBase(const MethodBase& other):
       m_name(other.m_name)
   {
-    pthread_mutex_init( &m_name_mutex, NULL );
   }
 
   MethodBase::~MethodBase()
   {
-    pthread_mutex_destroy( &m_name_mutex );
   }
 
   const std::string & MethodBase::name() const
@@ -48,16 +45,32 @@ namespace DBus
 
   void MethodBase::set_name(const std::string & name)
   {
-    pthread_mutex_lock( &m_name_mutex );
-    std::string old_name = m_name;
-    m_name = name;
-    pthread_mutex_unlock( &m_name_mutex );
+    std::string old_name;
+    {
+      std::lock_guard<std::mutex> lock( m_name_mutex );
+      old_name = m_name;
+      m_name = name;
+    }
     m_signal_name_changed.emit(old_name, m_name);
   }
 
   sigc::signal< void, const std::string &, const std::string & > MethodBase::signal_name_changed()
   {
     return m_signal_name_changed;
+  }
+
+  void MethodBase::set_arg_name(size_t i, const std::string& name){
+      if( m_arg_names.size() < i ){
+          m_arg_names.resize( i );
+      }
+      m_arg_names[i] = name;
+  }
+
+  std::string MethodBase::arg_name(size_t i) { 
+      if( m_arg_names.size() < i && i >= 0 ){
+          return m_arg_names[i];
+      }
+      return std::string();
   }
 
 }

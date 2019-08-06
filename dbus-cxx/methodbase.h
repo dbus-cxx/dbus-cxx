@@ -1,6 +1,9 @@
 /***************************************************************************
  *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
  *   rvinyard@cs.nmsu.edu                                                  *
+ *   Copyright (C) 2019 by Robert Middleton                                *
+ *   robert.middleton@rm5248.com                                           *
+ *                                                                         *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
  *                                                                         *
@@ -17,12 +20,64 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/callmessage.h>
+#include <type_traits>
+#include <mutex>
 
 #ifndef DBUSCXX_METHODBASE_H
 #define DBUSCXX_METHODBASE_H
 
 namespace DBus
 {
+
+namespace priv{
+   template<typename... argn> class method_sig;
+
+   template<> class method_sig<>{
+   public:
+   std::string sigg(const std::vector<std::string>&, int idx, const std::string& spaces ) const {
+     return "";
+   }
+   };
+
+   template<typename arg1, typename... argn> 
+   class method_sig<arg1, argn...> : public method_sig<argn...> {
+   public:
+   std::string sigg(const std::vector<std::string>& names, int idx, const std::string& spaces ) const{
+     arg1 arg;
+     std::ostringstream output;
+     std::string name = names.size() < idx ? names[idx] : "";
+     output << spaces;
+     output << "<arg name=\""
+     output << name << "\" type=\"";
+     output << signature(arg);
+     output << "\" ";
+     output << "direction=\"in\"/>\n";
+     output << method_sig<argn...>::sigg(names, idx + 1, spaces);
+     return output.str();
+   }
+
+   template<typename... argn> class template_sig;
+
+   template<> class template_sig<>{
+   public:
+   std::string sigg() const {
+     return "";
+   }
+   };
+
+   template<typename arg1, typename... argn> 
+   class template_sig<arg1, argn...> : public template_sig<argn...> {
+   public:
+   std::string sigg() const{
+     std::string arg1_name = typeid(arg1).name();
+     std::string remaining_args = template_sig<argn...>::sigg();
+     if( remaining_args.size() > 1 ){
+         arg1_name += ",";
+     }
+     return arg1_name + remaining_args;
+   }
+}
+
   class Connection;
 
   class Interface;
@@ -36,6 +91,7 @@ namespace DBus
   
    // TODO fix signals that expect a return value and partially specialize for void returns
   
+  template <typename T_return, typename... T_arg>
   class MethodBase
   {
     protected:
@@ -48,37 +104,106 @@ namespace DBus
 
       typedef DBusCxxPointer<MethodBase> pointer;
 
-      virtual ~MethodBase();
+      ~MethodBase();
 
       const std::string& name() const;
 
       void set_name( const std::string& name );
 
-      virtual HandlerResult handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message ) = 0;
+      void set_method( sigc::signal<T_return(T_arg...)> slot ){ m_slot = slot; }
+
+      HandlerResult handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message ){
+          std::ostringstream debug_str;
+
+          debug_str << "DBus::Method<";
+          debug_str << DBus::priv::template_sig<T_return>().sigg();
+          debug_str << ",";
+          debug_str << DBus::priv::template_sig<T_arg...>().sigg()
+          debug_str << "::handle_call_message method=";
+          debug_str << name();
+          DBUSCXX_DEBUG_STDSTR( "dbus.Method", debug_str.str() );
+
+          if( !connection || !message ) return NOT_HANDLED;
+
+          try{
+              Message::iterator i = message->begin();
+              //TODO how do we extract the data with templates???
+          }catch( ErrorInvalidTypecast ){
+              return NOT_HANDLED;
+          }
+
+          try{
+            T_return retval;
+            //retval = m_slot(val1....);
+            ReturnMessage::pointer retmsg = message->create_reply();
+
+            if( !retmsg ) return NOT_HANDLED;
+
+            *retmsg << retval;
+            connection->send(retmsg);
+         }catch( const std::exception &e ){
+            ErrorMessage::pointer errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, e.what() );
+
+            if( !errmsg ) return NOT_HANDLED;
+
+            connection->send( errmsg );
+         }catch( ... ){
+            std::ostringstream stream;
+            stream << "DBus-cxx " << DBUS_CXX_PACKAGE_MAJOR_VERSION << "."
+                   << DBUS_CXX_PACKAGE_MINOR_VERSION << "."
+                   << DBUS_CXX_PACKAGE_MICRO_VERSION
+                   << ": unknown error(uncaught exception)";
+            ErrorMessage::pointer errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, stream.str() );
+
+            if( !errmsg ) return NOT_HANDLED;
+
+            connection->send( errmsg );
+         }
+
+         return HANDLED;
+      }
 
       /**
        * This method is needed to be able to create a duplicate of a child
        * capable of parsing their specific template type message.
        */
-      virtual pointer clone() = 0;
+      //TODO is this needed anymore?
+      //virtual pointer clone() = 0;
 
       sigc::signal<void,const std::string&/*old name*/, const std::string&/*new name*/> signal_name_changed();
 
       /** Returns a DBus XML description of this interface */
-      virtual std::string introspect(int space_depth=0) const { return std::string(); }
+      std::string introspect(int space_depth=0) const {
+          std::ostringstream sout;
+          std::string spaces;
+          for(int i = 0; i < space_depth; i++ ) spaces += " ";
+          sout << spaces << "<method name=\"" << name() << "\">\n";
+          if( std::is_same<void,T_return>::value == false ){
+              T_return ret_type;
+              sout << spaces << "<arg name=\"" << arg_name(0) << "\" "
+                   << "type=\"" << signature(ret_type) << "\" "
+                   << "direction=\"out\"/>\n";
+          }
+          sout << DBus::priv::method_sig<T_arg...>( m_arg_names, 1, spaces );
+          return sout.str();
+      }
 
-      virtual std::string arg_name(size_t i) { return std::string(); }
+      std::string arg_name(size_t i);
 
-      virtual void set_arg_name(size_t i, const std::string& name) { }
+      void set_arg_name(size_t i, const std::string& name);
 
     protected:
 
       std::string m_name;
 
       /** Ensures that the name doesn't change while the name changed signal is emitting */
-      pthread_mutex_t m_name_mutex;
+      std::mutex m_name_mutex;
 
       sigc::signal<void,const std::string&, const std::string&> m_signal_name_changed;
+
+      sigc::signal<T_return(T_arg...)> m_slot;
+
+      std::vector<std::string> m_arg_names;
 
   };
 
