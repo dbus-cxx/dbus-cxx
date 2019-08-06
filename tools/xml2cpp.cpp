@@ -43,7 +43,7 @@ int main( int argc, const char** argv )
   const char* xml_file=NULL;
   const char* file_prefix = "";
   const char* output_dir = ".";
-  char c;
+  int c;
   DBus::CodeGenerator generator;
   std::string outputDirString;
 
