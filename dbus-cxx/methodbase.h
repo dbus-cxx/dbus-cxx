@@ -22,6 +22,7 @@
 #include <dbus-cxx/callmessage.h>
 #include <type_traits>
 #include <mutex>
+#include <tuple>
 
 #ifndef DBUSCXX_METHODBASE_H
 #define DBUSCXX_METHODBASE_H
@@ -76,6 +77,7 @@ namespace priv{
      }
      return arg1_name + remaining_args;
    }
+
 }
 
   class Connection;
@@ -112,34 +114,51 @@ namespace priv{
 
       void set_method( sigc::signal<T_return(T_arg...)> slot ){ m_slot = slot; }
 
+      template <class Tuple, size_t... Is>
+      void call_slot(Tuple t, std::index_sequence<Is...> ){
+          m_slot( std::get<Is>(t)... );
+      }
+
       HandlerResult handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message ){
           std::ostringstream debug_str;
+          std::tuple<T_arg...> args;
 
           debug_str << "DBus::Method<";
           debug_str << DBus::priv::template_sig<T_return>().sigg();
           debug_str << ",";
           debug_str << DBus::priv::template_sig<T_arg...>().sigg()
-          debug_str << "::handle_call_message method=";
+          debug_str << ">::handle_call_message method=";
           debug_str << name();
           DBUSCXX_DEBUG_STDSTR( "dbus.Method", debug_str.str() );
 
           if( !connection || !message ) return NOT_HANDLED;
 
           try{
+              int tuple_len = std::tuple_size<T_arg...>( args );
               Message::iterator i = message->begin();
-              //TODO how do we extract the data with templates???
+              for( int pos = 0; pos < tuple_len; pos++ ){
+                  i++ >> std::get<pos>(args);
+                  if( !i.isValid() ){
+                      return NOT_HANDLED;
+                  }
+              }
           }catch( ErrorInvalidTypecast ){
               return NOT_HANDLED;
           }
 
           try{
-            T_return retval;
-            //retval = m_slot(val1....);
             ReturnMessage::pointer retmsg = message->create_reply();
-
             if( !retmsg ) return NOT_HANDLED;
 
-            *retmsg << retval;
+            if( std::is_same<void,T_return>::value == false ){
+                T_return retval;
+                //TODO call slot here and get the return value
+                //retval = m_slot(val1....);
+                *retmsg << retval;
+            }else{
+                call_slot( args, std::index_sequence_for<T_arg...>{} );
+            }
+
             connection->send(retmsg);
          }catch( const std::exception &e ){
             ErrorMessage::pointer errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, e.what() );
