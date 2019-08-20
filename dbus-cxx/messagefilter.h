@@ -39,9 +39,9 @@ namespace DBus
 
     public:
       
-      typedef DBusCxxPointer<MessageFilter> pointer;
+      typedef std::shared_ptr<MessageFilter> pointer;
 
-      typedef DBusCxxWeakPointer<MessageFilter> weak_pointer;
+      typedef std::weak_ptr<MessageFilter> weak_pointer;
 
       virtual ~MessageFilter();
 
@@ -54,7 +54,7 @@ namespace DBus
 
   };
 
-  typedef sigc::signal<FilterResult,DBusCxxPointer<Connection>,Message::pointer>::accumulated<FilterAccumulator> FilterSignal;
+  typedef sigc::signal<FilterResult(std::shared_ptr<Connection>,Message::pointer)>::accumulated<FilterAccumulator> FilterSignal;
 
 }
 

@@ -33,8 +33,6 @@
 namespace DBus
 {
 
-  typedef sigc::nil nil;
-
   inline Type type( const uint8_t& )            { return TYPE_BYTE; }
   inline Type type( const bool& )               { return TYPE_BOOLEAN; }
   inline Type type( const int16_t& )            { return TYPE_INT16; }
@@ -48,8 +46,8 @@ namespace DBus
   inline Type type( const char* )        { return TYPE_STRING; }
   inline Type type( const Path& )               { return TYPE_OBJECT_PATH; }
   inline Type type( const Signature& )          { return TYPE_SIGNATURE; }
-template <class T>
-  inline Type type( const Variant<T>& )            { return TYPE_VARIANT; }
+  template <typename... args>
+  inline Type type( const std::variant<args...>& )            { return TYPE_VARIANT; }
   inline Type type( const FileDescriptor& )     { return TYPE_UNIX_FD; }
   
   inline Type type( const char& )               { return TYPE_BYTE; }
@@ -103,7 +101,7 @@ template <class T>
   inline std::string type_string( const Path& )        { return "Path"; }
   inline std::string type_string( const Signature& )   { return "Signature"; }
 template <class T>
-  inline std::string type_string( const Variant<T>& )     { return "Variant"; }
+  inline std::string type_string( const std::variant<T>& )     { return "Variant"; }
 template <class T>
   inline std::string type_string( const std::vector<T>& ) { return "Array"; }
   inline std::string type_string( const FileDescriptor& ) { return "FileDescriptor"; }

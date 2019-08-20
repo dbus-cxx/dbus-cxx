@@ -33,7 +33,7 @@
 #include <dbus-cxx/signal_proxy.h>
 #include <dbus-cxx/dbus_signal.h>
 #include <dbus-cxx/messagefilter.h>
-#include <dbus-cxx/method.h>
+#include <dbus-cxx/methodbase.h>
 
 #include <iostream>
 
@@ -223,28 +223,28 @@ namespace DBus
 
       bool has_messages_to_send();
 
-      typedef sigc::signal1<bool,Watch::pointer,InterruptablePredicateAccumulatorDefaultFalse> AddWatchSignal;
+      typedef sigc::signal<bool(Watch::pointer)>::accumulated<InterruptablePredicateAccumulatorDefaultFalse> AddWatchSignal;
 
       /** Cannot call watch.handle() in a slot connected to this signal */
       AddWatchSignal& signal_add_watch();
 
-      sigc::signal<bool,Watch::pointer>& signal_remove_watch();
+      sigc::signal<bool(Watch::pointer)>& signal_remove_watch();
 
-      sigc::signal<void,Watch::pointer>& signal_watch_toggled();
+      sigc::signal<void(Watch::pointer)>& signal_watch_toggled();
 
-      typedef sigc::signal1<bool,Timeout::pointer,InterruptablePredicateAccumulatorDefaultFalse> AddTimeoutSignal;
+      typedef sigc::signal<bool(Timeout::pointer)>::accumulated<InterruptablePredicateAccumulatorDefaultFalse> AddTimeoutSignal;
       
       /** Cannot call timeout.handle() in a slot connected to this signal */
       AddTimeoutSignal& signal_add_timeout();
 
-      sigc::signal<bool,Timeout::pointer>& signal_remove_timeout();
+      sigc::signal<bool(Timeout::pointer)>& signal_remove_timeout();
 
-      sigc::signal<bool,Timeout::pointer>& signal_timeout_toggled();
+      sigc::signal<bool(Timeout::pointer)>& signal_timeout_toggled();
 
-      sigc::signal<void>& signal_wakeup_main();
+      sigc::signal<void()>& signal_wakeup_main();
 
       /** Cannot call dispatch() in a slot connected to this signal */
-      sigc::signal<void,DispatchStatus>& signal_dispatch_status_changed();
+      sigc::signal<void(DispatchStatus)>& signal_dispatch_status_changed();
 
       /**
        * Signal emitted during dispatch. A slot returning true will cause the
@@ -286,7 +286,7 @@ namespace DBus
        */
       signal_proxy_simple::pointer create_signal_proxy( const std::string& path, const std::string& interface, const std::string& name );
 
-      template <class T_return, class T_arg...>
+      template <class T_return, class... T_arg>
       std::shared_ptr<signal_proxy<T_return, T_arg...> > create_signal_proxy( const std::string& interface, const std::string& name )
       {
         std::shared_ptr<signal_proxy<T_return, T_arg...> > sig;
@@ -295,7 +295,7 @@ namespace DBus
         return sig;
       }
       
-      template <class T_return, class T_arg...>
+      template <class T_return, class... T_arg>
       std::shared_ptr<signal_proxy<T_return, T_arg...> > create_signal_proxy( const std::string& path, const std::string& interface, const std::string& name )
       {
         std::shared_ptr<signal_proxy<T_return, T_arg...> > sig;
@@ -326,7 +326,7 @@ namespace DBus
       /** Gets the signal handlers for a specific interface and member */
       ProxySignals get_signal_proxies( const std::string& interface, const std::string& member );
 
-      template <class T_return, class T_arg...>
+      template <class T_return, class... T_arg>
       std::shared_ptr<signal<T_return, T_arg...> > create_signal( const std::string& interface, const std::string& name )
       {
         std::shared_ptr<signal<T_return, T_arg...> > sig;
@@ -335,7 +335,7 @@ namespace DBus
         return sig;
       }
       
-      template <class T_return, class T_arg...>
+      template <class T_return, class... T_arg>
       std::shared_ptr<signal<T_return, T_arg...> > create_signal( const std::string& path, const std::string& interface, const std::string& name )
       {
         std::shared_ptr<signal<T_return, T_arg...> > sig;
@@ -380,19 +380,19 @@ namespace DBus
       
       AddWatchSignal m_add_watch_signal;
       
-      sigc::signal<bool,Watch::pointer> m_remove_watch_signal;
+      sigc::signal<bool(Watch::pointer)> m_remove_watch_signal;
       
-      sigc::signal<void,Watch::pointer> m_watch_toggled_signal;
+      sigc::signal<void(Watch::pointer)> m_watch_toggled_signal;
       
       AddTimeoutSignal m_add_timeout_signal;
       
-      sigc::signal<bool,Timeout::pointer> m_remove_timeout_signal;
+      sigc::signal<bool(Timeout::pointer)> m_remove_timeout_signal;
       
-      sigc::signal<bool,Timeout::pointer> m_timeout_toggled_signal;
+      sigc::signal<bool(Timeout::pointer)> m_timeout_toggled_signal;
       
-      sigc::signal<void> m_wakeup_main_signal;
+      sigc::signal<void()> m_wakeup_main_signal;
       
-      sigc::signal<void,DispatchStatus> m_dispatch_status_signal;
+      sigc::signal<void(DispatchStatus)> m_dispatch_status_signal;
       
       FilterSignal m_filter_signal;
       

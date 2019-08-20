@@ -52,7 +52,7 @@ namespace DBus
 
       virtual HandlerResult handle_signal( SignalMessage::const_pointer );
 
-      sigc::signal<HandlerResult,SignalMessage::const_pointer>::accumulated<MessageHandlerAccumulator> signal_dbus_incoming();
+      sigc::signal<HandlerResult(SignalMessage::const_pointer)>::accumulated<MessageHandlerAccumulator> signal_dbus_incoming();
 
       const std::string& match_rule();
 
@@ -68,7 +68,7 @@ namespace DBus
 
       std::string m_match_rule;
 
-      sigc::signal<HandlerResult,SignalMessage::const_pointer>::accumulated<MessageHandlerAccumulator> m_signal_dbus_incoming;
+      sigc::signal<HandlerResult(SignalMessage::const_pointer)>::accumulated<MessageHandlerAccumulator> m_signal_dbus_incoming;
   };
 
   class signal_proxy_simple: public signal_proxy_base, public sigc::trackable

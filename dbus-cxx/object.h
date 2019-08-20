@@ -170,9 +170,9 @@ namespace DBus
        * Template parameters of the sigc::slot will determine the signature of
        * the method created.
        */
-      template <class T_return, class T_arg...>
+      template <class T_return, class... T_arg>
       std::shared_ptr<Method<T_return, T_arg...> >
-      create_method( const std::string& method_name, sigc::slot<T_return, T_arg...> slot );
+      create_method( const std::string& method_name, sigc::slot<T_return(T_arg...)> slot );
 
       /**
        * Creates a method with a signature based on the @param slot parameter signature and adds it to the named interface
@@ -184,9 +184,9 @@ namespace DBus
        * Template parameters of the sigc::slot will determine the signature of
        * the method created.
        */
-      template <class T_return, class T_arg...>
+      template <class T_return, class... T_arg>
       std::shared_ptr<Method<T_return, T_arg...> >
-      create_method( const std::string& interface_name, const std::string& method_name, sigc::slot<T_return, T_arg...> slot );
+      create_method( const std::string& interface_name, const std::string& method_name, sigc::slot<T_return(T_arg...)> slot );
 
       /** Removes the first interface found with the given name */
       void remove_interface( const std::string& name );
@@ -228,7 +228,7 @@ namespace DBus
        * Template parameters for the \c create_signal() call will determine the
        * signature of the signal created.
        */
-      template <class T_return, class T_arg...>
+      template <class T_return, class... T_arg>
       std::shared_ptr<signal<T_return, T_arg...> >
       create_signal( const std::string& name );
 
@@ -239,7 +239,7 @@ namespace DBus
        * Template parameters for the \c create_signal() call will determine the
        * signature of the signal created.
        */
-      template <class T_return, class T_arg...>
+      template <class T_return, class... T_arg>
       std::shared_ptr<signal<T_return, T_arg...> >
       create_signal( const std::string& iface, const std::string& name );
 
@@ -339,11 +339,11 @@ namespace DBus
 
       std::shared_ptr<Interface>  m_default_interface;
 
-      sigc::signal<void,std::shared_ptr<Interface> ,std::shared_ptr<Interface> > m_signal_default_interface_changed;
+      sigc::signal<void(std::shared_ptr<Interface>,std::shared_ptr<Interface>) > m_signal_default_interface_changed;
 
-      sigc::signal<void,std::shared_ptr<Interface> > m_signal_interface_added;
+      sigc::signal<void(std::shared_ptr<Interface>) > m_signal_interface_added;
 
-      sigc::signal<void,std::shared_ptr<Interface> > m_signal_interface_removed;
+      sigc::signal<void(std::shared_ptr<Interface>) > m_signal_interface_removed;
 
       typedef std::map<std::shared_ptr<Interface> ,sigc::connection> InterfaceSignalNameConnections;
 
@@ -367,9 +367,9 @@ namespace DBus
 
 namespace DBus {
 
-  template <class T_return, class T_arg...>
+  template <class T_return, class... T_arg>
   std::shared_ptr<Method<T_return, T_arg...> >
-  Object::create_method( const std::string& method_name, sigc::slot<T_return, T_arg...> slot )
+  Object::create_method( const std::string& method_name, sigc::slot<T_return(T_arg...)> slot )
   {
     if ( not m_default_interface )
     {
@@ -384,9 +384,9 @@ namespace DBus {
     return method;
   }
 
-  template <class T_return, class T_arg...>
+  template <class T_return, class... T_arg>
   std::shared_ptr<Method<T_return, T_arg...> >
-  Object::create_method( const std::string& interface_name, const std::string& method_name, sigc::slot<T_return, T_arg...> slot )
+  Object::create_method( const std::string& interface_name, const std::string& method_name, sigc::slot<T_return(T_arg...)> slot )
   {
     Interface::pointer interface;
     interface = this->interface(interface_name);
@@ -399,7 +399,7 @@ namespace DBus {
     return method;
   }
 
-  template <class T_return, class T_arg...>
+  template <class T_return, class... T_arg>
   std::shared_ptr<signal<T_return, T_arg...> >
   Object::create_signal( const std::string& name )
   {
@@ -410,7 +410,7 @@ namespace DBus {
     return sig;
   }
 
-  template <class T_return, class T_arg...>
+  template <class T_return, class... T_arg>
   std::shared_ptr<signal<T_return, T_arg...> >
   Object::create_signal( const std::string& iface, const std::string& name )
   {

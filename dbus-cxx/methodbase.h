@@ -20,6 +20,8 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/callmessage.h>
+#include <dbus-cxx/errormessage.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 #include <type_traits>
 #include <mutex>
 #include <tuple>
@@ -48,7 +50,7 @@ namespace priv{
      std::ostringstream output;
      std::string name = names.size() < idx ? names[idx] : "";
      output << spaces;
-     output << "<arg name=\""
+     output << "<arg name=\"";
      output << name << "\" type=\"";
      output << signature(arg);
      output << "\" ";
@@ -56,8 +58,9 @@ namespace priv{
      output << method_sig<argn...>::sigg(names, idx + 1, spaces);
      return output.str();
    }
+  };
 
-   template<typename... argn> class template_sig;
+   template<typename... template_argn> class template_sig;
 
    template<> class template_sig<>{
    public:
@@ -66,19 +69,20 @@ namespace priv{
    }
    };
 
-   template<typename arg1, typename... argn> 
-   class template_sig<arg1, argn...> : public template_sig<argn...> {
+   template<typename template_arg1, typename... template_argn> 
+   class template_sig<template_arg1, template_argn...> : public template_sig<template_argn...> {
    public:
    std::string sigg() const{
-     std::string arg1_name = typeid(arg1).name();
-     std::string remaining_args = template_sig<argn...>::sigg();
+     std::string arg1_name = typeid(template_arg1).name();
+     std::string remaining_args = template_sig<template_argn...>::sigg();
      if( remaining_args.size() > 1 ){
          arg1_name += ",";
      }
      return arg1_name + remaining_args;
    }
+   };
 
-}
+} /* namespace priv */
 
   class Connection;
 
@@ -102,9 +106,12 @@ namespace priv{
 
       MethodBase(const MethodBase& other);
 
+    private:
+      uint32_t sendMessage( std::shared_ptr<Connection> connection, const Message::const_pointer );
+
     public:
 
-      typedef DBusCxxPointer<MethodBase> pointer;
+      typedef std::shared_ptr<MethodBase> pointer;
 
       ~MethodBase();
 
@@ -126,7 +133,7 @@ namespace priv{
           debug_str << "DBus::Method<";
           debug_str << DBus::priv::template_sig<T_return>().sigg();
           debug_str << ",";
-          debug_str << DBus::priv::template_sig<T_arg...>().sigg()
+          debug_str << DBus::priv::template_sig<T_arg...>().sigg();
           debug_str << ">::handle_call_message method=";
           debug_str << name();
           DBUSCXX_DEBUG_STDSTR( "dbus.Method", debug_str.str() );
@@ -134,13 +141,13 @@ namespace priv{
           if( !connection || !message ) return NOT_HANDLED;
 
           try{
-              int tuple_len = std::tuple_size<T_arg...>( args );
               Message::iterator i = message->begin();
-              for( int pos = 0; pos < tuple_len; pos++ ){
-                  i++ >> std::get<pos>(args);// TODO THIS IS VERY BROKEN
-                  if( !i.isValid() ){
-                      return NOT_HANDLED;
-                  }
+              std::apply( [i](auto ...arg){
+                     (i >> ... >> arg);
+                 },
+                 args );
+              if( !i.is_valid() ){
+                  return NOT_HANDLED;
               }
           }catch( ErrorInvalidTypecast ){
               return NOT_HANDLED;
@@ -159,13 +166,13 @@ namespace priv{
                 call_slot( args, std::index_sequence_for<T_arg...>{} );
             }
 
-            connection->send(retmsg);
+            sendMessage( connection, retmsg );
          }catch( const std::exception &e ){
             ErrorMessage::pointer errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, e.what() );
 
             if( !errmsg ) return NOT_HANDLED;
 
-            connection->send( errmsg );
+            sendMessage( connection, errmsg );
          }catch( ... ){
             std::ostringstream stream;
             stream << "DBus-cxx " << DBUS_CXX_PACKAGE_MAJOR_VERSION << "."
@@ -176,7 +183,7 @@ namespace priv{
 
             if( !errmsg ) return NOT_HANDLED;
 
-            connection->send( errmsg );
+            sendMessage( connection, errmsg );
          }
 
          return HANDLED;
@@ -218,7 +225,7 @@ namespace priv{
       /** Ensures that the name doesn't change while the name changed signal is emitting */
       std::mutex m_name_mutex;
 
-      sigc::signal<void,const std::string&, const std::string&> m_signal_name_changed;
+      sigc::signal<void(const std::string&, const std::string&)> m_signal_name_changed;
 
       sigc::signal<T_return(T_arg...)> m_slot;
 

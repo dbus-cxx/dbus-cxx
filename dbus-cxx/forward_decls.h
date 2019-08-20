@@ -33,17 +33,10 @@ namespace DBus {
 
   class ObjectProxy;
 
-  template <class T_return,
-            class T_arg1 = nil,
-            class T_arg2 = nil,
-            class T_arg3 = nil,
-	    class T_arg4 = nil,
-            class T_arg5 = nil,
-	    class T_arg6 = nil,
-            class T_arg7 = nil
-           >
+  template <class T_return, typename... T_arg >
   class Method;
 
+/*
   template <class T_return,
             class T_arg1 = nil,
             class T_arg2 = nil,
@@ -54,6 +47,7 @@ namespace DBus {
             class T_arg7 = nil
            >
   class MethodProxy; 
+*/
 
 };
 

@@ -228,7 +228,7 @@ namespace DBus
       InterfaceProxy::pointer interface( const std::string& name ) const;
 
       /** Alias for interface(name) */
-      InterfaceProxy::pointer operator[[]]( const std::string& name ) const;
+      InterfaceProxy::pointer operator[]( const std::string& name ) const;
 
       /** Adds the interface to this object */
       bool add_interface( InterfaceProxy::pointer interface );
@@ -259,10 +259,10 @@ namespace DBus
       void remove_default_interface();
 
       /** Adds the method to the named interface */
-      bool add_method( const std::string& interface, MethodProxyBase::pointer method );
+      bool add_method( const std::string& interface, MethodProxyBase<std::any>::pointer method );
 
       /** Adds the method to the default interface */
-      bool add_method( MethodProxyBase::pointer method );
+      bool add_method( MethodProxyBase<std::any>::pointer method );
 
       CallMessage::pointer create_call_message( const std::string& interface_name, const std::string& method_name ) const;
 
@@ -278,8 +278,8 @@ namespace DBus
        * @param interface_name The name of the interface to add this proxy method to
        * @param method_name The name to assign to the newly create method proxy. This name will be used to perform the dbus-call.
        */
-      template <class T_return, class T_arg...>
-      std::shared_ptr<MethodProxy<T_return, T_arg...> >
+      template <class T_return, class... T_arg>
+      std::shared_ptr<MethodProxyBase<T_return, T_arg...> >
       create_method( const std::string& interface_name, const std::string& method_name )
       {
         InterfaceProxy::pointer interface = this->interface(interface_name);
@@ -293,7 +293,7 @@ namespace DBus
        * @param interface_name The name of the interface to add this proxy signal to
        * @param sig_name The name to assign to the newly created signal proxy.
        */
-      template <class T_return, class T_arg...>
+      template <class T_return, class... T_arg>
       std::shared_ptr<signal_proxy<T_return, T_arg...> >
       create_signal( const std::string& interface_name, const std::string& sig_name )
       {
@@ -324,11 +324,11 @@ namespace DBus
 
       InterfaceProxy::pointer m_default_interface;
 
-      sigc::signal<void,InterfaceProxy::pointer,InterfaceProxy::pointer> m_signal_default_interface_changed;
+      sigc::signal<void(InterfaceProxy::pointer,InterfaceProxy::pointer)> m_signal_default_interface_changed;
 
-      sigc::signal<void,InterfaceProxy::pointer> m_signal_interface_added;
+      sigc::signal<void(InterfaceProxy::pointer)> m_signal_interface_added;
 
-      sigc::signal<void,InterfaceProxy::pointer> m_signal_interface_removed;
+      sigc::signal<void(InterfaceProxy::pointer)> m_signal_interface_removed;
 
       typedef std::map<InterfaceProxy::pointer,sigc::connection> InterfaceSignalNameConnections;
 

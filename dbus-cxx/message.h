@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <tuple>
 
 #include <dbus/dbus.h>
 

@@ -17,7 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus/dbus.h>
-#include <sigc++/sigc++.h>
+#include <sigc++/signal.h>
 #include <dbus-cxx/message.h>
 #include <dbus-cxx/pointer.h>
 
@@ -70,7 +70,7 @@ namespace DBus
 
       DBusPendingCall* m_cobj;
 
-      sigc::signal<void> m_signal_notify;
+      sigc::signal<void()> m_signal_notify;
 
       static void notify_callback( DBusPendingCall* pending, void* data );
   };

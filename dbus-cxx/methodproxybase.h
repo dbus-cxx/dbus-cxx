@@ -41,6 +41,7 @@ namespace DBus
    * 
    * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
    */
+  template <class T_return, class... T_arg>
   class MethodProxyBase
   {
     protected:
@@ -51,7 +52,7 @@ namespace DBus
 
     public:
 
-      typedef DBusCxxPointer<MethodProxyBase> pointer;
+      typedef std::shared_ptr<MethodProxyBase> pointer;
 
       static pointer create( const std::string& name );
 
@@ -68,30 +69,29 @@ namespace DBus
       ReturnMessage::const_pointer call( CallMessage::const_pointer, int timeout_milliseconds=-1 ) const;
 
       //TODO make a call() function that takes in a builder(for the milliseconds)
-      template <class T_return,T_arg...>
       T_return call( T_arg... args )
       {
         CallMessage::pointer _callmsg = this->create_call_message();
-        std::tuple<T_arg...> msg_args = std::tuple<T_arg...>(args...);
-        //_callmsg.setArgs(msg_args)
+        (*_callmsg << ... << args);
         ReturnMessage::const_pointer retmsg = this->call( _callmsg, -1 );
         T_return _retval;
         retmsg >> _retval;
         return _retval;
       }
 
-      template <void,T_arg...>
+/*
+      template<>
       void call( T_arg... args )
       {
         CallMessage::pointer _callmsg = this->create_call_message();
-        std::tuple<T_arg...> msg_args = std::tuple<T_arg...>(args...);
-        //_callmsg.setArgs(msg_args)
+        (*_callmsg << ... << args);
         this->call( _callmsg, -1 );
       }
+*/
 
       PendingCall::pointer call_async( CallMessage::const_pointer, int timeout_milliseconds=-1 ) const;
 
-      sigc::signal<void,const std::string&/*old name*/, const std::string&/*new name*/> signal_name_changed();
+      sigc::signal<void(const std::string&/*old name*/, const std::string&/*new name*/)> signal_name_changed();
 
     protected:
 
@@ -105,7 +105,7 @@ namespace DBus
       /** Ensures that the name doesn't change while the name changed signal is emitting */
       pthread_mutex_t m_name_mutex;
 
-      sigc::signal<void,const std::string&, const std::string&> m_signal_name_changed;
+      sigc::signal<void(const std::string&, const std::string&)> m_signal_name_changed;
 
   };
 

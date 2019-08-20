@@ -45,7 +45,7 @@ template <typename T_return, typename... T_arg>
 class signal 
   : public sigc::signal<T_return(T_arg...)>, public signal_base
 {
-  typedef DBusCxxPointer<signal> pointer;
+  typedef std::shared_ptr<signal> pointer;
   
   signal(const std::string& interface, const std::string& name):
     signal_base(interface, name),
@@ -132,13 +132,12 @@ class signal
 
   sigc::connection m_internal_callback_connection;
 
-  //template<class ... T_arg>
   T_return internal_callback(T_arg ... args)
   {
     // DBUS_CXX_DEBUG( "signal::internal_callback: " FOR(1,$1,[ << arg%1]) );
     SignalMessage::pointer __msg = SignalMessage::create(m_path, m_interface, m_name);
     if ( not m_destination.empty() ) __msg->set_destination(m_destination);
-    *__msg << args;
+    (*__msg << ... << args);
     bool result = this->handle_dbus_outgoing(__msg);
     DBUSCXX_DEBUG_STDSTR( "dbus.signal", "signal::internal_callback: result=" << result );
   }

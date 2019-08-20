@@ -16,7 +16,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <sigc++/sigc++.h>
+#include <sigc++/signal.h>
 
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/pointer.h>
@@ -53,7 +53,7 @@ namespace DBus
       /** The default implementation simply emits the message signal and returns the result */
       virtual HandlerResult handle_message( DBusCxxPointer<Connection>, Message::const_pointer );
 
-      typedef sigc::signal<HandlerResult,DBusCxxPointer<Connection>, Message::const_pointer>::accumulated<MessageHandlerAccumulator> MessageSignal;
+      typedef sigc::signal<HandlerResult(DBusCxxPointer<Connection>, Message::const_pointer)>::accumulated<MessageHandlerAccumulator> MessageSignal;
 
       MessageSignal& signal_message();
 

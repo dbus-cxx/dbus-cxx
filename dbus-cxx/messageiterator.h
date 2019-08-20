@@ -527,18 +527,20 @@ DBUS_CXX_DEBUG( "ERR: " << __FILE__ << __LINE__ );
         }
       }
 
+/*
       template <typename T>
-      MessageIterator& operator>>( Variant<T>& v )
+      MessageIterator& operator>>( std::variant<T>& v )
       {
 	try{
           MessageIterator subiter = this->recurse();
-          dbus_message_iter_get_basic(subiter.cobj(), &v.data);
+          v = (T)(*this);
           this->next();
           return *this;
         }catch(DBusCxxPointer<DBus::ErrorInvalidTypecast> e){
           throw (ErrorInvalidTypecast)*e;
         }
       }
+*/
       
       template <typename T>
       void value( T& temp ) {

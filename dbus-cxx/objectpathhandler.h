@@ -66,12 +66,12 @@ namespace DBus
       bool unregister(DBusCxxPointer<Connection> conn);
 
       /** Emitted when this object is registered with a connection */
-      sigc::signal<void,DBusCxxPointer<Connection> >& signal_registered();
+      sigc::signal<void(DBusCxxPointer<Connection>) >& signal_registered();
 
       /**
        * Emitted when this object is unregistered from a connection
        */
-      sigc::signal<void,DBusCxxPointer<Connection> >& signal_unregistered();
+      sigc::signal<void(DBusCxxPointer<Connection>) >& signal_unregistered();
 
     protected:
 
@@ -81,9 +81,9 @@ namespace DBus
 
       PrimaryFallback m_primary_fallback;
 
-      sigc::signal<void,DBusCxxPointer<Connection> > m_signal_registered;
+      sigc::signal<void(DBusCxxPointer<Connection>) > m_signal_registered;
 
-      sigc::signal<void,DBusCxxPointer<Connection> > m_signal_unregistered;
+      sigc::signal<void(DBusCxxPointer<Connection>) > m_signal_unregistered;
 
       static struct DBusObjectPathVTable m_dbus_vtable;
 

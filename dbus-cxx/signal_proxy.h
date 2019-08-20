@@ -371,9 +371,9 @@ namespace DBus {
  *
  * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
  */
-template <class T_return, class T_arg...>
+template <class T_return, class... T_arg>
 class signal_proxy
-  : public sigc::signal<T_return, T_arg...>, public signal_proxy_base
+  : public sigc::signal<T_return(T_arg...)>, public signal_proxy_base
 {
   public:
 

@@ -541,12 +541,12 @@ namespace DBus
     return m_add_watch_signal;
   }
 
-  sigc::signal<bool,Watch::pointer>& Connection::signal_remove_watch()
+  sigc::signal<bool(Watch::pointer)>& Connection::signal_remove_watch()
   {
     return m_remove_watch_signal;
   }
 
-  sigc::signal<void,Watch::pointer>& Connection::signal_watch_toggled()
+  sigc::signal<void(Watch::pointer)>& Connection::signal_watch_toggled()
   {
     return m_watch_toggled_signal;
   }
@@ -556,22 +556,22 @@ namespace DBus
     return m_add_timeout_signal;
   }
 
-  sigc::signal<bool,Timeout::pointer>& Connection::signal_remove_timeout()
+  sigc::signal<bool(Timeout::pointer)>& Connection::signal_remove_timeout()
   {
     return m_remove_timeout_signal;
   }
 
-  sigc::signal<bool,Timeout::pointer>& Connection::signal_timeout_toggled()
+  sigc::signal<bool(Timeout::pointer)>& Connection::signal_timeout_toggled()
   {
     return m_timeout_toggled_signal;
   }
 
-  sigc::signal< void > & Connection::signal_wakeup_main()
+  sigc::signal< void() > & Connection::signal_wakeup_main()
   {
     return m_wakeup_main_signal;
   }
 
-  sigc::signal< void, DispatchStatus > & Connection::signal_dispatch_status_changed()
+  sigc::signal< void(DispatchStatus) > & Connection::signal_dispatch_status_changed()
   {
     return m_dispatch_status_signal;
   }
