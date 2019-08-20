@@ -22,7 +22,7 @@ include( FindPkgConfig )
 include( CheckTypeSize )
 
 # version information
-set( DBUS_CXX_PACKAGE_MAJOR_VERSION 1 )
+set( DBUS_CXX_PACKAGE_MAJOR_VERSION 2 )
 set( DBUS_CXX_PACKAGE_MINOR_VERSION 0 )
 set( DBUS_CXX_PACKAGE_MICRO_VERSION 0 )
 set( PKG_VERSION ${DBUS_CXX_PACKAGE_MAJOR_VERSION}.${DBUS_CXX_PACKAGE_MINOR_VERSION}.${DBUS_CXX_PACKAGE_MICRO_VERSION} )
@@ -89,7 +89,6 @@ set( DBUS_CXX_HEADERS1
 )
 
 # headers that need to go in the include/dbus-cxx directory
-# Auto-generated files are added later
 set( DBUS_CXX_HEADERS
     dbus-cxx/accumulators.h
     dbus-cxx/callmessage.h
@@ -124,6 +123,17 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/types.h
     dbus-cxx/utility.h
     dbus-cxx/watch.h
+    dbus-cxx/dbus_signal.h
+    dbus-cxx/interface.h
+    dbus-cxx/interfaceproxy.h
+    dbus-cxx/method.h
+    dbus-cxx/method_impl.h
+    dbus-cxx/methodproxybase.h
+    dbus-cxx/methodproxy.h
+    dbus-cxx/objectproxy.h
+    dbus-cxx/signal_proxy.h
+    dbus-cxx/connection.h
+    dbus-cxx/object.h
     ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
 )
 
@@ -166,49 +176,6 @@ if( ENABLE_GLIBMM )
     install( FILES dbus-cxx-glibmm.h DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION} )
     install( FILES dbus-cxx-glibmm/dispatcher.h DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/dbus-cxx-glibmm/ )
 endif( ENABLE_GLIBMM )
-
-#
-# gnerate files with m4
-#
-# https://samthursfield.wordpress.com/2015/11/21/cmake-dependencies-between-targets-and-files-and-custom-commands/
-# https://gist.github.com/socantre/7ee63133a0a3a08f3990
-foreach( filename 
-    dbus_signal.h.m4
-    interface.h.m4
-    interfaceproxy.h.m4
-    method.h.m4
-    method_impl.h.m4
-    methodproxybase.h.m4
-    methodproxy.h.m4
-    objectproxy.h.m4
-    signal_proxy.h.m4
-    connection.h.m4
-    object.h.m4 )
-
-    string( REPLACE ".m4" "" sanitized_file ${filename} )
-
-    set( output_file ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/${sanitized_file} )
-    set( input_file ${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx ${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx/${filename} )
-    set( DBUS_CXX_HEADERS ${DBUS_CXX_HEADERS} ${output_file} )
-
-    # Add the custom command which calls m4 to generate the headers
-    add_custom_command(
-        OUTPUT
-            ${output_file}
-        COMMAND
-            m4 -I ${input_file} > ${output_file}
-        VERBATIM
-    )
-
-    # The custom target tells cmake that we need to generate this
-    add_custom_target( generate-${sanitized_file} 
-        DEPENDS 
-            ${output_file}
-    )
-
-    # we need to add a dependecy to the library to ensure that the files get regenerated
-    add_dependencies( dbus-cxx generate-${sanitized_file} )
-endforeach( filename )
 
 #
 # Library install information
