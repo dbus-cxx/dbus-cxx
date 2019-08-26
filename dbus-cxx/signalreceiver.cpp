@@ -110,27 +110,27 @@ namespace DBus
     m_signal_destination_changed.emit();
   }
 
-  sigc::signal< void > & SignalReceiver::signal_sender_changed()
+  sigc::signal< void() > & SignalReceiver::signal_sender_changed()
   {
     return m_signal_sender_changed;
   }
 
-  sigc::signal< void > & SignalReceiver::signal_interface_changed()
+  sigc::signal< void() > & SignalReceiver::signal_interface_changed()
   {
     return m_signal_interface_changed;
   }
 
-  sigc::signal< void > & SignalReceiver::signal_member_changed()
+  sigc::signal< void() > & SignalReceiver::signal_member_changed()
   {
     return m_signal_member_changed;
   }
 
-  sigc::signal< void > & SignalReceiver::signal_path_changed()
+  sigc::signal< void() > & SignalReceiver::signal_path_changed()
   {
     return m_signal_path_changed;
   }
 
-  sigc::signal< void > & SignalReceiver::signal_destination_changed()
+  sigc::signal< void() > & SignalReceiver::signal_destination_changed()
   {
     return m_signal_destination_changed;
   }

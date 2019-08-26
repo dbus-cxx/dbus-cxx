@@ -49,7 +49,7 @@ namespace DBus {
 
       typedef std::weak_ptr<InterfaceProxy> weak_pointer;
       
-      typedef std::multimap<std::string, MethodProxyBase<std::any>::pointer> Methods;
+      typedef std::multimap<std::string, MethodProxyBase::pointer> Methods;
 
       typedef std::set<signal_proxy_base::pointer> Signals;
 
@@ -70,31 +70,31 @@ namespace DBus {
       const Methods& methods() const;
 
       /** Returns the first method with the given name */
-      MethodProxyBase<std::any>::pointer method( const std::string& name ) const;
+      MethodProxyBase::pointer method( const std::string& name ) const;
 
       template <class T_return, class... T_arg>
-      std::shared_ptr<MethodProxyBase<T_return,T_arg...> > create_method( const std::string& name )
+      std::shared_ptr<MethodProxyBase> create_method( const std::string& name )
       {
-        std::shared_ptr< MethodProxyBase<T_return,T_arg...> > method;
-        method = MethodProxyBase<T_return,T_arg...>::create(name);
+        std::shared_ptr< MethodProxyBase > method;
+        method = MethodProxy<T_return,T_arg...>::create(name);
         this->add_method(method);
         return method;
       }
 
       /** Adds the named method */
-      bool add_method( MethodProxyBase<std::any>::pointer method );
+      bool add_method( MethodProxyBase::pointer method );
 
       /** Removes the first method with the given name */
       void remove_method( const std::string& name );
 
       /** Removed the specific method */
-      void remove_method( MethodProxyBase<std::any>::pointer method );
+      void remove_method( MethodProxyBase::pointer method );
 
       /** True if the interface has a method with the given name */
       bool has_method( const std::string& name ) const;
 
       /** True if the interface has the specified method */
-      bool has_method( MethodProxyBase<std::any>::pointer method ) const;
+      bool has_method( MethodProxyBase::pointer method ) const;
       
       CallMessage::pointer create_call_message( const std::string& method_name ) const;
 
@@ -129,10 +129,10 @@ namespace DBus {
       sigc::signal<void(const std::string&/*old name*/,const std::string&/*new name*/)> signal_name_changed();
 
       /** Signal emitted when a method of the given name is added */
-      sigc::signal<void(MethodProxyBase<std::any>::pointer)> signal_method_added();
+      sigc::signal<void(MethodProxyBase::pointer)> signal_method_added();
 
       /** Signal emitted when a method of the given name is removed */
-      sigc::signal<void(MethodProxyBase<std::any>::pointer)> signal_method_removed();
+      sigc::signal<void(MethodProxyBase::pointer)> signal_method_removed();
 
     protected:
 
@@ -153,15 +153,15 @@ namespace DBus {
 
       sigc::signal<void(const std::string&,const std::string&)> m_signal_name_changed;
       
-      sigc::signal<void(MethodProxyBase<std::any>::pointer)> m_signal_method_added;
+      sigc::signal<void(MethodProxyBase::pointer)> m_signal_method_added;
       
-      sigc::signal<void(MethodProxyBase<std::any>::pointer)> m_signal_method_removed;
+      sigc::signal<void(MethodProxyBase::pointer)> m_signal_method_removed;
 
-      typedef std::map<MethodProxyBase<std::any>::pointer,sigc::connection> MethodSignalNameConnections;
+      typedef std::map<MethodProxyBase::pointer,sigc::connection> MethodSignalNameConnections;
 
       MethodSignalNameConnections m_method_signal_name_connections;
 
-      void on_method_name_changed(const std::string& oldname, const std::string& newname, MethodProxyBase<std::any>::pointer method);
+      void on_method_name_changed(const std::string& oldname, const std::string& newname, MethodProxyBase::pointer method);
 
       void on_object_set_connection( std::shared_ptr<Connection> conn );
 

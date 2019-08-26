@@ -103,12 +103,12 @@ namespace DBus
     return result;
   }
 
-  sigc::signal< void, Connection::pointer > & ObjectPathHandler::signal_registered()
+  sigc::signal< void(Connection::pointer)> & ObjectPathHandler::signal_registered()
   {
     return m_signal_registered;
   }
 
-  sigc::signal< void, Connection::pointer > & ObjectPathHandler::signal_unregistered()
+  sigc::signal< void(Connection::pointer)> & ObjectPathHandler::signal_unregistered()
   {
     return m_signal_unregistered;
   }

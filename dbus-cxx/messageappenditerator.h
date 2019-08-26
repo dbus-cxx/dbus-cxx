@@ -73,6 +73,7 @@ namespace DBus
       /** True if the iterator is valid and initialized, false otherwise */
       operator bool() const;
 
+      bool append(std::any){ return false; }
       bool append( bool v );
       bool append( uint8_t v );
       bool append( int16_t v );

@@ -262,7 +262,7 @@ namespace DBus
 
       bool register_object( Object::pointer object );
 
-      ObjectPathHandler::pointer create_object( const std::string& path, sigc::slot<HandlerResult,Connection::pointer,Message::const_pointer>& slot, PrimaryFallback pf=PRIMARY );
+      ObjectPathHandler::pointer create_object( const std::string& path, sigc::slot<HandlerResult(Connection::pointer,Message::const_pointer)>& slot, PrimaryFallback pf=PRIMARY );
 
       ObjectPathHandler::pointer create_object( const std::string& path, HandlerResult (*MessageFunction)(Connection::pointer,Message::const_pointer), PrimaryFallback pf=PRIMARY );
 

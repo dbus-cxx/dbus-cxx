@@ -259,10 +259,10 @@ namespace DBus
       void remove_default_interface();
 
       /** Adds the method to the named interface */
-      bool add_method( const std::string& interface, MethodProxyBase<std::any>::pointer method );
+      bool add_method( const std::string& interface, MethodProxyBase::pointer method );
 
       /** Adds the method to the default interface */
-      bool add_method( MethodProxyBase<std::any>::pointer method );
+      bool add_method( MethodProxyBase::pointer method );
 
       CallMessage::pointer create_call_message( const std::string& interface_name, const std::string& method_name ) const;
 
@@ -279,7 +279,7 @@ namespace DBus
        * @param method_name The name to assign to the newly create method proxy. This name will be used to perform the dbus-call.
        */
       template <class T_return, class... T_arg>
-      std::shared_ptr<MethodProxyBase<T_return, T_arg...> >
+      std::shared_ptr<MethodProxyBase>
       create_method( const std::string& interface_name, const std::string& method_name )
       {
         InterfaceProxy::pointer interface = this->interface(interface_name);
@@ -302,11 +302,11 @@ namespace DBus
         return interface->create_signal<T_return, T_arg...>(sig_name);
       }
 
-      sigc::signal<void,InterfaceProxy::pointer> signal_interface_added();
+      sigc::signal<void(InterfaceProxy::pointer)> signal_interface_added();
 
-      sigc::signal<void,InterfaceProxy::pointer> signal_interface_removed();
+      sigc::signal<void(InterfaceProxy::pointer)> signal_interface_removed();
 
-      sigc::signal<void,InterfaceProxy::pointer/*old default*/,InterfaceProxy::pointer/*new default*/> signal_default_interface_changed();
+      sigc::signal<void(InterfaceProxy::pointer/*old default*/,InterfaceProxy::pointer/*new default*/)> signal_default_interface_changed();
 
     protected:
 

@@ -335,17 +335,17 @@ namespace DBus
     return m_signals.find(sig) != m_signals.end();
   }
 
-  sigc::signal< void, const std::string &, const std::string & > InterfaceProxy::signal_name_changed()
+  sigc::signal< void(const std::string &, const std::string &) > InterfaceProxy::signal_name_changed()
   {
     return m_signal_name_changed;
   }
 
-  sigc::signal< void, MethodProxyBase::pointer > InterfaceProxy::signal_method_added()
+  sigc::signal< void(MethodProxyBase::pointer) > InterfaceProxy::signal_method_added()
   {
     return m_signal_method_added;
   }
 
-  sigc::signal< void, MethodProxyBase::pointer > InterfaceProxy::signal_method_removed()
+  sigc::signal< void(MethodProxyBase::pointer)> InterfaceProxy::signal_method_removed()
   {
     return m_signal_method_removed;
   }

@@ -59,7 +59,7 @@ namespace DBus
     return m_signal_dbus_incoming.emit( msg );
   }
 
-  sigc::signal< HandlerResult, SignalMessage::const_pointer >::accumulated< MessageHandlerAccumulator > signal_proxy_base::signal_dbus_incoming()
+  sigc::signal< HandlerResult(SignalMessage::const_pointer)>::accumulated< MessageHandlerAccumulator > signal_proxy_base::signal_dbus_incoming()
   {
     return m_signal_dbus_incoming;
   }

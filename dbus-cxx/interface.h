@@ -73,7 +73,7 @@ namespace DBus {
        *
        * Can access \e type as \c Interface::Methods
        */
-      typedef std::multimap<std::string, MethodBase<std::any>::pointer> Methods;
+      typedef std::multimap<std::string, MethodBase::pointer> Methods;
 
       /**
        * Typedef to the storage structure for signals.
@@ -130,7 +130,7 @@ namespace DBus {
       const Methods& methods() const;
 
       /** Returns the first method with the given name */
-      MethodBase<std::any>::pointer method( const std::string& name ) const;
+      MethodBase::pointer method( const std::string& name ) const;
 
       /**
        * Creates a method with a return value (possibly \c void ) and $1 parameters
@@ -153,7 +153,7 @@ namespace DBus {
       std::shared_ptr<Method<T_return, T_arg...> >
       create_method( const std::string& name, sigc::slot<T_return(T_arg...)> slot );
       /** Adds the named method */
-      bool add_method( MethodBase<std::any>::pointer method );
+      bool add_method( MethodBase::pointer method );
 
       /** Removes the first method with the given name */
       void remove_method( const std::string& name );
@@ -208,13 +208,13 @@ namespace DBus {
       signal_base::pointer signal(const std::string& signal_name);
 
       /** Signal emitted when the name is changed */
-      sigc::signal<void,const std::string&/*old name*/,const std::string&/*new name*/> signal_name_changed();
+      sigc::signal<void(const std::string&/*old name*/,const std::string&/*new name*/)> signal_name_changed();
 
       /** Signal emitted when a method of the given name is added */
-      sigc::signal<void,MethodBase<std::any>::pointer> signal_method_added();
+      sigc::signal<void(MethodBase::pointer)> signal_method_added();
 
       /** Signal emitted when a method of the given name is removed */
-      sigc::signal<void,MethodBase<std::any>::pointer> signal_method_removed();
+      sigc::signal<void(MethodBase::pointer)> signal_method_removed();
 
       /** Returns a DBus XML description of this interface */
       std::string introspect(int space_depth=0) const;
@@ -244,11 +244,11 @@ namespace DBus {
 
       sigc::signal<void(const std::string&,const std::string&)> m_signal_name_changed;
       
-      sigc::signal<void(MethodBase<std::any>::pointer)> m_signal_method_added;
+      sigc::signal<void(MethodBase::pointer)> m_signal_method_added;
       
-      sigc::signal<void(MethodBase<std::any>::pointer)> m_signal_method_removed;
+      sigc::signal<void(MethodBase::pointer)> m_signal_method_removed;
 
-      typedef std::map<MethodBase<std::any>::pointer,sigc::connection> MethodSignalNameConnections;
+      typedef std::map<MethodBase::pointer,sigc::connection> MethodSignalNameConnections;
 
       MethodSignalNameConnections m_method_signal_name_connections;
 
@@ -256,7 +256,7 @@ namespace DBus {
        * Callback point that updates the method name map when a method changes
        * its name.
        */
-      void on_method_name_changed(const std::string& oldname, const std::string& newname, MethodBase<std::any>::pointer method);
+      void on_method_name_changed(const std::string& oldname, const std::string& newname, MethodBase::pointer method);
 
       void set_connection(std::shared_ptr<Connection> conn);
 

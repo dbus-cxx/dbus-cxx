@@ -21,6 +21,7 @@
 #include <string>
 #include <map>
 #include <variant>
+#include <any>
 #include <dbus-cxx/signatureiterator.h>
 #include <dbus-cxx/path.h>
 #include <dbus-cxx/filedescriptor.h>
@@ -91,6 +92,7 @@ namespace DBus
 
   };
 
+  inline std::string signature( std::any )     { return DBUS_TYPE_INVALID; }
   inline std::string signature( uint8_t )     { return DBUS_TYPE_BYTE_AS_STRING; }
   inline std::string signature( bool )        { return DBUS_TYPE_BOOLEAN_AS_STRING; }
   inline std::string signature( int16_t )     { return DBUS_TYPE_INT16_AS_STRING; }

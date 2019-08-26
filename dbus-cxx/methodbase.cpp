@@ -19,6 +19,7 @@
 
 #include "methodbase.h"
 #include "dbus-cxx-private.h"
+#include "dbus-cxx/connection.h"
 
 namespace DBus
 {
@@ -31,10 +32,6 @@ namespace DBus
 
   MethodBase::MethodBase(const MethodBase& other):
       m_name(other.m_name)
-  {
-  }
-
-  MethodBase::~MethodBase()
   {
   }
 
@@ -54,7 +51,7 @@ namespace DBus
     m_signal_name_changed.emit(old_name, m_name);
   }
 
-  sigc::signal< void, const std::string &, const std::string & > MethodBase::signal_name_changed()
+  sigc::signal< void( const std::string &, const std::string &) > MethodBase::signal_name_changed()
   {
     return m_signal_name_changed;
   }
@@ -66,7 +63,7 @@ namespace DBus
       m_arg_names[i] = name;
   }
 
-  std::string MethodBase::arg_name(size_t i) { 
+  std::string MethodBase::arg_name(size_t i) const { 
       if( m_arg_names.size() < i && i >= 0 ){
           return m_arg_names[i];
       }

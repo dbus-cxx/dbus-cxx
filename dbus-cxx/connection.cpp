@@ -624,7 +624,7 @@ namespace DBus
     return true;
   }
 
-  ObjectPathHandler::pointer Connection::create_object(const std::string & path, sigc::slot< HandlerResult, Connection::pointer, Message::const_pointer >& slot, PrimaryFallback pf)
+  ObjectPathHandler::pointer Connection::create_object(const std::string & path, sigc::slot< HandlerResult(Connection::pointer, Message::const_pointer) >& slot, PrimaryFallback pf)
   {
     ObjectPathHandler::pointer handler = ObjectPathHandler::create(path, pf);
     if ( not handler ) return handler;

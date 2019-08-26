@@ -87,7 +87,7 @@ namespace DBus
     return m_interface->call_async(call_message, timeout_milliseconds);
   }
 
-  sigc::signal< void, const std::string &, const std::string & > MethodProxyBase::signal_name_changed()
+  sigc::signal< void(const std::string &, const std::string &) > MethodProxyBase::signal_name_changed()
   {
     return m_signal_name_changed;
   }

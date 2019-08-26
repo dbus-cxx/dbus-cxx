@@ -94,7 +94,7 @@ namespace DBus
       dbus_pending_call_block( m_cobj );
   }
 
-  sigc::signal<void> PendingCall::signal_notify()
+  sigc::signal<void()> PendingCall::signal_notify()
   {
     return m_signal_notify;
   }

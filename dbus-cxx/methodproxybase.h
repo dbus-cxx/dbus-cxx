@@ -41,7 +41,6 @@ namespace DBus
    * 
    * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
    */
-  template <class T_return, class... T_arg>
   class MethodProxyBase
   {
     protected:
@@ -69,6 +68,7 @@ namespace DBus
       ReturnMessage::const_pointer call( CallMessage::const_pointer, int timeout_milliseconds=-1 ) const;
 
       //TODO make a call() function that takes in a builder(for the milliseconds)
+/*
       T_return call( T_arg... args )
       {
         CallMessage::pointer _callmsg = this->create_call_message();
@@ -78,6 +78,7 @@ namespace DBus
         retmsg >> _retval;
         return _retval;
       }
+*/
 
 /*
       template<>
@@ -107,6 +108,32 @@ namespace DBus
 
       sigc::signal<void(const std::string&, const std::string&)> m_signal_name_changed;
 
+  };
+
+  template <class T_return, class... T_arg>
+  class MethodProxy : public MethodProxyBase
+  {
+  protected:
+      MethodProxy(const std::string& name) :
+        MethodProxyBase(name){}
+
+  public:
+    typedef std::shared_ptr<MethodProxy> pointer;
+
+    T_return operator()(T_arg... args){
+        //TODO add debug here(see methodbase.h)
+        //DBUSCXX_DEBUG_STDSTR( "dbus.MethodProxy", 
+        CallMessage::pointer _callmsg = this->create_call_message();
+        (*_callmsg << ... << args);
+        ReturnMessage::const_pointer retmsg = this->call( _callmsg, -1 );
+        T_return _retval;
+        retmsg >> _retval;
+        return _retval;
+    }
+
+    static pointer create(const std::string& name){
+      return pointer( new MethodProxy(name) );
+    }
   };
 
 }

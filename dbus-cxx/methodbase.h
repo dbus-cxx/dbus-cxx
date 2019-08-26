@@ -22,9 +22,12 @@
 #include <dbus-cxx/callmessage.h>
 #include <dbus-cxx/errormessage.h>
 #include <dbus-cxx/dbus-cxx-config.h>
+#include <dbus-cxx/headerlog.h>
+#include <dbus-cxx/returnmessage.h>
 #include <type_traits>
 #include <mutex>
 #include <tuple>
+#include <sstream>
 
 #ifndef DBUSCXX_METHODBASE_H
 #define DBUSCXX_METHODBASE_H
@@ -97,7 +100,6 @@ namespace priv{
   
    // TODO fix signals that expect a return value and partially specialize for void returns
   
-  template <typename T_return, typename... T_arg>
   class MethodBase
   {
     protected:
@@ -119,14 +121,66 @@ namespace priv{
 
       void set_name( const std::string& name );
 
-      void set_method( sigc::signal<T_return(T_arg...)> slot ){ m_slot = slot; }
 
+      virtual HandlerResult handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message ) = 0;
+
+      /**
+       * This method is needed to be able to create a duplicate of a child
+       * capable of parsing their specific template type message.
+       */
+      //TODO is this needed anymore?
+      //virtual pointer clone() = 0;
+
+      sigc::signal<void(const std::string&/*old name*/, const std::string&/*new name*/)> signal_name_changed();
+
+      /** Returns a DBus XML description of this interface */
+      virtual std::string introspect(int space_depth=0) const { return std::string(); };
+
+      std::string arg_name(size_t i) const;
+
+      void set_arg_name(size_t i, const std::string& name);
+
+    protected:
+
+      std::string m_name;
+
+      /** Ensures that the name doesn't change while the name changed signal is emitting */
+      std::mutex m_name_mutex;
+
+      sigc::signal<void(const std::string&, const std::string&)> m_signal_name_changed;
+
+      std::vector<std::string> m_arg_names;
+
+  };
+
+  template <class T_return, class... T_arg>
+  class Method : public MethodBase {
+  private:
       template <class Tuple, size_t... Is>
       void call_slot(Tuple t, std::index_sequence<Is...> ){
           m_slot( std::get<Is>(t)... );
       }
 
-      HandlerResult handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message ){
+  public:
+      void set_method( sigc::signal<T_return(T_arg...)> slot ){ m_slot = slot; }
+
+      virtual std::string introspect(int space_depth=0) const {
+          std::ostringstream sout;
+          std::string spaces;
+          DBus::priv::method_sig<T_arg...> method_sig_gen;
+          for(int i = 0; i < space_depth; i++ ) spaces += " ";
+          sout << spaces << "<method name=\"" << name() << "\">\n";
+          if( std::is_same<void,T_return>::value == false && std::is_same<std::any,T_return>::value == false ){
+              T_return ret_type;
+              sout << spaces << "<arg name=\"" << arg_name(0) << "\" "
+                   << "type=\"" << signature(ret_type) << "\" "
+                   << "direction=\"out\"/>\n";
+          }
+          sout << method_sig_gen.sigg( m_arg_names, 1, spaces );
+          return sout.str();
+      }
+
+      virtual HandlerResult handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message ){
           std::ostringstream debug_str;
           std::tuple<T_arg...> args;
 
@@ -189,48 +243,9 @@ namespace priv{
          return HANDLED;
       }
 
-      /**
-       * This method is needed to be able to create a duplicate of a child
-       * capable of parsing their specific template type message.
-       */
-      //TODO is this needed anymore?
-      //virtual pointer clone() = 0;
-
-      sigc::signal<void,const std::string&/*old name*/, const std::string&/*new name*/> signal_name_changed();
-
-      /** Returns a DBus XML description of this interface */
-      std::string introspect(int space_depth=0) const {
-          std::ostringstream sout;
-          std::string spaces;
-          for(int i = 0; i < space_depth; i++ ) spaces += " ";
-          sout << spaces << "<method name=\"" << name() << "\">\n";
-          if( std::is_same<void,T_return>::value == false ){
-              T_return ret_type;
-              sout << spaces << "<arg name=\"" << arg_name(0) << "\" "
-                   << "type=\"" << signature(ret_type) << "\" "
-                   << "direction=\"out\"/>\n";
-          }
-          sout << DBus::priv::method_sig<T_arg...>( m_arg_names, 1, spaces );
-          return sout.str();
-      }
-
-      std::string arg_name(size_t i);
-
-      void set_arg_name(size_t i, const std::string& name);
 
     protected:
-
-      std::string m_name;
-
-      /** Ensures that the name doesn't change while the name changed signal is emitting */
-      std::mutex m_name_mutex;
-
-      sigc::signal<void(const std::string&, const std::string&)> m_signal_name_changed;
-
       sigc::signal<T_return(T_arg...)> m_slot;
-
-      std::vector<std::string> m_arg_names;
-
   };
 
   /**

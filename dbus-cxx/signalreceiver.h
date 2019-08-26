@@ -79,15 +79,15 @@ namespace DBus
 
       void set_destination(const std::string& s);
 
-      sigc::signal<void>& signal_sender_changed();
+      sigc::signal<void()>& signal_sender_changed();
 
-      sigc::signal<void>& signal_interface_changed();
+      sigc::signal<void()>& signal_interface_changed();
 
-      sigc::signal<void>& signal_member_changed();
+      sigc::signal<void()>& signal_member_changed();
 
-      sigc::signal<void>& signal_path_changed();
+      sigc::signal<void()>& signal_path_changed();
 
-      sigc::signal<void>& signal_destination_changed();
+      sigc::signal<void()>& signal_destination_changed();
 
       const std::string& match_rule();
 
@@ -105,15 +105,15 @@ namespace DBus
 
       std::string m_destination;
 
-      sigc::signal<void> m_signal_sender_changed;
+      sigc::signal<void()> m_signal_sender_changed;
 
-      sigc::signal<void> m_signal_interface_changed;
+      sigc::signal<void()> m_signal_interface_changed;
 
-      sigc::signal<void> m_signal_member_changed;
+      sigc::signal<void()> m_signal_member_changed;
 
-      sigc::signal<void> m_signal_path_changed;
+      sigc::signal<void()> m_signal_path_changed;
 
-      sigc::signal<void> m_signal_destination_changed;
+      sigc::signal<void()> m_signal_destination_changed;
 
       std::string m_match_rule;
 

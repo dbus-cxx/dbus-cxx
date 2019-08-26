@@ -23,6 +23,8 @@
 #include <sstream>
 #include <map>
 #include <dbus/dbus.h>
+#include <dbus-cxx/object.h>
+#include <dbus-cxx/connection.h>
 
 namespace DBus
 {
@@ -331,17 +333,17 @@ namespace DBus
     return sig;
   }
 
-  sigc::signal< void, const std::string &, const std::string & > Interface::signal_name_changed()
+  sigc::signal< void( const std::string &, const std::string &) > Interface::signal_name_changed()
   {
     return m_signal_name_changed;
   }
 
-  sigc::signal< void, MethodBase::pointer > Interface::signal_method_added()
+  sigc::signal< void( MethodBase::pointer)> Interface::signal_method_added()
   {
     return m_signal_method_added;
   }
 
-  sigc::signal< void, MethodBase::pointer > Interface::signal_method_removed()
+  sigc::signal< void(MethodBase::pointer)> Interface::signal_method_removed()
   {
     return m_signal_method_removed;
   }

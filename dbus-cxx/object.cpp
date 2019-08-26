@@ -18,6 +18,8 @@
  ***************************************************************************/
 #include "utility.h"
 #include "object.h"
+#include "interface.h"
+#include "connection.h"
 #include "dbus-cxx-private.h"
 
 #include <map>
@@ -288,17 +290,17 @@ namespace DBus
     return sout.str();
   }
 
-  sigc::signal< void, Interface::pointer > Object::signal_interface_added()
+  sigc::signal< void(Interface::pointer) > Object::signal_interface_added()
   {
     return m_signal_interface_added;
   }
 
-  sigc::signal< void, Interface::pointer > Object::signal_interface_removed()
+  sigc::signal< void(Interface::pointer)> Object::signal_interface_removed()
   {
     return m_signal_interface_removed;
   }
 
-  sigc::signal< void, Interface::pointer, Interface::pointer > Object::signal_default_interface_changed()
+  sigc::signal< void(Interface::pointer, Interface::pointer)> Object::signal_default_interface_changed()
   {
     return m_signal_default_interface_changed;
   }

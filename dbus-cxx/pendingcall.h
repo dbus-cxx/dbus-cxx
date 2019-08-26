@@ -62,7 +62,7 @@ namespace DBus
 
       void block();
 
-      sigc::signal<void> signal_notify();
+      sigc::signal<void()> signal_notify();
 
       DBusPendingCall* cobj();
 

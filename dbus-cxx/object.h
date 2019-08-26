@@ -286,14 +286,14 @@ namespace DBus
        *
        * The first parameter of the callback is a pointer to the newly added interface.
        */
-      sigc::signal<void,std::shared_ptr<Interface> > signal_interface_added();
+      sigc::signal<void(std::shared_ptr<Interface>) > signal_interface_added();
 
       /**
        * Signal emitted when an interface is removed from this object.
        *
        * The first parameter of the callback is a pointer to the removed interface.
        */
-      sigc::signal<void,std::shared_ptr<Interface> > signal_interface_removed();
+      sigc::signal<void(std::shared_ptr<Interface>) > signal_interface_removed();
 
       /**
        * Signal emitted when the default interface of this object is changed.
@@ -302,7 +302,7 @@ namespace DBus
        * interface, and the second parameter is a callback to the new default
        * interface.
        */
-      sigc::signal<void,std::shared_ptr<Interface> /*old default*/,std::shared_ptr<Interface> /*new default*/> signal_default_interface_changed();
+      sigc::signal<void(std::shared_ptr<Interface> /*old default*/,std::shared_ptr<Interface> /*new default*/)> signal_default_interface_changed();
 
       /**
        * Handles the specified message on the specified connection

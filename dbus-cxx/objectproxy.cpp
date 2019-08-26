@@ -452,17 +452,17 @@ namespace DBus
     return m_connection->send_with_reply_async( call_message, timeout_milliseconds );
   }
 
-  sigc::signal< void, InterfaceProxy::pointer > ObjectProxy::signal_interface_added()
+  sigc::signal< void(InterfaceProxy::pointer)> ObjectProxy::signal_interface_added()
   {
     return m_signal_interface_added;
   }
 
-  sigc::signal< void, InterfaceProxy::pointer > ObjectProxy::signal_interface_removed()
+  sigc::signal< void(InterfaceProxy::pointer)> ObjectProxy::signal_interface_removed()
   {
     return m_signal_interface_removed;
   }
 
-  sigc::signal< void, InterfaceProxy::pointer, InterfaceProxy::pointer > ObjectProxy::signal_default_interface_changed()
+  sigc::signal< void(InterfaceProxy::pointer, InterfaceProxy::pointer)> ObjectProxy::signal_default_interface_changed()
   {
     return m_signal_default_interface_changed;
   }
