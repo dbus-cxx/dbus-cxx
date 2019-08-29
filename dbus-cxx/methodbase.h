@@ -213,8 +213,7 @@ namespace priv{
 
             if( std::is_same<void,T_return>::value == false ){
                 T_return retval;
-                //TODO call slot here and get the return value
-                //retval = m_slot(val1....);
+                retval = m_slot(args);
                 *retmsg << retval;
             }else{
                 call_slot( args, std::index_sequence_for<T_arg...>{} );
