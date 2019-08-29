@@ -73,15 +73,17 @@ class signal_proxy
     { return signal_base::pointer( new signal_proxy(*this) ); }
 
   protected:
-
     virtual HandlerResult on_dbus_incoming( SignalMessage::const_pointer msg )
     {
       std::tuple<T_arg...> args;
 
       try {
         Message::iterator i = msg->begin();
-        //TODO extract the arguments into the tuple
-        //this->emit(args);
+        std::apply( [i](auto ...arg){
+               (i >> ... >> arg);
+           },
+           args );
+        this->emit(args);
       }
       catch ( ErrorInvalidTypecast& e ) {
           return NOT_HANDLED;
