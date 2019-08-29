@@ -40,9 +40,7 @@
 #include <dbus-cxx/messagehandler.h>
 #include <dbus-cxx/messageiterator.h>
 #include <dbus-cxx/methodbase.h>
-#include <dbus-cxx/method.h>
 #include <dbus-cxx/methodproxybase.h>
-#include <dbus-cxx/methodproxy.h>
 #include <dbus-cxx/object.h>
 #include <dbus-cxx/objectpathhandler.h>
 #include <dbus-cxx/objectproxy.h>
