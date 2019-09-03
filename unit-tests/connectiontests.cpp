@@ -62,6 +62,20 @@ bool connection_get_signal_proxy_by_iface_and_name(){
     return true;
 }
 
+static double add(double a, double b){
+    return a + b;
+}
+
+bool connection_test_method_2arg(){
+    DBus::Connection::pointer conn = dispatch->create_connection(DBus::BUS_SESSION);
+
+    DBus::Object::pointer object = conn->create_object("/dbuscxx/example/Calculator");
+
+    object->create_method<double,double,double>("Calculator.Basic", "add", sigc::ptr_fun(add) );
+
+    return true;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
   ret = connection_##name();\
 } \
