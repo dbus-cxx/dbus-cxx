@@ -20,6 +20,7 @@
 #include <dbus/dbus.h>
 #include <dbus-cxx/pointer.h>
 #include <dbus-cxx/simplelogger_defs.h>
+#include <cxxabi.h>
 
 #ifndef DBUSCXX_UTILITY_H
 #define DBUSCXX_UTILITY_H
@@ -105,6 +106,103 @@ namespace DBus
    */
   void setLogLevel( const enum ::SL_LogLevel level );
 
-}
+namespace priv {
+/*
+ * dbus_signature class - signature of a given type
+ */
+template<typename... argn>
+class dbus_signature;
+ 
+template<> class dbus_signature<>{
+public:
+  std::string dbus_sig() const {
+    return "";
+  }
+};
+ 
+template<typename arg1, typename... argn>
+class dbus_signature<arg1, argn...> : public dbus_signature<argn...> {
+public:
+  std::string dbus_sig() const {
+    arg1 arg;
+    return signature(arg) + dbus_signature<argn...>::dbus_sig();
+  }
+};
+
+/*
+ * method_signature class - like dbus_signature, but outputs the args of the signature
+ * in a C++-like manner
+ */
+template<typename... argn>
+class method_signature;
+
+template<> class method_signature<>{
+public:
+  std::string method_sig() const {
+    return "";
+  }
+};
+
+template<typename arg1, typename... argn>
+class method_signature<arg1, argn...> : public method_signature<argn...> {
+public:
+  std::string method_sig() const{
+#ifdef DBUS_CXX_CXA_DEMANGLE
+    int status;
+    char* demangled = abi::__cxa_demangle( typeid(arg1).name(), nullptr, nullptr, &status );
+    std::string arg1_name( demangled );
+    free( demangled );
+    if( status < 0 ){
+        arg1_name = typeid(arg1).name();
+    }
+#else
+    std::string arg1_name = typeid(arg1).name();
+#endif
+    std::string remaining_args = method_signature<argn...>::method_sig();
+    if( remaining_args.size() > 1 ){
+        arg1_name += ",";
+    }
+    return arg1_name + remaining_args;
+  }
+};
+
+
+/*
+ * dbus_function_traits - given a function, get information about it needed for dbus operations.
+ */
+template<typename T> 
+struct dbus_function_traits;  
+
+template<typename ...Args> 
+struct dbus_function_traits<std::function<void(Args...)>>
+{
+  std::string dbus_sig(){
+    return dbus_signature<Args...>().dbus_sig();
+  }
+
+  std::string debug_string(){
+    return "void (" + method_signature<Args...>().method_sig() + ")";
+  }
+};
+
+template<typename T_ret, typename ...Args> 
+struct dbus_function_traits<std::function<T_ret(Args...)>>
+{
+  std::string dbus_sig(){
+    return dbus_signature<Args...>().dbus_sig();
+  }
+
+  std::string debug_string(){
+    std::ostringstream ret;
+    ret << typeid(T_ret).name();
+    ret << "(";
+    ret << method_signature<Args...>().method_sig();
+    ret << ")";
+    return ret.str();
+  }
+};
+} /* namespace priv */
+
+} /* namespace DBus */
 
 #endif
