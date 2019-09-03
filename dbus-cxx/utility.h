@@ -20,6 +20,9 @@
 #include <dbus/dbus.h>
 #include <dbus-cxx/pointer.h>
 #include <dbus-cxx/simplelogger_defs.h>
+#include <dbus-cxx/message.h>
+#include <functional>
+#include <sstream>
 #include <cxxabi.h>
 
 #ifndef DBUSCXX_UTILITY_H
@@ -141,12 +144,16 @@ public:
   std::string method_sig() const {
     return "";
   }
+
+  std::string instrospect() const {
+    return "";
+  }
 };
 
 template<typename arg1, typename... argn>
 class method_signature<arg1, argn...> : public method_signature<argn...> {
 public:
-  std::string method_sig() const{
+  std::string method_sig() const {
 #ifdef DBUS_CXX_CXA_DEMANGLE
     int status;
     char* demangled = abi::__cxa_demangle( typeid(arg1).name(), nullptr, nullptr, &status );
@@ -164,6 +171,20 @@ public:
     }
     return arg1_name + remaining_args;
   }
+
+  std::string introspect(const std::vector<std::string>& names, int idx, const std::string& spaces) const {
+     arg1 arg;
+     std::ostringstream output;
+     std::string name = names.size() < idx ? names[idx] : "";
+     output << spaces;
+     output << "<arg name=\"";
+     output << name << "\" type=\"";
+     output << signature(arg);
+     output << "\" ";
+     output << "direction=\"in\"/>\n";
+     output << method_signature<argn...>().introspect(names, idx + 1, spaces);
+     return output.str();
+  }
 };
 
 
@@ -176,23 +197,29 @@ struct dbus_function_traits;
 template<typename ...Args> 
 struct dbus_function_traits<std::function<void(Args...)>>
 {
-  std::string dbus_sig(){
+  std::string dbus_sig() const {
     return dbus_signature<Args...>().dbus_sig();
   }
 
-  std::string debug_string(){
+  std::string debug_string() const {
     return "void (" + method_signature<Args...>().method_sig() + ")";
+  }
+
+  std::string introspect(const std::vector<std::string>& names, int idx, const std::string& spaces) const {
+    std::ostringstream sout;
+    sout << method_signature<Args...>().introspect(names, idx + 1, spaces);
+    return sout.str();
   }
 };
 
 template<typename T_ret, typename ...Args> 
 struct dbus_function_traits<std::function<T_ret(Args...)>>
 {
-  std::string dbus_sig(){
+  std::string dbus_sig() const {
     return dbus_signature<Args...>().dbus_sig();
   }
 
-  std::string debug_string(){
+  std::string debug_string() const {
     std::ostringstream ret;
     ret << typeid(T_ret).name();
     ret << "(";
@@ -200,7 +227,31 @@ struct dbus_function_traits<std::function<T_ret(Args...)>>
     ret << ")";
     return ret.str();
   }
+
+  std::string introspect(const std::vector<std::string>& names, int idx, const std::string& spaces) const {
+    std::ostringstream sout;
+    T_ret ret_type;
+    std::string name = "";
+    if( names.size() > 0 ){
+      name = names[0];
+    }
+    sout << spaces << "<arg name=\"" << name << "\" "
+         << "type=\"" << signature(ret_type) << "\" "
+         << "direction=\"out\"/>\n";
+    sout << method_signature<Args...>().introspect(names, idx + 1, spaces);
+    return sout.str();
+  }
+
+  std::tuple<Args...> extract(Message::iterator i){
+    std::tuple<Args...> tup_args;
+    std::apply( [i](auto ...arg){
+               (i >> ... >> arg);
+              },
+    tup_args );
+    return tup_args;
+  }
 };
+
 } /* namespace priv */
 
 } /* namespace DBus */
