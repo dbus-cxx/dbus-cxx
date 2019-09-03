@@ -85,6 +85,24 @@ namespace priv{
    }
    };
 
+template <typename T>
+struct function_info;
+
+template <typename T_return, typename... T_args>
+struct function_info<std::function<T_return(T_args...)>>{
+  std::string introspect(const std::vector<std::string>& names, int idx, const std::string& spaces) const {
+    std::ostringstream sout;
+    if( std::is_same<void,T_return>::value == false && std::is_same<std::any,T_return>::value == false ){
+      T_return ret_type;
+      sout << spaces << "<arg name=\"" << names(0) << "\" "
+           << "type=\"" << signature(ret_type) << "\" "
+           << "direction=\"out\"/>\n";
+    }
+    sout << method_sig<argn...>::sigg(names, idx + 1, spaces);
+    return sout.str();
+  }
+};
+
 } /* namespace priv */
 
   class Connection;
@@ -153,16 +171,18 @@ namespace priv{
 
   };
 
-  template <class T_return, class... T_arg>
+  template <class T_sig>
   class Method : public MethodBase {
   private:
+/*
       template <class Tuple, size_t... Is>
       void call_slot(Tuple t, std::index_sequence<Is...> ){
           m_slot( std::get<Is>(t)... );
       }
+*/
 
   public:
-      void set_method( sigc::signal<T_return(T_arg...)> slot ){ m_slot = slot; }
+      void set_method( sigc::signal<T_sig> slot ){ m_slot = slot; }
 
       virtual std::string introspect(int space_depth=0) const {
           std::ostringstream sout;
@@ -170,12 +190,14 @@ namespace priv{
           DBus::priv::method_sig<T_arg...> method_sig_gen;
           for(int i = 0; i < space_depth; i++ ) spaces += " ";
           sout << spaces << "<method name=\"" << name() << "\">\n";
+/*
           if( std::is_same<void,T_return>::value == false && std::is_same<std::any,T_return>::value == false ){
               T_return ret_type;
               sout << spaces << "<arg name=\"" << arg_name(0) << "\" "
                    << "type=\"" << signature(ret_type) << "\" "
                    << "direction=\"out\"/>\n";
           }
+*/
           sout << method_sig_gen.sigg( m_arg_names, 1, spaces );
           return sout.str();
       }
@@ -216,7 +238,8 @@ namespace priv{
                 retval = m_slot(args);
                 *retmsg << retval;
             }else{
-                call_slot( args, std::index_sequence_for<T_arg...>{} );
+                //TODO call_slot with std::apply
+                //call_slot( args, std::index_sequence_for<T_arg...>{} );
             }
 
             sendMessage( connection, retmsg );
@@ -244,7 +267,7 @@ namespace priv{
 
 
     protected:
-      sigc::signal<T_return(T_arg...)> m_slot;
+      sigc::signal<T_sig> m_slot;
   };
 
 }

@@ -137,8 +137,8 @@ namespace DBus {
        * @return A smart pointer to the newly created method
        * @param name The name that will be associated with this method
        */
-      template <typename T_return, typename... T_arg>
-      std::shared_ptr<Method<T_return, T_arg...> >
+      template <typename T_type>
+      std::shared_ptr<Method<T_type> >
       create_method( const std::string& name );
 
       /**
@@ -149,9 +149,10 @@ namespace DBus {
        * Template parameters of the sigc::slot will determine the signature of
        * the method created.
        */
-      template <typename T_return, typename... T_arg>
-      std::shared_ptr<Method<T_return, T_arg...> >
-      create_method( const std::string& name, sigc::slot<T_return(T_arg...)> slot );
+      template <typename T_type>
+      std::shared_ptr<Method<T_type> >
+      create_method( const std::string& name, sigc::slot<T_type> slot );
+
       /** Adds the named method */
       bool add_method( MethodBase::pointer method );
 
@@ -193,8 +194,8 @@ namespace DBus {
        * @return A smart pointer to the newly created signal
        * @param name The name that will be associated with this signal
        */
-      template <class T_return, class... T_arg>
-      std::shared_ptr<signal<T_return, T_arg...> >
+      template <class T_type>
+      std::shared_ptr<signal<T_type> >
       create_signal( const std::string& name );
 
       /** Returns the signals associated with this interface */
@@ -268,35 +269,35 @@ namespace DBus {
 
 namespace DBus {
 
-      template <class T_return, class... T_arg>
-      std::shared_ptr<Method<T_return, T_arg...> >
+      template <class T_type>
+      std::shared_ptr<Method<T_type> >
       Interface::create_method( const std::string& name )
       {
-        DBusCxxPointer< Method<T_return, T_arg...> > method;
-        method = Method<T_return, T_arg...>::create(name);
+        DBusCxxPointer< Method<T_type> > method;
+        method = Method<T_type>::create(name);
         this->add_method( method );
         return method;
       }
 
-      template <class T_return, class... T_arg>
-      std::shared_ptr<Method<T_return, T_arg...> >
-      Interface::create_method( const std::string& name, sigc::slot<T_return(T_arg...)> slot )
+      template <class T_type>
+      std::shared_ptr<Method<T_type> >
+      Interface::create_method( const std::string& name, sigc::slot<T_type> slot )
       {
-        DBusCxxPointer< Method<T_return, T_arg...> > method;
-        method = Method<T_return, T_arg...>::create(name);
+        DBusCxxPointer< Method<T_type> > method;
+        method = Method<T_type>::create(name);
         method->set_method( slot );
         this->add_method( method );
         return method;
       }
 
-      template <class T_return, class... T_arg>
-      std::shared_ptr<signal<T_return, T_arg...> >
+      template <class T_type>
+      std::shared_ptr<signal<T_type> >
       Interface::create_signal( const std::string& name )
       {
-        DBusCxxPointer<DBus::signal<T_return, T_arg...> > sig;
-        sig = DBus::signal<T_return, T_arg...>::create(m_name, name);
+        DBusCxxPointer<DBus::signal<T_type> > sig;
+        sig = DBus::signal<T_type>::create(m_name, name);
         if ( this->add_signal(sig) ) return sig;
-        return DBusCxxPointer<DBus::signal<T_return,T_arg...> >();
+        return DBusCxxPointer<DBus::signal<T_type> >();
       }
 
 } /* namespace DBus */

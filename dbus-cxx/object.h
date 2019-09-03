@@ -120,9 +120,9 @@ namespace DBus
        * Template parameters of the sigc::slot will determine the signature of
        * the method created.
        */
-      template <class T_return, class... T_arg>
-      std::shared_ptr<Method<T_return, T_arg...> >
-      create_method( const std::string& method_name, sigc::slot<T_return(T_arg...)> slot );
+      template <typename T_type>
+      std::shared_ptr<Method<T_type> >
+      create_method( const std::string& method_name, sigc::slot<T_type> slot );
 
       /**
        * Creates a method with a signature based on the @param slot parameter signature and adds it to the named interface
@@ -134,9 +134,9 @@ namespace DBus
        * Template parameters of the sigc::slot will determine the signature of
        * the method created.
        */
-      template <class T_return, class... T_arg>
-      std::shared_ptr<Method<T_return, T_arg...> >
-      create_method( const std::string& interface_name, const std::string& method_name, sigc::slot<T_return(T_arg...)> slot );
+      template <typename T_type>
+      std::shared_ptr<Method<T_type> >
+      create_method( const std::string& interface_name, const std::string& method_name, sigc::slot<T_type> slot );
 
       /** Removes the first interface found with the given name */
       void remove_interface( const std::string& name );
@@ -317,9 +317,9 @@ namespace DBus
 
 namespace DBus {
 
-  template <class T_return, class... T_arg>
-  std::shared_ptr<Method<T_return, T_arg...> >
-  Object::create_method( const std::string& method_name, sigc::slot<T_return(T_arg...)> slot )
+  template <typename T_type>
+  std::shared_ptr<Method<T_type> >
+  Object::create_method( const std::string& method_name, sigc::slot<T_type> slot )
   {
     if ( not m_default_interface )
     {
@@ -328,45 +328,45 @@ namespace DBus {
     }
     // TODO throw an error if the default interface still doesn't exist
 
-    std::shared_ptr< Method<T_return, T_arg...> > method;
-    method = m_default_interface->create_method<T_return, T_arg...>(method_name);
+    std::shared_ptr< Method<T_type> > method;
+    method = m_default_interface->create_method<T_type>(method_name);
     method->set_method( slot );
     return method;
   }
 
-  template <class T_return, class... T_arg>
-  std::shared_ptr<Method<T_return, T_arg...> >
-  Object::create_method( const std::string& interface_name, const std::string& method_name, sigc::slot<T_return(T_arg...)> slot )
+  template <typename T_type>
+  std::shared_ptr<Method<T_type> >
+  Object::create_method( const std::string& interface_name, const std::string& method_name, sigc::slot<T_type> slot )
   {
     Interface::pointer interface;
     interface = this->interface(interface_name);
     if ( not interface ) interface = this->create_interface(interface_name);
     // TODO throw an error if the interface still doesn't exist
 
-    std::shared_ptr< Method<T_return, T_arg...> > method;
-    method = interface->create_method<T_return, T_arg...>(method_name);
+    std::shared_ptr< Method<T_type> > method;
+    method = interface->create_method<T_type>(method_name);
     method->set_method( slot );
     return method;
   }
 
-  template <class T_return, class... T_arg>
-  std::shared_ptr<signal<T_return, T_arg...> >
+  template <class T_type>
+  std::shared_ptr<signal<T_type> >
   Object::create_signal( const std::string& name )
   {
-    std::shared_ptr<DBus::signal<T_return, T_arg...> > sig;
+    std::shared_ptr<DBus::signal<T_type> > sig;
     Interface::pointer iface = this->default_interface();
     if ( not iface ) iface = this->create_interface("");
-    sig = iface->create_signal<T_return, T_arg...>(name);
+    sig = iface->create_signal<T_type>(name);
     return sig;
   }
 
-  template <class T_return, class... T_arg>
-  std::shared_ptr<signal<T_return, T_arg...> >
+  template <class T_type>
+  std::shared_ptr<signal<T_type> >
   Object::create_signal( const std::string& iface, const std::string& name )
   {
-    std::shared_ptr<DBus::signal<T_return, T_arg...> > sig;
+    std::shared_ptr<DBus::signal<T_type> > sig;
     if ( not has_interface(iface) ) this->create_interface(iface);
-    sig = this->interface(iface)->create_signal<T_return, T_arg...>(name);
+    sig = this->interface(iface)->create_signal<T_type>(name);
     return sig;
   }
 
