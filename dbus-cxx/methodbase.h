@@ -24,6 +24,7 @@
 #include <dbus-cxx/dbus-cxx-config.h>
 #include <dbus-cxx/headerlog.h>
 #include <dbus-cxx/returnmessage.h>
+#include <dbus-cxx/utility.h>
 #include <type_traits>
 #include <mutex>
 #include <tuple>
@@ -34,76 +35,6 @@
 
 namespace DBus
 {
-
-namespace priv{
-   template<typename... argn> class method_sig;
-
-   template<> class method_sig<>{
-   public:
-   std::string sigg(const std::vector<std::string>&, int idx, const std::string& spaces ) const {
-     return "";
-   }
-   };
-
-   template<typename arg1, typename... argn> 
-   class method_sig<arg1, argn...> : public method_sig<argn...> {
-   public:
-   std::string sigg(const std::vector<std::string>& names, int idx, const std::string& spaces ) const{
-     arg1 arg;
-     std::ostringstream output;
-     std::string name = names.size() < idx ? names[idx] : "";
-     output << spaces;
-     output << "<arg name=\"";
-     output << name << "\" type=\"";
-     output << signature(arg);
-     output << "\" ";
-     output << "direction=\"in\"/>\n";
-     output << method_sig<argn...>::sigg(names, idx + 1, spaces);
-     return output.str();
-   }
-  };
-
-   template<typename... template_argn> class template_sig;
-
-   template<> class template_sig<>{
-   public:
-   std::string sigg() const {
-     return "";
-   }
-   };
-
-   template<typename template_arg1, typename... template_argn> 
-   class template_sig<template_arg1, template_argn...> : public template_sig<template_argn...> {
-   public:
-   std::string sigg() const{
-     std::string arg1_name = typeid(template_arg1).name();
-     std::string remaining_args = template_sig<template_argn...>::sigg();
-     if( remaining_args.size() > 1 ){
-         arg1_name += ",";
-     }
-     return arg1_name + remaining_args;
-   }
-   };
-
-template <typename T>
-struct function_info;
-
-template <typename T_return, typename... T_args>
-struct function_info<std::function<T_return(T_args...)>>{
-  std::string introspect(const std::vector<std::string>& names, int idx, const std::string& spaces) const {
-    std::ostringstream sout;
-    if( std::is_same<void,T_return>::value == false && std::is_same<std::any,T_return>::value == false ){
-      T_return ret_type;
-      sout << spaces << "<arg name=\"" << names(0) << "\" "
-           << "type=\"" << signature(ret_type) << "\" "
-           << "direction=\"out\"/>\n";
-    }
-    sout << method_sig<argn...>::sigg(names, idx + 1, spaces);
-    return sout.str();
-  }
-};
-
-} /* namespace priv */
 
   class Connection;
 
@@ -126,7 +57,7 @@ struct function_info<std::function<T_return(T_args...)>>{
 
       MethodBase(const MethodBase& other);
 
-    private:
+    protected:
       uint32_t sendMessage( std::shared_ptr<Connection> connection, const Message::const_pointer );
 
     public:
@@ -171,7 +102,7 @@ struct function_info<std::function<T_return(T_args...)>>{
 
   };
 
-  template <class T_sig>
+  template <typename T_type>
   class Method : public MethodBase {
   private:
 /*
@@ -180,36 +111,31 @@ struct function_info<std::function<T_return(T_args...)>>{
           m_slot( std::get<Is>(t)... );
       }
 */
+      Method(const std::string& name) : MethodBase(name){}
 
   public:
-      void set_method( sigc::signal<T_sig> slot ){ m_slot = slot; }
+      static std::shared_ptr<Method<T_type>> create(const std::string& name){
+          return std::shared_ptr<Method<T_type>>( new Method<T_type>(name) );
+      }
+
+      void set_method( sigc::slot<T_type> slot ){ m_slot = slot; }
 
       virtual std::string introspect(int space_depth=0) const {
           std::ostringstream sout;
           std::string spaces;
-          DBus::priv::method_sig<T_arg...> method_sig_gen;
+          DBus::priv::dbus_function_traits<std::function<T_type>> method_sig_gen;
           for(int i = 0; i < space_depth; i++ ) spaces += " ";
           sout << spaces << "<method name=\"" << name() << "\">\n";
-/*
-          if( std::is_same<void,T_return>::value == false && std::is_same<std::any,T_return>::value == false ){
-              T_return ret_type;
-              sout << spaces << "<arg name=\"" << arg_name(0) << "\" "
-                   << "type=\"" << signature(ret_type) << "\" "
-                   << "direction=\"out\"/>\n";
-          }
-*/
-          sout << method_sig_gen.sigg( m_arg_names, 1, spaces );
+          sout << method_sig_gen.introspect(m_arg_names, 0, spaces);
           return sout.str();
       }
 
       virtual HandlerResult handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message ){
           std::ostringstream debug_str;
-          std::tuple<T_arg...> args;
+          DBus::priv::dbus_function_traits<std::function<T_type>> method_sig_gen;
 
           debug_str << "DBus::Method<";
-          debug_str << DBus::priv::template_sig<T_return>().sigg();
-          debug_str << ",";
-          debug_str << DBus::priv::template_sig<T_arg...>().sigg();
+          debug_str << method_sig_gen.debug_string();
           debug_str << ">::handle_call_message method=";
           debug_str << name();
           DBUSCXX_DEBUG_STDSTR( "dbus.Method", debug_str.str() );
@@ -217,32 +143,15 @@ struct function_info<std::function<T_return(T_args...)>>{
           if( !connection || !message ) return NOT_HANDLED;
 
           try{
-              Message::iterator i = message->begin();
-              std::apply( [i](auto ...arg){
-                     (i >> ... >> arg);
-                 },
-                 args );
-              if( !i.is_valid() ){
-                  return NOT_HANDLED;
-              }
+              ReturnMessage::pointer retmsg = message->create_reply();
+              if( !retmsg ) return NOT_HANDLED;
+
+              //Message::iterator i = message->begin();
+              method_sig_gen.extractAndCall(message, retmsg, m_slot );
+
+              sendMessage( connection, retmsg );
           }catch( ErrorInvalidTypecast ){
               return NOT_HANDLED;
-          }
-
-          try{
-            ReturnMessage::pointer retmsg = message->create_reply();
-            if( !retmsg ) return NOT_HANDLED;
-
-            if( std::is_same<void,T_return>::value == false ){
-                T_return retval;
-                retval = m_slot(args);
-                *retmsg << retval;
-            }else{
-                //TODO call_slot with std::apply
-                //call_slot( args, std::index_sequence_for<T_arg...>{} );
-            }
-
-            sendMessage( connection, retmsg );
          }catch( const std::exception &e ){
             ErrorMessage::pointer errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, e.what() );
 
@@ -267,7 +176,7 @@ struct function_info<std::function<T_return(T_args...)>>{
 
 
     protected:
-      sigc::signal<T_sig> m_slot;
+      sigc::slot<T_type> m_slot;
   };
 
 }

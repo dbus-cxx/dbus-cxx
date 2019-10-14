@@ -35,6 +35,8 @@ namespace DBus
   {
   }
 
+  MethodBase::~MethodBase(){}
+
   const std::string & MethodBase::name() const
   {
     return m_name;

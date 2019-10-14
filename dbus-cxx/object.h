@@ -178,8 +178,8 @@ namespace DBus
        * Template parameters for the \c create_signal() call will determine the
        * signature of the signal created.
        */
-      template <class T_return, class... T_arg>
-      std::shared_ptr<signal<T_return, T_arg...> >
+      template <class T_type>
+      std::shared_ptr<signal<T_type> >
       create_signal( const std::string& name );
 
       /**
@@ -189,8 +189,8 @@ namespace DBus
        * Template parameters for the \c create_signal() call will determine the
        * signature of the signal created.
        */
-      template <class T_return, class... T_arg>
-      std::shared_ptr<signal<T_return, T_arg...> >
+      template <class T_type>
+      std::shared_ptr<signal<T_type> >
       create_signal( const std::string& iface, const std::string& name );
 
       /** Get the children associated with this object instance */

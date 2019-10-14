@@ -71,7 +71,7 @@ bool connection_test_method_2arg(){
 
     DBus::Object::pointer object = conn->create_object("/dbuscxx/example/Calculator");
 
-    object->create_method<double,double,double>("Calculator.Basic", "add", sigc::ptr_fun(add) );
+    object->create_method<double(double,double)>("Calculator.Basic", "add", sigc::ptr_fun(add) );
 
     return true;
 }

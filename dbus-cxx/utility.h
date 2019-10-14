@@ -21,6 +21,8 @@
 #include <dbus-cxx/pointer.h>
 #include <dbus-cxx/simplelogger_defs.h>
 #include <dbus-cxx/message.h>
+#include <dbus-cxx/returnmessage.h>
+#include <dbus-cxx/messageiterator.h>
 #include <functional>
 #include <sstream>
 #include <cxxabi.h>
@@ -145,7 +147,7 @@ public:
     return "";
   }
 
-  std::string instrospect() const {
+  std::string introspect(const std::vector<std::string>&, int, const std::string&) const {
     return "";
   }
 };
@@ -242,6 +244,7 @@ struct dbus_function_traits<std::function<T_ret(Args...)>>
     return sout.str();
   }
 
+/*
   std::tuple<Args...> extract(Message::iterator i){
     std::tuple<Args...> tup_args;
     std::apply( [i](auto ...arg){
@@ -249,6 +252,18 @@ struct dbus_function_traits<std::function<T_ret(Args...)>>
               },
     tup_args );
     return tup_args;
+  }
+*/
+  void extractAndCall(CallMessage::const_pointer callmsg, ReturnMessage::pointer retmsg, sigc::slot<T_ret(Args...)> slot ){
+    Message::iterator i = callmsg->begin();
+    std::tuple<Args...> tup_args;
+    std::apply( [i](auto ...arg) mutable {
+               (i >> ... >> arg);
+              },
+    tup_args );
+    T_ret retval;
+
+    retval = std::apply(slot, tup_args);
   }
 };
 

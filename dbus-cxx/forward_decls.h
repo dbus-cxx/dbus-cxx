@@ -33,8 +33,13 @@ namespace DBus {
 
   class ObjectProxy;
 
-  template <class T_return, typename... T_arg >
+  template <class T_type>
   class Method;
+
+/*
+  template <typename T_return, typename... T_arg>
+  class Method;
+*/
 
 /*
   template <class T_return,
