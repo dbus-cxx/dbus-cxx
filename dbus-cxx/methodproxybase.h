@@ -22,6 +22,8 @@
 
 #include <sigc++/sigc++.h>
 
+#include <mutex>
+
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/pointer.h>
 #include <dbus-cxx/forward_decls.h>
@@ -104,7 +106,7 @@ namespace DBus
       std::string m_name;
 
       /** Ensures that the name doesn't change while the name changed signal is emitting */
-      pthread_mutex_t m_name_mutex;
+      std::mutex m_name_mutex;
 
       sigc::signal<void(const std::string&, const std::string&)> m_signal_name_changed;
 

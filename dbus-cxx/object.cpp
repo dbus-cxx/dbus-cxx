@@ -25,6 +25,8 @@
 #include <map>
 #include <sstream>
 #include <cstring>
+#include <shared_mutex>
+#include <mutex>
 #include <dbus/dbus.h>
 
 namespace DBus
@@ -33,8 +35,6 @@ namespace DBus
   Object::Object( const std::string& path, PrimaryFallback pf ):
       ObjectPathHandler( path, pf )
   {
-    pthread_mutex_init( &m_name_mutex, NULL );
-    pthread_rwlock_init( &m_interfaces_rwlock, NULL );
   }
 
   Object::pointer Object::create( const std::string& path, PrimaryFallback pf )
@@ -44,8 +44,6 @@ namespace DBus
 
   Object::~ Object( )
   {
-    pthread_mutex_destroy( &m_name_mutex );
-    pthread_rwlock_destroy( &m_interfaces_rwlock );
   }
 
   bool Object::register_with_connection(Connection::pointer conn)
@@ -71,13 +69,11 @@ namespace DBus
   {
     Interfaces::const_iterator iter;
 
-    // ========== READ LOCK ==========
-    pthread_rwlock_rdlock( &m_interfaces_rwlock );
+    {
+      std::shared_lock lock( m_interfaces_rwlock );
 
-    iter = m_interfaces.find( name );
-
-    // ========== UNLOCK ==========
-    pthread_rwlock_unlock( &m_interfaces_rwlock );
+      iter = m_interfaces.find( name );
+    }
 
     if ( iter == m_interfaces.end() ) return Interface::pointer();
 
@@ -92,28 +88,26 @@ namespace DBus
     
     SIMPLELOGGER_DEBUG("dbus.Object","Object::add_interface " << interface->name() );
 
-    // ========== WRITE LOCK ==========
-    pthread_rwlock_wrlock( &m_interfaces_rwlock );
-
-    InterfaceSignalNameConnections::iterator i;
-
-    i = m_interface_signal_name_connections.find(interface);
-
-    if ( i == m_interface_signal_name_connections.end() )
     {
-      m_interface_signal_name_connections[interface] = interface->signal_name_changed().connect( sigc::bind(sigc::mem_fun(*this, &Object::on_interface_name_changed), interface));
+      std::unique_lock lock( m_interfaces_rwlock );
 
-      m_interfaces.insert(std::make_pair(interface->name(), interface));
+      InterfaceSignalNameConnections::iterator i;
 
-      interface->set_object(this);
+      i = m_interface_signal_name_connections.find(interface);
+
+      if ( i == m_interface_signal_name_connections.end() )
+      {
+        m_interface_signal_name_connections[interface] = interface->signal_name_changed().connect( sigc::bind(sigc::mem_fun(*this, &Object::on_interface_name_changed), interface));
+
+        m_interfaces.insert(std::make_pair(interface->name(), interface));
+
+        interface->set_object(this);
+      }
+      else
+      {
+        result = false;
+      }
     }
-    else
-    {
-      result = false;
-    }
-
-    // ========== UNLOCK ==========
-    pthread_rwlock_unlock( &m_interfaces_rwlock );
 
     m_signal_interface_added.emit( interface );
 
@@ -144,36 +138,34 @@ namespace DBus
     
     bool need_emit_default_changed = false;
 
-    // ========== WRITE LOCK ==========
-    pthread_rwlock_wrlock( &m_interfaces_rwlock );
+    {
+      std::unique_lock lock( m_interfaces_rwlock );
     
-    iter = m_interfaces.find( name );
-    if ( iter != m_interfaces.end() )
-    {
-      interface = iter->second;
-      m_interfaces.erase(iter);
-    }
-
-    if ( interface )
-    {
-      i = m_interface_signal_name_connections.find(interface);
-      if ( i != m_interface_signal_name_connections.end() )
+      iter = m_interfaces.find( name );
+      if ( iter != m_interfaces.end() )
       {
-        i->second.disconnect();
-        m_interface_signal_name_connections.erase(i);
-        interface->set_object(NULL);
+        interface = iter->second;
+        m_interfaces.erase(iter);
       }
+
+      if ( interface )
+      {
+        i = m_interface_signal_name_connections.find(interface);
+        if ( i != m_interface_signal_name_connections.end() )
+        {
+          i->second.disconnect();
+          m_interface_signal_name_connections.erase(i);
+          interface->set_object(NULL);
+        }
     
-      if ( m_default_interface == interface ) {
-        old_default = m_default_interface;
-        m_default_interface = Interface::pointer();
-        need_emit_default_changed = true;
+        if ( m_default_interface == interface ) {
+          old_default = m_default_interface;
+          m_default_interface = Interface::pointer();
+          need_emit_default_changed = true;
+        }
+
       }
-
     }
-
-    // ========== UNLOCK ==========
-    pthread_rwlock_unlock( &m_interfaces_rwlock );
 
     if ( interface ) m_signal_interface_removed.emit( interface );
 
@@ -183,14 +175,9 @@ namespace DBus
   bool Object::has_interface( const std::string & name )
   {
     Interfaces::const_iterator i;
+    std::shared_lock lock( m_interfaces_rwlock );
     
-    // ========== READ LOCK ==========
-    pthread_rwlock_rdlock( &m_interfaces_rwlock );
-
     i = m_interfaces.find( name );
-
-    // ========== UNLOCK ==========
-    pthread_rwlock_unlock( &m_interfaces_rwlock );
 
     return ( i != m_interfaces.end() );
   }
@@ -206,20 +193,18 @@ namespace DBus
     Interface::pointer old_default;
     bool result = false;
 
-    // ========== READ LOCK ==========
-    pthread_rwlock_rdlock( &m_interfaces_rwlock );
-
-    iter = m_interfaces.find( new_default_name );
-
-    if ( iter != m_interfaces.end() )
     {
-      result = true;
-      old_default = m_default_interface;
-      m_default_interface = iter->second;
+      std::shared_lock lock( m_interfaces_rwlock );
+
+      iter = m_interfaces.find( new_default_name );
+
+      if ( iter != m_interfaces.end() )
+      {
+        result = true;
+        old_default = m_default_interface;
+        m_default_interface = iter->second;
+      }
     }
-    
-    // ========== UNLOCK ==========
-    pthread_rwlock_unlock( &m_interfaces_rwlock );
 
     if ( result ) m_signal_default_interface_changed.emit( old_default, m_default_interface );
 
@@ -341,8 +326,7 @@ namespace DBus
       return HANDLED;
     }
 
-    // ========== READ LOCK ==========
-    pthread_rwlock_rdlock( &m_interfaces_rwlock );
+    std::shared_lock lock( m_interfaces_rwlock );
 
     current = m_interfaces.lower_bound( callmessage->interface() );
 
@@ -379,9 +363,6 @@ namespace DBus
     if (result == NOT_HANDLED and m_default_interface)
       result = m_default_interface->handle_call_message(connection, callmessage);
 
-    // ========== UNLOCK ==========
-    pthread_rwlock_unlock( &m_interfaces_rwlock );
-
     SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: message was " << ((result==HANDLED)?"handled":"not handled"));
 
     return result;
@@ -390,8 +371,7 @@ namespace DBus
   void Object::on_interface_name_changed(const std::string & oldname, const std::string & newname, Interface::pointer interface)
   {
   
-    // ========== WRITE LOCK ==========
-    pthread_rwlock_wrlock( &m_interfaces_rwlock );
+    std::unique_lock lock( m_interfaces_rwlock );
 
     Interfaces::iterator current, upper;
     current = m_interfaces.lower_bound(oldname);
@@ -420,8 +400,6 @@ namespace DBus
           interface->signal_name_changed().connect(sigc::bind(sigc::mem_fun(*this,&Object::on_interface_name_changed),interface));
     }
     
-    // ========== UNLOCK ==========
-    pthread_rwlock_unlock( &m_interfaces_rwlock );
   }
 
 

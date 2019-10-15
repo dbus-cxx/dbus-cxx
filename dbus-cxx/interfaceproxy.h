@@ -22,6 +22,7 @@
 #include <map>
 #include <set>
 #include <any>
+#include <shared_mutex>
 
 #include <dbus-cxx/methodproxybase.h>
 #include <dbus-cxx/signal_proxy.h>
@@ -146,10 +147,10 @@ namespace DBus {
 
       Signals m_signals;
 
-      mutable pthread_rwlock_t m_methods_rwlock;
+      mutable std::shared_mutex m_methods_rwlock;
 
       /** Ensures that the name doesn't change while the name changed signal is emitting */
-      pthread_mutex_t m_name_mutex;
+      std::mutex m_name_mutex;
 
       sigc::signal<void(const std::string&,const std::string&)> m_signal_name_changed;
       

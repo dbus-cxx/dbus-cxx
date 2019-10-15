@@ -30,8 +30,6 @@ namespace DBus
       m_object(NULL),
       m_name(name)
   {
-    pthread_rwlock_init( &m_methods_rwlock, NULL );
-    pthread_mutex_init( &m_name_mutex, NULL );
   }
 
   InterfaceProxy::pointer InterfaceProxy::create(const std::string& name)
@@ -41,8 +39,6 @@ namespace DBus
 
   InterfaceProxy::~ InterfaceProxy( )
   {
-    pthread_rwlock_destroy( &m_methods_rwlock );
-    pthread_mutex_destroy( &m_name_mutex );
   }
 
   ObjectProxy* InterfaceProxy::object() const
@@ -69,10 +65,12 @@ namespace DBus
 
   void DBus::InterfaceProxy::set_name(const std::string & new_name)
   {
-    pthread_mutex_lock( &m_name_mutex );
-    std::string old_name = m_name;
-    m_name = new_name;
-    pthread_mutex_unlock( &m_name_mutex );
+    std::string old_name;
+    {
+      std::lock_guard<std::mutex> lock( m_name_mutex );
+      old_name = m_name;
+      m_name = new_name;
+    }
     m_signal_name_changed.emit(old_name, new_name);
   }
 
@@ -84,14 +82,9 @@ namespace DBus
   MethodProxyBase::pointer InterfaceProxy::method( const std::string& name ) const
   {
     Methods::const_iterator iter;
-
-    // ========== READ LOCK ==========
-    pthread_rwlock_rdlock( &m_methods_rwlock );
+    std::shared_lock lock( m_methods_rwlock );
     
     iter = m_methods.find( name );
-
-    // ========== UNLOCK ==========
-    pthread_rwlock_unlock( &m_methods_rwlock );
 
     if ( iter == m_methods.end() ) return MethodProxyBase::pointer();
 
@@ -108,28 +101,26 @@ namespace DBus
 
     if ( method->m_interface ) method->m_interface->remove_method(method);
     
-    // ========== WRITE LOCK ==========
-    pthread_rwlock_wrlock( &m_methods_rwlock );
-
-    MethodSignalNameConnections::iterator i;
-
-    i = m_method_signal_name_connections.find(method);
-
-    if ( i == m_method_signal_name_connections.end() )
     {
-      m_method_signal_name_connections[method] =
-          method->signal_name_changed().connect(sigc::bind(sigc::mem_fun(*this,&InterfaceProxy::on_method_name_changed),method));
+      std::unique_lock lock( m_methods_rwlock );
 
-      m_methods.insert(std::make_pair(method->name(), method));
-      method->m_interface = this;
-    }
-    else
-    {
-      result = false;
-    }
+      MethodSignalNameConnections::iterator i;
 
-    // ========== UNLOCK ==========
-    pthread_rwlock_unlock( &m_methods_rwlock );
+      i = m_method_signal_name_connections.find(method);
+
+      if ( i == m_method_signal_name_connections.end() )
+      {
+        m_method_signal_name_connections[method] =
+            method->signal_name_changed().connect(sigc::bind(sigc::mem_fun(*this,&InterfaceProxy::on_method_name_changed),method));
+
+        m_methods.insert(std::make_pair(method->name(), method));
+        method->m_interface = this;
+      }
+      else
+      {
+        result = false;
+      }
+    }
 
     m_signal_method_added.emit( method );
 
@@ -142,28 +133,25 @@ namespace DBus
     MethodProxyBase::pointer method;
     MethodSignalNameConnections::iterator i;
 
-    // ========== WRITE LOCK ==========
-    pthread_rwlock_wrlock( &m_methods_rwlock );
-
-    iter = m_methods.find( name );
-    if ( iter != m_methods.end() ) {
-      method = iter->second;
-      m_methods.erase( iter );
-    }
-
-    if ( method )
     {
-      i = m_method_signal_name_connections.find(method);
-      if ( i != m_method_signal_name_connections.end() )
+      std::unique_lock lock( m_methods_rwlock );
+
+      iter = m_methods.find( name );
+      if ( iter != m_methods.end() ) {
+        method = iter->second;
+        m_methods.erase( iter );
+      }
+
+      if ( method )
       {
-        i->second.disconnect();
-        m_method_signal_name_connections.erase(i);
+        i = m_method_signal_name_connections.find(method);
+        if ( i != m_method_signal_name_connections.end() )
+        {
+          i->second.disconnect();
+          m_method_signal_name_connections.erase(i);
+        }
       }
     }
-
-    // ========== UNLOCK ==========
-    pthread_rwlock_unlock( &m_methods_rwlock );
-
     method->m_interface = NULL;
     
     if ( method ) m_signal_method_removed.emit( method );
@@ -176,31 +164,29 @@ namespace DBus
 
     if ( not method ) return;
 
-    // ========== WRITE LOCK ==========
-    pthread_rwlock_wrlock( &m_methods_rwlock );
-
-    current = m_methods.lower_bound( method->name() );
-
-    if ( current != m_methods.end() )
     {
-      upper = m_methods.upper_bound( method->name() );
-      for ( ; current != upper; current++ )
+      std::unique_lock lock( m_methods_rwlock );
+
+      current = m_methods.lower_bound( method->name() );
+
+      if ( current != m_methods.end() )
       {
-        if ( current->second == method )
+        upper = m_methods.upper_bound( method->name() );
+        for ( ; current != upper; current++ )
         {
-          i = m_method_signal_name_connections.find(method);
-          if ( i != m_method_signal_name_connections.end() )
+          if ( current->second == method )
           {
-            i->second.disconnect();
-            m_method_signal_name_connections.erase(i);
+            i = m_method_signal_name_connections.find(method);
+            if ( i != m_method_signal_name_connections.end() )
+            {
+              i->second.disconnect();
+              m_method_signal_name_connections.erase(i);
+            }
+            m_methods.erase(current);
           }
-          m_methods.erase(current);
         }
       }
     }
-
-    // ========== UNLOCK ==========
-    pthread_rwlock_unlock( &m_methods_rwlock );
 
     method->m_interface = NULL;
     
@@ -210,14 +196,9 @@ namespace DBus
   bool InterfaceProxy::has_method( const std::string & name ) const
   {
     Methods::const_iterator iter;
-    
-    // ========== READ LOCK ==========
-    pthread_rwlock_rdlock( &m_methods_rwlock );
+    std::shared_lock lock( m_methods_rwlock );
 
     iter = m_methods.find( name );
-
-    // ========== UNLOCK ==========
-    pthread_rwlock_unlock( &m_methods_rwlock );
 
     return ( iter != m_methods.end() );
   }
@@ -229,8 +210,7 @@ namespace DBus
 
     if ( not method ) return false;
     
-    // ========== READ LOCK ==========
-    pthread_rwlock_rdlock( &m_methods_rwlock );
+    std::shared_lock lock( m_methods_rwlock );
 
     current = m_methods.lower_bound( method->name() );
 
@@ -246,9 +226,6 @@ namespace DBus
         }
       }
     }
-
-    // ========== UNLOCK ==========
-    pthread_rwlock_unlock( &m_methods_rwlock );
 
     return found;
   }
@@ -352,9 +329,7 @@ namespace DBus
 
   void InterfaceProxy::on_method_name_changed(const std::string & oldname, const std::string & newname, MethodProxyBase::pointer method)
   {
-  
-    // ========== WRITE LOCK ==========
-    pthread_rwlock_wrlock( &m_methods_rwlock );
+    std::unique_lock lock( m_methods_rwlock );
 
     Methods::iterator current, upper;
     current = m_methods.lower_bound(oldname);
@@ -382,9 +357,6 @@ namespace DBus
       m_method_signal_name_connections[method] =
           method->signal_name_changed().connect(sigc::bind(sigc::mem_fun(*this,&InterfaceProxy::on_method_name_changed),method));
     }
-    
-    // ========== UNLOCK ==========
-    pthread_rwlock_unlock( &m_methods_rwlock );
   }
 
   void InterfaceProxy::on_object_set_connection(DBusCxxPointer< Connection > conn)

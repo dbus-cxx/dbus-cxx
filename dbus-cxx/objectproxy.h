@@ -20,6 +20,8 @@
 
 #include <string>
 #include <map>
+#include <mutex>
+#include <shared_mutex>
 
 #include <dbus-cxx/signal_proxy.h>
 #include <dbus-cxx/interfaceproxy.h>
@@ -186,9 +188,9 @@ namespace DBus
 
       Path m_path;
       
-      mutable pthread_rwlock_t m_interfaces_rwlock;
+      mutable std::shared_mutex m_interfaces_rwlock;
 
-      pthread_mutex_t m_name_mutex;
+      std::mutex m_name_mutex;
 
       Interfaces m_interfaces;
 

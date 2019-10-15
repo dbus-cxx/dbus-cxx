@@ -29,7 +29,7 @@
 #include <dbus-cxx/timeout.h>
 #include <dbus-cxx/accumulators.h>
 #include <dbus-cxx/object.h>
-#include <dbus-cxx/objectproxy.h>
+//#include <dbus-cxx/objectproxy.h>
 #include <dbus-cxx/signal_proxy.h>
 #include <dbus-cxx/dbus_signal.h>
 #include <dbus-cxx/messagefilter.h>
@@ -46,6 +46,7 @@ namespace DBus
   class Object;
   class signal_base;
   class PendingCall;
+  class ObjectProxy;
 
   /**
    * Connection point to the DBus
@@ -266,9 +267,9 @@ namespace DBus
 
       ObjectPathHandler::pointer create_object( const std::string& path, HandlerResult (*MessageFunction)(Connection::pointer,Message::const_pointer), PrimaryFallback pf=PRIMARY );
 
-      ObjectProxy::pointer create_object_proxy( const std::string& path );
+      std::shared_ptr<ObjectProxy> create_object_proxy( const std::string& path );
 
-      ObjectProxy::pointer create_object_proxy( const std::string& destination, const std::string& path );
+      std::shared_ptr<ObjectProxy> create_object_proxy( const std::string& destination, const std::string& path );
 
       bool unregister_object( const std::string& path );
 

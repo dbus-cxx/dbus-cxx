@@ -22,6 +22,7 @@
 
 #include <string>
 #include <map>
+#include <shared_mutex>
 
 #include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/objectpathhandler.h>
@@ -281,9 +282,9 @@ namespace DBus
 
       Children m_children;
       
-      mutable pthread_rwlock_t m_interfaces_rwlock;
+      mutable std::shared_mutex m_interfaces_rwlock;
 
-      pthread_mutex_t m_name_mutex;
+      std::mutex m_name_mutex;
 
       Interfaces m_interfaces;
 

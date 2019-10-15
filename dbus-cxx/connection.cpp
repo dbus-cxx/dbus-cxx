@@ -20,6 +20,7 @@
 #include "utility.h"
 #include "connection.h"
 #include "dbus-cxx-private.h"
+#include "objectproxy.h"
 
 #include <iostream>
 #include <sys/time.h>
