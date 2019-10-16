@@ -31,7 +31,7 @@ namespace DBus
   {
   }
 
-  HandlerResult MessageHandler::handle_message(DBusCxxPointer<Connection> conn, Message::const_pointer msg)
+  HandlerResult MessageHandler::handle_message(std::shared_ptr<Connection> conn, Message::const_pointer msg)
   {
     return m_signal_message.emit(conn, msg);
   }

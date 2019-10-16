@@ -49,11 +49,11 @@ namespace DBus
 
     public:
 
-      typedef DBusCxxPointer<ReturnMessage> pointer;
+      typedef std::shared_ptr<ReturnMessage> pointer;
 
-      typedef DBusCxxPointer<const ReturnMessage> const_pointer;
+      typedef std::shared_ptr<const ReturnMessage> const_pointer;
 
-      typedef DBusCxxWeakPointer<ReturnMessage> weak_pointer;
+      typedef std::weak_ptr<ReturnMessage> weak_pointer;
 
       static pointer create( );
 

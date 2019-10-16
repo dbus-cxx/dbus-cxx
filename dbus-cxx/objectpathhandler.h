@@ -42,9 +42,9 @@ namespace DBus
 
     public:
 
-      typedef DBusCxxPointer<ObjectPathHandler> pointer;
+      typedef std::shared_ptr<ObjectPathHandler> pointer;
 
-      typedef DBusCxxWeakPointer<ObjectPathHandler> weak_pointer;
+      typedef std::weak_ptr<ObjectPathHandler> weak_pointer;
 
       static pointer create(const std::string& path, PrimaryFallback pf=PRIMARY);
       
@@ -57,33 +57,33 @@ namespace DBus
       PrimaryFallback is_primary_or_fallback();
 
       /** Returns the connection this handler is registered with */
-      DBusCxxPointer<Connection> connection() const;
+      std::shared_ptr<Connection> connection() const;
 
       /** Tries to register the handler using the provided connection and with the currently set path and primary/fallback setting */
-      virtual bool register_with_connection(DBusCxxPointer<Connection> conn);
+      virtual bool register_with_connection(std::shared_ptr<Connection> conn);
 
       /** Unregisters the handler */
-      bool unregister(DBusCxxPointer<Connection> conn);
+      bool unregister(std::shared_ptr<Connection> conn);
 
       /** Emitted when this object is registered with a connection */
-      sigc::signal<void(DBusCxxPointer<Connection>) >& signal_registered();
+      sigc::signal<void(std::shared_ptr<Connection>) >& signal_registered();
 
       /**
        * Emitted when this object is unregistered from a connection
        */
-      sigc::signal<void(DBusCxxPointer<Connection>) >& signal_unregistered();
+      sigc::signal<void(std::shared_ptr<Connection>) >& signal_unregistered();
 
     protected:
 
-      DBusCxxPointer<Connection> m_connection;
+      std::shared_ptr<Connection> m_connection;
 
       Path m_path;
 
       PrimaryFallback m_primary_fallback;
 
-      sigc::signal<void(DBusCxxPointer<Connection>) > m_signal_registered;
+      sigc::signal<void(std::shared_ptr<Connection>) > m_signal_registered;
 
-      sigc::signal<void(DBusCxxPointer<Connection>) > m_signal_unregistered;
+      sigc::signal<void(std::shared_ptr<Connection>) > m_signal_unregistered;
 
       static struct DBusObjectPathVTable m_dbus_vtable;
 

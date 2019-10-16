@@ -54,11 +54,11 @@ namespace DBus
 
     public:
 
-      typedef DBusCxxPointer<CallMessage> pointer;
+      typedef std::shared_ptr<CallMessage> pointer;
 
-      typedef DBusCxxPointer<const CallMessage> const_pointer;
+      typedef std::shared_ptr<const CallMessage> const_pointer;
 
-      typedef DBusCxxWeakPointer<CallMessage> weak_pointer;
+      typedef std::weak_ptr<CallMessage> weak_pointer;
 
       static pointer create();
 

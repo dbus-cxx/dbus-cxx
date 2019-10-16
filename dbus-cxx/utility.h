@@ -17,8 +17,8 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
+#include <memory>
 #include <dbus/dbus.h>
-#include <dbus-cxx/pointer.h>
 #include <dbus-cxx/simplelogger_defs.h>
 #include <dbus-cxx/message.h>
 #include <dbus-cxx/returnmessage.h>

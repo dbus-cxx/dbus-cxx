@@ -46,7 +46,7 @@ class Watcher {
 class Recalculator: public Examples::Calculator {
   public:
 
-    typedef DBusCxxPointer<CalculatorInterface> pointer;
+    typedef std::shared_ptr<CalculatorInterface> pointer;
 
     Recalculator(Examples::CalculatorInterface::pointer base)
     {

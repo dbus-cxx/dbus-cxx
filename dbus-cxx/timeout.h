@@ -19,8 +19,8 @@
 #include <dbus/dbus.h>
 #include <sys/time.h>
 #include <sys/signal.h>
-#include <dbus-cxx/pointer.h>
 #include <mutex>
+#include <memory>
 
 #ifndef DBUSCXX_TIMEOUT_H
 #define DBUSCXX_TIMEOUT_H
@@ -45,8 +45,8 @@ namespace DBus
 
     public:
       
-      typedef DBusCxxPointer<Timeout> pointer;
-      typedef DBusCxxWeakPointer<Timeout> weak_pointer;
+      typedef std::shared_ptr<Timeout> pointer;
+      typedef std::weak_ptr<Timeout> weak_pointer;
       
       static pointer create( DBusTimeout* cobj=NULL );
       

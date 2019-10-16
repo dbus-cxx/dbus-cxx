@@ -42,7 +42,7 @@ namespace DBus
 
       MessageIterator( const Message& message );
       
-      MessageIterator( DBusCxxPointer<Message> message );
+      MessageIterator( std::shared_ptr<Message> message );
 
       /**
        * Returns a pointer to the message associated with this iterator or NULL
@@ -490,7 +490,7 @@ DBUS_CXX_DEBUG( "ERR: " << __FILE__ << __LINE__ );
           get_dict<Key,Data>( m );
           this->next();
           return *this;
-	}catch(DBusCxxPointer<DBus::ErrorInvalidTypecast> e){
+	}catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
           //TODO make sure we don't need this? it doesn't make much sense
 	  throw (ErrorInvalidTypecast)*e;
 	}
@@ -510,7 +510,7 @@ DBUS_CXX_DEBUG( "ERR: " << __FILE__ << __LINE__ );
             get_array_complex<T>( v );
           this->next();
           return *this;
-	}catch(DBusCxxPointer<DBus::ErrorInvalidTypecast> e){
+	}catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
 	  throw (ErrorInvalidTypecast)*e;
 	}
       }
@@ -522,7 +522,7 @@ DBUS_CXX_DEBUG( "ERR: " << __FILE__ << __LINE__ );
           v = (T)(*this);
           this->next();
           return *this;
-        }catch(DBusCxxPointer<DBus::ErrorInvalidTypecast> e){
+        }catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
           throw (ErrorInvalidTypecast)*e;
         }
       }
@@ -536,7 +536,7 @@ DBUS_CXX_DEBUG( "ERR: " << __FILE__ << __LINE__ );
           v = (T)(*this);
           this->next();
           return *this;
-        }catch(DBusCxxPointer<DBus::ErrorInvalidTypecast> e){
+        }catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
           throw (ErrorInvalidTypecast)*e;
         }
       }

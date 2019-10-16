@@ -23,7 +23,7 @@
 #include <string>
 #include <cstdint>
 
-#include <dbus-cxx/pointer.h>
+#include <memory>
 
 namespace Examples
 {
@@ -32,7 +32,7 @@ namespace Examples
   {
     public:
 
-      typedef DBusCxxPointer<CalculatorInterface> pointer;
+      typedef std::shared_ptr<CalculatorInterface> pointer;
 
       CalculatorInterface() { }
 

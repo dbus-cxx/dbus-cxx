@@ -71,7 +71,7 @@ namespace DBus
       void set_name( const std::string& name );
 
 
-      virtual HandlerResult handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message ) = 0;
+      virtual HandlerResult handle_call_message( std::shared_ptr<Connection> connection, CallMessage::const_pointer message ) = 0;
 
       /**
        * This method is needed to be able to create a duplicate of a child
@@ -130,7 +130,7 @@ namespace DBus
           return sout.str();
       }
 
-      virtual HandlerResult handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message ){
+      virtual HandlerResult handle_call_message( std::shared_ptr<Connection> connection, CallMessage::const_pointer message ){
           std::ostringstream debug_str;
           DBus::priv::dbus_function_traits<std::function<T_type>> method_sig_gen;
 

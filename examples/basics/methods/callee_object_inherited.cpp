@@ -43,7 +43,7 @@ class Inherited: public DBus::Object
     }
 
   public:
-    typedef DBusCxxPointer<Inherited> pointer;
+    typedef std::shared_ptr<Inherited> pointer;
 
     static pointer create(unsigned int x) { return pointer(new Inherited(x)); }
     

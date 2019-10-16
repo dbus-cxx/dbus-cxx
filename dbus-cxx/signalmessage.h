@@ -51,11 +51,11 @@ namespace DBus
 
     public:
 
-      typedef DBusCxxPointer<SignalMessage> pointer;
+      typedef std::shared_ptr<SignalMessage> pointer;
 
-      typedef DBusCxxPointer<const SignalMessage> const_pointer;
+      typedef std::shared_ptr<const SignalMessage> const_pointer;
 
-      typedef DBusCxxWeakPointer<SignalMessage> weak_pointer;
+      typedef std::weak_ptr<SignalMessage> weak_pointer;
 
       static pointer create( DBusMessage* cobj=NULL, CreateMethod m = CREATE_ALIAS );
       

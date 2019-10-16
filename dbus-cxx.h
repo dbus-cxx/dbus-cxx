@@ -45,7 +45,6 @@
 #include <dbus-cxx/objectpathhandler.h>
 #include <dbus-cxx/objectproxy.h>
 #include <dbus-cxx/pendingcall.h>
-#include <dbus-cxx/pointer.h>
 #include <dbus-cxx/returnmessage.h>
 #include <dbus-cxx/signal_base.h>
 #include <dbus-cxx/signalmessage.h>

@@ -359,7 +359,7 @@ namespace DBus
     }
   }
 
-  void InterfaceProxy::on_object_set_connection(DBusCxxPointer< Connection > conn)
+  void InterfaceProxy::on_object_set_connection(std::shared_ptr< Connection > conn)
   {
     for ( Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++ )
     {

@@ -46,7 +46,7 @@ namespace DBus
   {
   }
 
-  HandlerResult SignalReceiver::handle_message(DBusCxxPointer< Connection > conn, Message::const_pointer msg)
+  HandlerResult SignalReceiver::handle_message(std::shared_ptr< Connection > conn, Message::const_pointer msg)
   {
     SIMPLELOGGER_DEBUG( "dbus.SignalReceiver","SignalReceiver::handle_message" );
     
@@ -158,7 +158,7 @@ namespace DBus
     if ( m_interface.empty() or m_member.empty() ) return false;
 
     SignalMessage::const_pointer smsg;
-    smsg = dbus_cxx_dynamic_pointer_cast<const SignalMessage>(msg);
+    smsg = std::dynamic_pointer_cast<const SignalMessage>(msg);
 
     if ( not smsg ) smsg = SignalMessage::create(msg);
 

@@ -17,11 +17,11 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <string>
+#include <memory>
 
 #include <sigc++/sigc++.h>
 
 #include <dbus-cxx/enums.h>
-#include <dbus-cxx/pointer.h>
 #include <dbus-cxx/accumulators.h>
 #include <dbus-cxx/signalmessage.h>
 
@@ -53,21 +53,21 @@ namespace DBus
 
       signal_base(const std::string& interface, const std::string& name);
 
-      signal_base(DBusCxxPointer<Connection> connection, const std::string& path, const std::string& interface, const std::string& name);
+      signal_base(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface, const std::string& name);
 
-      signal_base(DBusCxxPointer<Connection> connection, const std::string& interface, const std::string& name);
+      signal_base(std::shared_ptr<Connection> connection, const std::string& interface, const std::string& name);
 
       signal_base(const signal_base& other);
 
     public:
 
-      typedef DBusCxxPointer<signal_base> pointer;
+      typedef std::shared_ptr<signal_base> pointer;
 
       virtual ~signal_base();
 
-      DBusCxxPointer<Connection> connection();
+      std::shared_ptr<Connection> connection();
 
-      void set_connection(DBusCxxPointer<Connection> connection);
+      void set_connection(std::shared_ptr<Connection> connection);
 
       const std::string& sender() const;
 
@@ -104,7 +104,7 @@ namespace DBus
 
     protected:
 
-      DBusCxxWeakPointer<Connection> m_connection;
+      std::weak_ptr<Connection> m_connection;
 
       std::string m_sender;
 

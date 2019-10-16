@@ -36,15 +36,15 @@ namespace DBus
   {
     public:
 
-      typedef DBusCxxPointer<signal_proxy_base> pointer;
+      typedef std::shared_ptr<signal_proxy_base> pointer;
 
       signal_proxy_base(const std::string& path, const std::string& interface, const std::string& name);
 
       signal_proxy_base(const std::string& interface, const std::string& name);
 
-      signal_proxy_base(DBusCxxPointer<Connection> connection, const std::string& path, const std::string& interface, const std::string& name);
+      signal_proxy_base(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface, const std::string& name);
 
-      signal_proxy_base(DBusCxxPointer<Connection> connection, const std::string& interface, const std::string& name);
+      signal_proxy_base(std::shared_ptr<Connection> connection, const std::string& interface, const std::string& name);
 
       signal_proxy_base(const signal_proxy_base& other);
 
@@ -75,15 +75,15 @@ namespace DBus
   {
     public:
 
-      typedef DBusCxxPointer<signal_proxy_base> pointer;
+      typedef std::shared_ptr<signal_proxy_base> pointer;
 
       signal_proxy_simple(const std::string& path, const std::string& interface, const std::string& name);
 
       signal_proxy_simple(const std::string& interface, const std::string& name);
 
-      signal_proxy_simple(DBusCxxPointer<Connection> connection, const std::string& path, const std::string& interface, const std::string& name);
+      signal_proxy_simple(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface, const std::string& name);
 
-      signal_proxy_simple(DBusCxxPointer<Connection> connection, const std::string& interface, const std::string& name);
+      signal_proxy_simple(std::shared_ptr<Connection> connection, const std::string& interface, const std::string& name);
 
       signal_proxy_simple(const signal_proxy_simple& other);
 
@@ -91,9 +91,9 @@ namespace DBus
 
       static pointer create(const std::string& interface, const std::string& name);
 
-      static pointer create(DBusCxxPointer<Connection> connection, const std::string& path, const std::string& interface, const std::string& name);
+      static pointer create(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface, const std::string& name);
 
-      static pointer create(DBusCxxPointer<Connection> connection, const std::string& interface, const std::string& name);
+      static pointer create(std::shared_ptr<Connection> connection, const std::string& interface, const std::string& name);
 
       static pointer create(const signal_proxy_simple& other);
 

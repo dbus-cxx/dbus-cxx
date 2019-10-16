@@ -16,10 +16,11 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#include <memory>
+
 #include <sigc++/signal.h>
 
 #include <dbus-cxx/enums.h>
-#include <dbus-cxx/pointer.h>
 #include <dbus-cxx/accumulators.h>
 #include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/message.h>
@@ -44,16 +45,16 @@ namespace DBus
 
     public:
       
-      typedef DBusCxxPointer<MessageHandler> pointer;
+      typedef std::shared_ptr<MessageHandler> pointer;
 
-      typedef DBusCxxWeakPointer<MessageHandler> weak_pointer;
+      typedef std::weak_ptr<MessageHandler> weak_pointer;
 
       virtual ~MessageHandler();
 
       /** The default implementation simply emits the message signal and returns the result */
-      virtual HandlerResult handle_message( DBusCxxPointer<Connection>, Message::const_pointer );
+      virtual HandlerResult handle_message( std::shared_ptr<Connection>, Message::const_pointer );
 
-      typedef sigc::signal<HandlerResult(DBusCxxPointer<Connection>, Message::const_pointer)>::accumulated<MessageHandlerAccumulator> MessageSignal;
+      typedef sigc::signal<HandlerResult(std::shared_ptr<Connection>, Message::const_pointer)>::accumulated<MessageHandlerAccumulator> MessageSignal;
 
       MessageSignal& signal_message();
 

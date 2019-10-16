@@ -20,10 +20,10 @@
 #include <vector>
 #include <map>
 #include <tuple>
+#include <memory>
 
 #include <dbus/dbus.h>
 
-#include <dbus-cxx/pointer.h>
 #include <dbus-cxx/messageiterator.h>
 #include <dbus-cxx/messageappenditerator.h>
 
@@ -58,11 +58,11 @@ namespace DBus
   {
     public:
 
-      typedef DBusCxxPointer<Message> pointer;
+      typedef std::shared_ptr<Message> pointer;
 
-      typedef DBusCxxPointer<const Message> const_pointer;
+      typedef std::shared_ptr<const Message> const_pointer;
 
-      typedef DBusCxxWeakPointer<Message> weak_pointer;
+      typedef std::weak_ptr<Message> weak_pointer;
 
     protected:
       
@@ -88,7 +88,7 @@ namespace DBus
 
       static pointer create( Message::const_pointer other, CreateMethod m = CREATE_ALIAS );
 
-      DBusCxxPointer<ReturnMessage> create_reply() const;
+      std::shared_ptr<ReturnMessage> create_reply() const;
 
       virtual ~Message();
 

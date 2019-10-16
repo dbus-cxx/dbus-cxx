@@ -66,12 +66,12 @@ namespace DBus
   {
   }
 
-  DBusCxxPointer< Connection > signal_base::connection()
+  std::shared_ptr< Connection > signal_base::connection()
   {
     return m_connection.lock();
   }
 
-  void DBus::signal_base::set_connection(DBusCxxPointer< Connection > connection)
+  void DBus::signal_base::set_connection(std::shared_ptr< Connection > connection)
   {
     m_connection = connection;
   }

@@ -128,7 +128,7 @@ std::string generate_adapter_h(Node n)
   sout << decl_indent << "}\n";
 
   sout << "\n" << class_indent << tab << "public:\n\n"
-      << decl_indent << "typedef DBusCxxPointer<" << n.adapter_name() << "> pointer;\n\n"
+      << decl_indent << "typedef std::shared_ptr<" << n.adapter_name() << "> pointer;\n\n"
       << decl_indent << "static pointer create( " << n.adaptee_fqn() << "* adaptee=NULL, const std::string& path=\"" << n.dbus_path << "\")\n"
       << decl_indent << tab << "{ return pointer( new " << n.adapter_name() << "(adaptee, path)); }\n\n";
 

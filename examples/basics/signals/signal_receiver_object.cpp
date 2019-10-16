@@ -36,7 +36,7 @@ class Calculator: public DBus::ObjectProxy
 
   public:
 
-    typedef DBusCxxPointer<Calculator> pointer;
+    typedef std::shared_ptr<Calculator> pointer;
 
     static pointer create(DBus::Connection::pointer conn)
     {

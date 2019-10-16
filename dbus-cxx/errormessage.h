@@ -48,9 +48,9 @@ namespace DBus
 
     public:
 
-      typedef DBusCxxPointer<ErrorMessage> pointer;
+      typedef std::shared_ptr<ErrorMessage> pointer;
 
-      typedef DBusCxxWeakPointer<ErrorMessage> weak_pointer;
+      typedef std::weak_ptr<ErrorMessage> weak_pointer;
 
       static pointer create();
 

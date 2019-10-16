@@ -47,9 +47,9 @@ namespace DBus
 
     public:
 
-      typedef DBusCxxPointer<SignalReceiver> pointer;
+      typedef std::shared_ptr<SignalReceiver> pointer;
 
-      typedef DBusCxxWeakPointer<SignalReceiver> weak_pointer;
+      typedef std::weak_ptr<SignalReceiver> weak_pointer;
 
       static pointer create(const std::string& interface, const std::string& member);
 
@@ -57,7 +57,7 @@ namespace DBus
 
       ~SignalReceiver();
 
-      virtual HandlerResult handle_message( DBusCxxPointer<Connection>, Message::const_pointer );
+      virtual HandlerResult handle_message( std::shared_ptr<Connection>, Message::const_pointer );
 
       const std::string& sender();
 

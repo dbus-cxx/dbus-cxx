@@ -55,7 +55,7 @@ namespace DBus
     return m_primary_fallback;
   }
 
-  DBusCxxPointer< Connection > ObjectPathHandler::connection() const
+  std::shared_ptr< Connection > ObjectPathHandler::connection() const
   {
     return m_connection;
   }

@@ -19,7 +19,7 @@
 #include <dbus/dbus.h>
 #include <sigc++/signal.h>
 #include <dbus-cxx/message.h>
-#include <dbus-cxx/pointer.h>
+#include <memory>
 
 #ifndef DBUSCXX_PENDING_CALL_H
 #define DBUSCXX_PENDING_CALL_H
@@ -44,7 +44,7 @@ namespace DBus
 
     public:
 
-      typedef DBusCxxPointer<PendingCall> pointer;
+      typedef std::shared_ptr<PendingCall> pointer;
 
       static pointer create( DBusPendingCall* cobj = NULL );
 

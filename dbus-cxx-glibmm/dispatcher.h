@@ -44,9 +44,9 @@ namespace DBus
     {
       public:
 
-        typedef DBusCxxPointer<Dispatcher> pointer;
+        typedef std::shared_ptr<Dispatcher> pointer;
 
-        typedef DBusCxxPointer<const Dispatcher> const_pointer;
+        typedef std::shared_ptr<const Dispatcher> const_pointer;
 
         Dispatcher(bool is_running=true);
         

@@ -50,7 +50,7 @@ namespace DBus
        * This class has a protected constructor. Use the \c create() methods
        * to obtain a smart pointer to a new instance.
        */
-      ObjectProxy( DBusCxxPointer<Connection> conn, const std::string& destination, const std::string& path );
+      ObjectProxy( std::shared_ptr<Connection> conn, const std::string& destination, const std::string& path );
 
     public:
 
@@ -59,7 +59,7 @@ namespace DBus
        * 
        * Can access \e type as \c ObjectProxy::pointer
        */
-      typedef DBusCxxPointer<ObjectProxy> pointer;
+      typedef std::shared_ptr<ObjectProxy> pointer;
 
       /**
        * Creates an ObjectProxy with a specific path
@@ -74,15 +74,15 @@ namespace DBus
        */
       static pointer create( const std::string& destination, const std::string& path );
 
-      static pointer create( DBusCxxPointer<Connection> conn, const std::string& path );
+      static pointer create( std::shared_ptr<Connection> conn, const std::string& path );
 
-      static pointer create( DBusCxxPointer<Connection> conn, const std::string& destination, const std::string& path );
+      static pointer create( std::shared_ptr<Connection> conn, const std::string& destination, const std::string& path );
 
       virtual ~ObjectProxy();
 
-      DBusCxxPointer<Connection> connection() const;
+      std::shared_ptr<Connection> connection() const;
 
-      void set_connection( DBusCxxPointer<Connection> conn );
+      void set_connection( std::shared_ptr<Connection> conn );
 
       const std::string& destination() const;
 
@@ -182,7 +182,7 @@ namespace DBus
 
     protected:
 
-      DBusCxxPointer<Connection> m_connection;
+      std::shared_ptr<Connection> m_connection;
 
       std::string m_destination;
 

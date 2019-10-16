@@ -137,7 +137,7 @@ std::string generate_proxy_h(Node n)
   sout << decl_indent << "}\n";
 
   sout << "\n" << class_indent << tab << "public:\n\n"
-       << decl_indent << "typedef DBusCxxPointer<" << n.proxy_name() << "> pointer;\n\n"
+       << decl_indent << "typedef std::shared_ptr<" << n.proxy_name() << "> pointer;\n\n"
        << decl_indent << "static pointer create( ::DBus::Connection::pointer conn,\n"
        << decl_indent << "                       const std::string& dest=\"" << n.dbus_destination << "\",\n"
        << decl_indent << "                       const std::string& path=\"" << n.dbus_path << "\"\n"

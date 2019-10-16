@@ -109,7 +109,6 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/objectpathhandler.h
     dbus-cxx/path.h
     dbus-cxx/pendingcall.h
-    dbus-cxx/pointer.h
     dbus-cxx/returnmessage.h
     dbus-cxx/signal_base.h
     dbus-cxx/signalmessage.h

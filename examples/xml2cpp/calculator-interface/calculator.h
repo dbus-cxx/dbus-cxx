@@ -32,7 +32,7 @@ namespace Examples
   {
     public:
 
-      typedef DBusCxxPointer<Calculator> pointer;
+      typedef std::shared_ptr<Calculator> pointer;
 
       Calculator() { }
 

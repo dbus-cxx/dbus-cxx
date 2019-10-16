@@ -17,7 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus/dbus.h>
-#include <dbus-cxx/pointer.h>
+#include <memory>
 
 #ifndef DBUSCXX_WATCH_H
 #define DBUSCXX_WATCH_H
@@ -42,8 +42,8 @@ namespace DBus
       
     public:
       
-      typedef DBusCxxPointer<Watch> pointer;
-      typedef DBusCxxWeakPointer<Watch> weak_pointer;
+      typedef std::shared_ptr<Watch> pointer;
+      typedef std::weak_ptr<Watch> weak_pointer;
       
       static pointer create( DBusWatch* cobj = NULL );
       

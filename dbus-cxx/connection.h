@@ -20,8 +20,8 @@
  ***************************************************************************/
 #include <list>
 #include <deque>
+#include <memory>
 
-#include <dbus-cxx/pointer.h>
 #include <dbus-cxx/message.h>
 #include <dbus-cxx/returnmessage.h>
 #include <dbus-cxx/pendingcall.h>
@@ -29,7 +29,6 @@
 #include <dbus-cxx/timeout.h>
 #include <dbus-cxx/accumulators.h>
 #include <dbus-cxx/object.h>
-//#include <dbus-cxx/objectproxy.h>
 #include <dbus-cxx/signal_proxy.h>
 #include <dbus-cxx/dbus_signal.h>
 #include <dbus-cxx/messagefilter.h>
@@ -77,9 +76,9 @@ namespace DBus
 
     public:
       
-      typedef DBusCxxPointer<Connection> pointer;
+      typedef std::shared_ptr<Connection> pointer;
       
-      typedef DBusCxxWeakPointer<Connection> weak_pointer;
+      typedef std::weak_ptr<Connection> weak_pointer;
 
       // TODO dbus_connection_open
 

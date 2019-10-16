@@ -105,7 +105,7 @@ namespace DBus {
       Path path() const;
 
       /** Returns the connection associated with this interface's object or a null pointer if no object is associated */
-      DBusCxxPointer<Connection> connection() const;
+      std::shared_ptr<Connection> connection() const;
 
       /**
        * Handles the specified call message on the specified connection
@@ -119,7 +119,7 @@ namespace DBus {
        * @param conn The Connection to send the reply message on
        * @param msg The CallMessage to handle
        */
-      HandlerResult handle_call_message( DBusCxxPointer<Connection> connection, CallMessage::const_pointer message );
+      HandlerResult handle_call_message( std::shared_ptr<Connection> connection, CallMessage::const_pointer message );
 
       /** Get the name of this interface */
       const std::string& name() const;
@@ -274,7 +274,7 @@ namespace DBus {
       std::shared_ptr<Method<T_type> >
       Interface::create_method( const std::string& name )
       {
-        DBusCxxPointer< Method<T_type> > method;
+        std::shared_ptr< Method<T_type> > method;
         method = Method<T_type>::create(name);
         this->add_method( method );
         return method;
@@ -284,7 +284,7 @@ namespace DBus {
       std::shared_ptr<Method<T_type> >
       Interface::create_method( const std::string& name, sigc::slot<T_type> slot )
       {
-        DBusCxxPointer< Method<T_type> > method;
+        std::shared_ptr< Method<T_type> > method;
         method = Method<T_type>::create(name);
         method->set_method( slot );
         this->add_method( method );
@@ -295,10 +295,10 @@ namespace DBus {
       std::shared_ptr<signal<T_type> >
       Interface::create_signal( const std::string& name )
       {
-        DBusCxxPointer<DBus::signal<T_type> > sig;
+        std::shared_ptr<DBus::signal<T_type> > sig;
         sig = DBus::signal<T_type>::create(m_name, name);
         if ( this->add_signal(sig) ) return sig;
-        return DBusCxxPointer<DBus::signal<T_type> >();
+        return std::shared_ptr<DBus::signal<T_type> >();
       }
 
 } /* namespace DBus */

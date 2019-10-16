@@ -18,7 +18,7 @@
  ***************************************************************************/
 #include <exception>
 
-#include <dbus-cxx/pointer.h>
+#include <memory>
 
 #include <dbus/dbus.h>
 
@@ -62,7 +62,7 @@ namespace DBus
       Error( Message& );
 
     public:
-      typedef DBusCxxPointer<Error> pointer;
+      typedef std::shared_ptr<Error> pointer;
 
       static pointer create();
 
@@ -102,7 +102,7 @@ namespace DBus
     CPPTYPE( const char* message = NULL )                    \
         : Error( DBUS_ERROR_CODE, message ) {}               \
     public:                                                  \
-      typedef DBusCxxPointer<CPPTYPE> pointer;               \
+      typedef std::shared_ptr<CPPTYPE> pointer;               \
       static pointer create( const char* message = NULL ) {  \
         return pointer( new CPPTYPE(message) );              \
       }                                                      \

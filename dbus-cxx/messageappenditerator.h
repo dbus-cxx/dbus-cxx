@@ -48,7 +48,7 @@ namespace DBus
 
       MessageAppendIterator( Message& message );
 
-      MessageAppendIterator( DBusCxxPointer<Message> message );
+      MessageAppendIterator( std::shared_ptr<Message> message );
 
       ~MessageAppendIterator();
 

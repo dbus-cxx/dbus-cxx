@@ -32,12 +32,12 @@ namespace DBus
   {
   }
 
-  signal_proxy_base::signal_proxy_base( DBusCxxPointer<Connection>  connection, const std::string& path, const std::string& interface, const std::string& name ):
+  signal_proxy_base::signal_proxy_base( std::shared_ptr<Connection>  connection, const std::string& path, const std::string& interface, const std::string& name ):
       signal_base( connection, path, interface, name )
   {
   }
 
-  signal_proxy_base::signal_proxy_base( DBusCxxPointer<Connection>  connection, const std::string& interface, const std::string& name ):
+  signal_proxy_base::signal_proxy_base( std::shared_ptr<Connection>  connection, const std::string& interface, const std::string& name ):
       signal_base( connection, interface, name )
   {
   }
@@ -86,7 +86,7 @@ namespace DBus
     if ( m_interface.empty() or m_name.empty() ) return false;
 
     SignalMessage::const_pointer smsg;
-    smsg = dbus_cxx_dynamic_pointer_cast<const SignalMessage>( msg );
+    smsg = std::dynamic_pointer_cast<const SignalMessage>( msg );
 
     if ( not smsg ) smsg = SignalMessage::create( msg );
 
@@ -113,12 +113,12 @@ namespace DBus
   {
   }
 
-  signal_proxy_simple::signal_proxy_simple( DBusCxxPointer<Connection>  connection, const std::string& path, const std::string& interface, const std::string& name ):
+  signal_proxy_simple::signal_proxy_simple( std::shared_ptr<Connection>  connection, const std::string& path, const std::string& interface, const std::string& name ):
       signal_proxy_base( connection, path, interface, name )
   {
   }
 
-  signal_proxy_simple::signal_proxy_simple( DBusCxxPointer<Connection>  connection, const std::string& interface, const std::string& name ):
+  signal_proxy_simple::signal_proxy_simple( std::shared_ptr<Connection>  connection, const std::string& interface, const std::string& name ):
       signal_proxy_base( connection, interface, name )
   {
   }
@@ -139,12 +139,12 @@ namespace DBus
     return pointer( new signal_proxy_simple( interface, name ) );
   }
 
-  signal_proxy_simple::pointer signal_proxy_simple::create( DBusCxxPointer< Connection > connection, const std::string & path, const std::string & interface, const std::string & name )
+  signal_proxy_simple::pointer signal_proxy_simple::create( std::shared_ptr< Connection > connection, const std::string & path, const std::string & interface, const std::string & name )
   {
     return pointer( new signal_proxy_simple( connection, path, interface, name ) );
   }
 
-  signal_proxy_simple::pointer signal_proxy_simple::create( DBusCxxPointer< Connection > connection, const std::string & interface, const std::string & name )
+  signal_proxy_simple::pointer signal_proxy_simple::create( std::shared_ptr< Connection > connection, const std::string & interface, const std::string & name )
   {
     return pointer( new signal_proxy_simple( connection, interface, name ) );
   }

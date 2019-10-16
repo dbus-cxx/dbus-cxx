@@ -41,7 +41,7 @@ class Inherited: public DBus::Object
     DBus::signal<void,std::string>::pointer sig;
 
   public:
-    typedef DBusCxxPointer<Inherited> pointer;
+    typedef std::shared_ptr<Inherited> pointer;
 
     static pointer create(unsigned int x) { return pointer(new Inherited(x)); }
     

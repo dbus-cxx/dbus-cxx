@@ -23,9 +23,9 @@
 #include <sigc++/sigc++.h>
 
 #include <mutex>
+#include <memory>
 
 #include <dbus-cxx/enums.h>
-#include <dbus-cxx/pointer.h>
 #include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/accumulators.h>
 #include <dbus-cxx/callmessage.h>

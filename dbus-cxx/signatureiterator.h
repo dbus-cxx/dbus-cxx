@@ -18,12 +18,12 @@
  ***************************************************************************/
 #include <string>
 #include <vector>
+#include <memory>
 
 #include <dbus/dbus.h>
 
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/error.h>
-#include <dbus-cxx/pointer.h>
 
 #ifndef DBUSCXX_SIGNATUREITERATOR_H
 #define DBUSCXX_SIGNATUREITERATOR_H
