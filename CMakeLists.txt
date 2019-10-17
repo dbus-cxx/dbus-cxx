@@ -41,6 +41,7 @@ option( ENABLE_EXAMPLES "Enable the examples" OFF )
 option( ENABLE_TOOLS "Enable dbus-cxx tools" OFF )
 option( ENABLE_GLIBMM "Enable GLibMM support" OFF )
 option( BUILD_SITE "Build the dbus-cxx website reference" OFF )
+option( TOOLS_BUNDLED_CPPGENERATE "Use bundled libcppgenerate" ON )
 
 #
 # Configure our compile options
@@ -284,5 +285,6 @@ message(STATUS "  C++ compiler .................... : ${CMAKE_CXX_COMPILER}")
 message(STATUS "  Build examples .................. : ${ENABLE_EXAMPLES}")
 message(STATUS "  Build tests ..................... : ${ENABLE_TESTS}")
 message(STATUS "  Build tools ..................... : ${ENABLE_TOOLS}")
+message(STATUS "  Use bundled cppgenerate ......... : ${TOOLS_BUNDLED_CPPGENERATE}")
 message(STATUS "  Enable GLibmm support ........... : ${ENABLE_GLIBMM}")
 message(STATUS "  Build website ................... : ${BUILD_SITE}")
