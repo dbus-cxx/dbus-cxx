@@ -47,7 +47,7 @@ introspection-like documents.
  \htmlonly <img src="sourcecode-small.png" alt=""/> \endhtmlonly
  \par Source Code
  \htmlonly <img src="download-small.png" alt=""/> \endhtmlonly
- \b Releases - (.bz2, .gz, .zip) can be found on <a href="http://sourceforge.net/project/dbus-cxx/files">Sourceforge</a> and <a href="https://github.com/dbus-cxx/dbus-cxx/releases">Github</a>
+ \b Releases - (.bz2, .gz, .zip) can be found on <a href="http://sourceforge.net/projects/dbus-cxx/files">Sourceforge</a> and <a href="https://github.com/dbus-cxx/dbus-cxx/releases">Github</a>
 
   [Source building directions](@ref building-from-source)
 
@@ -62,7 +62,7 @@ introspection-like documents.
 
  \par Dependencies... and where to get them
  \b dbus: <a href="http://dbus.freedesktop.org">http://dbus.freedesktop.org</a> - Should be installed by default (runtime dependency) <br/>
- \b libsigc++ <a href="http://libsigc.sourceforge.net/">http://libsigc.sourceforge.net/</a> (compile dependency)
+ \b libsigc++ <a href="https://github.com/libsigcplusplus/libsigcplusplus">https://github.com/libsigcplusplus/libsigcplusplus</a> (compile dependency)
  See the README file for more information on compile-time dependencies <br/>
  \b libcppgenerate <a href="https://github.com/rm5248/libcppgenerate">https://github.com/rm5248/libcppgenerate</a> (compile dependency)
 

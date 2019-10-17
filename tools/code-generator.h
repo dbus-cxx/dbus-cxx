@@ -25,6 +25,7 @@
 #include <stack>
 #include <vector>
 #include <cppgenerate/class.h>
+#include <dbus-cxx/signatureiterator.h>
 
 namespace DBus{
 
@@ -37,9 +38,9 @@ public:
 
     bool parse();
 
-    void generateProxyClasses( bool outputToFile );
+    void generateProxyClasses( bool outputToFile, const std::string& output_directory );
 
-    void generateAdapterClasses( bool outputToFile );
+    void generateAdapterClasses( bool outputToFile, const std::string& output_directory );
 
 private:
     void start_element( std::string name, std::map<std::string,std::string> attrs );
@@ -47,6 +48,8 @@ private:
 
     static void start_element_handler(void* user_data, const XML_Char* name, const XML_Char** attrs );
     static void end_element_handler( void* userData, const XML_Char* name );
+
+    std::string getTemplateArgsFromSignature( SignatureIterator iter );
 
 private:
     XML_Parser m_parser;
@@ -60,6 +63,7 @@ private:
     cppgenerate::Method m_currentAdapteeMethod;
     cppgenerate::Constructor m_currentProxyConstructor;
     cppgenerate::Constructor m_currentAdapterConstructor;
+    int m_argNum;
 };
 
 }

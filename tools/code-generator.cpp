@@ -178,6 +178,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
         }
         m_currentInterface = tagAttrs[ "name" ];
     }else if( tagName.compare( "method" ) == 0 ){
+        m_argNum = 0;
         if( tagAttrs.find( "name" ) == tagAttrs.end() ){
             std::cerr << "WARNING: No name for method found" << std::endl;
             return;
@@ -201,18 +202,26 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
         DBus::Signature signature( tagAttrs[ "type" ] );
 
         DBus::Signature::iterator it = signature.begin();
-        //typestr = type_string_from_code( it.type() );
+        std::string typestr = getTemplateArgsFromSignature( it );
 
-        arg.setName( tagAttrs[ "name" ] )
-           .setType( type_string_from_code( it.type() ) );
+        arg.setType( typestr );
+        if( tagAttrs[ "name" ].length() == 0 ){
+           char buffer[10];
+           snprintf( buffer, 10, "arg%d", m_argNum );
+           arg.setName( std::string( buffer ) );
+        }else{
+            arg.setName( tagAttrs[ "name" ] );
+        }
 
         if( tagAttrs[ "direction" ] == "out" ){
-            m_currentProxyMethod.setReturnType( type_string_from_code( it.type() ) );
-            m_currentAdapteeMethod.setReturnType( type_string_from_code( it.type() ) );
+            m_currentProxyMethod.setReturnType( typestr );
+            m_currentAdapteeMethod.setReturnType( typestr );
         }else{
             m_currentProxyMethod.addArgument( arg );
             m_currentAdapteeMethod.addArgument( arg );
         }
+
+        m_argNum++;
     }
 }
 
@@ -232,6 +241,7 @@ void CodeGenerator::end_element( std::string tagName ){
         std::string methodArguments;
         bool argumentComma = false;
         int argNum = 0;
+        std::string block;
 
         methodProxyType += "<" + m_currentProxyMethod.returnType();
         for( cppgenerate::Argument arg : args ){
@@ -248,8 +258,12 @@ void CodeGenerator::end_element( std::string tagName ){
                  .setName( "m_method_" + m_currentProxyMethod.name() )
                  .setType( "DBus::MethodProxy" + methodProxyType + "::pointer " );
 
+        if( m_currentProxyMethod.returnType() != "void" ){
+            block = "return ";
+        }
+        block += "(*" + memberVar.name() + ")(" +  methodArguments + ");";
         m_currentProxyMethod.addCode( cppgenerate::CodeBlock::create()
-            .addLine( "return (*" + memberVar.name() + ")(" +  methodArguments + ");" ) );
+            .addLine( block ) );
 
         m_proxyClasses.data()[ m_proxyClasses.size() - 1 ]
             .addMethod( m_currentProxyMethod )
@@ -310,11 +324,11 @@ void CodeGenerator::end_element_handler( void* userData, const XML_Char* name ){
     generator->end_element( tagName );
 }
 
-void CodeGenerator::generateProxyClasses( bool outputToFile ){
+void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& output_directory ){
     for( cppgenerate::Class c : m_proxyClasses ){
         if( outputToFile ){
-            std::string headerFilename = c.getName() + std::string( ".h" );
-            std::string implFilename = c.getName() + std::string( ".cpp" );
+            std::string headerFilename = output_directory + c.getName() + std::string( ".h" );
+            std::string implFilename = output_directory + c.getName() + std::string( ".cpp" );
             std::ofstream header;
             std::ofstream impl;
 
@@ -329,11 +343,11 @@ void CodeGenerator::generateProxyClasses( bool outputToFile ){
 
 }
 
-void CodeGenerator::generateAdapterClasses( bool outputToFile ){
+void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string& output_directory ){
     for( cppgenerate::Class c : m_adapterClasses ){
         if( outputToFile ){
-            std::string headerFilename = c.getName() + std::string( ".h" );
-            std::string implFilename = c.getName() + std::string( ".cpp" );
+            std::string headerFilename = output_directory + c.getName() + std::string( ".h" );
+            std::string implFilename = output_directory + c.getName() + std::string( ".cpp" );
             std::ofstream header;
             std::ofstream impl;
 
@@ -348,7 +362,7 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile ){
 
     for( cppgenerate::Class c : m_adapteeClasses ){
         if( outputToFile ){
-            std::string headerFilename = c.getName() + std::string( ".h" );
+            std::string headerFilename = output_directory + c.getName() + std::string( ".h" );
             std::ofstream header;
 
             header.open( headerFilename );
@@ -358,4 +372,28 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile ){
             c.printAsHeaderOnly( std::cout );
         }
     }
+}
+
+std::string CodeGenerator::getTemplateArgsFromSignature( SignatureIterator it ){
+    std::string ret;
+    std::string include_file;
+
+    do{
+        include_file = include_file_for_type( it.type() );
+        if( include_file.size() > 1 ){
+            m_adapteeClasses[ m_adapteeClasses.size() - 1 ].addSystemInclude( include_file );
+            m_adapterClasses[ m_adapterClasses.size() - 1 ].addSystemInclude( include_file );
+        }
+
+        ret += type_string_from_code( it.type() );
+        if( it.is_container() ||
+            it.is_array() ||
+            it.is_dict() ){
+            ret += "<";
+            ret += getTemplateArgsFromSignature( it.recurse() );
+            ret += ">";
+        }
+    }while( it.next() );
+
+    return ret;
 }

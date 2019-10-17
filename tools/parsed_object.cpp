@@ -263,7 +263,7 @@ std::vector<std::string> Node::namespaces()
     current = nsseparator+2;
   }
 
-  if ( current != '\0' ) ns.push_back( std::string( current ) );
+  if ( current != NULL ) ns.push_back( std::string( current ) );
 
   return ns;
 }

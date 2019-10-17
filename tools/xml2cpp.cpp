@@ -42,13 +42,17 @@ int main( int argc, const char** argv )
   int output_to_file = 0;
   const char* xml_file=NULL;
   const char* file_prefix = "";
-  char c;
+  const char* output_dir = ".";
+  int c;
   DBus::CodeGenerator generator;
+  std::string outputDirString;
 
   struct poptOption option_table[] = {
     { "xml",          'x', POPT_ARG_STRING, &xml_file,       0, "The file containing the XML specification" },
-    { "prefix",       'p', POPT_ARG_STRING, &file_prefix,    0, "A prefix to place on all output files" },
+    //{ "prefix",       'p', POPT_ARG_STRING, &file_prefix,    0, "A prefix to place on all output files" },
     { "file",         'f', POPT_ARG_NONE,   &output_to_file, 0, "Output to files [default=no]" },
+    { "output_dir",       'o', POPT_ARG_STRING, &output_dir,    0, 
+         "The output directory for files(only if outputting to files)[default=.]" },
     { "proxy",          0, POPT_ARG_NONE,   &make_proxy,     0, "Make a proxy class for the specification.  "
          "Proxies are used when you want to talk with a DBus service [default=no]" },
     { "adapter",        0, POPT_ARG_NONE,   &make_adapter,   0, "Make an adapter class for the specification.  "
@@ -99,12 +103,17 @@ int main( int argc, const char** argv )
         return 1;
     }
 
+    outputDirString = std::string( output_dir );
+    if( outputDirString.back() != '/' ){
+        outputDirString += "/";
+    }
+
     if( make_proxy ){
-        generator.generateProxyClasses( output_to_file );
+        generator.generateProxyClasses( output_to_file, outputDirString );
     }
 
     if( make_adapter ){
-        generator.generateAdapterClasses( output_to_file );
+        generator.generateAdapterClasses( output_to_file, outputDirString );
     }
 return 0;
 
