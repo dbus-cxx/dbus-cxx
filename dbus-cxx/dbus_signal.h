@@ -27,6 +27,12 @@
 
 namespace DBus {
 
+template <typename... T_sig>
+class signal;
+
+template <typename T_ret, typename... T_args>
+class signal<T_ret(T_args...)>{};
+
 /**
  * Subclass of sigc::signal
  *
@@ -41,38 +47,35 @@ namespace DBus {
  * @ingroup local
  *
  */
-template <typename T_return, typename... T_arg>
+template <typename... T_type>
 class signal 
-  : public sigc::signal<T_return(T_arg...)>, public signal_base
+  : public sigc::signal<void(T_type...)>, public signal_base
 {
+public:
   typedef std::shared_ptr<signal> pointer;
-  
+
   signal(const std::string& interface, const std::string& name):
-    signal_base(interface, name),
-    m_arg_names(sizeof...(T_arg))
+    signal_base(interface, name)
   {
     m_internal_callback_connection =
       this->connect( sigc::mem_fun(*this, &signal::internal_callback) );
   }
   
   signal(const std::string& path, const std::string& interface, const std::string& name):
-    signal_base(path, interface, name),
-    m_arg_names(sizeof...(T_arg))
+    signal_base(path, interface, name)
   {
     m_internal_callback_connection =
       this->connect( sigc::mem_fun(*this, &signal::internal_callback) );
   }
   
   signal(const std::string& interface, const std::string& name, const signal& src) :
-    sigc::signal<T_return(T_arg...)>(src),
-    signal_base(interface, name),
-    m_arg_names(sizeof...(T_arg))
+    sigc::signal<void(T_type...)>(src),
+    signal_base(interface, name)
   { }
 
   signal(const std::string& path, const std::string& interface, const std::string& name, const signal& src) :
-    sigc::signal<T_return(T_arg...)>(src),
-    signal_base(path, interface, name),
-    m_arg_names(sizeof...(T_arg))
+    sigc::signal<void(T_type...)>(src),
+    signal_base(path, interface, name)
   { }
 
   static pointer create(const std::string& interface, const std::string& name)
@@ -105,11 +108,10 @@ class signal
   {
     std::ostringstream sout;
     std::string spaces;
+    DBus::priv::dbus_function_traits<std::function<void(T_type...)>> method_sig_gen;
     for (int i=0; i < space_depth; i++ ) spaces += " ";
     sout << spaces << "<signal name=\"" << name() << "\">\n";
-    for (std::string arg_name : m_arg_names ){
-      sout << spaces << "  <arg name=\"" << arg_name << "\" type=\"" << sig<T_arg...>().sig() << "\"/>\n";
-    }
+    sout << method_sig_gen.introspect(m_arg_names, 0, spaces);
     sout << spaces << "</signal>\n";
     return sout.str();
   }
@@ -132,7 +134,7 @@ class signal
 
   sigc::connection m_internal_callback_connection;
 
-  T_return internal_callback(T_arg ... args)
+  void internal_callback(T_type... args)
   {
     // DBUS_CXX_DEBUG( "signal::internal_callback: " FOR(1,$1,[ << arg%1]) );
     SignalMessage::pointer __msg = SignalMessage::create(m_path, m_interface, m_name);

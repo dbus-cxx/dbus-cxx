@@ -32,7 +32,7 @@ int main(int argc, const char** argv)
 
   DBus::ObjectProxy::pointer object = connection->create_object_proxy("dbuscxx.example.time.server", "/dbuscxx/example/Time");
 
-  DBus::MethodProxy<struct timeval>& methodref = *(object->create_method<struct timeval>("Time.Basic", "now"));
+  DBus::MethodProxy<struct timeval()>& methodref = *(object->create_method<struct timeval()>("Time.Basic", "now"));
 
   struct timeval current;
   current = methodref( );

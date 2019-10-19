@@ -37,7 +37,7 @@ int main()
   
   DBus::Connection::pointer connection = DBus::Connection::create( DBus::BUS_SESSION );
 
-  DBus::signal<void,std::string>::pointer signal = connection->create_signal<void,std::string>("/test/signal/Object", "test.signal.Type", "Test");
+  DBus::signal<std::string>::pointer signal = connection->create_signal<std::string>("/test/signal/Object", "test.signal.Type", "Test");
 
   const char* sigvalue1 = "Hello";
   std::string sigvalue2("World");

@@ -73,11 +73,11 @@ namespace DBus {
       /** Returns the first method with the given name */
       MethodProxyBase::pointer method( const std::string& name ) const;
 
-      template <class T_return, class... T_arg>
-      std::shared_ptr<MethodProxyBase> create_method( const std::string& name )
+      template <class T_type>
+      std::shared_ptr<MethodProxy<T_type>> create_method( const std::string& name )
       {
-        std::shared_ptr< MethodProxyBase > method;
-        method = MethodProxy<T_return,T_arg...>::create(name);
+        std::shared_ptr< MethodProxy<T_type> > method;
+        method = MethodProxy<T_type>::create(name);
         this->add_method(method);
         return method;
       }

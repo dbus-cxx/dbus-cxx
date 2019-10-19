@@ -61,7 +61,7 @@ int main()
 
   DBus::Object::pointer object = conn->create_object("/dbuscxx/example/Time");
 
-  object->create_method<struct timeval>("now", sigc::ptr_fun(now) );
+  object->create_method<struct timeval()>("now", sigc::ptr_fun(now) );
 
   std::cout << "Running" << std::flush;
   

@@ -179,8 +179,8 @@ namespace DBus
        * Template parameters for the \c create_signal() call will determine the
        * signature of the signal created.
        */
-      template <class T_type>
-      std::shared_ptr<signal<T_type> >
+      template <class... T_type>
+      std::shared_ptr<signal<T_type...> >
       create_signal( const std::string& name );
 
       /**
@@ -190,8 +190,8 @@ namespace DBus
        * Template parameters for the \c create_signal() call will determine the
        * signature of the signal created.
        */
-      template <class T_type>
-      std::shared_ptr<signal<T_type> >
+      template <class... T_type>
+      std::shared_ptr<signal<T_type...> >
       create_signal( const std::string& iface, const std::string& name );
 
       /** Get the children associated with this object instance */
@@ -350,24 +350,24 @@ namespace DBus {
     return method;
   }
 
-  template <class T_type>
-  std::shared_ptr<signal<T_type> >
+  template <class... T_type>
+  std::shared_ptr<signal<T_type...> >
   Object::create_signal( const std::string& name )
   {
-    std::shared_ptr<DBus::signal<T_type> > sig;
+    std::shared_ptr<DBus::signal<T_type...> > sig;
     Interface::pointer iface = this->default_interface();
     if ( not iface ) iface = this->create_interface("");
-    sig = iface->create_signal<T_type>(name);
+    sig = iface->create_signal<T_type...>(name);
     return sig;
   }
 
-  template <class T_type>
-  std::shared_ptr<signal<T_type> >
+  template <class... T_type>
+  std::shared_ptr<signal<T_type...> >
   Object::create_signal( const std::string& iface, const std::string& name )
   {
-    std::shared_ptr<DBus::signal<T_type> > sig;
+    std::shared_ptr<DBus::signal<T_type...> > sig;
     if ( not has_interface(iface) ) this->create_interface(iface);
-    sig = this->interface(iface)->create_signal<T_type>(name);
+    sig = this->interface(iface)->create_signal<T_type...>(name);
     return sig;
   }
 

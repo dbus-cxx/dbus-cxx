@@ -52,7 +52,7 @@ int main( int argc, char** argv ){
   DBus::Connection::pointer conn = dispatcher->create_connection(DBus::BUS_SESSION);
   DBus::ObjectProxy::pointer object = conn->create_object_proxy("dbuscxx.example.filedescriptor.server", "/dbuscxx/example/FileDescriptor");
 
-  DBus::MethodProxy<DBus::FileDescriptor::pointer>& methodref = *(object->create_method<DBus::FileDescriptor::pointer>("Filedescriptor.basic", "getFiledescriptor"));
+  DBus::MethodProxy<DBus::FileDescriptor::pointer()>& methodref = *(object->create_method<DBus::FileDescriptor::pointer()>("Filedescriptor.basic", "getFiledescriptor"));
 
   std::cout << "Running..." << std::flush;
 

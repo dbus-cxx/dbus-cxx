@@ -34,7 +34,7 @@ int main()
 
   DBus::Connection::pointer connection = dispatcher->create_connection( DBus::BUS_SESSION );
 
-  DBus::signal_proxy<void,std::vector<double> >::pointer signal = connection->create_signal_proxy<void,std::vector<double> >("/test/signal/Object", "test.signal.Type", "Test");
+  DBus::signal_proxy<std::vector<double> >::pointer signal = connection->create_signal_proxy<std::vector<double> >("/test/signal/Object", "test.signal.Type", "Test");
 
   signal->connect( sigc::ptr_fun(print) );
 

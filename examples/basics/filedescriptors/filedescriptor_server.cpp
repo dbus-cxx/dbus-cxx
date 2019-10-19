@@ -66,7 +66,7 @@ int main( int argc, char** argv ){
 
   DBus::Object::pointer object = conn->create_object("/dbuscxx/example/FileDescriptor");
 
-  object->create_method<DBus::FileDescriptor::pointer>("Filedescriptor.basic", "getFiledescriptor", sigc::ptr_fun(getFiledescriptor) );
+  object->create_method<DBus::FileDescriptor::pointer()>("Filedescriptor.basic", "getFiledescriptor", sigc::ptr_fun(getFiledescriptor) );
 
   std::cout << "Running..." << std::flush;
   

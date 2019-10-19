@@ -112,8 +112,34 @@ namespace DBus
 
   };
 
-  template <class T_return, class... T_arg>
-  class MethodProxy : public MethodProxyBase
+  template<typename signature>
+  class MethodProxy;
+
+  template<typename... T_arg>
+  class MethodProxy<void(T_arg...)> : public MethodProxyBase
+  {
+  protected:
+      MethodProxy(const std::string& name) :
+        MethodProxyBase(name){}
+
+  public:
+    typedef std::shared_ptr<MethodProxy> pointer;
+
+    void operator()(T_arg... args){
+        //TODO add debug here(see methodbase.h)
+        //DBUSCXX_DEBUG_STDSTR( "dbus.MethodProxy", 
+        CallMessage::pointer _callmsg = this->create_call_message();
+        (*_callmsg << ... << args);
+        ReturnMessage::const_pointer retmsg = this->call( _callmsg, -1 );
+    }
+
+    static pointer create(const std::string& name){
+      return pointer( new MethodProxy(name) );
+    }
+  };
+
+  template<typename T_return, typename... T_arg>
+  class MethodProxy<T_return(T_arg...)> : public MethodProxyBase
   {
   protected:
       MethodProxy(const std::string& name) :

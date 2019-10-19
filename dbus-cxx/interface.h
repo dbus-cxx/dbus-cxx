@@ -195,8 +195,8 @@ namespace DBus {
        * @return A smart pointer to the newly created signal
        * @param name The name that will be associated with this signal
        */
-      template <class T_type>
-      std::shared_ptr<signal<T_type> >
+      template <class... T_type>
+      std::shared_ptr<signal<T_type...> >
       create_signal( const std::string& name );
 
       /** Returns the signals associated with this interface */
@@ -291,14 +291,14 @@ namespace DBus {
         return method;
       }
 
-      template <class T_type>
-      std::shared_ptr<signal<T_type> >
+      template <class... T_type>
+      std::shared_ptr<signal<T_type...> >
       Interface::create_signal( const std::string& name )
       {
-        std::shared_ptr<DBus::signal<T_type> > sig;
-        sig = DBus::signal<T_type>::create(m_name, name);
+        std::shared_ptr<DBus::signal<T_type...> > sig;
+        sig = DBus::signal<T_type...>::create(m_name, name);
         if ( this->add_signal(sig) ) return sig;
-        return std::shared_ptr<DBus::signal<T_type> >();
+        return std::shared_ptr<DBus::signal<T_type...> >();
       }
 
 } /* namespace DBus */

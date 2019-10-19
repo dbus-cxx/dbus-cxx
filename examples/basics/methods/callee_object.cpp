@@ -57,10 +57,10 @@ int main()
   DBus::Object::pointer object = conn->create_object("/dbuscxx/example/Calculator");
 
   //use sigc::mem_fun as this is a member function of a class
-  object->create_method<double,double,double>("add", sigc::mem_fun(test, &Test::add) );
-  object->create_method<double,double,double>("sub", sigc::mem_fun(test, &Test::subtract) );
-  object->create_method<double,double,double>("mul", sigc::mem_fun(test, &Test::multiply) );
-  object->create_method<double,double,double>("div", sigc::mem_fun(test, &Test::divide) );
+  object->create_method<double(double,double)>("add", sigc::mem_fun(test, &Test::add) );
+  object->create_method<double(double,double)>("sub", sigc::mem_fun(test, &Test::subtract) );
+  object->create_method<double(double,double)>("mul", sigc::mem_fun(test, &Test::multiply) );
+  object->create_method<double(double,double)>("div", sigc::mem_fun(test, &Test::divide) );
 
   std::cout << "Running" << std::flush;
   

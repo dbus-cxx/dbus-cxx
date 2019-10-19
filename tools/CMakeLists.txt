@@ -40,6 +40,7 @@ add_executable( dbus-cxx-xml2cpp
 )
 target_link_libraries( dbus-cxx-xml2cpp ${TOOLS_LINK} ${cppgenerate_LDFLAGS} )
 install( TARGETS dbus-cxx-xml2cpp DESTINATION bin )
+set_property( TARGET dbus-cxx-xml2cpp PROPERTY CXX_STANDARD 17 )
 
 if( TOOLS_BUNDLED_CPPGENERATE )
     add_dependencies( dbus-cxx-xml2cpp cppgenerate )
@@ -49,4 +50,5 @@ add_executable( dbus-cxx-introspect
     introspect.cpp )
 target_link_libraries( dbus-cxx-introspect ${TOOLS_LINK} )
 install( TARGETS dbus-cxx-introspect DESTINATION bin )
+set_property( TARGET dbus-cxx-introspect PROPERTY CXX_STANDARD 17 )
 

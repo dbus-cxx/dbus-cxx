@@ -47,11 +47,11 @@ int main()
 
   //export various methods out onto the bus.  add,sub,mul,div all take in
   //two doubles, and return a double
-  object->create_method<double,double,double>("add", sigc::ptr_fun(add) );
-  object->create_method<double,double,double>("sub", sigc::ptr_fun(subtract) );
-  object->create_method<double,double,double>("mul", sigc::ptr_fun(multiply) );
-  object->create_method<double,double,double>("div", sigc::ptr_fun(divide) );
-  object->create_method<void>("print", sigc::ptr_fun(print) );
+  object->create_method<double(double,double)>("add", sigc::ptr_fun(add) );
+  object->create_method<double(double,double)>("sub", sigc::ptr_fun(subtract) );
+  object->create_method<double(double,double)>("mul", sigc::ptr_fun(multiply) );
+  object->create_method<double(double,double)>("div", sigc::ptr_fun(divide) );
+  object->create_method<void()>("print", sigc::ptr_fun(print) );
 
   std::cout << "Running" << std::flush;
   

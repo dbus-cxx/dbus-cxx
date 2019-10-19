@@ -34,7 +34,7 @@ int main()
 
   DBus::Connection::pointer connection = dispatcher->create_connection( DBus::BUS_SESSION );
 
-  DBus::signal<void,std::vector<double> >::pointer signal = connection->create_signal<void,std::vector<double> >("/test/signal/Object", "test.signal.Type", "Test");
+  DBus::signal<std::vector<double> >::pointer signal = connection->create_signal<std::vector<double> >("/test/signal/Object", "test.signal.Type", "Test");
 
   std::vector<double> array;
   array.push_back(M_PI);

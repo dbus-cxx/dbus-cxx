@@ -286,20 +286,20 @@ namespace DBus
        */
       signal_proxy_simple::pointer create_signal_proxy( const std::string& path, const std::string& interface, const std::string& name );
 
-      template <class T_return, class... T_arg>
-      std::shared_ptr<signal_proxy<T_return, T_arg...> > create_signal_proxy( const std::string& interface, const std::string& name )
+      template<typename... T_arg>
+      std::shared_ptr<signal_proxy<T_arg...> > create_signal_proxy( const std::string& interface, const std::string& name )
       {
-        std::shared_ptr<signal_proxy<T_return, T_arg...> > sig;
-        sig = signal_proxy<T_return, T_arg...>::create(interface, name);
+        std::shared_ptr<signal_proxy<T_arg...> > sig;
+        sig = signal_proxy<T_arg...>::create(interface, name);
         this->add_signal_proxy( sig );
         return sig;
       }
       
-      template <class T_return, class... T_arg>
-      std::shared_ptr<signal_proxy<T_return, T_arg...> > create_signal_proxy( const std::string& path, const std::string& interface, const std::string& name )
+      template<typename... T_arg>
+      std::shared_ptr<signal_proxy<T_arg...> > create_signal_proxy( const std::string& path, const std::string& interface, const std::string& name )
       {
-        std::shared_ptr<signal_proxy<T_return, T_arg...> > sig;
-        sig = signal_proxy<T_return, T_arg...>::create(path, interface, name);
+        std::shared_ptr<signal_proxy<T_arg...> > sig;
+        sig = signal_proxy<T_arg...>::create(path, interface, name);
         this->add_signal_proxy( sig );
         return sig;
       }

@@ -36,11 +36,11 @@ int main()
 
   //a method proxy acts like a real method, but will go over the dbus
   //to do its work.
-  DBus::MethodProxy<double,double,double>& add_proxy
-    = *(object->create_method<double,double,double>("dbuscxx.Quickstart","add"));
+  DBus::MethodProxy<double(double,double)>& add_proxy
+    = *(object->create_method<double(double,double)>("dbuscxx.Quickstart","add"));
 
   double answer;
-  answer = add_proxy( 1.1, 2.2 );
+  //answer = add_proxy( 1.1, 2.2 );
 
   std::cout << "1.1 + 2.2 = " << answer << std::endl;
 

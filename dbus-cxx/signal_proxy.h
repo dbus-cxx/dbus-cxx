@@ -31,9 +31,9 @@ namespace DBus {
  *
  * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
  */
-template <class T_return, class... T_arg>
+template <class... T_arg>
 class signal_proxy
-  : public sigc::signal<T_return(T_arg...)>, public signal_proxy_base
+  : public sigc::signal<void(T_arg...)>, public signal_proxy_base
 {
   public:
 
@@ -48,12 +48,12 @@ class signal_proxy
     { m_signal_dbus_incoming.connect( sigc::mem_fun(*this, &signal_proxy::on_dbus_incoming) ); }
 
     signal_proxy(const std::string& interface, const std::string& name, const signal_proxy& src) :
-      sigc::signal<T_return, T_arg...>(src),
+      sigc::signal<void(T_arg...)>(src),
       signal_proxy_base(interface, name)
     { m_signal_dbus_incoming.connect( sigc::mem_fun(*this, &signal_proxy::on_dbus_incoming) ); }
 
     signal_proxy(const std::string& path, const std::string& interface, const std::string& name, const signal_proxy& src) :
-      sigc::signal<T_return, T_arg...>(src),
+      sigc::signal<void(T_arg...)>(src),
       signal_proxy_base(path, interface, name)
     { m_signal_dbus_incoming.connect( sigc::mem_fun(*this, &signal_proxy::on_dbus_incoming) ); }
 
@@ -75,15 +75,15 @@ class signal_proxy
   protected:
     virtual HandlerResult on_dbus_incoming( SignalMessage::const_pointer msg )
     {
-      std::tuple<T_arg...> args;
+      std::tuple<T_arg...> tup_args;
 
       try {
         Message::iterator i = msg->begin();
-        std::apply( [i](auto ...arg){
+        std::apply( [i](auto ...arg) mutable {
                (i >> ... >> arg);
-           },
-           args );
-        this->emit(args);
+              },
+        tup_args );
+        std::apply(&signal_proxy::emit, std::tuple_cat(std::make_tuple(this), tup_args) );
       }
       catch ( ErrorInvalidTypecast& e ) {
           return NOT_HANDLED;

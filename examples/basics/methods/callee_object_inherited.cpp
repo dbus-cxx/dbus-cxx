@@ -36,10 +36,10 @@ class Inherited: public DBus::Object
       DBus::Object("/dbuscxx/example/Calculator"),
       x(d)
     {
-      this->create_method<double,double,double>("add", sigc::mem_fun(*this, &Inherited::add) );
-      this->create_method<double,double,double>("sub", sigc::mem_fun(*this, &Inherited::subtract) );
-      this->create_method<double,double,double>("mul", sigc::mem_fun(*this, &Inherited::multiply) );
-      this->create_method<double,double,double>("div", sigc::mem_fun(*this, &Inherited::divide) );
+      this->create_method<double(double,double)>("add", sigc::mem_fun(*this, &Inherited::add) );
+      this->create_method<double(double,double)>("sub", sigc::mem_fun(*this, &Inherited::subtract) );
+      this->create_method<double(double,double)>("mul", sigc::mem_fun(*this, &Inherited::multiply) );
+      this->create_method<double(double,double)>("div", sigc::mem_fun(*this, &Inherited::divide) );
     }
 
   public:

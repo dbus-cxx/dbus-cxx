@@ -35,10 +35,10 @@ class Calculator: public DBus::ObjectProxy
     Calculator(DBus::Connection::pointer conn):
       DBus::ObjectProxy(conn, "dbuscxx.example.calculator.server", "/dbuscxx/example/Calculator")
     {
-      m_method_add = this->create_method<double,double,double>("Calculator.Basic", "add");
-      m_method_sub = this->create_method<double,double,double>("Calculator.Basic", "sub");
-      m_method_mul = this->create_method<double,double,double>("Calculator.Basic", "mul");
-      m_method_div = this->create_method<double,double,double>("Calculator.Basic", "div");
+      m_method_add = this->create_method<double(double,double)>("Calculator.Basic", "add");
+      m_method_sub = this->create_method<double(double,double)>("Calculator.Basic", "sub");
+      m_method_mul = this->create_method<double(double,double)>("Calculator.Basic", "mul");
+      m_method_div = this->create_method<double(double,double)>("Calculator.Basic", "div");
     }
 
   public:
@@ -60,10 +60,10 @@ class Calculator: public DBus::ObjectProxy
 
   protected:
     
-    DBus::MethodProxy<double,double,double>::pointer m_method_add;
-    DBus::MethodProxy<double,double,double>::pointer m_method_sub;
-    DBus::MethodProxy<double,double,double>::pointer m_method_mul;
-    DBus::MethodProxy<double,double,double>::pointer m_method_div;
+    DBus::MethodProxy<double(double,double)>::pointer m_method_add;
+    DBus::MethodProxy<double(double,double)>::pointer m_method_sub;
+    DBus::MethodProxy<double(double,double)>::pointer m_method_mul;
+    DBus::MethodProxy<double(double,double)>::pointer m_method_div;
 };
 
 int main(int argc, const char** argv)

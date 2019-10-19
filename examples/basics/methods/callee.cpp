@@ -41,10 +41,10 @@ int main()
 
   DBus::Object::pointer object = conn->create_object("/dbuscxx/example/Calculator");
 
-  object->create_method<double,double,double>("Calculator.Basic", "add", sigc::ptr_fun(add) );
-  object->create_method<double,double,double>("Calculator.Basic", "sub", sigc::ptr_fun(subtract) );
-  object->create_method<double,double,double>("Calculator.Basic", "mul", sigc::ptr_fun(multiply) );
-  object->create_method<double,double,double>("Calculator.Basic", "div", sigc::ptr_fun(divide) );
+  object->create_method<double(double,double)>("Calculator.Basic", "add", sigc::ptr_fun(add) );
+  object->create_method<double(double,double)>("Calculator.Basic", "sub", sigc::ptr_fun(subtract) );
+  object->create_method<double(double,double)>("Calculator.Basic", "mul", sigc::ptr_fun(multiply) );
+  object->create_method<double(double,double)>("Calculator.Basic", "div", sigc::ptr_fun(divide) );
 
   std::cout << "Running" << std::flush;
   

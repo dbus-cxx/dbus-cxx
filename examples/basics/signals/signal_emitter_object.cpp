@@ -28,17 +28,17 @@ class Inherited: public DBus::Object
       DBus::Object("/dbuscxx/example/Calculator"),
       x(d)
     {
-      this->create_method<double,double,double>("Calculator.Basic", "add", sigc::mem_fun(*this, &Inherited::add) );
-      this->create_method<double,double,double>("Calculator.Basic", "sub", sigc::mem_fun(*this, &Inherited::subtract) );
-      this->create_method<double,double,double>("Calculator.Basic", "mul", sigc::mem_fun(*this, &Inherited::multiply) );
-      this->create_method<double,double,double>("Calculator.Basic", "div", sigc::mem_fun(*this, &Inherited::divide) );
+      this->create_method<double(double,double)>("Calculator.Basic", "add", sigc::mem_fun(*this, &Inherited::add) );
+      this->create_method<double(double,double)>("Calculator.Basic", "sub", sigc::mem_fun(*this, &Inherited::subtract) );
+      this->create_method<double(double,double)>("Calculator.Basic", "mul", sigc::mem_fun(*this, &Inherited::multiply) );
+      this->create_method<double(double,double)>("Calculator.Basic", "div", sigc::mem_fun(*this, &Inherited::divide) );
 
-      m_signal_calculation = this->create_signal<void,std::string,double,double,double>("Calculator.Basic", "calculation");
+      m_signal_calculation = this->create_signal<std::string,double,double,double>("Calculator.Basic", "calculation");
     }
 
-    DBus::signal<void,std::string,double,double,double>::pointer m_signal_calculation;
+    DBus::signal<std::string,double,double,double>::pointer m_signal_calculation;
     
-    DBus::signal<void,std::string>::pointer sig;
+    DBus::signal<std::string>::pointer sig;
 
   public:
     typedef std::shared_ptr<Inherited> pointer;
@@ -73,7 +73,7 @@ class Inherited: public DBus::Object
       return result;
     }
 
-    DBus::signal<void,std::string,double,double,double>& signal_calculation() { return *m_signal_calculation; }
+    DBus::signal<std::string,double,double,double>& signal_calculation() { return *m_signal_calculation; }
 
     double x;
 

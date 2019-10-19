@@ -27,11 +27,11 @@ class Calculator: public DBus::ObjectProxy
     Calculator(DBus::Connection::pointer conn):
       DBus::ObjectProxy(conn, "dbuscxx.example.calculator.server", "/dbuscxx/example/Calculator")
       {
-        m_method_add = this->create_method<double,double,double>("Calculator.Basic", "add");
-        m_method_sub = this->create_method<double,double,double>("Calculator.Basic", "sub");
-        m_method_mul = this->create_method<double,double,double>("Calculator.Basic", "mul");
-        m_method_div = this->create_method<double,double,double>("Calculator.Basic", "div");
-        m_signal_calculation = this->create_signal<void,std::string,double,double,double>("Calculator.Basic", "calculation");
+        m_method_add = this->create_method<double(double,double)>("Calculator.Basic", "add");
+        m_method_sub = this->create_method<double(double,double)>("Calculator.Basic", "sub");
+        m_method_mul = this->create_method<double(double,double)>("Calculator.Basic", "mul");
+        m_method_div = this->create_method<double(double,double)>("Calculator.Basic", "div");
+        m_signal_calculation = this->create_signal<std::string,double,double,double>("Calculator.Basic", "calculation");
       }
 
   public:
@@ -51,15 +51,15 @@ class Calculator: public DBus::ObjectProxy
 
     double div(double param1, double param2) { return (*m_method_div)(param1,param2); }
 
-    DBus::signal_proxy<void,std::string,double,double,double>& signal_calculation() { return *m_signal_calculation; }
+    DBus::signal_proxy<std::string,double,double,double>& signal_calculation() { return *m_signal_calculation; }
 
   protected:
     
-    DBus::MethodProxy<double,double,double>::pointer m_method_add;
-    DBus::MethodProxy<double,double,double>::pointer m_method_sub;
-    DBus::MethodProxy<double,double,double>::pointer m_method_mul;
-    DBus::MethodProxy<double,double,double>::pointer m_method_div;
-    DBus::signal_proxy<void,std::string,double,double,double>::pointer m_signal_calculation;
+    DBus::MethodProxy<double(double,double)>::pointer m_method_add;
+    DBus::MethodProxy<double(double,double)>::pointer m_method_sub;
+    DBus::MethodProxy<double(double,double)>::pointer m_method_mul;
+    DBus::MethodProxy<double(double,double)>::pointer m_method_div;
+    DBus::signal_proxy<std::string,double,double,double>::pointer m_signal_calculation;
 };
 
 

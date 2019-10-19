@@ -45,14 +45,14 @@ int main(int argc, const char** argv)
   //Now, create a method on that object.  This will be the same as calling:
   //dbuscxx.example.calculator.server /dbuscxx/example/Calculator
   //     Calculator.Basic.[add|sub|mul|div] <arg1> <arg2>
-  DBus::MethodProxy<double,double,double>& methodref = *(object->create_method<double,double,double>("Calculator.Basic", op));
+  DBus::MethodProxy<double(double,double)>& methodref = *(object->create_method<double(double,double)>("Calculator.Basic", op));
 
   double answer;
   answer = methodref( param1, param2 );
 
   std::cout << param1 << " " << opsym << " " << param2 << " = " << answer << std::endl;
 
-  DBus::MethodProxy<void>& methodref2 = *(object->create_method<void>("Calculator.Basic", "print"));
+  DBus::MethodProxy<void()>& methodref2 = *(object->create_method<void()>("Calculator.Basic", "print"));
   methodref2();
 
   return 0;

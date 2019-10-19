@@ -150,13 +150,13 @@ namespace DBus
        * @param interface_name The name of the interface to add this proxy method to
        * @param method_name The name to assign to the newly create method proxy. This name will be used to perform the dbus-call.
        */
-      template <class T_return, class... T_arg>
-      std::shared_ptr<MethodProxyBase>
+      template <class T_type>
+      std::shared_ptr<MethodProxy<T_type>>
       create_method( const std::string& interface_name, const std::string& method_name )
       {
         InterfaceProxy::pointer interface = this->interface(interface_name);
         if ( not interface ) interface = this->create_interface( interface_name );
-        return interface->create_method<T_return, T_arg...>(method_name);
+        return interface->create_method<T_type>(method_name);
       }
 
       /**
@@ -165,13 +165,13 @@ namespace DBus
        * @param interface_name The name of the interface to add this proxy signal to
        * @param sig_name The name to assign to the newly created signal proxy.
        */
-      template <class T_return, class... T_arg>
-      std::shared_ptr<signal_proxy<T_return, T_arg...> >
+      template <class... T_type>
+      std::shared_ptr<signal_proxy<T_type...> >
       create_signal( const std::string& interface_name, const std::string& sig_name )
       {
         InterfaceProxy::pointer interface = this->interface(interface_name);
         if ( not interface ) interface = this->create_interface( interface_name );
-        return interface->create_signal<T_return, T_arg...>(sig_name);
+        return interface->create_signal<T_type...>(sig_name);
       }
 
       sigc::signal<void(InterfaceProxy::pointer)> signal_interface_added();

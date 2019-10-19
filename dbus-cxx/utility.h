@@ -212,6 +212,17 @@ struct dbus_function_traits<std::function<void(Args...)>>
     sout << method_signature<Args...>().introspect(names, idx + 1, spaces);
     return sout.str();
   }
+
+  void extractAndCall(CallMessage::const_pointer callmsg, ReturnMessage::pointer retmsg, sigc::slot<void(Args...)> slot ){
+    Message::iterator i = callmsg->begin();
+    std::tuple<Args...> tup_args;
+    std::apply( [i](auto ...arg) mutable {
+               (i >> ... >> arg);
+              },
+    tup_args );
+
+    std::apply(slot, tup_args);
+  }
 };
 
 template<typename T_ret, typename ...Args> 
