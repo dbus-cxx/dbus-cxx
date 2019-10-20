@@ -27,7 +27,7 @@ bool test_numeric_call_message_insertion_extraction_operator( T v )
 {
   T v2 = 0;
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
 
   msg << v;
 
@@ -95,7 +95,7 @@ bool call_message_insertion_extraction_operator_cstring()
   const char* v = "Hello World";
   const char* v2;
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
 
   msg << v;
 
@@ -109,7 +109,7 @@ bool call_message_insertion_extraction_operator_string()
   std::string v("Hello World");
   std::string v2;
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
 
   msg << v;
 
@@ -126,7 +126,7 @@ bool call_message_insertion_extraction_operator_array_double()
   for ( int i = 0; i < 35; i++ )
     v.push_back( (double)rand()/(double)rand() );
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   
   msg << v;
   
@@ -161,7 +161,7 @@ bool call_message_insertion_extraction_operator_multiple( )
   for ( int i = 0; i < 35; i++ )
     ad_1.push_back( (double)rand()/(double)(rand()) );
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   msg << b_1 << ui8_1 << i16_1 << ui16_1 << i32_1 << ui32_1 << i64_1 << ui64_1 << d_1 << cs_1 << s_1 << ad_1;
 
   msg >> b_2 >> ui8_2 >> i16_2 >> ui16_2 >> i32_2 >> ui32_2 >> i64_2 >> ui64_2 >> d_2 >> cs_2 >> s_2 >> ad_2;

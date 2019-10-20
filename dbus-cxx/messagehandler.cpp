@@ -27,11 +27,7 @@ namespace DBus
   {
   }
 
-  MessageHandler::~MessageHandler()
-  {
-  }
-
-  HandlerResult MessageHandler::handle_message(std::shared_ptr<Connection> conn, Message::const_pointer msg)
+  HandlerResult MessageHandler::handle_message(std::shared_ptr<Connection> conn, std::shared_ptr<const Message> msg)
   {
     return m_signal_message.emit(conn, msg);
   }

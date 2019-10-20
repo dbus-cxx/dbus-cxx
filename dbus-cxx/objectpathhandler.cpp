@@ -39,10 +39,10 @@ namespace DBus
   {
   }
 
-  ObjectPathHandler::pointer ObjectPathHandler::create(const std::string& path, PrimaryFallback pf)
+  std::shared_ptr<ObjectPathHandler> ObjectPathHandler::create(const std::string& path, PrimaryFallback pf)
   {
-    if ( path.empty() ) return pointer();
-    return pointer( new ObjectPathHandler(path, pf) );
+    if ( path.empty() ) return std::shared_ptr<ObjectPathHandler>();
+    return std::shared_ptr<ObjectPathHandler>( new ObjectPathHandler(path, pf) );
   }
 
   const Path& ObjectPathHandler::path() const
@@ -60,10 +60,10 @@ namespace DBus
     return m_connection;
   }
 
-  bool ObjectPathHandler::register_with_connection(Connection::pointer conn)
+  bool ObjectPathHandler::register_with_connection(std::shared_ptr<Connection> conn)
   {
     dbus_bool_t result;
-    Error::pointer error = Error::create();
+    std::shared_ptr<Error> error = Error::create();
 
     SIMPLELOGGER_DEBUG("dbus.ObjectPathHandler","Registering path " << m_path << " with connection");
 
@@ -94,7 +94,7 @@ namespace DBus
     return true;
   }
 
-  bool ObjectPathHandler::unregister(Connection::pointer conn)
+  bool ObjectPathHandler::unregister(std::shared_ptr<Connection> conn)
   {
     dbus_bool_t result;
     if ( not conn or not conn->is_valid() ) return false;
@@ -103,12 +103,12 @@ namespace DBus
     return result;
   }
 
-  sigc::signal< void(Connection::pointer)> & ObjectPathHandler::signal_registered()
+  sigc::signal< void(std::shared_ptr<Connection>)> & ObjectPathHandler::signal_registered()
   {
     return m_signal_registered;
   }
 
-  sigc::signal< void(Connection::pointer)> & ObjectPathHandler::signal_unregistered()
+  sigc::signal< void(std::shared_ptr<Connection>)> & ObjectPathHandler::signal_unregistered()
   {
     return m_signal_unregistered;
   }

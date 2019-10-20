@@ -41,31 +41,24 @@ namespace DBus
 
       SignalMessage( DBusMessage* cobj=NULL, CreateMethod m = CREATE_ALIAS );
       
-      SignalMessage( Message::pointer msg );
+      SignalMessage( std::shared_ptr<Message> msg );
 
-      SignalMessage( Message::const_pointer msg );
+      SignalMessage( std::shared_ptr<const Message> msg );
 
       SignalMessage( const std::string& name );
 
       SignalMessage( const std::string& path, const std::string& interface, const std::string& name );
 
     public:
-
-      typedef std::shared_ptr<SignalMessage> pointer;
-
-      typedef std::shared_ptr<const SignalMessage> const_pointer;
-
-      typedef std::weak_ptr<SignalMessage> weak_pointer;
-
-      static pointer create( DBusMessage* cobj=NULL, CreateMethod m = CREATE_ALIAS );
+      static std::shared_ptr<SignalMessage> create( DBusMessage* cobj=NULL, CreateMethod m = CREATE_ALIAS );
       
-      static pointer create( Message::pointer msg );
+      static std::shared_ptr<SignalMessage> create( std::shared_ptr<Message> msg );
 
-      static const_pointer create( Message::const_pointer msg );
+      static std::shared_ptr<const SignalMessage> create( std::shared_ptr<const Message> msg );
 
-      static pointer create( const std::string& name );
+      static std::shared_ptr<SignalMessage> create( const std::string& name );
 
-      static pointer create( const std::string& path, const std::string& interface, const std::string& name );
+      static std::shared_ptr<SignalMessage> create( const std::string& path, const std::string& interface, const std::string& name );
 
       bool set_path( const std::string& p );
 

@@ -37,16 +37,16 @@ namespace DBus
   {
   }
 
-  Object::pointer Object::create( const std::string& path, PrimaryFallback pf )
+  std::shared_ptr<Object> Object::create( const std::string& path, PrimaryFallback pf )
   {
-    return pointer( new Object( path, pf ) );
+    return std::shared_ptr<Object>( new Object( path, pf ) );
   }
 
   Object::~ Object( )
   {
   }
 
-  bool Object::register_with_connection(Connection::pointer conn)
+  bool Object::register_with_connection(std::shared_ptr<Connection> conn)
   {
     SIMPLELOGGER_DEBUG("dbus.Object","Object::register_with_connection");
     if ( not ObjectPathHandler::register_with_connection(conn) ) return false;
@@ -65,7 +65,7 @@ namespace DBus
     return m_interfaces;
   }
 
-  Interface::pointer Object::interface( const std::string & name ) const
+  std::shared_ptr<Interface> Object::interface( const std::string & name ) const
   {
     Interfaces::const_iterator iter;
 
@@ -75,12 +75,12 @@ namespace DBus
       iter = m_interfaces.find( name );
     }
 
-    if ( iter == m_interfaces.end() ) return Interface::pointer();
+    if ( iter == m_interfaces.end() ) return std::shared_ptr<Interface>();
 
     return iter->second;
   }
 
-  bool Object::add_interface( Interface::pointer interface )
+  bool Object::add_interface( std::shared_ptr<Interface> interface )
   {
     bool result = true;
 
@@ -119,21 +119,21 @@ namespace DBus
     return result;
   }
 
-  Interface::pointer Object::create_interface(const std::string & name)
+  std::shared_ptr<Interface> Object::create_interface(const std::string & name)
   {
-    Interface::pointer interface;
+    std::shared_ptr<Interface> interface;
 
     interface = Interface::create(name);
 
     if ( this->add_interface(interface) ) return interface;
 
-    return Interface::pointer();
+    return std::shared_ptr<Interface>();
   }
 
   void Object::remove_interface( const std::string & name )
   {
     Interfaces::iterator iter;
-    Interface::pointer interface, old_default;
+    std::shared_ptr<Interface> interface, old_default;
     InterfaceSignalNameConnections::iterator i;
     
     bool need_emit_default_changed = false;
@@ -160,7 +160,7 @@ namespace DBus
     
         if ( m_default_interface == interface ) {
           old_default = m_default_interface;
-          m_default_interface = Interface::pointer();
+          m_default_interface = std::shared_ptr<Interface>();
           need_emit_default_changed = true;
         }
 
@@ -182,7 +182,7 @@ namespace DBus
     return ( i != m_interfaces.end() );
   }
 
-  Interface::pointer Object::default_interface() const
+  std::shared_ptr<Interface> Object::default_interface() const
   {
     return m_default_interface;
   }
@@ -190,7 +190,7 @@ namespace DBus
   bool Object::set_default_interface( const std::string& new_default_name )
   {
     Interfaces::iterator iter;
-    Interface::pointer old_default;
+    std::shared_ptr<Interface> old_default;
     bool result = false;
 
     {
@@ -215,8 +215,8 @@ namespace DBus
   {
     if ( not m_default_interface ) return;
 
-    Interface::pointer old_default = m_default_interface;
-    m_default_interface = Interface::pointer();
+    std::shared_ptr<Interface> old_default = m_default_interface;
+    m_default_interface = std::shared_ptr<Interface>();
     m_signal_default_interface_changed.emit( old_default, m_default_interface );
   }
 
@@ -225,14 +225,14 @@ namespace DBus
     return m_children;
   }
 
-  Object::pointer Object::child(const std::string& name) const
+  std::shared_ptr<Object> Object::child(const std::string& name) const
   {
     Children::const_iterator i = m_children.find(name);
-    if ( i == m_children.end() ) return Object::pointer();
+    if ( i == m_children.end() ) return std::shared_ptr<Object>();
     return i->second;
   }
 
-  bool Object::add_child(const std::string& name, Object::pointer child, bool force)
+  bool Object::add_child(const std::string& name, std::shared_ptr<Object> child, bool force)
   {
     if ( not child ) return false;
     if ( not force and this->has_child(name) ) return false;
@@ -275,30 +275,30 @@ namespace DBus
     return sout.str();
   }
 
-  sigc::signal< void(Interface::pointer) > Object::signal_interface_added()
+  sigc::signal< void(std::shared_ptr<Interface>) > Object::signal_interface_added()
   {
     return m_signal_interface_added;
   }
 
-  sigc::signal< void(Interface::pointer)> Object::signal_interface_removed()
+  sigc::signal< void(std::shared_ptr<Interface>)> Object::signal_interface_removed()
   {
     return m_signal_interface_removed;
   }
 
-  sigc::signal< void(Interface::pointer, Interface::pointer)> Object::signal_default_interface_changed()
+  sigc::signal< void(std::shared_ptr<Interface>, std::shared_ptr<Interface>)> Object::signal_default_interface_changed()
   {
     return m_signal_default_interface_changed;
   }
 
-  HandlerResult Object::handle_message( Connection::pointer connection , Message::const_pointer message )
+  HandlerResult Object::handle_message( std::shared_ptr<Connection> connection , std::shared_ptr<const Message> message )
   {
     Interfaces::iterator current, upper;
-    Interface::pointer interface;
+    std::shared_ptr<Interface> interface;
     HandlerResult result = NOT_HANDLED;
 
     SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: before call message test");
 
-    CallMessage::const_pointer callmessage;
+    std::shared_ptr<const CallMessage> callmessage;
     try{
       callmessage = CallMessage::create( message );
     }catch(std::shared_ptr<DBus::ErrorInvalidMessageType> err){
@@ -318,7 +318,7 @@ namespace DBus
     if ( strcmp(callmessage->interface(), DBUS_CXX_INTROSPECTABLE_INTERFACE) == 0 )
     {
       SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: introspection interface called");
-      ReturnMessage::pointer return_message = callmessage->create_reply();
+      std::shared_ptr<ReturnMessage> return_message = callmessage->create_reply();
       std::string introspection = DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE;
       introspection += this->introspect();
       *return_message << introspection;
@@ -368,7 +368,7 @@ namespace DBus
     return result;
   }
 
-  void Object::on_interface_name_changed(const std::string & oldname, const std::string & newname, Interface::pointer interface)
+  void Object::on_interface_name_changed(const std::string & oldname, const std::string & newname, std::shared_ptr<Interface> interface)
   {
   
     std::unique_lock lock( m_interfaces_rwlock );

@@ -32,7 +32,7 @@ class Calculator: public DBus::ObjectProxy
 {
   protected:
 
-    Calculator(DBus::Connection::pointer conn):
+    Calculator(std::shared_ptr<DBus::Connection> conn):
       DBus::ObjectProxy(conn, "dbuscxx.example.calculator.server", "/dbuscxx/example/Calculator")
     {
       m_method_add = this->create_method<double(double,double)>("Calculator.Basic", "add");
@@ -45,7 +45,7 @@ class Calculator: public DBus::ObjectProxy
 
     typedef std::shared_ptr<Calculator> pointer;
 
-    static pointer create(DBus::Connection::pointer conn)
+    static pointer create(std::shared_ptr<DBus::Connection> conn)
     {
       return pointer(new Calculator(conn));
     }
@@ -60,10 +60,10 @@ class Calculator: public DBus::ObjectProxy
 
   protected:
     
-    DBus::MethodProxy<double(double,double)>::pointer m_method_add;
-    DBus::MethodProxy<double(double,double)>::pointer m_method_sub;
-    DBus::MethodProxy<double(double,double)>::pointer m_method_mul;
-    DBus::MethodProxy<double(double,double)>::pointer m_method_div;
+    std::shared_ptr<DBus::MethodProxy<double(double,double)>> m_method_add;
+    std::shared_ptr<DBus::MethodProxy<double(double,double)>> m_method_sub;
+    std::shared_ptr<DBus::MethodProxy<double(double,double)>> m_method_mul;
+    std::shared_ptr<DBus::MethodProxy<double(double,double)>> m_method_div;
 };
 
 int main(int argc, const char** argv)
@@ -77,9 +77,9 @@ int main(int argc, const char** argv)
 
   DBus::init();
 
-  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  DBus::Connection::pointer connection = dispatcher->create_connection( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BUS_SESSION );
 
   //Create the calculator from the connection
   Calculator::pointer calculator = Calculator::create(connection);

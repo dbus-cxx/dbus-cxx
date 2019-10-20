@@ -23,15 +23,15 @@ int main()
 {
   DBus::init();
 
-  DBus::Dispatcher::pointer dispatcher;
+  std::shared_ptr<DBus::Dispatcher> dispatcher;
   dispatcher = DBus::Dispatcher::create();
 
-  DBus::Connection::pointer connection;
+  std::shared_ptr<DBus::Connection> connection;
   connection = dispatcher->create_connection( DBus::BUS_SESSION );
 
   //create an object proxy, which stands in for a real object.
   //a proxy exists over the dbus
-  DBus::ObjectProxy::pointer object;
+  std::shared_ptr<DBus::ObjectProxy> object;
   object = connection->create_object_proxy("dbuscxx.quickstart_0.server", "/dbuscxx/quickstart_0");
 
   //a method proxy acts like a real method, but will go over the dbus

@@ -46,7 +46,7 @@ namespace DBus
   {
   }
 
-  HandlerResult SignalReceiver::handle_message(std::shared_ptr< Connection > conn, Message::const_pointer msg)
+  HandlerResult SignalReceiver::handle_message(std::shared_ptr< Connection > conn, std::shared_ptr<const Message> msg)
   {
     SIMPLELOGGER_DEBUG( "dbus.SignalReceiver","SignalReceiver::handle_message" );
     
@@ -151,13 +151,13 @@ namespace DBus
     return m_match_rule;
   }
 
-  bool SignalReceiver::matches(Message::const_pointer msg)
+  bool SignalReceiver::matches(std::shared_ptr<const Message> msg)
   {
     if (not msg or not msg->is_valid()) return false;
     if ( msg->type() != SIGNAL_MESSAGE ) return false;
     if ( m_interface.empty() or m_member.empty() ) return false;
 
-    SignalMessage::const_pointer smsg;
+    std::shared_ptr<const SignalMessage> smsg;
     smsg = std::dynamic_pointer_cast<const SignalMessage>(msg);
 
     if ( not smsg ) smsg = SignalMessage::create(msg);

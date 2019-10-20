@@ -29,17 +29,17 @@
  * dbus signal and extracts the string from the message.
  */
 
-DBus::HandlerResult print( DBus::SignalMessage::const_pointer );
+DBus::HandlerResult print( std::shared_ptr<const DBus::SignalMessage> );
 
 int main()
 {
   DBus::init();
 
-  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  DBus::Connection::pointer connection = dispatcher->create_connection( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BUS_SESSION );
 
-  DBus::signal_proxy_simple::pointer signal = connection->create_signal_proxy("/test/signal/Object", "test.signal.Type", "Test");
+  std::shared_ptr<DBus::signal_proxy_base> signal = connection->create_signal_proxy("/test/signal/Object", "test.signal.Type", "Test");
 
   signal->signal_dbus_incoming().connect( sigc::ptr_fun(print) );
 
@@ -56,7 +56,7 @@ int main()
   return 0;
 }
 
-DBus::HandlerResult print( DBus::SignalMessage::const_pointer msg)
+DBus::HandlerResult print( std::shared_ptr<const DBus::SignalMessage> msg)
 {
   std::string val;
   msg >> val;

@@ -25,43 +25,43 @@
 
 namespace DBus
 {
-  ObjectProxy::ObjectProxy( Connection::pointer conn, const std::string& destination, const std::string& path ):
+  ObjectProxy::ObjectProxy( std::shared_ptr<Connection> conn, const std::string& destination, const std::string& path ):
       m_connection(conn),
       m_destination(destination),
       m_path(path)
   {
   }
 
-  ObjectProxy::pointer ObjectProxy::create( const std::string& path )
+  std::shared_ptr<ObjectProxy> ObjectProxy::create( const std::string& path )
   {
-    return pointer( new ObjectProxy( Connection::pointer(), "", path ) );
+    return std::shared_ptr<ObjectProxy>( new ObjectProxy( std::shared_ptr<Connection>(), "", path ) );
   }
 
-  ObjectProxy::pointer ObjectProxy::create( const std::string& destination, const std::string& path )
+  std::shared_ptr<ObjectProxy> ObjectProxy::create( const std::string& destination, const std::string& path )
   {
-    return pointer( new ObjectProxy( Connection::pointer(), destination, path ) );
+    return std::shared_ptr<ObjectProxy>( new ObjectProxy( std::shared_ptr<Connection>(), destination, path ) );
   }
 
-  ObjectProxy::pointer ObjectProxy::create( Connection::pointer conn, const std::string& path )
+  std::shared_ptr<ObjectProxy> ObjectProxy::create( std::shared_ptr<Connection> conn, const std::string& path )
   {
-    return pointer( new ObjectProxy( conn, "", path ) );
+    return std::shared_ptr<ObjectProxy>( new ObjectProxy( conn, "", path ) );
   }
 
-  ObjectProxy::pointer ObjectProxy::create( Connection::pointer conn, const std::string& destination, const std::string& path )
+  std::shared_ptr<ObjectProxy> ObjectProxy::create( std::shared_ptr<Connection> conn, const std::string& destination, const std::string& path )
   {
-    return pointer( new ObjectProxy( conn, destination, path ) );
+    return std::shared_ptr<ObjectProxy>( new ObjectProxy( conn, destination, path ) );
   }
 
   ObjectProxy::~ ObjectProxy( )
   {
   }
 
-  Connection::pointer ObjectProxy::connection() const
+  std::shared_ptr<Connection> ObjectProxy::connection() const
   {
     return m_connection;
   }
 
-  void ObjectProxy::set_connection( Connection::pointer conn )
+  void ObjectProxy::set_connection( std::shared_ptr<Connection> conn )
   {
     m_connection = conn;
     for ( Interfaces::iterator i = m_interfaces.begin(); i != m_interfaces.end(); i++ )
@@ -99,7 +99,7 @@ namespace DBus
     return m_interfaces;
   }
 
-  InterfaceProxy::pointer ObjectProxy::interface( const std::string & name ) const
+  std::shared_ptr<InterfaceProxy> ObjectProxy::interface( const std::string & name ) const
   {
     Interfaces::const_iterator iter;
 
@@ -109,17 +109,17 @@ namespace DBus
       iter = m_interfaces.find( name );
     }
 
-    if ( iter == m_interfaces.end() ) return InterfaceProxy::pointer();
+    if ( iter == m_interfaces.end() ) return std::shared_ptr<InterfaceProxy>();
 
     return iter->second;
   }
 
-  InterfaceProxy::pointer ObjectProxy::operator[]( const std::string& name ) const
+  std::shared_ptr<InterfaceProxy> ObjectProxy::operator[]( const std::string& name ) const
   {
     return this->interface(name);
   }
 
-  bool ObjectProxy::add_interface( InterfaceProxy::pointer interface )
+  bool ObjectProxy::add_interface( std::shared_ptr<InterfaceProxy> interface )
   {
     bool result = true;
 
@@ -157,21 +157,21 @@ namespace DBus
     return result;
   }
 
-  InterfaceProxy::pointer ObjectProxy::create_interface(const std::string & name)
+  std::shared_ptr<InterfaceProxy> ObjectProxy::create_interface(const std::string & name)
   {
-    InterfaceProxy::pointer interface;
+    std::shared_ptr<InterfaceProxy> interface;
 
     interface = InterfaceProxy::create(name);
 
     if ( this->add_interface(interface) ) return interface;
 
-    return InterfaceProxy::pointer();
+    return std::shared_ptr<InterfaceProxy>();
   }
 
   void ObjectProxy::remove_interface( const std::string & name )
   {
     Interfaces::iterator iter;
-    InterfaceProxy::pointer interface, old_default;
+    std::shared_ptr<InterfaceProxy> interface, old_default;
     InterfaceSignalNameConnections::iterator i;
     
     bool need_emit_default_changed = false;
@@ -197,7 +197,7 @@ namespace DBus
     
         if ( m_default_interface == interface ) {
           old_default = m_default_interface;
-          m_default_interface = InterfaceProxy::pointer();
+          m_default_interface = std::shared_ptr<InterfaceProxy>();
           need_emit_default_changed = true;
         }
       }
@@ -209,10 +209,10 @@ namespace DBus
     if ( need_emit_default_changed ) m_signal_default_interface_changed.emit( old_default, m_default_interface );
   }
 
-  void ObjectProxy::remove_interface( InterfaceProxy::pointer interface )
+  void ObjectProxy::remove_interface( std::shared_ptr<InterfaceProxy> interface )
   {
     Interfaces::iterator current, upper;
-    InterfaceProxy::pointer old_default;
+    std::shared_ptr<InterfaceProxy> old_default;
     InterfaceSignalNameConnections::iterator i;
     
     bool need_emit_default_changed = false;
@@ -240,7 +240,7 @@ namespace DBus
           if ( m_default_interface == interface )
           {
             old_default = m_default_interface;
-            m_default_interface = InterfaceProxy::pointer();
+            m_default_interface = std::shared_ptr<InterfaceProxy>();
             need_emit_default_changed = true;
           }
 
@@ -270,7 +270,7 @@ namespace DBus
     return ( i != m_interfaces.end() );
   }
 
-  bool ObjectProxy::has_interface( InterfaceProxy::pointer interface ) const
+  bool ObjectProxy::has_interface( std::shared_ptr<InterfaceProxy> interface ) const
   {
     if ( not interface ) return false;
     
@@ -296,7 +296,7 @@ namespace DBus
     return result;
   }
 
-  InterfaceProxy::pointer ObjectProxy::default_interface() const
+  std::shared_ptr<InterfaceProxy> ObjectProxy::default_interface() const
   {
     return m_default_interface;
   }
@@ -304,7 +304,7 @@ namespace DBus
   bool ObjectProxy::set_default_interface( const std::string& new_default_name )
   {
     Interfaces::iterator iter;
-    InterfaceProxy::pointer old_default;
+    std::shared_ptr<InterfaceProxy> old_default;
     bool result = false;
 
     {
@@ -326,10 +326,10 @@ namespace DBus
     return result;
   }
 
-  bool ObjectProxy::set_default_interface( InterfaceProxy::pointer interface )
+  bool ObjectProxy::set_default_interface( std::shared_ptr<InterfaceProxy> interface )
   {
     Interfaces::iterator iter;
-    InterfaceProxy::pointer old_default;
+    std::shared_ptr<InterfaceProxy> old_default;
 
     if ( not interface ) return false;
 
@@ -347,27 +347,27 @@ namespace DBus
   {
     if ( not m_default_interface ) return;
 
-    InterfaceProxy::pointer old_default = m_default_interface;
-    m_default_interface = InterfaceProxy::pointer();
+    std::shared_ptr<InterfaceProxy> old_default = m_default_interface;
+    m_default_interface = std::shared_ptr<InterfaceProxy>();
     m_signal_default_interface_changed.emit( old_default, m_default_interface );
   }
 
-  bool ObjectProxy::add_method( const std::string& ifacename, MethodProxyBase::pointer method )
+  bool ObjectProxy::add_method( const std::string& ifacename, std::shared_ptr<MethodProxyBase> method )
   {
     if ( not method ) return false;
     
-    InterfaceProxy::pointer iface = this->interface(ifacename);
+    std::shared_ptr<InterfaceProxy> iface = this->interface(ifacename);
 
     if ( not iface ) iface = this->create_interface(ifacename);
 
     return iface->add_method( method );
   }
 
-  bool ObjectProxy::add_method( MethodProxyBase::pointer method )
+  bool ObjectProxy::add_method( std::shared_ptr<MethodProxyBase> method )
   {
     if ( not method ) return false;
     
-    InterfaceProxy::pointer iface = m_default_interface;
+    std::shared_ptr<InterfaceProxy> iface = m_default_interface;
     
     if ( not iface )
     {
@@ -379,9 +379,9 @@ namespace DBus
     return iface->add_method(method);
   }
 
-  CallMessage::pointer ObjectProxy::create_call_message( const std::string& interface_name, const std::string& method_name ) const
+  std::shared_ptr<CallMessage> ObjectProxy::create_call_message( const std::string& interface_name, const std::string& method_name ) const
   {
-    CallMessage::pointer call_message;
+    std::shared_ptr<CallMessage> call_message;
     
     if ( m_destination.empty() )
     {
@@ -395,9 +395,9 @@ namespace DBus
     return call_message;
   }
 
-  CallMessage::pointer ObjectProxy::create_call_message( const std::string& method_name ) const
+  std::shared_ptr<CallMessage> ObjectProxy::create_call_message( const std::string& method_name ) const
   {
-    CallMessage::pointer call_message;
+    std::shared_ptr<CallMessage> call_message;
     
     if ( m_destination.empty() )
     {
@@ -411,42 +411,42 @@ namespace DBus
     return call_message;
   }
 
-  ReturnMessage::const_pointer ObjectProxy::call( CallMessage::const_pointer call_message, int timeout_milliseconds ) const
+  std::shared_ptr<const ReturnMessage> ObjectProxy::call( std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds ) const
   {
-    if ( not m_connection or not m_connection->is_valid() ) return ReturnMessage::const_pointer();
+    if ( not m_connection or not m_connection->is_valid() ) return std::shared_ptr<ReturnMessage>();
 
 //     if ( not call_message->expects_reply() )
 //     {
 //       m_connection->send( call_message );
-//       return ReturnMessage::const_pointer();
+//       return std::shared_ptr<ReturnMessage>();
 //     }
 
     return m_connection->send_with_reply_blocking( call_message, timeout_milliseconds );
   }
 
-  PendingCall::pointer ObjectProxy::call_async( CallMessage::const_pointer call_message, int timeout_milliseconds ) const
+  std::shared_ptr<PendingCall> ObjectProxy::call_async( std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds ) const
   {
-    if ( not m_connection or not m_connection->is_valid() ) return PendingCall::pointer();
+    if ( not m_connection or not m_connection->is_valid() ) return std::shared_ptr<PendingCall>();
 
     return m_connection->send_with_reply_async( call_message, timeout_milliseconds );
   }
 
-  sigc::signal< void(InterfaceProxy::pointer)> ObjectProxy::signal_interface_added()
+  sigc::signal< void(std::shared_ptr<InterfaceProxy>)> ObjectProxy::signal_interface_added()
   {
     return m_signal_interface_added;
   }
 
-  sigc::signal< void(InterfaceProxy::pointer)> ObjectProxy::signal_interface_removed()
+  sigc::signal< void(std::shared_ptr<InterfaceProxy>)> ObjectProxy::signal_interface_removed()
   {
     return m_signal_interface_removed;
   }
 
-  sigc::signal< void(InterfaceProxy::pointer, InterfaceProxy::pointer)> ObjectProxy::signal_default_interface_changed()
+  sigc::signal< void(std::shared_ptr<InterfaceProxy>, std::shared_ptr<InterfaceProxy>)> ObjectProxy::signal_default_interface_changed()
   {
     return m_signal_default_interface_changed;
   }
 
-  void ObjectProxy::on_interface_name_changed(const std::string & oldname, const std::string & newname, InterfaceProxy::pointer interface)
+  void ObjectProxy::on_interface_name_changed(const std::string & oldname, const std::string & newname, std::shared_ptr<InterfaceProxy> interface)
   {
     std::unique_lock lock( m_interfaces_rwlock );
 

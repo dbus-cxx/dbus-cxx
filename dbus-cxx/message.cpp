@@ -50,7 +50,7 @@ namespace DBus
     }
   }
 
-  Message::Message( Message::pointer other, CreateMethod m ): m_cobj(NULL), m_valid(false)
+  Message::Message( std::shared_ptr<Message> other, CreateMethod m ): m_cobj(NULL), m_valid(false)
   {
     if ( other and other->m_cobj != NULL )
     {
@@ -66,7 +66,7 @@ namespace DBus
     }
   }
 
-  Message::Message( Message::const_pointer other, CreateMethod m ): m_cobj(NULL), m_valid(false)
+  Message::Message( std::shared_ptr<const Message> other, CreateMethod m ): m_cobj(NULL), m_valid(false)
   {
     if ( other and other->m_cobj != NULL )
     {
@@ -82,41 +82,35 @@ namespace DBus
     }
   }
 
-  void wp_deleter( void* v )
+  std::shared_ptr<Message> Message::create(MessageType type)
   {
-    Message::weak_pointer* wp = static_cast<Message::weak_pointer*>(v);
-    delete wp;
+    return std::shared_ptr<Message>(new Message(type) );
   }
 
-  Message::pointer Message::create(MessageType type)
+  std::shared_ptr<Message> Message::create(DBusMessage * cobj, CreateMethod m)
   {
-    return pointer(new Message(type) );
+    return std::shared_ptr<Message>(new Message(cobj, m) );
   }
 
-  Message::pointer Message::create(DBusMessage * cobj, CreateMethod m)
+  std::shared_ptr<Message> Message::create(std::shared_ptr<Message> other, CreateMethod m)
   {
-    return pointer(new Message(cobj, m) );
+    return std::shared_ptr<Message>(new Message(other, m) );
   }
 
-  Message::pointer Message::create(Message::pointer other, CreateMethod m)
+  std::shared_ptr<Message> Message::create(std::shared_ptr<const Message> other, CreateMethod m)
   {
-    return pointer(new Message(other, m) );
+    return std::shared_ptr<Message>(new Message(other, m) );
   }
 
-  Message::pointer Message::create(Message::const_pointer other, CreateMethod m)
+  std::shared_ptr<ReturnMessage> Message::create_reply() const
   {
-    return pointer(new Message(other, m) );
-  }
-
-  ReturnMessage::pointer Message::create_reply() const
-  {
-    if ( not this->is_valid() ) return ReturnMessage::pointer();
-    if ( not this->type() == CALL_MESSAGE ) return ReturnMessage::pointer();
+    if ( not this->is_valid() ) return std::shared_ptr<ReturnMessage>();
+    if ( not this->type() == CALL_MESSAGE ) return std::shared_ptr<ReturnMessage>();
     DBusMessage* rmcobj = dbus_message_new_method_return( this->cobj() );
-    if ( not rmcobj ) return ReturnMessage::pointer();
+    if ( not rmcobj ) return std::shared_ptr<ReturnMessage>();
     //when we create a new return message, this will increment the ref count.
     //make sure to decrement our ref count, as we don't need it anymore in this object
-    ReturnMessage::pointer rmPtr = ReturnMessage::create(rmcobj);
+    std::shared_ptr<ReturnMessage> rmPtr = ReturnMessage::create(rmcobj);
     dbus_message_unref( rmcobj );
     return rmPtr;
   }
@@ -243,19 +237,19 @@ namespace DBus
     return dbus_message_has_sender( m_cobj, name.c_str() );
   }
 
-  Message::iterator Message::begin() const
+  MessageIterator Message::begin() const
   {
-    return iterator( *this );
+    return MessageIterator( *this );
   }
 
-  Message::iterator Message::end() const
+  MessageIterator Message::end() const
   {
-    return iterator();
+    return MessageIterator();
   }
 
-  Message::append_iterator Message::append()
+  MessageAppendIterator Message::append()
   {
-    return append_iterator( *this );
+    return MessageAppendIterator( *this );
   }
 
   DBusMessage* Message::cobj( ) const

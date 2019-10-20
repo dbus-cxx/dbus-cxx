@@ -32,15 +32,15 @@ int main(int argc, const char** argv)
 
   DBus::init();
 
-  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  DBus::Connection::pointer connection = dispatcher->create_connection( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BUS_SESSION );
 
   //We need to create an object proxy in order to say that we have methods
   //on it.  An object proxy consists of at minimum a dbus name(in this case
   //dbuscxx.example.calculator.server), and a path on that
   //(/dbuscxx/example/calculator)
-  DBus::ObjectProxy::pointer object = connection->create_object_proxy("dbuscxx.example.calculator.server", "/dbuscxx/example/Calculator");
+  std::shared_ptr<DBus::ObjectProxy> object = connection->create_object_proxy("dbuscxx.example.calculator.server", "/dbuscxx/example/Calculator");
 
   //Now, create a method on that object.  This will be the same as calling:
   //dbuscxx.example.calculator.server /dbuscxx/example/Calculator

@@ -57,7 +57,7 @@ namespace DBus
 
       ~SignalReceiver();
 
-      virtual HandlerResult handle_message( std::shared_ptr<Connection>, Message::const_pointer );
+      virtual HandlerResult handle_message( std::shared_ptr<Connection>, std::shared_ptr<const Message> );
 
       const std::string& sender();
 
@@ -91,7 +91,7 @@ namespace DBus
 
       const std::string& match_rule();
 
-      bool matches(Message::const_pointer msg);
+      bool matches(std::shared_ptr<const Message> msg);
 
     protected:
 

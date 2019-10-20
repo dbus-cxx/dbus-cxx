@@ -60,9 +60,6 @@ namespace DBus
       signal_base(const signal_base& other);
 
     public:
-
-      typedef std::shared_ptr<signal_base> pointer;
-
       virtual ~signal_base();
 
       std::shared_ptr<Connection> connection();
@@ -93,7 +90,7 @@ namespace DBus
        * This method is needed to be able to create a duplicate of a child
        * capable of parsing their specific template type message.
        */
-      virtual pointer clone() = 0;
+      virtual std::shared_ptr<signal_base> clone() = 0;
 
       /** Returns a DBus XML description of this interface */
       virtual std::string introspect(int space_depth=0) const { return std::string(); }
@@ -118,7 +115,7 @@ namespace DBus
 
       std::string m_match_rule;
 
-      bool handle_dbus_outgoing( Message::const_pointer );
+      bool handle_dbus_outgoing( std::shared_ptr<const Message> );
   };
 
 }

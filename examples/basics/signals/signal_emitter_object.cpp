@@ -36,9 +36,9 @@ class Inherited: public DBus::Object
       m_signal_calculation = this->create_signal<std::string,double,double,double>("Calculator.Basic", "calculation");
     }
 
-    DBus::signal<std::string,double,double,double>::pointer m_signal_calculation;
+    std::shared_ptr<DBus::signal<std::string,double,double,double>> m_signal_calculation;
     
-    DBus::signal<std::string>::pointer sig;
+    std::shared_ptr<DBus::signal<std::string>> sig;
 
   public:
     typedef std::shared_ptr<Inherited> pointer;
@@ -92,9 +92,9 @@ int main()
   
   int ret;
 
-  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  DBus::Connection::pointer conn = dispatcher->create_connection(DBus::BUS_SESSION);
+  std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BUS_SESSION);
   
   // request a name on the bus
   ret = conn->request_name( "dbuscxx.example.calculator.server", DBUS_NAME_FLAG_REPLACE_EXISTING );

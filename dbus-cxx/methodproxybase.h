@@ -52,10 +52,7 @@ namespace DBus
       MethodProxyBase(const MethodProxyBase& other);
 
     public:
-
-      typedef std::shared_ptr<MethodProxyBase> pointer;
-
-      static pointer create( const std::string& name );
+      static std::shared_ptr<MethodProxyBase> create( const std::string& name );
 
       ~MethodProxyBase();
 
@@ -65,17 +62,17 @@ namespace DBus
 
       void set_name( const std::string& name );
 
-      CallMessage::pointer create_call_message( ) const;
+      std::shared_ptr<CallMessage> create_call_message( ) const;
 
-      ReturnMessage::const_pointer call( CallMessage::const_pointer, int timeout_milliseconds=-1 ) const;
+      std::shared_ptr<const ReturnMessage> call( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
       //TODO make a call() function that takes in a builder(for the milliseconds)
 /*
       T_return call( T_arg... args )
       {
-        CallMessage::pointer _callmsg = this->create_call_message();
+        std::shared_ptr<CallMessage> _callmsg = this->create_call_message();
         (*_callmsg << ... << args);
-        ReturnMessage::const_pointer retmsg = this->call( _callmsg, -1 );
+        std::shared_ptr<const ReturnMessage> retmsg = this->call( _callmsg, -1 );
         T_return _retval;
         retmsg >> _retval;
         return _retval;
@@ -86,13 +83,13 @@ namespace DBus
       template<>
       void call( T_arg... args )
       {
-        CallMessage::pointer _callmsg = this->create_call_message();
+        std::shared_ptr<CallMessage> _callmsg = this->create_call_message();
         (*_callmsg << ... << args);
         this->call( _callmsg, -1 );
       }
 */
 
-      PendingCall::pointer call_async( CallMessage::const_pointer, int timeout_milliseconds=-1 ) const;
+      std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
       sigc::signal<void(const std::string&/*old name*/, const std::string&/*new name*/)> signal_name_changed();
 
@@ -123,18 +120,16 @@ namespace DBus
         MethodProxyBase(name){}
 
   public:
-    typedef std::shared_ptr<MethodProxy> pointer;
-
     void operator()(T_arg... args){
         //TODO add debug here(see methodbase.h)
         //DBUSCXX_DEBUG_STDSTR( "dbus.MethodProxy", 
-        CallMessage::pointer _callmsg = this->create_call_message();
+        std::shared_ptr<CallMessage> _callmsg = this->create_call_message();
         (*_callmsg << ... << args);
-        ReturnMessage::const_pointer retmsg = this->call( _callmsg, -1 );
+        std::shared_ptr<const ReturnMessage> retmsg = this->call( _callmsg, -1 );
     }
 
-    static pointer create(const std::string& name){
-      return pointer( new MethodProxy(name) );
+    static std::shared_ptr<MethodProxy> create(const std::string& name){
+      return std::shared_ptr<MethodProxy>( new MethodProxy(name) );
     }
   };
 
@@ -146,21 +141,19 @@ namespace DBus
         MethodProxyBase(name){}
 
   public:
-    typedef std::shared_ptr<MethodProxy> pointer;
-
     T_return operator()(T_arg... args){
         //TODO add debug here(see methodbase.h)
         //DBUSCXX_DEBUG_STDSTR( "dbus.MethodProxy", 
-        CallMessage::pointer _callmsg = this->create_call_message();
+        std::shared_ptr<CallMessage> _callmsg = this->create_call_message();
         (*_callmsg << ... << args);
-        ReturnMessage::const_pointer retmsg = this->call( _callmsg, -1 );
+        std::shared_ptr<const ReturnMessage> retmsg = this->call( _callmsg, -1 );
         T_return _retval;
         retmsg >> _retval;
         return _retval;
     }
 
-    static pointer create(const std::string& name){
-      return pointer( new MethodProxy(name) );
+    static std::shared_ptr<MethodProxy> create(const std::string& name){
+      return std::shared_ptr<MethodProxy>( new MethodProxy(name) );
     }
   };
 

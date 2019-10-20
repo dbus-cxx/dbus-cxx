@@ -68,18 +68,18 @@ int main(int argc, const char** argv)
 
   DBus::init();
   
-  DBus::PendingCall::pointer pending;
-  DBus::Message::pointer retmsg;
+  std::shared_ptr<DBus::PendingCall> pending;
+  std::shared_ptr<DBus::Message> retmsg;
 
-  DBus::Connection::pointer connection = DBus::Connection::create( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Connection> connection = DBus::Connection::create( DBus::BUS_SESSION );
 
-  DBus::ObjectProxy::pointer object = connection->create_object_proxy("dbuscxx.example.calculator.server", "/dbuscxx/example/Calculator");
+  std::shared_ptr<DBus::ObjectProxy> object = connection->create_object_proxy("dbuscxx.example.calculator.server", "/dbuscxx/example/Calculator");
 
-  DBus::MethodProxyBase::pointer method = DBus::MethodProxyBase::create(op);
+  std::shared_ptr<DBus::MethodProxyBase> method = DBus::MethodProxyBase::create(op);
 
   object->add_method( "Calculator.Basic", method );
 
-  DBus::CallMessage::pointer msg = method->create_call_message();
+  std::shared_ptr<DBus::CallMessage> msg = method->create_call_message();
   
   msg << param1 << param2;
 
@@ -93,7 +93,7 @@ int main(int argc, const char** argv)
 
   if ( retmsg->type() == DBus::ERROR_MESSAGE )
   {
-    DBus::ErrorMessage::pointer errormsg = DBus::ErrorMessage::create(retmsg);
+    std::shared_ptr<DBus::ErrorMessage> errormsg = DBus::ErrorMessage::create(retmsg);
     std::cout << "Oops... got an error: " << errormsg->name() << std::endl;
     return 1;
   }

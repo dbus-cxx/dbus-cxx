@@ -75,23 +75,18 @@ namespace DBus
       Connection( const Connection& other );
 
     public:
-      
-      typedef std::shared_ptr<Connection> pointer;
-      
-      typedef std::weak_ptr<Connection> weak_pointer;
-
       // TODO dbus_connection_open
 
-      static pointer create( DBusConnection* cobj = NULL, bool is_private=false );
+      static std::shared_ptr<Connection> create( DBusConnection* cobj = NULL, bool is_private=false );
 
       /**
        * Connects to a bus daemon and registers the client with it.
        *
        * @param is_private if true a private connection will be created. Otherwise a shared connection is created.
        */
-      static pointer create( BusType type, bool is_private=false );
+      static std::shared_ptr<Connection> create( BusType type, bool is_private=false );
 
-      static pointer create( const Connection& other );
+      static std::shared_ptr<Connection> create( const Connection& other );
 
       virtual ~Connection();
 
@@ -154,16 +149,16 @@ namespace DBus
       // TODO dbus_connection_free_preallocated_send
       // TODO dbus_connection_send_preallocated
 
-      uint32_t send( const Message::const_pointer );
+      uint32_t send( const std::shared_ptr<const Message> );
 
       /**
        * Sends the message on the connection
        */
-      Connection& operator<<( Message::const_pointer msg );
+      Connection& operator<<( std::shared_ptr<const Message> msg );
 
-      PendingCall::pointer send_with_reply_async( Message::const_pointer message, int timeout_milliseconds=-1 ) const;
+      std::shared_ptr<PendingCall> send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds=-1 ) const;
 
-      ReturnMessage::const_pointer send_with_reply_blocking( Message::const_pointer msg, int timeout_milliseconds=-1 ) const;
+      std::shared_ptr<const ReturnMessage> send_with_reply_blocking( std::shared_ptr<const Message> msg, int timeout_milliseconds=-1 ) const;
 
       void flush();
 
@@ -171,13 +166,13 @@ namespace DBus
 
       bool read_write( int timeout_milliseconds=-1 );
 
-      Message::pointer borrow_message();
+      std::shared_ptr<Message> borrow_message();
 
-      void return_message( Message::pointer message );
+      void return_message( std::shared_ptr<Message> message );
 
-      void steal_borrowed_message( Message::pointer message );
+      void steal_borrowed_message( std::shared_ptr<Message> message );
 
-      Message::pointer pop_message( );
+      std::shared_ptr<Message> pop_message( );
 
       DispatchStatus dispatch_status( ) const;
 
@@ -223,23 +218,23 @@ namespace DBus
 
       bool has_messages_to_send();
 
-      typedef sigc::signal<bool(Watch::pointer)>::accumulated<InterruptablePredicateAccumulatorDefaultFalse> AddWatchSignal;
+      typedef sigc::signal<bool(std::shared_ptr<Watch>)>::accumulated<InterruptablePredicateAccumulatorDefaultFalse> AddWatchSignal;
 
       /** Cannot call watch.handle() in a slot connected to this signal */
       AddWatchSignal& signal_add_watch();
 
-      sigc::signal<bool(Watch::pointer)>& signal_remove_watch();
+      sigc::signal<bool(std::shared_ptr<Watch>)>& signal_remove_watch();
 
-      sigc::signal<void(Watch::pointer)>& signal_watch_toggled();
+      sigc::signal<void(std::shared_ptr<Watch>)>& signal_watch_toggled();
 
-      typedef sigc::signal<bool(Timeout::pointer)>::accumulated<InterruptablePredicateAccumulatorDefaultFalse> AddTimeoutSignal;
+      typedef sigc::signal<bool(std::shared_ptr<Timeout>)>::accumulated<InterruptablePredicateAccumulatorDefaultFalse> AddTimeoutSignal;
       
       /** Cannot call timeout.handle() in a slot connected to this signal */
       AddTimeoutSignal& signal_add_timeout();
 
-      sigc::signal<bool(Timeout::pointer)>& signal_remove_timeout();
+      sigc::signal<bool(std::shared_ptr<Timeout>)>& signal_remove_timeout();
 
-      sigc::signal<bool(Timeout::pointer)>& signal_timeout_toggled();
+      sigc::signal<bool(std::shared_ptr<Timeout>)>& signal_timeout_toggled();
 
       sigc::signal<void()>& signal_wakeup_main();
 
@@ -252,19 +247,21 @@ namespace DBus
        */
       FilterSignal& signal_filter();
 
-      typedef std::deque<Watch::pointer> Watches;
+      const std::deque<std::shared_ptr<Watch>>& unhandled_watches() const;
       
-      const Watches& unhandled_watches() const;
-      
-      void remove_unhandled_watch(const Watch::pointer w);
+      void remove_unhandled_watch(const std::shared_ptr<Watch> w);
 
-      Object::pointer create_object( const std::string& path, PrimaryFallback pf=PRIMARY );
+      std::shared_ptr<Object> create_object( const std::string& path, PrimaryFallback pf=PRIMARY );
 
-      bool register_object( Object::pointer object );
+      bool register_object( std::shared_ptr<Object> object );
 
-      ObjectPathHandler::pointer create_object( const std::string& path, sigc::slot<HandlerResult(Connection::pointer,Message::const_pointer)>& slot, PrimaryFallback pf=PRIMARY );
+      std::shared_ptr<ObjectPathHandler> create_object( const std::string& path, 
+                      sigc::slot<HandlerResult(std::shared_ptr<Connection>, std::shared_ptr<const Message>)>& slot, 
+                      PrimaryFallback pf=PRIMARY );
 
-      ObjectPathHandler::pointer create_object( const std::string& path, HandlerResult (*MessageFunction)(Connection::pointer,Message::const_pointer), PrimaryFallback pf=PRIMARY );
+      std::shared_ptr<ObjectPathHandler> create_object( const std::string& path, 
+                      HandlerResult (*MessageFunction)(std::shared_ptr<Connection>, std::shared_ptr<const Message>), 
+                      PrimaryFallback pf=PRIMARY );
 
       std::shared_ptr<ObjectProxy> create_object_proxy( const std::string& path );
 
@@ -277,14 +274,14 @@ namespace DBus
        *
        * @return Smart pointer to the newly added signal or a null smart pointer if it couldn't be added
        */
-      signal_proxy_simple::pointer create_signal_proxy( const std::string& interface, const std::string& name );
+      std::shared_ptr<signal_proxy_base> create_signal_proxy( const std::string& interface, const std::string& name );
 
       /**
        * Adds a signal with the given path, interface and name
        *
        * @return Smart pointer to the newly added signal or a null smart pointer if it couldn't be added
        */
-      signal_proxy_simple::pointer create_signal_proxy( const std::string& path, const std::string& interface, const std::string& name );
+      std::shared_ptr<signal_proxy_base> create_signal_proxy( const std::string& path, const std::string& interface, const std::string& name );
 
       template<typename... T_arg>
       std::shared_ptr<signal_proxy<T_arg...> > create_signal_proxy( const std::string& interface, const std::string& name )
@@ -307,11 +304,11 @@ namespace DBus
       /**
        * Adds the given signal proxy to the connection
        */
-      signal_proxy_base::pointer add_signal_proxy( signal_proxy_base::pointer signal );
+      std::shared_ptr<signal_proxy_base> add_signal_proxy( std::shared_ptr<signal_proxy_base> signal );
 
-      bool remove_signal_proxy( signal_proxy_base::pointer proxy );
+      bool remove_signal_proxy( std::shared_ptr<signal_proxy_base> proxy );
 
-      typedef std::list<signal_proxy_base::pointer> ProxySignals;
+      typedef std::list<std::shared_ptr<signal_proxy_base>> ProxySignals;
       
       typedef std::map<std::string,ProxySignals> NameToProxySignalMap;
 
@@ -349,7 +346,7 @@ namespace DBus
 //       bool register_signal( signal_base& );
 
       /** Returns a smart pointer to itself */
-      pointer self();
+      std::shared_ptr<Connection> self();
 
       /**
        * Given a dbus connection, if it was established through a call to
@@ -365,7 +362,7 @@ namespace DBus
        * or the underlying object has already been deleted this method will
        * return an empty pointer.
        */
-      static pointer self(DBusConnection* c);
+      static std::shared_ptr<Connection> self(DBusConnection* c);
       
       DBusConnection* cobj();
 
@@ -380,15 +377,15 @@ namespace DBus
       
       AddWatchSignal m_add_watch_signal;
       
-      sigc::signal<bool(Watch::pointer)> m_remove_watch_signal;
+      sigc::signal<bool(std::shared_ptr<Watch>)> m_remove_watch_signal;
       
-      sigc::signal<void(Watch::pointer)> m_watch_toggled_signal;
+      sigc::signal<void(std::shared_ptr<Watch>)> m_watch_toggled_signal;
       
       AddTimeoutSignal m_add_timeout_signal;
       
-      sigc::signal<bool(Timeout::pointer)> m_remove_timeout_signal;
+      sigc::signal<bool(std::shared_ptr<Timeout>)> m_remove_timeout_signal;
       
-      sigc::signal<bool(Timeout::pointer)> m_timeout_toggled_signal;
+      sigc::signal<bool(std::shared_ptr<Timeout>)> m_timeout_toggled_signal;
       
       sigc::signal<void()> m_wakeup_main_signal;
       
@@ -396,9 +393,9 @@ namespace DBus
       
       FilterSignal m_filter_signal;
       
-      Watches m_unhandled_watches;
+      std::deque<std::shared_ptr<Watch>> m_unhandled_watches;
       
-      typedef std::map<DBusTimeout*,Timeout::pointer> Timeouts;
+      typedef std::map<DBusTimeout*,std::shared_ptr<Timeout>> Timeouts;
 
       Timeouts m_timeouts;
 
@@ -408,7 +405,7 @@ namespace DBus
 
       void initialize( bool is_private );
 
-      std::map<std::string,ObjectPathHandler::pointer> m_created_objects;
+      std::map<std::string,std::shared_ptr<ObjectPathHandler>> m_created_objects;
 
       InterfaceToNameProxySignalMap m_proxy_signal_interface_map;
 
@@ -447,7 +444,7 @@ namespace DBus
 }
 
 inline
-DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::Message::pointer msg)
+std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<DBus::Message> msg)
 {
   if (not ptr) return ptr;
   *ptr << msg;
@@ -455,7 +452,7 @@ DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::Messag
 }
 
 inline
-DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::Message::const_pointer msg)
+std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<const DBus::Message> msg)
 {
   if (not ptr) return ptr;
   *ptr << msg;
@@ -463,7 +460,7 @@ DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::Messag
 }
 
 inline
-DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::ReturnMessage::pointer msg)
+std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<DBus::ReturnMessage> msg)
 {
   if (not ptr) return ptr;
   *ptr << msg;
@@ -471,7 +468,7 @@ DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::Return
 }
 
 inline
-DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::ReturnMessage::const_pointer msg)
+std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<const DBus::ReturnMessage> msg)
 {
   if (not ptr) return ptr;
   *ptr << msg;
@@ -479,7 +476,7 @@ DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::Return
 }
 
 inline
-DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::SignalMessage::pointer msg)
+std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<DBus::SignalMessage> msg)
 {
   if (not ptr) return ptr;
   *ptr << msg;
@@ -487,7 +484,7 @@ DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::Signal
 }
 
 inline
-DBus::Connection::pointer operator<<(DBus::Connection::pointer ptr, DBus::SignalMessage::const_pointer msg)
+std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<const DBus::SignalMessage> msg)
 {
   if (not ptr) return ptr;
   *ptr << msg;

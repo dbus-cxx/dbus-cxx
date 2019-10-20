@@ -16,6 +16,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#include "message.h"
 #include "callmessage.h"
 
 #include "returnmessage.h"
@@ -40,7 +41,7 @@ namespace DBus
     dbus_message_ref( m_cobj );
   }
 
-  CallMessage::CallMessage( Message::pointer msg )
+  CallMessage::CallMessage( std::shared_ptr<Message> msg )
   {
     if ( msg->type() != CALL_MESSAGE )
       throw ErrorInvalidMessageType::create();
@@ -52,7 +53,7 @@ namespace DBus
     }
   }
 
-  CallMessage::CallMessage( Message::const_pointer msg )
+  CallMessage::CallMessage( std::shared_ptr<const Message> msg )
   {
     if ( msg->type() != CALL_MESSAGE )
       throw ErrorInvalidMessageType::create();
@@ -82,57 +83,39 @@ namespace DBus
     m_valid = true;
   }
 
-  void callmsg_wp_deleter( void* v )
+  std::shared_ptr<CallMessage> CallMessage::create()
   {
-    CallMessage::weak_pointer* wp = static_cast<CallMessage::weak_pointer*>(v);
-    delete wp;
+    return std::shared_ptr<CallMessage>( new CallMessage() );
   }
 
-  CallMessage::pointer CallMessage::create()
+  std::shared_ptr<CallMessage> CallMessage::create(DBusMessage * cobj)
   {
-    return pointer( new CallMessage() );
+    return std::shared_ptr<CallMessage>( new CallMessage(cobj) );
   }
 
-  CallMessage::pointer CallMessage::create(DBusMessage * cobj)
+  std::shared_ptr<CallMessage> CallMessage::create(std::shared_ptr<Message> msg)
   {
-    try{
-      return pointer( new CallMessage(cobj) );
-    }catch(std::shared_ptr<DBus::ErrorInvalidMessageType> err){
-      throw err;
-    }
+    return std::shared_ptr<CallMessage>( new CallMessage(msg) );
   }
 
-  CallMessage::pointer CallMessage::create(Message::pointer msg)
+  std::shared_ptr<const CallMessage> CallMessage::create(std::shared_ptr<const Message> msg)
   {
-    try{
-      return pointer( new CallMessage(msg) );
-    }catch(std::shared_ptr<DBus::ErrorInvalidMessageType> err){
-      throw err;
-    }
+    return std::shared_ptr<const CallMessage>( new CallMessage(msg) );
   }
 
-  CallMessage::const_pointer CallMessage::create(Message::const_pointer msg)
+  std::shared_ptr<CallMessage> CallMessage::create(const std::string & dest, const std::string & path, const std::string & iface, const std::string & method)
   {
-    try{
-      return const_pointer( new CallMessage(msg) );
-    }catch(std::shared_ptr<DBus::ErrorInvalidMessageType> err){
-      throw err;
-    }
+    return std::shared_ptr<CallMessage>( new CallMessage(dest, path, iface, method) );
   }
 
-  CallMessage::pointer CallMessage::create(const std::string & dest, const std::string & path, const std::string & iface, const std::string & method)
+  std::shared_ptr<CallMessage> CallMessage::create(const std::string & path, const std::string & iface, const std::string & method)
   {
-    return pointer( new CallMessage(dest, path, iface, method) );
+    return std::shared_ptr<CallMessage>( new CallMessage(path, iface, method) );
   }
 
-  CallMessage::pointer CallMessage::create(const std::string & path, const std::string & iface, const std::string & method)
+  std::shared_ptr<CallMessage> CallMessage::create(const std::string & path, const std::string & method)
   {
-    return pointer( new CallMessage(path, iface, method) );
-  }
-
-  CallMessage::pointer CallMessage::create(const std::string & path, const std::string & method)
-  {
-    return pointer( new CallMessage(path, method) );
+    return std::shared_ptr<CallMessage>( new CallMessage(path, method) );
   }
 
   bool CallMessage::set_path( const std::string& p )

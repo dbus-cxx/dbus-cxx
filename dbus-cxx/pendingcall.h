@@ -18,7 +18,6 @@
  ***************************************************************************/
 #include <dbus/dbus.h>
 #include <sigc++/signal.h>
-#include <dbus-cxx/message.h>
 #include <memory>
 
 #ifndef DBUSCXX_PENDING_CALL_H
@@ -26,6 +25,7 @@
 
 namespace DBus
 {
+  class Message;
 
   /**
    * Monitors an asynchronous call, emitting a signal when a response is received
@@ -43,12 +43,9 @@ namespace DBus
       PendingCall( const PendingCall& );
 
     public:
+      static std::shared_ptr<PendingCall> create( DBusPendingCall* cobj = NULL );
 
-      typedef std::shared_ptr<PendingCall> pointer;
-
-      static pointer create( DBusPendingCall* cobj = NULL );
-
-      static pointer create( const PendingCall& );
+      static std::shared_ptr<PendingCall> create( const PendingCall& );
 
       virtual ~PendingCall();
 
@@ -58,7 +55,7 @@ namespace DBus
 
       bool completed();
 
-      Message::pointer steal_reply();
+      std::shared_ptr<Message> steal_reply();
 
       void block();
 

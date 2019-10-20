@@ -107,7 +107,7 @@ namespace DBus
   inline std::string signature( Path )        { return DBUS_TYPE_OBJECT_PATH_AS_STRING; }
   template <typename... args>
   inline std::string signature( const std::variant<args...>& )     { return DBUS_TYPE_VARIANT_AS_STRING; }
-  inline std::string signature( const FileDescriptor::pointer )  { return DBUS_TYPE_UNIX_FD_AS_STRING; }
+  inline std::string signature( const std::shared_ptr<FileDescriptor> )  { return DBUS_TYPE_UNIX_FD_AS_STRING; }
 
   inline std::string signature( char )        { return DBUS_TYPE_BYTE_AS_STRING;        }
   inline std::string signature( int8_t )      { return DBUS_TYPE_BYTE_AS_STRING;        }

@@ -26,11 +26,11 @@ int main(int argc, const char** argv)
 
   DBus::init();
 
-  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  DBus::Connection::pointer connection = dispatcher->create_connection( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BUS_SESSION );
 
-  DBus::ObjectProxy::pointer object = connection->create_object_proxy("dbuscxx.example.time.server", "/dbuscxx/example/Time");
+  std::shared_ptr<DBus::ObjectProxy> object = connection->create_object_proxy("dbuscxx.example.time.server", "/dbuscxx/example/Time");
 
   DBus::MethodProxy<struct timeval()>& methodref = *(object->create_method<struct timeval()>("Time.Basic", "now"));
 

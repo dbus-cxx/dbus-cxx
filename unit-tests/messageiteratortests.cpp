@@ -27,7 +27,7 @@ bool test_numeric_call_message_append_extract_iterator( T v )
 {
   T v2 = 0;
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1.append( v );
 
@@ -96,7 +96,7 @@ bool call_message_append_extract_iterator_cstring()
   const char* v = "Hello World";
   const char* v2 = NULL;
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1.append( v );
 
@@ -111,7 +111,7 @@ bool call_message_append_extract_iterator_string()
   std::string v("Hello World");
   std::string v2;
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1.append( v );
 
@@ -126,7 +126,7 @@ bool call_message_append_extract_iterator_signature()
   DBus::Signature v("a{iq}");
   DBus::Signature v2;
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1.append( v );
 
@@ -173,7 +173,7 @@ bool call_message_append_extract_iterator_array_int( )
   for ( int i = 0; i < 35; i++ )
     v.push_back( rand() );
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1.append( v );
 
@@ -198,7 +198,7 @@ bool call_message_append_extract_iterator_array_string( )
     v.push_back( string );
   }
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1.append( v );
 
@@ -228,7 +228,7 @@ bool call_message_append_extract_iterator_array_array_string( )
     sv.push_back( v );
   }
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1.append( sv );
 
@@ -247,8 +247,8 @@ bool call_message_append_extract_iterator_array_array_string( )
 }
 
 bool call_message_iterator_insertion_extraction_operator_filedescriptor(){
-  DBus::FileDescriptor::pointer v;
-  DBus::FileDescriptor::pointer v2;
+  std::shared_ptr<DBus::FileDescriptor> v;
+  std::shared_ptr<DBus::FileDescriptor> v2;
   int pipes[2];
   const char* firstString = "FirstString";
   const char* secondString = "SecondString";
@@ -262,12 +262,12 @@ bool call_message_iterator_insertion_extraction_operator_filedescriptor(){
   }
   v = DBus::FileDescriptor::create( pipes[1] );
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1.append( v );
 
   DBus::MessageIterator iter2(msg);
-  v2 = (DBus::FileDescriptor::pointer)iter2;
+  v2 = (std::shared_ptr<DBus::FileDescriptor>)iter2;
 
   if( write( v->getDescriptor(), firstString, strlen( firstString ) ) < 0 ){
       return false;
@@ -284,8 +284,8 @@ bool call_message_iterator_insertion_extraction_operator_filedescriptor(){
 }
 
 bool call_message_append_extract_iterator_filedescriptor(){
-  DBus::FileDescriptor::pointer v;
-  DBus::FileDescriptor::pointer v2;
+  std::shared_ptr<DBus::FileDescriptor> v;
+  std::shared_ptr<DBus::FileDescriptor> v2;
   int pipes[2];
   const char* firstString = "FirstString";
   const char* secondString = "SecondString";
@@ -299,7 +299,7 @@ bool call_message_append_extract_iterator_filedescriptor(){
   }
   v = DBus::FileDescriptor::create( pipes[1] );
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1.append( v );
 
@@ -325,7 +325,7 @@ template <typename T>
 {
   T v2 = 0;
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1 << v;
 
@@ -394,7 +394,7 @@ bool call_message_iterator_insertion_extraction_operator_cstring()
   const char* v = "Hello World";
   const char* v2;
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1 << v;
 
@@ -409,7 +409,7 @@ bool call_message_iterator_insertion_extraction_operator_string()
   std::string v("Hello World");
   std::string v2;
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1 << v;
 
@@ -424,7 +424,7 @@ bool call_message_iterator_insertion_extraction_operator_signature()
   DBus::Signature v("a{iq}");
   DBus::Signature v2;
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1 << v;
 
@@ -471,7 +471,7 @@ bool call_message_iterator_insertion_extraction_operator_array_string()
   v.push_back( "strign1" );
   v.push_back( "string2" );
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   
   iter1 << v;
@@ -494,7 +494,7 @@ bool call_message_iterator_insertion_extraction_operator_array_int( )
   for ( int i = 0; i < 35; i++ )
     v.push_back( rand() );
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1 << v;
 
@@ -534,7 +534,7 @@ bool call_message_append_extract_iterator_multiple( )
     ad_1.push_back( (double)rand()/(double)(rand()) );
 
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1.append( b_1 );
   iter1.append( ui8_1 );
@@ -625,7 +625,7 @@ bool call_message_iterator_insertion_extraction_operator_multiple( )
   for ( int i = 0; i < 35; i++ )
     ad_1.push_back( (double)rand()/(double)(rand()) );
 
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1 << b_1 << ui8_1 << i16_1 << ui16_1 << i32_1 << ui32_1 << i64_1 << ui64_1 << d_1 << cs_1 << s_1 << sig_1 << c_1 << i8_1 << f_1 << li_1 << uli_1 << ad_1;
 

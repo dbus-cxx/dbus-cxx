@@ -68,12 +68,12 @@ int main(int argc, const char** argv)
 
   DBus::init();
   
-  DBus::PendingCall::pointer pending;
-  DBus::Message::pointer retmsg;
+  std::shared_ptr<DBus::PendingCall> pending;
+  std::shared_ptr<DBus::Message> retmsg;
 
-  DBus::Connection::pointer connection = DBus::Connection::create( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Connection> connection = DBus::Connection::create( DBus::BUS_SESSION );
   
-  DBus::CallMessage::pointer msg = DBus::CallMessage::create("dbuscxx.example.calculator.server", // target for the method call
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create("dbuscxx.example.calculator.server", // target for the method call
                                                              "/dbuscxx/example/Calculator",       // object to call on
                                                              "Calculator.Basic",                  // interface to call on
                                                              op );                                // method name
@@ -86,12 +86,12 @@ int main(int argc, const char** argv)
 
   pending->block();
 
-  DBus::Message::iterator iter;
+  DBus::MessageIterator iter;
   retmsg = pending->steal_reply();
 
   if ( retmsg->type() == DBus::ERROR_MESSAGE )
   {
-    DBus::ErrorMessage::pointer errormsg = DBus::ErrorMessage::create(retmsg);
+    std::shared_ptr<DBus::ErrorMessage> errormsg = DBus::ErrorMessage::create(retmsg);
     std::cout << "Oops... got an error: " << errormsg->name() << std::endl;
     return 1;
   }

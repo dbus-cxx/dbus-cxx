@@ -30,8 +30,8 @@ int main()
 {
   DBus::init();
   
-  DBus::Connection::pointer connection = DBus::Connection::create( DBus::BUS_SESSION );
-  DBus::Message::pointer msg;
+  std::shared_ptr<DBus::Connection> connection = DBus::Connection::create( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Message> msg;
   std::string val;
 
   // add a rule for which messages we want to see

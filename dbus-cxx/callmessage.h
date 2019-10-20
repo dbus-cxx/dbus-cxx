@@ -16,6 +16,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#include <dbus-cxx/path.h>
 #include <dbus-cxx/message.h>
 
 #ifndef DBUSCXX_CALLMESSAGE_H
@@ -42,9 +43,9 @@ namespace DBus
 
       CallMessage( DBusMessage* cobj );
 
-      CallMessage( Message::pointer msg );
+      CallMessage( std::shared_ptr<Message> msg );
 
-      CallMessage( Message::const_pointer msg );
+      CallMessage( std::shared_ptr<const Message> msg );
 
       CallMessage( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method );
 
@@ -54,25 +55,19 @@ namespace DBus
 
     public:
 
-      typedef std::shared_ptr<CallMessage> pointer;
+      static std::shared_ptr<CallMessage> create();
 
-      typedef std::shared_ptr<const CallMessage> const_pointer;
+      static std::shared_ptr<CallMessage> create( DBusMessage* cobj );
 
-      typedef std::weak_ptr<CallMessage> weak_pointer;
+      static std::shared_ptr<CallMessage> create( std::shared_ptr<Message> msg );
 
-      static pointer create();
+      static std::shared_ptr<const CallMessage> create( std::shared_ptr<const Message> msg);
 
-      static pointer create( DBusMessage* cobj );
+      static std::shared_ptr<CallMessage> create( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method );
 
-      static pointer create( Message::pointer msg );
+      static std::shared_ptr<CallMessage> create( const std::string& path, const std::string& iface, const std::string& method );
 
-      static const_pointer create(Message::const_pointer msg);
-
-      static pointer create( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method );
-
-      static pointer create( const std::string& path, const std::string& iface, const std::string& method );
-
-      static pointer create( const std::string& path, const std::string& method );
+      static std::shared_ptr<CallMessage> create( const std::string& path, const std::string& method );
 
       bool set_path( const std::string& p );
 

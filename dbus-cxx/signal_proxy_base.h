@@ -35,9 +35,6 @@ namespace DBus
   class signal_proxy_base: public signal_base
   {
     public:
-
-      typedef std::shared_ptr<signal_proxy_base> pointer;
-
       signal_proxy_base(const std::string& path, const std::string& interface, const std::string& name);
 
       signal_proxy_base(const std::string& interface, const std::string& name);
@@ -50,33 +47,30 @@ namespace DBus
 
       virtual ~signal_proxy_base();
 
-      virtual HandlerResult handle_signal( SignalMessage::const_pointer );
+      virtual HandlerResult handle_signal( std::shared_ptr<const SignalMessage> );
 
-      sigc::signal<HandlerResult(SignalMessage::const_pointer)>::accumulated<MessageHandlerAccumulator> signal_dbus_incoming();
+      sigc::signal<HandlerResult(std::shared_ptr<const SignalMessage>)>::accumulated<MessageHandlerAccumulator> signal_dbus_incoming();
 
       const std::string& match_rule();
 
-      bool matches(Message::const_pointer msg);
+      bool matches(std::shared_ptr<const Message> msg);
 
       /**
        * This method is needed to be able to create a duplicate of a child
        * capable of parsing their specific template type message.
        */
-      virtual signal_base::pointer clone() = 0;
+      virtual std::shared_ptr<signal_base> clone() = 0;
 
     protected:
 
       std::string m_match_rule;
 
-      sigc::signal<HandlerResult(SignalMessage::const_pointer)>::accumulated<MessageHandlerAccumulator> m_signal_dbus_incoming;
+      sigc::signal<HandlerResult(std::shared_ptr<const SignalMessage>)>::accumulated<MessageHandlerAccumulator> m_signal_dbus_incoming;
   };
 
   class signal_proxy_simple: public signal_proxy_base, public sigc::trackable
   {
     public:
-
-      typedef std::shared_ptr<signal_proxy_base> pointer;
-
       signal_proxy_simple(const std::string& path, const std::string& interface, const std::string& name);
 
       signal_proxy_simple(const std::string& interface, const std::string& name);
@@ -87,15 +81,15 @@ namespace DBus
 
       signal_proxy_simple(const signal_proxy_simple& other);
 
-      static pointer create(const std::string& path, const std::string& interface, const std::string& name);
+      static std::shared_ptr<signal_proxy_simple> create(const std::string& path, const std::string& interface, const std::string& name);
 
-      static pointer create(const std::string& interface, const std::string& name);
+      static std::shared_ptr<signal_proxy_simple> create(const std::string& interface, const std::string& name);
 
-      static pointer create(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface, const std::string& name);
+      static std::shared_ptr<signal_proxy_simple> create(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface, const std::string& name);
 
-      static pointer create(std::shared_ptr<Connection> connection, const std::string& interface, const std::string& name);
+      static std::shared_ptr<signal_proxy_simple> create(std::shared_ptr<Connection> connection, const std::string& interface, const std::string& name);
 
-      static pointer create(const signal_proxy_simple& other);
+      static std::shared_ptr<signal_proxy_simple> create(const signal_proxy_simple& other);
 
       virtual ~signal_proxy_simple();
 
@@ -103,7 +97,7 @@ namespace DBus
        * This method is needed to be able to create a duplicate of a child
        * capable of parsing their specific template type message.
        */
-      virtual signal_base::pointer clone();
+      virtual std::shared_ptr<signal_base> clone();
   };
 
 }

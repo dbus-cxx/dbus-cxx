@@ -43,25 +43,18 @@ namespace DBus
 
       ReturnMessage( DBusMessage* callee );
 
-      ReturnMessage( Message::pointer callee );
+      ReturnMessage( std::shared_ptr<Message> callee );
 
-      ReturnMessage( Message::const_pointer callee );
+      ReturnMessage( std::shared_ptr<const Message> callee );
 
     public:
+      static std::shared_ptr<ReturnMessage> create( );
 
-      typedef std::shared_ptr<ReturnMessage> pointer;
+      static std::shared_ptr<ReturnMessage> create( DBusMessage* callee );
 
-      typedef std::shared_ptr<const ReturnMessage> const_pointer;
+      static std::shared_ptr<ReturnMessage> create( std::shared_ptr<Message> callee );
 
-      typedef std::weak_ptr<ReturnMessage> weak_pointer;
-
-      static pointer create( );
-
-      static pointer create( DBusMessage* callee );
-
-      static pointer create( Message::pointer callee );
-
-      static pointer create( Message::const_pointer callee );
+      static std::shared_ptr<ReturnMessage> create( std::shared_ptr<const Message> callee );
 
       const char* signature() const;
 

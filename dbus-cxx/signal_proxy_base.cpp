@@ -52,14 +52,14 @@ namespace DBus
   {
   }
 
-  HandlerResult signal_proxy_base::handle_signal( SignalMessage::const_pointer msg )
+  HandlerResult signal_proxy_base::handle_signal( std::shared_ptr<const SignalMessage> msg )
   {
     if ( not this->matches( msg ) ) return NOT_HANDLED;
 
     return m_signal_dbus_incoming.emit( msg );
   }
 
-  sigc::signal< HandlerResult(SignalMessage::const_pointer)>::accumulated< MessageHandlerAccumulator > signal_proxy_base::signal_dbus_incoming()
+  sigc::signal< HandlerResult(std::shared_ptr<const SignalMessage>)>::accumulated< MessageHandlerAccumulator > signal_proxy_base::signal_dbus_incoming()
   {
     return m_signal_dbus_incoming;
   }
@@ -79,13 +79,13 @@ namespace DBus
     return m_match_rule;
   }
 
-  bool signal_proxy_base::matches( Message::const_pointer msg )
+  bool signal_proxy_base::matches( std::shared_ptr<const Message> msg )
   {
     if ( not msg or not msg->is_valid() ) return false;
     if ( msg->type() != SIGNAL_MESSAGE ) return false;
     if ( m_interface.empty() or m_name.empty() ) return false;
 
-    SignalMessage::const_pointer smsg;
+    std::shared_ptr<const SignalMessage> smsg;
     smsg = std::dynamic_pointer_cast<const SignalMessage>( msg );
 
     if ( not smsg ) smsg = SignalMessage::create( msg );
@@ -129,38 +129,38 @@ namespace DBus
     // TODO connect to the other's connection
   }
 
-  signal_proxy_simple::pointer signal_proxy_simple::create( const std::string & path, const std::string & interface, const std::string & name )
+  std::shared_ptr<signal_proxy_simple> signal_proxy_simple::create( const std::string & path, const std::string & interface, const std::string & name )
   {
-    return pointer( new signal_proxy_simple( path, interface, name ) );
+    return std::shared_ptr<signal_proxy_simple>( new signal_proxy_simple( path, interface, name ) );
   }
 
-  signal_proxy_simple::pointer signal_proxy_simple::create( const std::string & interface, const std::string & name )
+  std::shared_ptr<signal_proxy_simple> signal_proxy_simple::create( const std::string & interface, const std::string & name )
   {
-    return pointer( new signal_proxy_simple( interface, name ) );
+    return std::shared_ptr<signal_proxy_simple>( new signal_proxy_simple( interface, name ) );
   }
 
-  signal_proxy_simple::pointer signal_proxy_simple::create( std::shared_ptr< Connection > connection, const std::string & path, const std::string & interface, const std::string & name )
+  std::shared_ptr<signal_proxy_simple> signal_proxy_simple::create( std::shared_ptr< Connection > connection, const std::string & path, const std::string & interface, const std::string & name )
   {
-    return pointer( new signal_proxy_simple( connection, path, interface, name ) );
+    return std::shared_ptr<signal_proxy_simple>( new signal_proxy_simple( connection, path, interface, name ) );
   }
 
-  signal_proxy_simple::pointer signal_proxy_simple::create( std::shared_ptr< Connection > connection, const std::string & interface, const std::string & name )
+  std::shared_ptr<signal_proxy_simple> signal_proxy_simple::create( std::shared_ptr< Connection > connection, const std::string & interface, const std::string & name )
   {
-    return pointer( new signal_proxy_simple( connection, interface, name ) );
+    return std::shared_ptr<signal_proxy_simple>( new signal_proxy_simple( connection, interface, name ) );
   }
 
-  signal_proxy_simple::pointer signal_proxy_simple::create( const signal_proxy_simple & other )
+  std::shared_ptr<signal_proxy_simple> signal_proxy_simple::create( const signal_proxy_simple & other )
   {
-    return pointer( new signal_proxy_simple( other ) );
+    return std::shared_ptr<signal_proxy_simple>( new signal_proxy_simple( other ) );
   }
 
   signal_proxy_simple::~signal_proxy_simple()
   {
   }
 
-  signal_base::pointer signal_proxy_simple::clone()
+  std::shared_ptr<signal_base> signal_proxy_simple::clone()
   {
-    return pointer( new signal_proxy_simple( *this ) );
+    return std::shared_ptr<signal_base>( new signal_proxy_simple( *this ) );
   }
   
 }

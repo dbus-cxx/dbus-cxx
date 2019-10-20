@@ -21,15 +21,15 @@
 #include <cmath>
 #include <unistd.h>
 
-void reply_to_method_call( DBus::CallMessage::pointer msg, DBus::Connection::pointer conn );
+void reply_to_method_call( std::shared_ptr<DBus::CallMessage> msg, std::shared_ptr<DBus::Connection> conn );
 
 int main()
 {
   DBus::init();
   
-  DBus::Message::pointer msg;
+  std::shared_ptr<DBus::Message> msg;
   int ret;
-  DBus::Connection::pointer conn = DBus::Connection::create(DBus::BUS_SESSION);
+  std::shared_ptr<DBus::Connection> conn = DBus::Connection::create(DBus::BUS_SESSION);
 
   // request a name on the bus
   ret = conn->request_name( "dbuscxx.example.calculator.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
@@ -52,9 +52,9 @@ int main()
   }
 }
 
-void reply_to_method_call( DBus::CallMessage::pointer msg, DBus::Connection::pointer conn )
+void reply_to_method_call( std::shared_ptr<DBus::CallMessage> msg, std::shared_ptr<DBus::Connection> conn )
 {
-  DBus::ReturnMessage::pointer reply;
+  std::shared_ptr<DBus::ReturnMessage> reply;
   double param1, param2, answer=NAN;
 
   if ( not msg->has_interface("Calculator.Basic") ) return;

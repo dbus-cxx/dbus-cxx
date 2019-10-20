@@ -36,9 +36,9 @@ namespace DBus
   {
   }
 
-  MethodProxyBase::pointer MethodProxyBase::create(const std::string & name)
+  std::shared_ptr<MethodProxyBase> MethodProxyBase::create(const std::string & name)
   {
-    return pointer( new MethodProxyBase(name) );
+    return std::shared_ptr<MethodProxyBase>( new MethodProxyBase(name) );
   }
 
   MethodProxyBase::~MethodProxyBase()
@@ -66,23 +66,23 @@ namespace DBus
     m_signal_name_changed.emit(old_name, m_name);
   }
 
-  CallMessage::pointer DBus::MethodProxyBase::create_call_message() const
+  std::shared_ptr<CallMessage> DBus::MethodProxyBase::create_call_message() const
   {
-    if ( not m_interface ) return CallMessage::pointer();
-    CallMessage::pointer cm = m_interface->create_call_message( m_name );
+    if ( not m_interface ) return std::shared_ptr<CallMessage>();
+    std::shared_ptr<CallMessage> cm = m_interface->create_call_message( m_name );
     cm->set_no_reply(false);
     return cm;
   }
 
-  ReturnMessage::const_pointer DBus::MethodProxyBase::call(CallMessage::const_pointer call_message, int timeout_milliseconds) const
+  std::shared_ptr<const ReturnMessage> DBus::MethodProxyBase::call(std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds) const
   {
-    if ( not m_interface ) return ReturnMessage::const_pointer();
+    if ( not m_interface ) return std::shared_ptr<const ReturnMessage>();
     return m_interface->call(call_message, timeout_milliseconds);
   }
 
-  PendingCall::pointer DBus::MethodProxyBase::call_async(CallMessage::const_pointer call_message, int timeout_milliseconds) const
+  std::shared_ptr<PendingCall> DBus::MethodProxyBase::call_async(std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds) const
   {
-    if ( not m_interface ) return PendingCall::pointer();
+    if ( not m_interface ) return std::shared_ptr<PendingCall>();
     return m_interface->call_async(call_message, timeout_milliseconds);
   }
 

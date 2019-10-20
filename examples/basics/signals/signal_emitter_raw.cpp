@@ -26,16 +26,14 @@
  * signal-emitter-c example.
  */
 
-using namespace DBus;
-    
 int main()
 {
   DBus::init();
 
-  Connection::pointer connection = DBus::Connection::create( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Connection> connection = DBus::Connection::create( DBus::BUS_SESSION );
 
-  SignalMessage::pointer message;
-  message = SignalMessage::create( "/test/signal/Object",  // object name of the signal
+  std::shared_ptr<DBus::SignalMessage> message;
+  message = DBus::SignalMessage::create( "/test/signal/Object",  // object name of the signal
                                    "test.signal.Type",     // interface name of the signal
                                    "Test" );               // name of the signal
 

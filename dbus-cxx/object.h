@@ -53,14 +53,6 @@ namespace DBus
       Object( const std::string& path, PrimaryFallback pf=PRIMARY );
 
     public:
-
-      /**
-       * Typedef to smart pointers to Object.
-       * 
-       * Can access \e type as \c Object::pointer
-       */
-      typedef std::shared_ptr<Object> pointer;
-
       /**
        * Typedef to the storage structure for an \c Object instance's
        * interfaces.
@@ -83,14 +75,14 @@ namespace DBus
        *
        * Can access \e type as \c Object::Children
        */
-      typedef std::map<std::string, Object::pointer> Children;
+      typedef std::map<std::string, std::shared_ptr<Object>> Children;
 
       /**
        * Creates a named Object that will register as a primary or fallback handler
        * @param path The path the object will handle
        * @param pf Determines whether the Object will registar as a primary or fallback handler (\e default = \c PRIMARY)
        */
-      static pointer create( const std::string& path = std::string(), PrimaryFallback pf=PRIMARY );
+      static std::shared_ptr<Object> create( const std::string& path = std::string(), PrimaryFallback pf=PRIMARY );
 
       virtual ~Object();
 
@@ -202,7 +194,7 @@ namespace DBus
        * @return A smart pointer to a child with the specified name, or a null smart pointer if no child found.
        * @param name The name of the child to return
        */
-      Object::pointer child(const std::string& name) const;
+      std::shared_ptr<Object> child(const std::string& name) const;
 
       /**
        * Add an object as a child with a specified name
@@ -213,7 +205,7 @@ namespace DBus
        * @param child A smart pointer to an object to add as a child.
        * @param force If \c true a child with the same name will be replaced.
        */
-      bool add_child(const std::string& name, Object::pointer child, bool force=false);
+      bool add_child(const std::string& name, std::shared_ptr<Object> child, bool force=false);
 
       /**
        * Remove the named child from this object
@@ -276,7 +268,7 @@ namespace DBus
        * @param conn The Connection to send the reply message on
        * @param msg The message to handle; must be a CallMessage or it will not be handled
        */
-      virtual HandlerResult handle_message( std::shared_ptr<Connection> conn, Message::const_pointer msg);
+      virtual HandlerResult handle_message( std::shared_ptr<Connection> conn, std::shared_ptr<const Message> msg);
 
     protected:
 
@@ -339,7 +331,7 @@ namespace DBus {
   std::shared_ptr<Method<T_type> >
   Object::create_method( const std::string& interface_name, const std::string& method_name, sigc::slot<T_type> slot )
   {
-    Interface::pointer interface;
+    std::shared_ptr<Interface> interface;
     interface = this->interface(interface_name);
     if ( not interface ) interface = this->create_interface(interface_name);
     // TODO throw an error if the interface still doesn't exist
@@ -355,7 +347,7 @@ namespace DBus {
   Object::create_signal( const std::string& name )
   {
     std::shared_ptr<DBus::signal<T_type...> > sig;
-    Interface::pointer iface = this->default_interface();
+    std::shared_ptr<Interface> iface = this->default_interface();
     if ( not iface ) iface = this->create_interface("");
     sig = iface->create_signal<T_type...>(name);
     return sig;

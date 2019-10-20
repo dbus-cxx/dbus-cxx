@@ -69,11 +69,11 @@ namespace DBus
     return true;
   }
 
-  Path::Decomposed Path::decomposed() const
+  std::vector<std::string> Path::decomposed() const
   {
-    if ( not this->is_valid() ) return Decomposed();
+    if ( not this->is_valid() ) return std::vector<std::string>();
 
-    Decomposed decomposed;
+    std::vector<std::string> decomposed;
     std::string current;
     const_iterator i;
 

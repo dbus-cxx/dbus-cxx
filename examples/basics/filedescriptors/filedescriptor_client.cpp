@@ -48,15 +48,15 @@ int main( int argc, char** argv ){
   //DBus::setLoggingFunction( mylog );
 
   DBus::init();
-  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
-  DBus::Connection::pointer conn = dispatcher->create_connection(DBus::BUS_SESSION);
-  DBus::ObjectProxy::pointer object = conn->create_object_proxy("dbuscxx.example.filedescriptor.server", "/dbuscxx/example/FileDescriptor");
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BUS_SESSION);
+  std::shared_ptr<DBus::ObjectProxy> object = conn->create_object_proxy("dbuscxx.example.filedescriptor.server", "/dbuscxx/example/FileDescriptor");
 
-  DBus::MethodProxy<DBus::FileDescriptor::pointer()>& methodref = *(object->create_method<DBus::FileDescriptor::pointer()>("Filedescriptor.basic", "getFiledescriptor"));
+  DBus::MethodProxy<std::shared_ptr<DBus::FileDescriptor>()>& methodref = *(object->create_method<std::shared_ptr<DBus::FileDescriptor>()>("Filedescriptor.basic", "getFiledescriptor"));
 
   std::cout << "Running..." << std::flush;
 
-  DBus::FileDescriptor::pointer fd;
+  std::shared_ptr<DBus::FileDescriptor> fd;
   fd = methodref();
   
   if( write( fd->getDescriptor(), "A String 0", 10 ) < 0 ){

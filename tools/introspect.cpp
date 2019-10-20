@@ -63,7 +63,7 @@ int main( int argc, const char** argv )
 
   DBus::init();
   
-  Connection::pointer conn;
+  std::shared_ptr<Connection> conn;
 
   if ( use_system )
     conn = Connection::create(BUS_SYSTEM);

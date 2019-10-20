@@ -31,15 +31,15 @@ int main()
   
   int ret;
   
-  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  DBus::Connection::pointer conn = dispatcher->create_connection(DBus::BUS_SESSION);
+  std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BUS_SESSION);
   
   // request a name on the bus
   ret = conn->request_name( "dbuscxx.example.calculator.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
   if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) return 1;
 
-  DBus::Object::pointer object = conn->create_object("/dbuscxx/example/Calculator");
+  std::shared_ptr<DBus::Object> object = conn->create_object("/dbuscxx/example/Calculator");
 
   object->create_method<double(double,double)>("Calculator.Basic", "add", sigc::ptr_fun(add) );
   object->create_method<double(double,double)>("Calculator.Basic", "sub", sigc::ptr_fun(subtract) );

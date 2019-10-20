@@ -28,14 +28,14 @@ namespace DBus
       throw ErrorInvalidMessageType::create();
   }
   
-  SignalMessage::SignalMessage( Message::pointer msg ):
+  SignalMessage::SignalMessage( std::shared_ptr<Message> msg ):
       Message( msg )
   {
     if ( not msg or not *msg or msg->type() != SIGNAL_MESSAGE )
       throw ErrorInvalidMessageType::create();
   }
 
-  SignalMessage::SignalMessage( Message::const_pointer msg ):
+  SignalMessage::SignalMessage( std::shared_ptr<const Message> msg ):
       Message( msg )
   {
     if ( not msg or not *msg or msg->type() != SIGNAL_MESSAGE )
@@ -55,35 +55,29 @@ namespace DBus
       throw( ErrorNoMemory::create( "SignalMessage::SignalMessage: constructor failed because dbus couldn't allocate memory for signal" ) );
   }
 
-  void sigmsg_wp_deleter( void* v )
+  std::shared_ptr<SignalMessage> SignalMessage::create( DBusMessage* cobj, CreateMethod m )
   {
-    SignalMessage::weak_pointer* wp = static_cast<SignalMessage::weak_pointer*>(v);
-    delete wp;
+    return std::shared_ptr<SignalMessage>( new SignalMessage(cobj, m) );
   }
 
-  SignalMessage::pointer SignalMessage::create( DBusMessage* cobj, CreateMethod m )
+  std::shared_ptr<SignalMessage> SignalMessage::create(std::shared_ptr<Message> msg)
   {
-    return pointer( new SignalMessage(cobj, m) );
+    return std::shared_ptr<SignalMessage>( new SignalMessage(msg) );
   }
 
-  SignalMessage::pointer SignalMessage::create(Message::pointer msg)
+  std::shared_ptr<const SignalMessage> SignalMessage::create(std::shared_ptr<const Message> msg)
   {
-    return pointer( new SignalMessage(msg) );
+    return std::shared_ptr<const SignalMessage>( new SignalMessage(msg) );
   }
 
-  SignalMessage::const_pointer SignalMessage::create(Message::const_pointer msg)
+  std::shared_ptr<SignalMessage> SignalMessage::create(const std::string & name)
   {
-    return const_pointer( new SignalMessage(msg) );
+    return std::shared_ptr<SignalMessage>( new SignalMessage(name) );
   }
 
-  SignalMessage::pointer SignalMessage::create(const std::string & name)
+  std::shared_ptr<SignalMessage> SignalMessage::create(const std::string & path, const std::string & interface, const std::string & name)
   {
-    return pointer( new SignalMessage(name) );
-  }
-
-  SignalMessage::pointer SignalMessage::create(const std::string & path, const std::string & interface, const std::string & name)
-  {
-    return pointer( new SignalMessage(path, interface, name) );
+    return std::shared_ptr<SignalMessage>( new SignalMessage(path, interface, name) );
   }
 
   bool SignalMessage::operator == ( const SignalMessage& m ) const

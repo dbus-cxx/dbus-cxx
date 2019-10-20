@@ -38,7 +38,7 @@ namespace DBus
     this->init(message);
   }
 
-  MessageIterator::MessageIterator( Message::pointer message ):
+  MessageIterator::MessageIterator( std::shared_ptr<Message> message ):
       m_message( NULL )
   {
     memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
@@ -420,7 +420,7 @@ namespace DBus
     }
   }
 
-  MessageIterator::operator FileDescriptor::pointer(){
+  MessageIterator::operator std::shared_ptr<FileDescriptor>(){
     switch ( this->arg_type() )
     {
       case TYPE_UNIX_FD: return get_filedescriptor();
@@ -569,8 +569,8 @@ namespace DBus
     return ptr;
   }
 
-  FileDescriptor::pointer MessageIterator::get_filedescriptor(){
-    FileDescriptor::pointer fd;
+  std::shared_ptr<FileDescriptor> MessageIterator::get_filedescriptor(){
+    std::shared_ptr<FileDescriptor> fd;
     int raw_fd;
     if( this->arg_type() != TYPE_UNIX_FD )
       throw ErrorInvalidTypecast::create("MessageIterator: getting FileDescriptor and type is not TYPE_UNIX_FD");

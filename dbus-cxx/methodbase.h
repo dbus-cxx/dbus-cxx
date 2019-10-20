@@ -58,12 +58,9 @@ namespace DBus
       MethodBase(const MethodBase& other);
 
     protected:
-      uint32_t sendMessage( std::shared_ptr<Connection> connection, const Message::const_pointer );
+      uint32_t sendMessage( std::shared_ptr<Connection> connection, const std::shared_ptr<const Message> );
 
     public:
-
-      typedef std::shared_ptr<MethodBase> pointer;
-
       ~MethodBase();
 
       const std::string& name() const;
@@ -71,7 +68,7 @@ namespace DBus
       void set_name( const std::string& name );
 
 
-      virtual HandlerResult handle_call_message( std::shared_ptr<Connection> connection, CallMessage::const_pointer message ) = 0;
+      virtual HandlerResult handle_call_message( std::shared_ptr<Connection> connection, std::shared_ptr<const CallMessage> message ) = 0;
 
       /**
        * This method is needed to be able to create a duplicate of a child
@@ -130,7 +127,7 @@ namespace DBus
           return sout.str();
       }
 
-      virtual HandlerResult handle_call_message( std::shared_ptr<Connection> connection, CallMessage::const_pointer message ){
+      virtual HandlerResult handle_call_message( std::shared_ptr<Connection> connection, std::shared_ptr<const CallMessage> message ){
           std::ostringstream debug_str;
           DBus::priv::dbus_function_traits<std::function<T_type>> method_sig_gen;
 
@@ -143,7 +140,7 @@ namespace DBus
           if( !connection || !message ) return NOT_HANDLED;
 
           try{
-              ReturnMessage::pointer retmsg = message->create_reply();
+              std::shared_ptr<ReturnMessage> retmsg = message->create_reply();
               if( !retmsg ) return NOT_HANDLED;
 
               //Message::iterator i = message->begin();
@@ -153,7 +150,7 @@ namespace DBus
           }catch( ErrorInvalidTypecast ){
               return NOT_HANDLED;
          }catch( const std::exception &e ){
-            ErrorMessage::pointer errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, e.what() );
+            std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, e.what() );
 
             if( !errmsg ) return NOT_HANDLED;
 
@@ -164,7 +161,7 @@ namespace DBus
                    << DBUS_CXX_PACKAGE_MINOR_VERSION << "."
                    << DBUS_CXX_PACKAGE_MICRO_VERSION
                    << ": unknown error(uncaught exception)";
-            ErrorMessage::pointer errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, stream.str() );
+            std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, stream.str() );
 
             if( !errmsg ) return NOT_HANDLED;
 

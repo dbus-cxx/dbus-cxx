@@ -53,9 +53,9 @@ namespace DBus
     if ( is_running ) this->start();
   }
   
-  Dispatcher::pointer Dispatcher::create( bool is_running )
+  std::shared_ptr<Dispatcher> Dispatcher::create( bool is_running )
   {
-    return pointer( new Dispatcher(is_running) );
+    return std::shared_ptr<Dispatcher>( new Dispatcher(is_running) );
   }
 
   Dispatcher::~Dispatcher()
@@ -63,28 +63,28 @@ namespace DBus
     this->stop();
   }
 
-  Connection::pointer Dispatcher::create_connection(DBusConnection * cobj, bool is_private)
+  std::shared_ptr<Connection> Dispatcher::create_connection(DBusConnection * cobj, bool is_private)
   {
-    Connection::pointer conn = Connection::create(cobj, is_private);
+    std::shared_ptr<Connection> conn = Connection::create(cobj, is_private);
     if ( this->add_connection(conn) ) return conn;
-    return Connection::pointer();
+    return std::shared_ptr<Connection>();
   }
 
-  Connection::pointer Dispatcher::create_connection(BusType type, bool is_private)
+  std::shared_ptr<Connection> Dispatcher::create_connection(BusType type, bool is_private)
   {
-    Connection::pointer conn = Connection::create(type, is_private);
+    std::shared_ptr<Connection> conn = Connection::create(type, is_private);
     if ( this->add_connection(conn) ) return conn;
-    return Connection::pointer();
+    return std::shared_ptr<Connection>();
   }
 
-  Connection::pointer Dispatcher::create_connection(const Connection & other)
+  std::shared_ptr<Connection> Dispatcher::create_connection(const Connection & other)
   {
-    Connection::pointer conn = Connection::create(other);
+    std::shared_ptr<Connection> conn = Connection::create(other);
     if ( this->add_connection(conn) ) return conn;
-    return Connection::pointer();
+    return std::shared_ptr<Connection>();
   }
   
-  bool Dispatcher::add_connection( Connection::pointer connection )
+  bool Dispatcher::add_connection( std::shared_ptr<Connection> connection )
   {
     if ( not connection or not connection->is_valid() ) return false;
     
@@ -99,19 +99,19 @@ namespace DBus
     connection->signal_wakeup_main().connect(sigc::bind(sigc::mem_fun(*this, &Dispatcher::on_wakeup_main), connection));
     connection->signal_dispatch_status_changed().connect(sigc::bind(sigc::mem_fun(*this, &Dispatcher::on_dispatch_status_changed), connection));
   
-    Connection::Watches::iterator wi;
+    std::deque<std::shared_ptr<Watch>>::iterator wi;
 //     Connection::Timeouts::iterator ti;
     
     while ( connection->unhandled_watches().size() > 0 )
     {
-      Watch::pointer w = connection->unhandled_watches().front();
+      std::shared_ptr<Watch> w = connection->unhandled_watches().front();
       this->on_add_watch(w);
       connection->remove_unhandled_watch(w);
     }
   
 //     while ( connection->unhandled_timeouts().size() > 0 )
 //     {
-//       Timeout::pointer t = connection->unhandled_timeouts().front();
+//       std::shared_ptr<Timeout> t = connection->unhandled_timeouts().front();
 //       this->on_add_timeout(t);
 //       connection->remove_unhandled_timeout(t);
 //     }
@@ -196,8 +196,8 @@ namespace DBus
         newfd.fd = entry.first;
         newfd.events = 0;
 
-        Watch::pointer read = entry.second.read_watch;
-        Watch::pointer write = entry.second.write_watch;
+        std::shared_ptr<Watch> read = entry.second.read_watch;
+        std::shared_ptr<Watch> write = entry.second.write_watch;
 
         if( read != nullptr && 
             read->is_enabled() ){
@@ -283,7 +283,7 @@ namespace DBus
     }
   }
 
-  bool Dispatcher::on_add_watch(Watch::pointer watch)
+  bool Dispatcher::on_add_watch(std::shared_ptr<Watch> watch)
   {
     if ( not watch or not watch->is_valid() ){ 
       SIMPLELOGGER_ERROR( "dbus.Dispatcher", "Tried to add invalid watch" );
@@ -307,7 +307,7 @@ namespace DBus
     return true;
   }
 
-  bool Dispatcher::on_remove_watch(Watch::pointer watch)
+  bool Dispatcher::on_remove_watch(std::shared_ptr<Watch> watch)
   {
     if ( not watch or not watch->is_valid() ){
       SIMPLELOGGER_ERROR( "dbus.Dispatcher", "Tried to remove invalid watch" );
@@ -338,7 +338,7 @@ namespace DBus
     return true;
   }
 
-  void Dispatcher::on_watch_toggled(Watch::pointer watch)
+  void Dispatcher::on_watch_toggled(std::shared_ptr<Watch> watch)
   {
     if ( not watch or not watch->is_valid() ) return;
 
@@ -349,7 +349,7 @@ namespace DBus
     return;
   }
 
-  bool Dispatcher::on_add_timeout(Timeout::pointer timeout)
+  bool Dispatcher::on_add_timeout(std::shared_ptr<Timeout> timeout)
   {
     if ( not timeout or not timeout->is_valid() ) return false;
     
@@ -357,7 +357,7 @@ namespace DBus
     return true;
   }
 
-  bool Dispatcher::on_remove_timeout(Timeout::pointer timeout)
+  bool Dispatcher::on_remove_timeout(std::shared_ptr<Timeout> timeout)
   {
     if ( not timeout or not timeout->is_valid() ) return false;
     
@@ -365,7 +365,7 @@ namespace DBus
     return true;
   }
 
-  bool Dispatcher::on_timeout_toggled(Timeout::pointer timeout)
+  bool Dispatcher::on_timeout_toggled(std::shared_ptr<Timeout> timeout)
   {
     if ( not timeout or not timeout->is_valid() ) return false;
     
@@ -373,14 +373,14 @@ namespace DBus
     return true;
   }
 
-  void Dispatcher::on_wakeup_main(Connection::pointer conn)
+  void Dispatcher::on_wakeup_main(std::shared_ptr<Connection> conn)
   {
     SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "wakeup main" );
     
     wakeup_thread();
   }
 
-  void Dispatcher::on_dispatch_status_changed(DispatchStatus status, Connection::pointer conn)
+  void Dispatcher::on_dispatch_status_changed(DispatchStatus status, std::shared_ptr<Connection> conn)
   {
     SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "dispatch status changed: " << status );
 

@@ -26,7 +26,7 @@
  * C bindings).  This is normally not something that you want to do.
  */
 
-DBus::HandlerResult reply_to_method_call( DBus::Connection::pointer conn, DBus::Message::const_pointer msg );
+DBus::HandlerResult reply_to_method_call( std::shared_ptr<DBus::Connection> conn, std::shared_ptr<const DBus::Message> msg );
 
 int main()
 {
@@ -34,9 +34,9 @@ int main()
   
   int ret;
   
-  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  DBus::Connection::pointer conn = dispatcher->create_connection(DBus::BUS_SESSION);
+  std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BUS_SESSION);
   
   // request a name on the bus
   ret = conn->request_name( "dbuscxx.example.calculator.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
@@ -57,9 +57,9 @@ int main()
   return 0;
 }
 
-DBus::HandlerResult reply_to_method_call( DBus::Connection::pointer conn, DBus::Message::const_pointer msg )
+DBus::HandlerResult reply_to_method_call( std::shared_ptr<DBus::Connection> conn, std::shared_ptr<const DBus::Message> msg )
 {
-  DBus::ReturnMessage::pointer reply;
+  std::shared_ptr<DBus::ReturnMessage> reply;
   double param1, param2, answer=NAN;
 
   // read the arguments

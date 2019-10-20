@@ -44,17 +44,10 @@ namespace DBus
       MessageHandler();
 
     public:
-      
-      typedef std::shared_ptr<MessageHandler> pointer;
-
-      typedef std::weak_ptr<MessageHandler> weak_pointer;
-
-      virtual ~MessageHandler();
-
       /** The default implementation simply emits the message signal and returns the result */
-      virtual HandlerResult handle_message( std::shared_ptr<Connection>, Message::const_pointer );
+      virtual HandlerResult handle_message( std::shared_ptr<Connection>, std::shared_ptr<const Message> );
 
-      typedef sigc::signal<HandlerResult(std::shared_ptr<Connection>, Message::const_pointer)>::accumulated<MessageHandlerAccumulator> MessageSignal;
+      typedef sigc::signal<HandlerResult(std::shared_ptr<Connection>, std::shared_ptr<const Message>)>::accumulated<MessageHandlerAccumulator> MessageSignal;
 
       MessageSignal& signal_message();
 

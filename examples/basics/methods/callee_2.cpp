@@ -33,9 +33,9 @@ int main()
   
   int ret;
   
-  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  DBus::Connection::pointer conn = dispatcher->create_connection(DBus::BUS_SESSION);
+  std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BUS_SESSION);
   
   // request a name on the bus
   ret = conn->request_name( "dbuscxx.example.calculator.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
@@ -43,7 +43,7 @@ int main()
 
   //create_object creates an object on our local side.  This is not an
   //object proxy, we get an object proxy to something else
-  DBus::Object::pointer object = conn->create_object("/dbuscxx/example/Calculator");
+  std::shared_ptr<DBus::Object> object = conn->create_object("/dbuscxx/example/Calculator");
 
   //export various methods out onto the bus.  add,sub,mul,div all take in
   //two doubles, and return a double

@@ -36,9 +36,6 @@ class signal_proxy
   : public sigc::signal<void(T_arg...)>, public signal_proxy_base
 {
   public:
-
-    typedef std::shared_ptr<signal_proxy> pointer;
-  
     signal_proxy(const std::string& interface, const std::string& name):
       signal_proxy_base(interface, name)
     { m_signal_dbus_incoming.connect( sigc::mem_fun(*this, &signal_proxy::on_dbus_incoming) ); }
@@ -57,28 +54,28 @@ class signal_proxy
       signal_proxy_base(path, interface, name)
     { m_signal_dbus_incoming.connect( sigc::mem_fun(*this, &signal_proxy::on_dbus_incoming) ); }
 
-    static pointer create(const std::string& interface, const std::string& name)
-    { return pointer( new signal_proxy(interface, name) ); }
+    static std::shared_ptr<signal_proxy> create(const std::string& interface, const std::string& name)
+    { return std::shared_ptr<signal_proxy>( new signal_proxy(interface, name) ); }
 
-    static pointer create(const std::string& path, const std::string& interface, const std::string& name)
-    { return pointer( new signal_proxy(path, interface, name) ); }
+    static std::shared_ptr<signal_proxy> create(const std::string& path, const std::string& interface, const std::string& name)
+    { return std::shared_ptr<signal_proxy>( new signal_proxy(path, interface, name) ); }
 
-    static pointer create(const std::string& interface, const std::string& name, const signal_proxy& src)
-    { return pointer( new signal_proxy(interface, name, src) ); }
+    static std::shared_ptr<signal_proxy> create(const std::string& interface, const std::string& name, const signal_proxy& src)
+    { return std::shared_ptr<signal_proxy>( new signal_proxy(interface, name, src) ); }
 
-    static pointer create(const std::string& path, const std::string& interface, const std::string& name, const signal_proxy& src)
-    { return pointer( new signal_proxy(path, interface, name, src) ); }
+    static std::shared_ptr<signal_proxy> create(const std::string& path, const std::string& interface, const std::string& name, const signal_proxy& src)
+    { return std::shared_ptr<signal_proxy>( new signal_proxy(path, interface, name, src) ); }
 
-    virtual signal_base::pointer clone()
-    { return signal_base::pointer( new signal_proxy(*this) ); }
+    virtual std::shared_ptr<signal_base> clone()
+    { return std::shared_ptr<signal_base>( new signal_proxy(*this) ); }
 
   protected:
-    virtual HandlerResult on_dbus_incoming( SignalMessage::const_pointer msg )
+    virtual HandlerResult on_dbus_incoming( std::shared_ptr<const SignalMessage> msg )
     {
       std::tuple<T_arg...> tup_args;
 
       try {
-        Message::iterator i = msg->begin();
+        MessageIterator i = msg->begin();
         std::apply( [i](auto ...arg) mutable {
                (i >> ... >> arg);
               },

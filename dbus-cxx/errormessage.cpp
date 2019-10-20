@@ -38,7 +38,7 @@ namespace DBus
     dbus_message_ref( m_cobj );
   }
 
-  ErrorMessage::ErrorMessage( Message::pointer msg )
+  ErrorMessage::ErrorMessage(std::shared_ptr<Message> msg )
   {
     if ( msg->type() != ERROR_MESSAGE )
       throw ErrorInvalidMessageType::create();
@@ -50,36 +50,30 @@ namespace DBus
     }
   }
 
-  ErrorMessage::ErrorMessage( Message::const_pointer to_reply, const std::string& name, const std::string& message )
+  ErrorMessage::ErrorMessage( std::shared_ptr<const Message> to_reply, const std::string& name, const std::string& message )
   {
     if ( to_reply and *to_reply )
       m_cobj = dbus_message_new_error( to_reply->cobj(), name.c_str(), message.c_str() );
   }
 
-  void errmsg_wp_deleter( void* v )
+  std::shared_ptr<ErrorMessage> ErrorMessage::create()
   {
-    ErrorMessage::weak_pointer* wp = static_cast<ErrorMessage::weak_pointer*>(v);
-    delete wp;
+    return std::shared_ptr<ErrorMessage>(new ErrorMessage() );
   }
 
-  ErrorMessage::pointer ErrorMessage::create()
+  std::shared_ptr<ErrorMessage> ErrorMessage::create(DBusMessage * cobj)
   {
-    return pointer(new ErrorMessage() );
+    return std::shared_ptr<ErrorMessage>(new ErrorMessage(cobj) );
   }
 
-  ErrorMessage::pointer ErrorMessage::create(DBusMessage * cobj)
+  std::shared_ptr<ErrorMessage> ErrorMessage::create(std::shared_ptr<Message> msg)
   {
-    return pointer(new ErrorMessage(cobj) );
+    return std::shared_ptr<ErrorMessage>(new ErrorMessage(msg) );
   }
 
-  ErrorMessage::pointer ErrorMessage::create(Message::pointer msg)
+  std::shared_ptr<ErrorMessage> ErrorMessage::create(std::shared_ptr<const Message> msg, const std::string & name, const std::string & message)
   {
-    return pointer(new ErrorMessage(msg) );
-  }
-
-  ErrorMessage::pointer ErrorMessage::create(Message::const_pointer msg, const std::string & name, const std::string & message)
-  {
-    return pointer(new ErrorMessage(msg, name, message) );
+    return std::shared_ptr<ErrorMessage>(new ErrorMessage(msg, name, message) );
   }
 
   bool ErrorMessage::operator == ( const ErrorMessage& m ) const

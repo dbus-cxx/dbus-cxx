@@ -56,37 +56,24 @@ namespace DBus
   
   class Message
   {
-    public:
-
-      typedef std::shared_ptr<Message> pointer;
-
-      typedef std::shared_ptr<const Message> const_pointer;
-
-      typedef std::weak_ptr<Message> weak_pointer;
-
     protected:
       
       Message( MessageType type );
 
       Message( DBusMessage* cobj=NULL, CreateMethod m = CREATE_ALIAS );
 
-      Message( Message::pointer other, CreateMethod m = CREATE_ALIAS );
+      Message( std::shared_ptr<Message> other, CreateMethod m = CREATE_ALIAS );
 
-      Message( Message::const_pointer other, CreateMethod m = CREATE_ALIAS );
+      Message( std::shared_ptr<const Message> other, CreateMethod m = CREATE_ALIAS );
 
     public:
+      static std::shared_ptr<Message> create( MessageType type );
 
-      typedef MessageIterator iterator;
+      static std::shared_ptr<Message> create( DBusMessage* cobj=NULL, CreateMethod m = CREATE_ALIAS );
 
-      typedef MessageAppendIterator append_iterator;
+      static std::shared_ptr<Message> create( std::shared_ptr<Message> other, CreateMethod m = CREATE_ALIAS );
 
-      static pointer create( MessageType type );
-
-      static pointer create( DBusMessage* cobj=NULL, CreateMethod m = CREATE_ALIAS );
-
-      static pointer create( Message::pointer other, CreateMethod m = CREATE_ALIAS );
-
-      static pointer create( Message::const_pointer other, CreateMethod m = CREATE_ALIAS );
+      static std::shared_ptr<Message> create( std::shared_ptr<const Message> other, CreateMethod m = CREATE_ALIAS );
 
       std::shared_ptr<ReturnMessage> create_reply() const;
 
@@ -131,26 +118,26 @@ namespace DBus
       bool has_sender( const std::string& name ) const;
 
       template <typename T>
-      iterator operator>>( T& value ) const
+      MessageIterator operator>>( T& value ) const
       {
-        iterator iter = this->begin();
+        MessageIterator iter = this->begin();
         iter >> value;
         return iter;
       }
       
       template <typename T>
-      append_iterator operator<<( const T& value )
+      MessageAppendIterator operator<<( const T& value )
       {
-        append_iterator aiter( *this );
+        MessageAppendIterator aiter( *this );
         aiter << value;
         return aiter;
       }
 
-      iterator begin() const;
+      MessageIterator begin() const;
 
-      iterator end() const;
+      MessageIterator end() const;
 
-      append_iterator append();
+      MessageAppendIterator append();
 
       DBusMessage* cobj() const;
 
@@ -168,7 +155,7 @@ namespace DBus
 
 template <typename T>
 inline
-DBus::Message::iterator operator>>( DBus::Message::const_pointer ptr, T& value )
+DBus::MessageIterator operator>>( std::shared_ptr<const DBus::Message> ptr, T& value )
 {
   if ( not ptr ) throw -1;
   return (*ptr) >> value;
@@ -176,7 +163,7 @@ DBus::Message::iterator operator>>( DBus::Message::const_pointer ptr, T& value )
 
 template <typename T>
 inline
-DBus::Message::append_iterator operator<<( DBus::Message::pointer ptr, const T& value )
+DBus::MessageAppendIterator operator<<( std::shared_ptr<DBus::Message> ptr, const T& value )
 {
   if ( not ptr ) throw -1;
   return (*ptr) << value;

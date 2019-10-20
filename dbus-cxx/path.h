@@ -31,9 +31,6 @@ namespace DBus
   class Path: public std::string
   {
     public:
-
-      typedef std::vector<std::string> Decomposed;
-
       Path();
 
       Path( const std::string& s, size_type pos = 0, size_type n = npos );
@@ -63,7 +60,7 @@ namespace DBus
        * string will be returned. In this way a valid root path is
        * differentiated from an invalid or empty path.
        */
-      Decomposed decomposed() const;
+      std::vector<std::string> decomposed() const;
 
       /**
        * Adds the element string to the path ensuring delimeters are properly

@@ -18,6 +18,7 @@
  ***************************************************************************/
 #include "pendingcall.h"
 #include "utility.h"
+#include "message.h"
 
 namespace DBus
 {
@@ -38,14 +39,14 @@ namespace DBus
       dbus_pending_call_ref( m_cobj );
   }
 
-  PendingCall::pointer PendingCall::create( DBusPendingCall * cobj )
+  std::shared_ptr<PendingCall> PendingCall::create( DBusPendingCall * cobj )
   {
-    return pointer( new PendingCall( cobj ) );
+    return std::shared_ptr<PendingCall>( new PendingCall( cobj ) );
   }
 
-  PendingCall::pointer PendingCall::create( const PendingCall & other )
+  std::shared_ptr<PendingCall> PendingCall::create( const PendingCall & other )
   {
-    return pointer( new PendingCall( other ) );
+    return std::shared_ptr<PendingCall>( new PendingCall( other ) );
   }
 
   PendingCall::~PendingCall()
@@ -82,10 +83,10 @@ namespace DBus
     return true;
   }
 
-  Message::pointer PendingCall::steal_reply()
+  std::shared_ptr<Message> PendingCall::steal_reply()
   {
     if ( m_cobj ) return Message::create( dbus_pending_call_steal_reply( m_cobj ) );
-    return Message::pointer();
+    return std::shared_ptr<Message>();
   }
 
   void PendingCall::block()

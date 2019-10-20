@@ -51,15 +51,15 @@ int main()
   
   int ret;
   
-  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  DBus::Connection::pointer conn = dispatcher->create_connection(DBus::BUS_SESSION);
+  std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BUS_SESSION);
   
   // request a name on the bus
   ret = conn->request_name( "dbuscxx.example.time.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
   if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) return 1;
 
-  DBus::Object::pointer object = conn->create_object("/dbuscxx/example/Time");
+  std::shared_ptr<DBus::Object> object = conn->create_object("/dbuscxx/example/Time");
 
   object->create_method<struct timeval()>("now", sigc::ptr_fun(now) );
 

@@ -46,15 +46,11 @@ namespace DBus {
       InterfaceProxy(const std::string& name);
 
     public:
-      typedef std::shared_ptr<InterfaceProxy> pointer;
+      typedef std::multimap<std::string, std::shared_ptr<MethodProxyBase>> Methods;
 
-      typedef std::weak_ptr<InterfaceProxy> weak_pointer;
-      
-      typedef std::multimap<std::string, MethodProxyBase::pointer> Methods;
+      typedef std::set<std::shared_ptr<signal_proxy_base>> Signals;
 
-      typedef std::set<signal_proxy_base::pointer> Signals;
-
-      static pointer create( const std::string& name = std::string() );
+      static std::shared_ptr<InterfaceProxy> create( const std::string& name = std::string() );
 
       virtual ~InterfaceProxy();
 
@@ -71,7 +67,7 @@ namespace DBus {
       const Methods& methods() const;
 
       /** Returns the first method with the given name */
-      MethodProxyBase::pointer method( const std::string& name ) const;
+      std::shared_ptr<MethodProxyBase> method( const std::string& name ) const;
 
       template <class T_type>
       std::shared_ptr<MethodProxy<T_type>> create_method( const std::string& name )
@@ -83,25 +79,25 @@ namespace DBus {
       }
 
       /** Adds the named method */
-      bool add_method( MethodProxyBase::pointer method );
+      bool add_method( std::shared_ptr<MethodProxyBase> method );
 
       /** Removes the first method with the given name */
       void remove_method( const std::string& name );
 
       /** Removed the specific method */
-      void remove_method( MethodProxyBase::pointer method );
+      void remove_method( std::shared_ptr<MethodProxyBase> method );
 
       /** True if the interface has a method with the given name */
       bool has_method( const std::string& name ) const;
 
       /** True if the interface has the specified method */
-      bool has_method( MethodProxyBase::pointer method ) const;
+      bool has_method( std::shared_ptr<MethodProxyBase> method ) const;
       
-      CallMessage::pointer create_call_message( const std::string& method_name ) const;
+      std::shared_ptr<CallMessage> create_call_message( const std::string& method_name ) const;
 
-      ReturnMessage::const_pointer call( CallMessage::const_pointer, int timeout_milliseconds=-1 ) const;
+      std::shared_ptr<const ReturnMessage> call( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
-      PendingCall::pointer call_async( CallMessage::const_pointer, int timeout_milliseconds=-1 ) const;
+      std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
       template <class T_return, class... T_arg>
       std::shared_ptr<signal_proxy<T_return,T_arg...> > create_signal( const std::string& sig_name )
@@ -114,26 +110,26 @@ namespace DBus {
 
       const Signals& signals() const;
 
-      signal_proxy_base::pointer signal( const std::string& signame );
+      std::shared_ptr<signal_proxy_base> signal( const std::string& signame );
 
-      bool add_signal( signal_proxy_base::pointer sig );
+      bool add_signal( std::shared_ptr<signal_proxy_base> sig );
 
       bool remove_signal( const std::string& signame );
 
-      bool remove_signal( signal_proxy_base::pointer sig );
+      bool remove_signal( std::shared_ptr<signal_proxy_base> sig );
 
       bool has_signal( const std::string& signame ) const;
 
-      bool has_signal( signal_proxy_base::pointer sig ) const;
+      bool has_signal( std::shared_ptr<signal_proxy_base> sig ) const;
 
       /** Signal emitted when the name is changed */
       sigc::signal<void(const std::string&/*old name*/,const std::string&/*new name*/)> signal_name_changed();
 
       /** Signal emitted when a method of the given name is added */
-      sigc::signal<void(MethodProxyBase::pointer)> signal_method_added();
+      sigc::signal<void(std::shared_ptr<MethodProxyBase>)> signal_method_added();
 
       /** Signal emitted when a method of the given name is removed */
-      sigc::signal<void(MethodProxyBase::pointer)> signal_method_removed();
+      sigc::signal<void(std::shared_ptr<MethodProxyBase>)> signal_method_removed();
 
     protected:
 
@@ -154,15 +150,15 @@ namespace DBus {
 
       sigc::signal<void(const std::string&,const std::string&)> m_signal_name_changed;
       
-      sigc::signal<void(MethodProxyBase::pointer)> m_signal_method_added;
+      sigc::signal<void(std::shared_ptr<MethodProxyBase>)> m_signal_method_added;
       
-      sigc::signal<void(MethodProxyBase::pointer)> m_signal_method_removed;
+      sigc::signal<void(std::shared_ptr<MethodProxyBase>)> m_signal_method_removed;
 
-      typedef std::map<MethodProxyBase::pointer,sigc::connection> MethodSignalNameConnections;
+      typedef std::map<std::shared_ptr<MethodProxyBase>,sigc::connection> MethodSignalNameConnections;
 
       MethodSignalNameConnections m_method_signal_name_connections;
 
-      void on_method_name_changed(const std::string& oldname, const std::string& newname, MethodProxyBase::pointer method);
+      void on_method_name_changed(const std::string& oldname, const std::string& newname, std::shared_ptr<MethodProxyBase> method);
 
       void on_object_set_connection( std::shared_ptr<Connection> conn );
 

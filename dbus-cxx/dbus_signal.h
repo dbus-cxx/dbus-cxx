@@ -52,8 +52,6 @@ class signal
   : public sigc::signal<void(T_type...)>, public signal_base
 {
 public:
-  typedef std::shared_ptr<signal> pointer;
-
   signal(const std::string& interface, const std::string& name):
     signal_base(interface, name)
   {
@@ -78,29 +76,29 @@ public:
     signal_base(path, interface, name)
   { }
 
-  static pointer create(const std::string& interface, const std::string& name)
+  static std::shared_ptr<signal> create(const std::string& interface, const std::string& name)
   {
-    return pointer( new signal(interface, name) );
+    return std::shared_ptr<signal>( new signal(interface, name) );
   }
 
-  static pointer create(const std::string& path, const std::string& interface, const std::string& name)
+  static std::shared_ptr<signal> create(const std::string& path, const std::string& interface, const std::string& name)
   {
-    return pointer( new signal(path, interface, name) );
+    return std::shared_ptr<signal>( new signal(path, interface, name) );
   }
 
-  static pointer create(const std::string& interface, const std::string& name, const signal& src)
+  static std::shared_ptr<signal> create(const std::string& interface, const std::string& name, const signal& src)
   {
-    return pointer( new signal(interface, name, src) );
+    return std::shared_ptr<signal>( new signal(interface, name, src) );
   }
 
-  static pointer create(const std::string& path, const std::string& interface, const std::string& name, const signal& src)
+  static std::shared_ptr<signal> create(const std::string& path, const std::string& interface, const std::string& name, const signal& src)
   {
-    return pointer( new signal(path, interface, name, src) );
+    return std::shared_ptr<signal>( new signal(path, interface, name, src) );
   }
 
-  virtual signal_base::pointer clone()
+  virtual std::shared_ptr<signal_base> clone()
   {
-    return signal_base::pointer( new signal(*this) );
+    return std::shared_ptr<signal_base>( new signal(*this) );
   }
 
   /** Returns a DBus XML description of this interface */
@@ -137,7 +135,7 @@ public:
   void internal_callback(T_type... args)
   {
     // DBUS_CXX_DEBUG( "signal::internal_callback: " FOR(1,$1,[ << arg%1]) );
-    SignalMessage::pointer __msg = SignalMessage::create(m_path, m_interface, m_name);
+    std::shared_ptr<SignalMessage> __msg = SignalMessage::create(m_path, m_interface, m_name);
     if ( not m_destination.empty() ) __msg->set_destination(m_destination);
     (*__msg << ... << args);
     bool result = this->handle_dbus_outgoing(__msg);

@@ -38,7 +38,7 @@ namespace DBus
   {
   }
 
-  signal_base::signal_base(Connection::pointer connection, const std::string& path, const std::string& interface, const std::string& name):
+  signal_base::signal_base(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface, const std::string& name):
       m_connection(connection),
       m_path(path),
       m_interface(interface),
@@ -46,7 +46,7 @@ namespace DBus
   {
   }
 
-  signal_base::signal_base(Connection::pointer connection, const std::string& interface, const std::string& name):
+  signal_base::signal_base(std::shared_ptr<Connection> connection, const std::string& interface, const std::string& name):
       m_connection(connection),
       m_interface(interface),
       m_name(name)
@@ -126,9 +126,9 @@ namespace DBus
     m_destination = s;
   }
 
-  bool signal_base::handle_dbus_outgoing(Message::const_pointer msg)
+  bool signal_base::handle_dbus_outgoing(std::shared_ptr<const Message> msg)
   {
-    Connection::pointer conn = m_connection.lock();
+    std::shared_ptr<Connection> conn = m_connection.lock();
     if ( not conn or not conn->is_valid() ) return false;
     conn << msg;
     return true;

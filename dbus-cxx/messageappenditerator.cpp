@@ -81,7 +81,7 @@ namespace DBus
     return result;
   }
 
-  bool MessageAppendIterator::protected_append( const FileDescriptor::pointer& fd ){
+  bool MessageAppendIterator::protected_append( const std::shared_ptr<FileDescriptor>& fd ){
     bool result;
     int raw_fd = fd->getDescriptor();
 
@@ -107,7 +107,7 @@ namespace DBus
     this->init( message );
   }
 
-  MessageAppendIterator::MessageAppendIterator( Message::pointer message ):
+  MessageAppendIterator::MessageAppendIterator( std::shared_ptr<Message> message ):
       m_message( NULL ), m_subiter( NULL )
   {
     memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
@@ -239,7 +239,7 @@ namespace DBus
     return this->protected_append( d );
   }
 
-  bool MessageAppendIterator::append( const FileDescriptor::pointer& fd ){
+  bool MessageAppendIterator::append( const std::shared_ptr<FileDescriptor>& fd ){
     return this->protected_append( fd );
   }
 

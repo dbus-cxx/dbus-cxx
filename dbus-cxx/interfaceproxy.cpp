@@ -32,9 +32,9 @@ namespace DBus
   {
   }
 
-  InterfaceProxy::pointer InterfaceProxy::create(const std::string& name)
+  std::shared_ptr<InterfaceProxy> InterfaceProxy::create(const std::string& name)
   {
-    return pointer( new InterfaceProxy(name) );
+    return std::shared_ptr<InterfaceProxy>( new InterfaceProxy(name) );
   }
 
   InterfaceProxy::~ InterfaceProxy( )
@@ -52,10 +52,10 @@ namespace DBus
     return Path();
   }
 
-  Connection::pointer InterfaceProxy::connection() const
+  std::shared_ptr<Connection> InterfaceProxy::connection() const
   {
     if ( m_object ) return m_object->connection();
-    return Connection::pointer();
+    return std::shared_ptr<Connection>();
   }
 
   const std::string & InterfaceProxy::name() const
@@ -79,19 +79,19 @@ namespace DBus
     return m_methods;
   }
 
-  MethodProxyBase::pointer InterfaceProxy::method( const std::string& name ) const
+  std::shared_ptr<MethodProxyBase> InterfaceProxy::method( const std::string& name ) const
   {
     Methods::const_iterator iter;
     std::shared_lock lock( m_methods_rwlock );
     
     iter = m_methods.find( name );
 
-    if ( iter == m_methods.end() ) return MethodProxyBase::pointer();
+    if ( iter == m_methods.end() ) return std::shared_ptr<MethodProxyBase>();
 
     return iter->second;
   }
 
-  bool InterfaceProxy::add_method( MethodProxyBase::pointer method )
+  bool InterfaceProxy::add_method( std::shared_ptr<MethodProxyBase> method )
   {
     bool result = true;
     
@@ -130,7 +130,7 @@ namespace DBus
   void InterfaceProxy::remove_method( const std::string & name )
   {
     Methods::iterator iter;
-    MethodProxyBase::pointer method;
+    std::shared_ptr<MethodProxyBase> method;
     MethodSignalNameConnections::iterator i;
 
     {
@@ -157,7 +157,7 @@ namespace DBus
     if ( method ) m_signal_method_removed.emit( method );
   }
 
-  void InterfaceProxy::remove_method( MethodProxyBase::pointer method )
+  void InterfaceProxy::remove_method( std::shared_ptr<MethodProxyBase> method )
   {
     Methods::iterator current, upper;
     MethodSignalNameConnections::iterator i;
@@ -203,7 +203,7 @@ namespace DBus
     return ( iter != m_methods.end() );
   }
 
-  bool InterfaceProxy::has_method( MethodProxyBase::pointer method ) const
+  bool InterfaceProxy::has_method( std::shared_ptr<MethodProxyBase> method ) const
   {
     Methods::const_iterator current, upper;
     bool found = false;
@@ -230,21 +230,21 @@ namespace DBus
     return found;
   }
 
-  CallMessage::pointer InterfaceProxy::create_call_message( const std::string& method_name ) const
+  std::shared_ptr<CallMessage> InterfaceProxy::create_call_message( const std::string& method_name ) const
   {
-    if ( not m_object ) return CallMessage::pointer();
+    if ( not m_object ) return std::shared_ptr<CallMessage>();
     return m_object->create_call_message( m_name, method_name );
   }
 
-  ReturnMessage::const_pointer InterfaceProxy::call( CallMessage::const_pointer call_message, int timeout_milliseconds ) const
+  std::shared_ptr<const ReturnMessage> InterfaceProxy::call( std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds ) const
   {
-    if ( not m_object ) return ReturnMessage::const_pointer();
+    if ( not m_object ) return std::shared_ptr<const ReturnMessage>();
     return m_object->call( call_message, timeout_milliseconds );
   }
 
-  PendingCall::pointer InterfaceProxy::call_async( CallMessage::const_pointer call_message, int timeout_milliseconds ) const
+  std::shared_ptr<PendingCall> InterfaceProxy::call_async( std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds ) const
   {
-    if ( not m_object ) return PendingCall::pointer();
+    if ( not m_object ) return std::shared_ptr<PendingCall>();
     return m_object->call_async( call_message, timeout_milliseconds );
   }
 
@@ -253,16 +253,16 @@ namespace DBus
     return m_signals;
   }
 
-  signal_proxy_base::pointer InterfaceProxy::signal(const std::string & signame)
+  std::shared_ptr<signal_proxy_base> InterfaceProxy::signal(const std::string & signame)
   {
     for ( Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++ )
     {
       if ( (*i)->name() == signame ) return *i;
     }
-    return signal_proxy_base::pointer();
+    return std::shared_ptr<signal_proxy_base>();
   }
 
-  bool InterfaceProxy::add_signal(signal_proxy_base::pointer sig)
+  bool InterfaceProxy::add_signal(std::shared_ptr<signal_proxy_base> sig)
   {
     // is it a valid signal?
     if ( not sig ) return false;
@@ -289,7 +289,7 @@ namespace DBus
     return this->remove_signal( this->signal(signame) );
   }
 
-  bool InterfaceProxy::remove_signal(signal_proxy_base::pointer sig)
+  bool InterfaceProxy::remove_signal(std::shared_ptr<signal_proxy_base> sig)
   {
     if ( not sig ) return false;
     if ( not this->has_signal(sig) ) return false;
@@ -307,7 +307,7 @@ namespace DBus
     return false;
   }
 
-  bool InterfaceProxy::has_signal(signal_proxy_base::pointer sig) const
+  bool InterfaceProxy::has_signal(std::shared_ptr<signal_proxy_base> sig) const
   {
     return m_signals.find(sig) != m_signals.end();
   }
@@ -317,17 +317,17 @@ namespace DBus
     return m_signal_name_changed;
   }
 
-  sigc::signal< void(MethodProxyBase::pointer) > InterfaceProxy::signal_method_added()
+  sigc::signal< void(std::shared_ptr<MethodProxyBase>) > InterfaceProxy::signal_method_added()
   {
     return m_signal_method_added;
   }
 
-  sigc::signal< void(MethodProxyBase::pointer)> InterfaceProxy::signal_method_removed()
+  sigc::signal< void(std::shared_ptr<MethodProxyBase>)> InterfaceProxy::signal_method_removed()
   {
     return m_signal_method_removed;
   }
 
-  void InterfaceProxy::on_method_name_changed(const std::string & oldname, const std::string & newname, MethodProxyBase::pointer method)
+  void InterfaceProxy::on_method_name_changed(const std::string & oldname, const std::string & newname, std::shared_ptr<MethodProxyBase> method)
   {
     std::unique_lock lock( m_methods_rwlock );
 

@@ -35,9 +35,9 @@ namespace DBus
   {
   }
 
-  Interface::pointer Interface::create(const std::string& name)
+  std::shared_ptr<Interface> Interface::create(const std::string& name)
   {
-    return pointer( new Interface(name) );
+    return std::shared_ptr<Interface>( new Interface(name) );
   }
 
   Interface::~ Interface( )
@@ -55,10 +55,10 @@ namespace DBus
     return Path();
   }
 
-  Connection::pointer Interface::connection() const
+  std::shared_ptr<Connection> Interface::connection() const
   {
     if ( m_object ) return m_object->connection();
-    return Connection::pointer();
+    return std::shared_ptr<Connection>();
   }
 
   const std::string & Interface::name() const
@@ -86,7 +86,7 @@ namespace DBus
     return m_methods;
   }
 
-  MethodBase::pointer Interface::method( const std::string& name ) const
+  std::shared_ptr<MethodBase> Interface::method( const std::string& name ) const
   {
     Methods::const_iterator iter;
 
@@ -96,12 +96,12 @@ namespace DBus
       iter = m_methods.find( name );
     }
 
-    if ( iter == m_methods.end() ) return MethodBase::pointer();
+    if ( iter == m_methods.end() ) return std::shared_ptr<MethodBase>();
 
     return iter->second;
   }
 
-  bool Interface::add_method( MethodBase::pointer method )
+  bool Interface::add_method( std::shared_ptr<MethodBase> method )
   {
     bool result = true;
     
@@ -135,7 +135,7 @@ namespace DBus
   void Interface::remove_method( const std::string & name )
   {
     Methods::iterator iter;
-    MethodBase::pointer method;
+    std::shared_ptr<MethodBase> method;
     MethodSignalNameConnections::iterator i;
 
     {
@@ -171,7 +171,7 @@ namespace DBus
     return ( iter != m_methods.end() );
   }
 
-  bool Interface::add_signal( signal_base::pointer sig )
+  bool Interface::add_signal( std::shared_ptr<signal_base> sig )
   {
     bool result = false;
 
@@ -201,7 +201,7 @@ namespace DBus
     return result;
   }
 
-  bool Interface::remove_signal( signal_base::pointer signal )
+  bool Interface::remove_signal( std::shared_ptr<signal_base> signal )
   {
     bool result = false;
     std::unique_lock lock( m_signals_rwlock );
@@ -239,7 +239,7 @@ namespace DBus
     return result;
   }
 
-  bool Interface::has_signal( signal_base::pointer signal ) const
+  bool Interface::has_signal( std::shared_ptr<signal_base> signal ) const
   {
     bool result;
     std::shared_lock lock( m_signals_rwlock );
@@ -271,9 +271,9 @@ namespace DBus
     return m_signals;
   }
 
-  signal_base::pointer Interface::signal(const std::string& signal_name)
+  std::shared_ptr<signal_base> Interface::signal(const std::string& signal_name)
   {
-    signal_base::pointer sig;
+    std::shared_ptr<signal_base> sig;
     std::shared_lock lock( m_signals_rwlock );
 
     for ( Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++ )
@@ -293,12 +293,12 @@ namespace DBus
     return m_signal_name_changed;
   }
 
-  sigc::signal< void( MethodBase::pointer)> Interface::signal_method_added()
+  sigc::signal< void( std::shared_ptr<MethodBase>)> Interface::signal_method_added()
   {
     return m_signal_method_added;
   }
 
-  sigc::signal< void(MethodBase::pointer)> Interface::signal_method_removed()
+  sigc::signal< void(std::shared_ptr<MethodBase>)> Interface::signal_method_removed()
   {
     return m_signal_method_removed;
   }
@@ -319,12 +319,12 @@ namespace DBus
     return sout.str();
   }
 
-  HandlerResult Interface::handle_call_message( Connection::pointer connection, CallMessage::const_pointer message )
+  HandlerResult Interface::handle_call_message( std::shared_ptr<Connection> connection, std::shared_ptr<const CallMessage> message )
   {
     SIMPLELOGGER_DEBUG( "dbus.Interface", "handle_call_message  interface=" << m_name );
     
     Methods::iterator current, upper;
-    MethodBase::pointer method;
+    std::shared_ptr<MethodBase> method;
     HandlerResult result = NOT_HANDLED;
 
     // ========== READ LOCK ==========
@@ -357,7 +357,7 @@ namespace DBus
     return result;
   }
 
-  void Interface::on_method_name_changed(const std::string & oldname, const std::string & newname, MethodBase::pointer method)
+  void Interface::on_method_name_changed(const std::string & oldname, const std::string & newname, std::shared_ptr<MethodBase> method)
   {
     std::unique_lock lock( m_methods_rwlock );
 
@@ -389,7 +389,7 @@ namespace DBus
     }
   }
 
-  void Interface::set_connection(Connection::pointer conn)
+  void Interface::set_connection(std::shared_ptr<Connection> conn)
   {
     SIMPLELOGGER_DEBUG("dbus.Interface", "Interface(" << this->name() << ")::set_connection for " << m_signals.size() << " sub signals");
     for (Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++)
@@ -410,7 +410,7 @@ namespace DBus
     {
       for ( Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++ )
       {
-        (*i)->set_connection( Connection::pointer() );
+        (*i)->set_connection( std::shared_ptr<Connection>() );
         (*i)->set_path(std::string());
       }
     }

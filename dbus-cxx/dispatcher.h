@@ -55,25 +55,21 @@ namespace DBus
       Dispatcher(bool is_running=true);
 
     public:
-      
-      typedef std::shared_ptr<Dispatcher> pointer;
 
-      typedef std::shared_ptr<const Dispatcher> const_pointer;
-
-      static pointer create( bool is_running=true );
+      static std::shared_ptr<Dispatcher> create( bool is_running=true );
 
       virtual ~Dispatcher();
       
       /** @name Managing Connections */
       //@{
 
-      Connection::pointer create_connection( DBusConnection* cobj = NULL, bool is_private=false );
+      std::shared_ptr<Connection> create_connection( DBusConnection* cobj = NULL, bool is_private=false );
 
-      Connection::pointer create_connection( BusType type, bool is_private=false );
+      std::shared_ptr<Connection> create_connection( BusType type, bool is_private=false );
 
-      Connection::pointer create_connection( const Connection& other );
+      std::shared_ptr<Connection> create_connection( const Connection& other );
 
-      bool add_connection( Connection::pointer connection );
+      bool add_connection( std::shared_ptr<Connection> connection );
 
       //@}
 
@@ -85,7 +81,7 @@ namespace DBus
 
     protected:
       
-      typedef std::list<Connection::pointer> Connections;
+      typedef std::list<std::shared_ptr<Connection>> Connections;
       Connections m_connections;
       
       volatile bool m_running;
@@ -95,12 +91,12 @@ namespace DBus
       class WatchPair {
       public:
           WatchPair() : read_watch( NULL ), write_watch( NULL ){}
-          WatchPair( Watch::pointer read, Watch::pointer write ) :
+          WatchPair( std::shared_ptr<Watch> read, std::shared_ptr<Watch> write ) :
               read_watch( read ),
               write_watch( write ) {}
 
-          Watch::pointer read_watch;
-          Watch::pointer write_watch;
+          std::shared_ptr<Watch> read_watch;
+          std::shared_ptr<Watch> write_watch;
       };
       std::mutex m_mutex_watches;
       std::map<int,WatchPair> m_watches_map;
@@ -122,21 +118,21 @@ namespace DBus
       
       virtual void dispatch_thread_main();
       
-      bool on_add_watch(Watch::pointer);
+      bool on_add_watch(std::shared_ptr<Watch>);
       
-      bool on_remove_watch(Watch::pointer);
+      bool on_remove_watch(std::shared_ptr<Watch>);
       
-      void on_watch_toggled(Watch::pointer);
+      void on_watch_toggled(std::shared_ptr<Watch>);
       
-      bool on_add_timeout(Timeout::pointer);
+      bool on_add_timeout(std::shared_ptr<Timeout>);
       
-      bool on_remove_timeout(Timeout::pointer);
+      bool on_remove_timeout(std::shared_ptr<Timeout>);
       
-      bool on_timeout_toggled(Timeout::pointer);
+      bool on_timeout_toggled(std::shared_ptr<Timeout>);
       
-      void on_wakeup_main(Connection::pointer);
+      void on_wakeup_main(std::shared_ptr<Connection>);
       
-      void on_dispatch_status_changed(DispatchStatus, Connection::pointer);
+      void on_dispatch_status_changed(DispatchStatus, std::shared_ptr<Connection>);
 
       void wakeup_thread();
 

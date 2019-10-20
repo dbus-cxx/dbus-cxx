@@ -42,10 +42,8 @@ protected:
         }
 
 public:
-      typedef std::shared_ptr<FileDescriptor> pointer;
-
-      static pointer create( int fd ){
-          pointer p = pointer(new FileDescriptor( fd ));
+      static std::shared_ptr<FileDescriptor> create( int fd ){
+          std::shared_ptr<FileDescriptor> p(new FileDescriptor( fd ));
           return p;
       }
 

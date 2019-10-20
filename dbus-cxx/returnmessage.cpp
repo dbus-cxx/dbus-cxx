@@ -30,40 +30,34 @@ namespace DBus
   {
   }
 
-  ReturnMessage::ReturnMessage( Message::pointer callee ):
+  ReturnMessage::ReturnMessage( std::shared_ptr<Message> callee ):
       Message(callee)
   {
   }
 
-  ReturnMessage::ReturnMessage( Message::const_pointer callee ):
+  ReturnMessage::ReturnMessage( std::shared_ptr<const Message> callee ):
       Message(callee)
   {
   }
 
-  void retmsg_wp_deleter( void* v )
+  std::shared_ptr<ReturnMessage> ReturnMessage::create()
   {
-    ReturnMessage::weak_pointer* wp = static_cast<ReturnMessage::weak_pointer*>(v);
-    delete wp;
+    return std::shared_ptr<ReturnMessage>(new ReturnMessage() );
   }
 
-  ReturnMessage::pointer ReturnMessage::create()
+  std::shared_ptr<ReturnMessage> ReturnMessage::create(DBusMessage * callee)
   {
-    return pointer(new ReturnMessage() );
+    return std::shared_ptr<ReturnMessage>(new ReturnMessage(callee) );
   }
 
-  ReturnMessage::pointer ReturnMessage::create(DBusMessage * callee)
+  std::shared_ptr<ReturnMessage> ReturnMessage::create(std::shared_ptr<Message> callee)
   {
-    return pointer(new ReturnMessage(callee) );
+    return std::shared_ptr<ReturnMessage>(new ReturnMessage(callee) );
   }
 
-  ReturnMessage::pointer ReturnMessage::create(Message::pointer callee)
+  std::shared_ptr<ReturnMessage> ReturnMessage::create(std::shared_ptr<const Message> callee)
   {
-    return pointer(new ReturnMessage(callee) );
-  }
-
-  ReturnMessage::pointer ReturnMessage::create(Message::const_pointer callee)
-  {
-    return pointer(new ReturnMessage(callee) );
+    return std::shared_ptr<ReturnMessage>(new ReturnMessage(callee) );
   }
 
   const char* ReturnMessage::signature() const

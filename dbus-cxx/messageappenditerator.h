@@ -87,7 +87,7 @@ namespace DBus
       bool append( const std::string& v );
       bool append( const Signature& v );
       bool append( const Path& v );
-      bool append( const FileDescriptor::pointer& fd);
+      bool append( const std::shared_ptr<FileDescriptor>& fd);
       
       bool append( char v );
       bool append( int8_t v );
@@ -235,7 +235,7 @@ namespace DBus
       bool protected_append( const std::string& v );
       bool protected_append( const Signature& v );
       bool protected_append( const Path& v );
-      bool protected_append( const FileDescriptor::pointer& fd );
+      bool protected_append( const std::shared_ptr<FileDescriptor>& fd );
   };
 
 }

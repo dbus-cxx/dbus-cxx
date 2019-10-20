@@ -66,7 +66,7 @@ bool path_test_invalid_missing_leading_slash()
 bool path_decompose_valid()
 {
   DBus::Path path = "/this/1/is/a/valid/path";
-  DBus::Path::Decomposed decomposed = path.decomposed();
+  std::vector<std::string> decomposed = path.decomposed();
   TEST_ASSERT_RET_FAIL( decomposed.size() == 6 );
   TEST_EQUALS_RET_FAIL( std::string("this"),  decomposed[0] );
   TEST_EQUALS_RET_FAIL( std::string("1"),     decomposed[1] );
@@ -81,7 +81,7 @@ bool path_decompose_valid()
 bool path_decompose_root()
 {
   DBus::Path path = "/";
-  DBus::Path::Decomposed decomposed = path.decomposed();
+  std::vector<std::string> decomposed = path.decomposed();
   TEST_EQUALS_RET_FAIL( decomposed.size(), 1 );
   TEST_EQUALS_RET_FAIL( decomposed[0].empty(), true );
 
@@ -91,7 +91,7 @@ bool path_decompose_root()
 bool path_decompose_invalid()
 {
   DBus::Path path = "this/1/is/an/invalid/path/";
-  DBus::Path::Decomposed decomposed = path.decomposed();
+  std::vector<std::string> decomposed = path.decomposed();
   TEST_ASSERT_RET_FAIL( decomposed.empty() );
   return true;
 }
@@ -99,7 +99,7 @@ bool path_decompose_invalid()
 bool path_decompose_empty()
 {
   DBus::Path path = "";
-  DBus::Path::Decomposed decomposed = path.decomposed();
+  std::vector<std::string> decomposed = path.decomposed();
   TEST_ASSERT_RET_FAIL( decomposed.empty() );
   return true;
 }

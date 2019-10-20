@@ -39,7 +39,7 @@ void mylog( const char* logger_name, const struct SL_LogLocation* location,
         <<  logger_name << " - " << log_string << std::endl;
 }
 
-DBus::FileDescriptor::pointer getFiledescriptor(){
+std::shared_ptr<DBus::FileDescriptor> getFiledescriptor(){
   return DBus::FileDescriptor::create( pipes[1] );
 }
 
@@ -57,16 +57,16 @@ int main( int argc, char** argv ){
   //DBus::setLoggingFunction( mylog );
 
   DBus::init();
-  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
-  DBus::Connection::pointer conn = dispatcher->create_connection(DBus::BUS_SESSION);
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BUS_SESSION);
 
   // request a name on the bus
   ret = conn->request_name( "dbuscxx.example.filedescriptor.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
   if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) return 1;
 
-  DBus::Object::pointer object = conn->create_object("/dbuscxx/example/FileDescriptor");
+  std::shared_ptr<DBus::Object> object = conn->create_object("/dbuscxx/example/FileDescriptor");
 
-  object->create_method<DBus::FileDescriptor::pointer()>("Filedescriptor.basic", "getFiledescriptor", sigc::ptr_fun(getFiledescriptor) );
+  object->create_method<std::shared_ptr<DBus::FileDescriptor>()>("Filedescriptor.basic", "getFiledescriptor", sigc::ptr_fun(getFiledescriptor) );
 
   std::cout << "Running..." << std::flush;
   

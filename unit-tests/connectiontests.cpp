@@ -20,12 +20,12 @@
 
 #include "test_macros.h"
 
-DBus::Dispatcher::pointer dispatch;
+std::shared_ptr<DBus::Dispatcher> dispatch;
 
 bool connection_create_signal_proxy(){
-    DBus::Connection::pointer conn = dispatch->create_connection(DBus::BUS_SESSION);
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BUS_SESSION);
 
-    DBus::signal_proxy_simple::pointer proxy = conn->create_signal_proxy("interface.name", "myname");
+    std::shared_ptr<DBus::signal_proxy_base> proxy = conn->create_signal_proxy("interface.name", "myname");
 
     DBus::Connection::InterfaceToNameProxySignalMap map = conn->get_signal_proxies();
     TEST_ASSERT_RET_FAIL( map.size() == 1 );
@@ -40,9 +40,9 @@ bool connection_create_signal_proxy(){
 }
 
 bool connection_get_signal_proxy_by_iface(){
-    DBus::Connection::pointer conn = dispatch->create_connection(DBus::BUS_SESSION);
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BUS_SESSION);
 
-    DBus::signal_proxy_simple::pointer proxy = conn->create_signal_proxy("interface.name", "myname");
+    std::shared_ptr<DBus::signal_proxy_base> proxy = conn->create_signal_proxy("interface.name", "myname");
 
     DBus::Connection::NameToProxySignalMap signals = conn->get_signal_proxies("interface.name");
     TEST_ASSERT_RET_FAIL( signals.size() == 1 );
@@ -51,9 +51,9 @@ bool connection_get_signal_proxy_by_iface(){
 }
 
 bool connection_get_signal_proxy_by_iface_and_name(){
-    DBus::Connection::pointer conn = dispatch->create_connection(DBus::BUS_SESSION);
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BUS_SESSION);
 
-    DBus::signal_proxy_simple::pointer proxy = conn->create_signal_proxy("interface.name", "myname");
+    std::shared_ptr<DBus::signal_proxy_base> proxy = conn->create_signal_proxy("interface.name", "myname");
 
     DBus::Connection::ProxySignals signals = conn->get_signal_proxies("interface.name", "myname");
     TEST_ASSERT_RET_FAIL( signals.size() == 1 );
@@ -67,9 +67,9 @@ static double add(double a, double b){
 }
 
 bool connection_test_method_2arg(){
-    DBus::Connection::pointer conn = dispatch->create_connection(DBus::BUS_SESSION);
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BUS_SESSION);
 
-    DBus::Object::pointer object = conn->create_object("/dbuscxx/example/Calculator");
+    std::shared_ptr<DBus::Object> object = conn->create_object("/dbuscxx/example/Calculator");
 
     object->create_method<double(double,double)>("Calculator.Basic", "add", sigc::ptr_fun(add) );
 

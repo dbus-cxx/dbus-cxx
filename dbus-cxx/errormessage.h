@@ -42,23 +42,18 @@ namespace DBus
 
       ErrorMessage( DBusMessage* cobj );
 
-      ErrorMessage( Message::pointer msg );
+      ErrorMessage( std::shared_ptr<Message> msg );
 
-      ErrorMessage( Message::const_pointer msg, const std::string& name, const std::string& message );
+      ErrorMessage( std::shared_ptr<const Message> msg, const std::string& name, const std::string& message );
 
     public:
+      static std::shared_ptr<ErrorMessage> create();
 
-      typedef std::shared_ptr<ErrorMessage> pointer;
+      static std::shared_ptr<ErrorMessage> create( DBusMessage* cobj );
 
-      typedef std::weak_ptr<ErrorMessage> weak_pointer;
+      static std::shared_ptr<ErrorMessage> create( std::shared_ptr<Message> msg );
 
-      static pointer create();
-
-      static pointer create( DBusMessage* cobj );
-
-      static pointer create( Message::pointer msg );
-
-      static pointer create( Message::const_pointer msg, const std::string& name, const std::string& message );
+      static std::shared_ptr<ErrorMessage> create( std::shared_ptr<const Message> msg, const std::string& name, const std::string& message );
 
       const char* name() const;
 

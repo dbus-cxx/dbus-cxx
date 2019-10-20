@@ -41,12 +41,7 @@ namespace DBus
       ObjectPathHandler(const std::string& path, PrimaryFallback pf);
 
     public:
-
-      typedef std::shared_ptr<ObjectPathHandler> pointer;
-
-      typedef std::weak_ptr<ObjectPathHandler> weak_pointer;
-
-      static pointer create(const std::string& path, PrimaryFallback pf=PRIMARY);
+      static std::shared_ptr<ObjectPathHandler> create(const std::string& path, PrimaryFallback pf=PRIMARY);
       
       virtual ~ObjectPathHandler();
 

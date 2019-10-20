@@ -38,11 +38,6 @@ namespace DBus
       MessageFilter();
 
     public:
-      
-      typedef std::shared_ptr<MessageFilter> pointer;
-
-      typedef std::weak_ptr<MessageFilter> weak_pointer;
-
       virtual ~MessageFilter();
 
       /** The default implementation simply emits the message signal and returns the result */
@@ -54,7 +49,7 @@ namespace DBus
 
   };
 
-  typedef sigc::signal<FilterResult(std::shared_ptr<Connection>,Message::pointer)>::accumulated<FilterAccumulator> FilterSignal;
+  typedef sigc::signal<FilterResult(std::shared_ptr<Connection>,std::shared_ptr<Message>)>::accumulated<FilterAccumulator> FilterSignal;
 
 }
 

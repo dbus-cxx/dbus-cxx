@@ -52,20 +52,6 @@ namespace DBus {
 
     public:
       /**
-       * Typedef to smart pointers to Interface.
-       * 
-       * Can access \e type as \c Interface::pointer
-       */
-      typedef std::shared_ptr<Interface> pointer;
-
-      /**
-       * Typedef to weak smart pointers to Interface.
-       *
-       * Can access \e type as \c Interface::weak_pointer
-       */
-      typedef std::weak_ptr<Interface> weak_pointer;
-      
-      /**
        * Typedef to the storage structure for methods.
        *
        * \b Data \b Structure - multimap is used since multiple methods can have the same name. This is what allows for overloading.
@@ -74,7 +60,7 @@ namespace DBus {
        *
        * Can access \e type as \c Interface::Methods
        */
-      typedef std::multimap<std::string, MethodBase::pointer> Methods;
+      typedef std::multimap<std::string, std::shared_ptr<MethodBase>> Methods;
 
       /**
        * Typedef to the storage structure for signals.
@@ -83,13 +69,13 @@ namespace DBus {
        *
        * Can access \e type as \c Interface::Signals
        */
-      typedef std::set<signal_base::pointer> Signals;
+      typedef std::set<std::shared_ptr<signal_base>> Signals;
 
       /**
        * Creates a named Interface
        * @param name The name of this interface
        */
-      static pointer create( const std::string& name = std::string() );
+      static std::shared_ptr<Interface> create( const std::string& name = std::string() );
 
       virtual ~Interface();
 
@@ -119,7 +105,7 @@ namespace DBus {
        * @param conn The Connection to send the reply message on
        * @param msg The CallMessage to handle
        */
-      HandlerResult handle_call_message( std::shared_ptr<Connection> connection, CallMessage::const_pointer message );
+      HandlerResult handle_call_message( std::shared_ptr<Connection> connection, std::shared_ptr<const CallMessage> message );
 
       /** Get the name of this interface */
       const std::string& name() const;
@@ -131,7 +117,7 @@ namespace DBus {
       const Methods& methods() const;
 
       /** Returns the first method with the given name */
-      MethodBase::pointer method( const std::string& name ) const;
+      std::shared_ptr<MethodBase> method( const std::string& name ) const;
 
       /**
        * Creates a method with a return value (possibly \c void ) and $1 parameters
@@ -155,7 +141,7 @@ namespace DBus {
       create_method( const std::string& name, sigc::slot<T_type> slot );
 
       /** Adds the named method */
-      bool add_method( MethodBase::pointer method );
+      bool add_method( std::shared_ptr<MethodBase> method );
 
       /** Removes the first method with the given name */
       void remove_method( const std::string& name );
@@ -167,7 +153,7 @@ namespace DBus {
        * Adds the given signal
        * @return true if the signal was successfully added, false otherwise
        */
-      bool add_signal( signal_base::pointer signal );
+      bool add_signal( std::shared_ptr<signal_base> signal );
 
       /**
        * Removes the given signal
@@ -175,7 +161,7 @@ namespace DBus {
        *
        * One reason a signal couldn't be removed is if it wasn't a part of the interface.
        */
-      bool remove_signal( signal_base::pointer signal );
+      bool remove_signal( std::shared_ptr<signal_base> signal );
 
       /**
        * Removes all signals with the given name
@@ -185,7 +171,7 @@ namespace DBus {
       /**
        * True if the given signal is part of this interface
        */
-      bool has_signal( signal_base::pointer signal ) const;
+      bool has_signal( std::shared_ptr<signal_base> signal ) const;
 
       /** True if this interface has at least one signal with the given name */
       bool has_signal( const std::string& name ) const;
@@ -207,16 +193,16 @@ namespace DBus {
        * If more than one signal has a given name there are no guarantees
        * as to which signal will be returned.
        */
-      signal_base::pointer signal(const std::string& signal_name);
+      std::shared_ptr<signal_base> signal(const std::string& signal_name);
 
       /** Signal emitted when the name is changed */
       sigc::signal<void(const std::string&/*old name*/,const std::string&/*new name*/)> signal_name_changed();
 
       /** Signal emitted when a method of the given name is added */
-      sigc::signal<void(MethodBase::pointer)> signal_method_added();
+      sigc::signal<void(std::shared_ptr<MethodBase>)> signal_method_added();
 
       /** Signal emitted when a method of the given name is removed */
-      sigc::signal<void(MethodBase::pointer)> signal_method_removed();
+      sigc::signal<void(std::shared_ptr<MethodBase>)> signal_method_removed();
 
       /** Returns a DBus XML description of this interface */
       std::string introspect(int space_depth=0) const;
@@ -246,11 +232,11 @@ namespace DBus {
 
       sigc::signal<void(const std::string&,const std::string&)> m_signal_name_changed;
       
-      sigc::signal<void(MethodBase::pointer)> m_signal_method_added;
+      sigc::signal<void(std::shared_ptr<MethodBase>)> m_signal_method_added;
       
-      sigc::signal<void(MethodBase::pointer)> m_signal_method_removed;
+      sigc::signal<void(std::shared_ptr<MethodBase>)> m_signal_method_removed;
 
-      typedef std::map<MethodBase::pointer,sigc::connection> MethodSignalNameConnections;
+      typedef std::map<std::shared_ptr<MethodBase>,sigc::connection> MethodSignalNameConnections;
 
       MethodSignalNameConnections m_method_signal_name_connections;
 
@@ -258,7 +244,7 @@ namespace DBus {
        * Callback point that updates the method name map when a method changes
        * its name.
        */
-      void on_method_name_changed(const std::string& oldname, const std::string& newname, MethodBase::pointer method);
+      void on_method_name_changed(const std::string& oldname, const std::string& newname, std::shared_ptr<MethodBase> method);
 
       void set_connection(std::shared_ptr<Connection> conn);
 

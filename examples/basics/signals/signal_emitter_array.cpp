@@ -30,11 +30,11 @@ int main()
 {
   DBus::init();
 
-  DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  DBus::Connection::pointer connection = dispatcher->create_connection( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BUS_SESSION );
 
-  DBus::signal<std::vector<double> >::pointer signal = connection->create_signal<std::vector<double> >("/test/signal/Object", "test.signal.Type", "Test");
+  std::shared_ptr<DBus::signal<std::vector<double> >> signal = connection->create_signal<std::vector<double> >("/test/signal/Object", "test.signal.Type", "Test");
 
   std::vector<double> array;
   array.push_back(M_PI);

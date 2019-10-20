@@ -48,35 +48,27 @@ namespace DBus
 
       /**
        * This class has a protected constructor. Use the \c create() methods
-       * to obtain a smart pointer to a new instance.
+       * to obtain a smart std::shared_ptr<ObjectProxy> to a new instance.
        */
       ObjectProxy( std::shared_ptr<Connection> conn, const std::string& destination, const std::string& path );
 
     public:
-
-      /**
-       * Typedef to smart pointers to ObjectProxy.
-       * 
-       * Can access \e type as \c ObjectProxy::pointer
-       */
-      typedef std::shared_ptr<ObjectProxy> pointer;
-
       /**
        * Creates an ObjectProxy with a specific path
        * @param path The path of the object that this will be a proxy for
        */
-      static pointer create( const std::string& path );
+      static std::shared_ptr<ObjectProxy> create( const std::string& path );
 
       /**
        * Creates an ObjectProxy with a specific path
        * @param destination The destination address that this will be a proxy for
        * @param path The path of the object that this will be a proxy for
        */
-      static pointer create( const std::string& destination, const std::string& path );
+      static std::shared_ptr<ObjectProxy> create( const std::string& destination, const std::string& path );
 
-      static pointer create( std::shared_ptr<Connection> conn, const std::string& path );
+      static std::shared_ptr<ObjectProxy> create( std::shared_ptr<Connection> conn, const std::string& path );
 
-      static pointer create( std::shared_ptr<Connection> conn, const std::string& destination, const std::string& path );
+      static std::shared_ptr<ObjectProxy> create( std::shared_ptr<Connection> conn, const std::string& destination, const std::string& path );
 
       virtual ~ObjectProxy();
 
@@ -92,57 +84,57 @@ namespace DBus
 
       void set_path( const std::string& path );
 
-      typedef std::multimap<std::string, InterfaceProxy::pointer> Interfaces;
+      typedef std::multimap<std::string, std::shared_ptr<InterfaceProxy>> Interfaces;
 
       const Interfaces& interfaces() const;
 
       /** Returns the first interface with the given name */
-      InterfaceProxy::pointer interface( const std::string& name ) const;
+      std::shared_ptr<InterfaceProxy> interface( const std::string& name ) const;
 
       /** Alias for interface(name) */
-      InterfaceProxy::pointer operator[]( const std::string& name ) const;
+      std::shared_ptr<InterfaceProxy> operator[]( const std::string& name ) const;
 
       /** Adds the interface to this object */
-      bool add_interface( InterfaceProxy::pointer interface );
+      bool add_interface( std::shared_ptr<InterfaceProxy> interface );
 
       /**
        * Creates and adds the named interface to this object
        *
        * @return the newly created interface
        */
-      InterfaceProxy::pointer create_interface( const std::string& name );
+      std::shared_ptr<InterfaceProxy> create_interface( const std::string& name );
 
       /** Removes the first interface with the given name */
       void remove_interface( const std::string& name );
 
       /** Removes the given interface */
-      void remove_interface( InterfaceProxy::pointer interface );
+      void remove_interface( std::shared_ptr<InterfaceProxy> interface );
 
       bool has_interface( const std::string& name ) const;
 
-      bool has_interface( InterfaceProxy::pointer interface ) const;
+      bool has_interface( std::shared_ptr<InterfaceProxy> interface ) const;
 
-      InterfaceProxy::pointer default_interface() const;
+      std::shared_ptr<InterfaceProxy> default_interface() const;
 
       bool set_default_interface( const std::string& new_default_name );
 
-      bool set_default_interface( InterfaceProxy::pointer new_default );
+      bool set_default_interface( std::shared_ptr<InterfaceProxy> new_default );
 
       void remove_default_interface();
 
       /** Adds the method to the named interface */
-      bool add_method( const std::string& interface, MethodProxyBase::pointer method );
+      bool add_method( const std::string& interface, std::shared_ptr<MethodProxyBase> method );
 
       /** Adds the method to the default interface */
-      bool add_method( MethodProxyBase::pointer method );
+      bool add_method( std::shared_ptr<MethodProxyBase> method );
 
-      CallMessage::pointer create_call_message( const std::string& interface_name, const std::string& method_name ) const;
+      std::shared_ptr<CallMessage> create_call_message( const std::string& interface_name, const std::string& method_name ) const;
 
-      CallMessage::pointer create_call_message( const std::string& method_name ) const;
+      std::shared_ptr<CallMessage> create_call_message( const std::string& method_name ) const;
 
-      ReturnMessage::const_pointer call( CallMessage::const_pointer, int timeout_milliseconds=-1 ) const;
+      std::shared_ptr<const ReturnMessage> call( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
-      PendingCall::pointer call_async( CallMessage::const_pointer, int timeout_milliseconds=-1 ) const;
+      std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
       /**
        * Creates a proxy method with a signature based on the template parameters and adds it to the named interface
@@ -154,7 +146,7 @@ namespace DBus
       std::shared_ptr<MethodProxy<T_type>>
       create_method( const std::string& interface_name, const std::string& method_name )
       {
-        InterfaceProxy::pointer interface = this->interface(interface_name);
+        std::shared_ptr<InterfaceProxy> interface = this->interface(interface_name);
         if ( not interface ) interface = this->create_interface( interface_name );
         return interface->create_method<T_type>(method_name);
       }
@@ -169,16 +161,16 @@ namespace DBus
       std::shared_ptr<signal_proxy<T_type...> >
       create_signal( const std::string& interface_name, const std::string& sig_name )
       {
-        InterfaceProxy::pointer interface = this->interface(interface_name);
+        std::shared_ptr<InterfaceProxy> interface = this->interface(interface_name);
         if ( not interface ) interface = this->create_interface( interface_name );
         return interface->create_signal<T_type...>(sig_name);
       }
 
-      sigc::signal<void(InterfaceProxy::pointer)> signal_interface_added();
+      sigc::signal<void(std::shared_ptr<InterfaceProxy>)> signal_interface_added();
 
-      sigc::signal<void(InterfaceProxy::pointer)> signal_interface_removed();
+      sigc::signal<void(std::shared_ptr<InterfaceProxy>)> signal_interface_removed();
 
-      sigc::signal<void(InterfaceProxy::pointer/*old default*/,InterfaceProxy::pointer/*new default*/)> signal_default_interface_changed();
+      sigc::signal<void(std::shared_ptr<InterfaceProxy>/*old default*/,std::shared_ptr<InterfaceProxy>/*new default*/)> signal_default_interface_changed();
 
     protected:
 
@@ -194,19 +186,19 @@ namespace DBus
 
       Interfaces m_interfaces;
 
-      InterfaceProxy::pointer m_default_interface;
+      std::shared_ptr<InterfaceProxy> m_default_interface;
 
-      sigc::signal<void(InterfaceProxy::pointer,InterfaceProxy::pointer)> m_signal_default_interface_changed;
+      sigc::signal<void(std::shared_ptr<InterfaceProxy>,std::shared_ptr<InterfaceProxy>)> m_signal_default_interface_changed;
 
-      sigc::signal<void(InterfaceProxy::pointer)> m_signal_interface_added;
+      sigc::signal<void(std::shared_ptr<InterfaceProxy>)> m_signal_interface_added;
 
-      sigc::signal<void(InterfaceProxy::pointer)> m_signal_interface_removed;
+      sigc::signal<void(std::shared_ptr<InterfaceProxy>)> m_signal_interface_removed;
 
-      typedef std::map<InterfaceProxy::pointer,sigc::connection> InterfaceSignalNameConnections;
+      typedef std::map<std::shared_ptr<InterfaceProxy>,sigc::connection> InterfaceSignalNameConnections;
 
       InterfaceSignalNameConnections m_interface_signal_name_connections;
 
-      void on_interface_name_changed(const std::string& oldname, const std::string& newname, InterfaceProxy::pointer interface);
+      void on_interface_name_changed(const std::string& oldname, const std::string& newname, std::shared_ptr<InterfaceProxy> interface);
 
   };
 

@@ -25,6 +25,7 @@
 #include <iostream>
 #include <sys/time.h>
 #include <cassert>
+#include <memory>
 
 #include <dbus-cxx/signalmessage.h>
 
@@ -71,19 +72,19 @@ namespace DBus
 
   void conn_wp_deleter( void* v )
   {
-    Connection::weak_pointer* wp = static_cast<Connection::weak_pointer*>(v);
+    std::weak_ptr<Connection>* wp = static_cast<std::weak_ptr<Connection>*>(v);
     delete wp;
   }
 
-  Connection::pointer Connection::create( DBusConnection* cobj, bool is_private )
+  std::shared_ptr<Connection> Connection::create( DBusConnection* cobj, bool is_private )
   {
-    pointer p = pointer( new Connection(cobj, is_private) );
+    std::shared_ptr<Connection> p( new Connection(cobj, is_private) );
 
     if ( m_weak_pointer_slot == -1 ) throw ErrorNotInitialized::create();
     if ( p and p->is_valid() )
     {
       dbus_bool_t result;
-      weak_pointer* wp = new weak_pointer;
+      std::weak_ptr<Connection>* wp = new std::weak_ptr<Connection>;
       *wp = p;
       result = dbus_connection_set_data( p->cobj(), m_weak_pointer_slot, wp, conn_wp_deleter );
       if ( not result ) throw -1; // TODO throw something better
@@ -92,15 +93,16 @@ namespace DBus
     return p;
   }
 
-  Connection::pointer Connection::create( BusType type, bool is_private )
+  std::shared_ptr<Connection> Connection::create( BusType type, bool is_private )
   {
-    pointer p = pointer( new Connection(type, is_private) );
+    std::shared_ptr<Connection> p( new Connection(type, is_private) );
 
     if ( m_weak_pointer_slot == -1 ) throw ErrorNotInitialized::create();
     if ( p and p->is_valid() )
     {
       dbus_bool_t result;
-      weak_pointer* wp = new weak_pointer;
+      //TODO WTF is this doing?  Creating a weak pointer with new??
+      std::weak_ptr<Connection>* wp = new std::weak_ptr<Connection>;
       *wp = p;
       result = dbus_connection_set_data( p->cobj(), m_weak_pointer_slot, wp, conn_wp_deleter );
       if ( not result ) throw -1; // TODO throw something better
@@ -109,15 +111,15 @@ namespace DBus
     return p;
   }
 
-  Connection::pointer Connection::create( const Connection& other )
+  std::shared_ptr<Connection> Connection::create( const Connection& other )
   {
-    pointer p = pointer( new Connection(other) );
+    std::shared_ptr<Connection> p( new Connection(other) );
     
     if ( m_weak_pointer_slot == -1 ) throw  ErrorNotInitialized::create();
     if ( p and p->is_valid() )
     {
       dbus_bool_t result;
-      weak_pointer* wp = new weak_pointer;
+      std::weak_ptr<Connection>* wp = new std::weak_ptr<Connection>;
       *wp = p;
       result = dbus_connection_set_data( p->cobj(), m_weak_pointer_slot, wp, conn_wp_deleter );
       if ( not result ) throw -1; // TODO throw something better
@@ -133,32 +135,32 @@ namespace DBus
     if ( m_cobj ) dbus_connection_unref( m_cobj );
   }
 
-  Connection::pointer Connection::self()
+  std::shared_ptr<Connection> Connection::self()
   {
-    if ( not this->is_valid() or m_weak_pointer_slot == -1 ) return pointer();
+    if ( not this->is_valid() or m_weak_pointer_slot == -1 ) return std::shared_ptr<Connection>();
     
     void* v = dbus_connection_get_data(this->cobj(), m_weak_pointer_slot);
 
-    if ( v == NULL ) return pointer();
+    if ( v == NULL ) return std::shared_ptr<Connection>();
 
-    weak_pointer* wp = static_cast<weak_pointer*>(v);
+    std::weak_ptr<Connection>* wp = static_cast<std::weak_ptr<Connection>*>(v);
 
-    pointer p = wp->lock();
+    std::shared_ptr<Connection> p = wp->lock();
 
     return p;
   }
 
-  Connection::pointer Connection::self(DBusConnection * c)
+  std::shared_ptr<Connection> Connection::self(DBusConnection * c)
   {
-    if ( c == NULL or m_weak_pointer_slot == -1 ) return Connection::pointer();
+    if ( c == NULL or m_weak_pointer_slot == -1 ) return std::shared_ptr<Connection>();
     
     void* v = dbus_connection_get_data(c, m_weak_pointer_slot);
 
-    if ( v == NULL ) return Connection::pointer();
+    if ( v == NULL ) return std::shared_ptr<Connection>();
 
-    Connection::weak_pointer* wp = static_cast<Connection::weak_pointer*>(v);
+    std::weak_ptr<Connection>* wp = static_cast<std::weak_ptr<Connection>*>(v);
 
-    Connection::pointer p = wp->lock();
+    std::shared_ptr<Connection> p = wp->lock();
 
     return p;
   }
@@ -332,7 +334,7 @@ namespace DBus
     return dbus_connection_get_server_id( m_cobj );
   }
 
-  uint32_t Connection::send( Message::const_pointer msg )
+  uint32_t Connection::send( std::shared_ptr<const Message> msg )
   {
     uint32_t serial;
     if ( not this->is_valid() ) throw ErrorDisconnected::create();
@@ -341,30 +343,30 @@ namespace DBus
     return serial;
   }
 
-  Connection & Connection::operator <<(Message::const_pointer msg)
+  Connection & Connection::operator <<(std::shared_ptr<const Message> msg)
   {
     if ( msg and *msg ) this->send(msg);
     return *this;
   }
 
-  PendingCall::pointer Connection::send_with_reply_async( Message::const_pointer message, int timeout_milliseconds ) const
+  std::shared_ptr<PendingCall> Connection::send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds ) const
   {
     DBusPendingCall* reply;
     if ( not this->is_valid() ) throw ErrorDisconnected::create();
-    if ( not message or not *message ) return PendingCall::pointer();
+    if ( not message or not *message ) return std::shared_ptr<PendingCall>();
     if ( not dbus_connection_send_with_reply( m_cobj, message->cobj(), &reply, timeout_milliseconds ) )
       throw ErrorNoMemory::create( "Unable to start asynchronous call" );
     return PendingCall::create( reply );
   }
 
-  ReturnMessage::const_pointer Connection::send_with_reply_blocking( Message::const_pointer message, int timeout_milliseconds ) const
+  std::shared_ptr<const ReturnMessage> Connection::send_with_reply_blocking( std::shared_ptr<const Message> message, int timeout_milliseconds ) const
   {
     DBusMessage* reply;
     Error::pointer error = Error::create();
 
     if ( not this->is_valid() ) throw ErrorDisconnected::create();
 
-    if ( not message or not *message ) return ReturnMessage::const_pointer();
+    if ( not message or not *message ) return std::shared_ptr<const ReturnMessage>();
 
     dbus_message_set_no_reply(message->cobj(),FALSE);
 
@@ -383,7 +385,7 @@ namespace DBus
 
     SIMPLELOGGER_DEBUG("dbus.Connection", "Reply signature: " << dbus_message_get_signature(reply) );
     
-    ReturnMessage::pointer retmsg = ReturnMessage::create(reply);
+    std::shared_ptr<ReturnMessage> retmsg = ReturnMessage::create(reply);
 
     dbus_message_unref(reply);
 
@@ -410,28 +412,28 @@ namespace DBus
     return dbus_connection_read_write( m_cobj, timeout_milliseconds );
   }
 
-  Message::pointer Connection::borrow_message()
+  std::shared_ptr<Message> Connection::borrow_message()
   {
-    if ( not this->is_valid() ) return Message::pointer();
+    if ( not this->is_valid() ) return std::shared_ptr<Message>();
     return Message::create( dbus_connection_borrow_message( m_cobj ) );
   }
 
-  void Connection::return_message( Message::pointer message )
+  void Connection::return_message( std::shared_ptr<Message> message )
   {
     if ( not this->is_valid() or not message or not *message ) return;
     dbus_connection_return_message( m_cobj, message->cobj() );
   }
 
-  void Connection::steal_borrowed_message( Message::pointer message )
+  void Connection::steal_borrowed_message( std::shared_ptr<Message> message )
   {
     if ( not this->is_valid() or not message or not *message ) return;
     dbus_connection_steal_borrowed_message( m_cobj, message->cobj() );
   }
 
-  Message::pointer Connection::pop_message( )
+  std::shared_ptr<Message> Connection::pop_message( )
   {
     DBusMessage* message;
-    if ( not this->is_valid() ) return Message::pointer();
+    if ( not this->is_valid() ) return std::shared_ptr<Message>();
     message = dbus_connection_pop_message( m_cobj );
     return Message::create( message );
   }
@@ -542,12 +544,12 @@ namespace DBus
     return m_add_watch_signal;
   }
 
-  sigc::signal<bool(Watch::pointer)>& Connection::signal_remove_watch()
+  sigc::signal<bool(std::shared_ptr<Watch>)>& Connection::signal_remove_watch()
   {
     return m_remove_watch_signal;
   }
 
-  sigc::signal<void(Watch::pointer)>& Connection::signal_watch_toggled()
+  sigc::signal<void(std::shared_ptr<Watch>)>& Connection::signal_watch_toggled()
   {
     return m_watch_toggled_signal;
   }
@@ -557,12 +559,12 @@ namespace DBus
     return m_add_timeout_signal;
   }
 
-  sigc::signal<bool(Timeout::pointer)>& Connection::signal_remove_timeout()
+  sigc::signal<bool(std::shared_ptr<Timeout>)>& Connection::signal_remove_timeout()
   {
     return m_remove_timeout_signal;
   }
 
-  sigc::signal<bool(Timeout::pointer)>& Connection::signal_timeout_toggled()
+  sigc::signal<bool(std::shared_ptr<Timeout>)>& Connection::signal_timeout_toggled()
   {
     return m_timeout_toggled_signal;
   }
@@ -587,14 +589,14 @@ namespace DBus
     dbus_connection_set_change_sigpipe(will_modify_sigpipe);
   }
 
-  const Connection::Watches& Connection::unhandled_watches() const
+  const std::deque<std::shared_ptr<Watch>>& Connection::unhandled_watches() const
   {
     return m_unhandled_watches;
   }
   
-  void Connection::remove_unhandled_watch(const Watch::pointer w)
+  void Connection::remove_unhandled_watch(const std::shared_ptr<Watch> w)
   {
-    Watches::iterator i;
+    std::deque<std::shared_ptr<Watch>>::iterator i;
     
     if ( not w ) return;
     
@@ -608,16 +610,16 @@ namespace DBus
     }
   }
 
-  Object::pointer Connection::create_object(const std::string & path, PrimaryFallback pf)
+  std::shared_ptr<Object> Connection::create_object(const std::string & path, PrimaryFallback pf)
   {
-    Object::pointer object = Object::create( path, pf );
+    std::shared_ptr<Object> object = Object::create( path, pf );
     if (not object) return object;
     object->register_with_connection( this->self() );
     m_created_objects[path] = object;
     return object;
   }
 
-  bool Connection::register_object(Object::pointer object)
+  bool Connection::register_object(std::shared_ptr<Object> object)
   {
     SIMPLELOGGER_DEBUG("dbus.Connection", "Connection::register_object");
     if ( not object ) return false;
@@ -625,9 +627,9 @@ namespace DBus
     return true;
   }
 
-  ObjectPathHandler::pointer Connection::create_object(const std::string & path, sigc::slot< HandlerResult(Connection::pointer, Message::const_pointer) >& slot, PrimaryFallback pf)
+  std::shared_ptr<ObjectPathHandler> Connection::create_object(const std::string & path, sigc::slot< HandlerResult(std::shared_ptr<Connection>, std::shared_ptr<const Message>) >& slot, PrimaryFallback pf)
   {
-    ObjectPathHandler::pointer handler = ObjectPathHandler::create(path, pf);
+    std::shared_ptr<ObjectPathHandler> handler = ObjectPathHandler::create(path, pf);
     if ( not handler ) return handler;
     handler->register_with_connection( this->self() );
     m_created_objects[path] = handler;
@@ -635,9 +637,9 @@ namespace DBus
     return handler;
   }
 
-  ObjectPathHandler::pointer Connection::create_object( const std::string& path, HandlerResult (*MessageFunction)(Connection::pointer,Message::const_pointer), PrimaryFallback pf )
+  std::shared_ptr<ObjectPathHandler> Connection::create_object( const std::string& path, HandlerResult (*MessageFunction)(std::shared_ptr<Connection>,std::shared_ptr<const Message>), PrimaryFallback pf )
   {
-    ObjectPathHandler::pointer handler = ObjectPathHandler::create(path, pf);
+    std::shared_ptr<ObjectPathHandler> handler = ObjectPathHandler::create(path, pf);
     if ( not handler ) return handler;
     handler->register_with_connection( this->self() );
     m_created_objects[path] = handler;
@@ -645,15 +647,15 @@ namespace DBus
     return handler;
   }
 
-  ObjectProxy::pointer Connection::create_object_proxy(const std::string & path)
+  std::shared_ptr<ObjectProxy> Connection::create_object_proxy(const std::string & path)
   {
-    ObjectProxy::pointer object = ObjectProxy::create(this->self(), path);
+    std::shared_ptr<ObjectProxy> object = ObjectProxy::create(this->self(), path);
     return object;
   }
 
-  ObjectProxy::pointer Connection::create_object_proxy(const std::string & destination, const std::string & path)
+  std::shared_ptr<ObjectProxy> Connection::create_object_proxy(const std::string & destination, const std::string & path)
   {
-    ObjectProxy::pointer object = ObjectProxy::create(this->self(), destination, path);
+    std::shared_ptr<ObjectProxy> object = ObjectProxy::create(this->self(), destination, path);
     return object;
   }
 
@@ -663,23 +665,23 @@ namespace DBus
     return false;
   }
 
-  signal_proxy_simple::pointer Connection::create_signal_proxy(const std::string & interface, const std::string & name)
+  std::shared_ptr<signal_proxy_base> Connection::create_signal_proxy(const std::string & interface, const std::string & name)
   {
     return this->add_signal_proxy( signal_proxy_simple::create(interface, name) );
   }
 
-  signal_proxy_simple::pointer Connection::create_signal_proxy(const std::string& path, const std::string & interface, const std::string & name)
+  std::shared_ptr<signal_proxy_base> Connection::create_signal_proxy(const std::string& path, const std::string & interface, const std::string & name)
   {
     return this->add_signal_proxy( signal_proxy_simple::create(path, interface, name) );
   }
 
-  signal_proxy_base::pointer Connection::add_signal_proxy(signal_proxy_base::pointer signal)
+  std::shared_ptr<signal_proxy_base> Connection::add_signal_proxy(std::shared_ptr<signal_proxy_base> signal)
   {
-    if ( not signal ) return signal_proxy_base::pointer();
+    if ( not signal ) return std::shared_ptr<signal_proxy_base>();
     
     const std::string& interface = signal->interface();
     const std::string& name = signal->name();
-    if ( interface.empty() or name.empty() ) return signal_proxy_base::pointer();
+    if ( interface.empty() or name.empty() ) return std::shared_ptr<signal_proxy_base>();
 
     SIMPLELOGGER_DEBUG( "dbus.Connection", "Adding signal " << interface << ":" << name );
 
@@ -695,7 +697,7 @@ namespace DBus
     return signal;
   }
 
-  bool Connection::remove_signal_proxy( signal_proxy_base::pointer signal )
+  bool Connection::remove_signal_proxy( std::shared_ptr<signal_proxy_base> signal )
   {
     if ( not signal ) return false;
 
@@ -854,7 +856,7 @@ namespace DBus
   {
     bool result;
     Connection* conn = static_cast<Connection*>(data);
-    Watch::pointer watch = Watch::create(cwatch);
+    std::shared_ptr<Watch> watch = Watch::create(cwatch);
     result = conn->signal_add_watch().emit(watch);
     if ( not result ) conn->m_unhandled_watches.push_back(watch);
     return true;
@@ -877,7 +879,7 @@ namespace DBus
     assert(ctimeout);
     bool result;
     Connection* conn = static_cast<Connection*>(data);
-    Timeout::pointer timeout = Timeout::create(ctimeout);
+    std::shared_ptr<Timeout> timeout = Timeout::create(ctimeout);
     SIMPLELOGGER_DEBUG( "dbus.Connection", "Connection::on_add_timeout_callback  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
 
     // We'll give a signal callback a chance to handle the timeout
@@ -906,7 +908,7 @@ namespace DBus
   void Connection::on_remove_timeout_callback(DBusTimeout * ctimeout, void * data)
   {
     Connection* conn = static_cast<Connection*>(data);
-    Timeout::pointer timeout = Timeout::create(ctimeout);
+    std::shared_ptr<Timeout> timeout = Timeout::create(ctimeout);
     SIMPLELOGGER_DEBUG( "dbus.Connection", "Remove timeout callback. enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
 
     // Erase the timeout if this connection handled it
@@ -919,7 +921,7 @@ namespace DBus
   void Connection::on_timeout_toggled_callback(DBusTimeout * ctimeout, void * data)
   {
     Connection* conn = static_cast<Connection*>(data);
-    Timeout::pointer timeout = Timeout::create(ctimeout);
+    std::shared_ptr<Timeout> timeout = Timeout::create(ctimeout);
     SIMPLELOGGER_DEBUG( "dbus.Connection", "Timeout toggled.  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
 
     // If we handled the timeout we'll handle the enabling/disabling
@@ -953,10 +955,10 @@ namespace DBus
   {
     if ( message == NULL ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     
-    Connection::pointer conn = static_cast<Connection*>(data)->self();
+    std::shared_ptr<Connection> conn = static_cast<Connection*>(data)->self();
     FilterResult filter_result = DONT_FILTER;
     HandlerResult signal_result = NOT_HANDLED;
-    Message::pointer msg = Message::create(message);
+    std::shared_ptr<Message> msg = Message::create(message);
 
     filter_result = conn->signal_filter().emit(conn, msg);
 
@@ -968,7 +970,7 @@ namespace DBus
       InterfaceToNameProxySignalMap::iterator i;
       NameToProxySignalMap::iterator j;
       ProxySignals::iterator k;
-      SignalMessage::pointer smsg = SignalMessage::create(msg);
+      std::shared_ptr<SignalMessage> smsg = SignalMessage::create(msg);
       HandlerResult result;
 
       i = conn->m_proxy_signal_interface_map.find( smsg->interface() );
@@ -1010,10 +1012,10 @@ namespace DBus
     
     if ( destination.empty() or path.empty() ) return failed;
     
-    CallMessage::pointer msg = CallMessage::create( destination.c_str(), path.c_str(), DBUS_INTERFACE_INTROSPECTABLE, "Introspect" );
+    std::shared_ptr<CallMessage> msg = CallMessage::create( destination.c_str(), path.c_str(), DBUS_INTERFACE_INTROSPECTABLE, "Introspect" );
     
-    Message::pointer retmsg;
-    PendingCall::pointer pending;
+    std::shared_ptr<Message> retmsg;
+    std::shared_ptr<PendingCall> pending;
 
     pending = this->send_with_reply_async(msg);
     this->flush();
