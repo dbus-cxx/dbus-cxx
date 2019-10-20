@@ -45,20 +45,20 @@ namespace DBus
 
   Connection::Connection( BusType type, bool is_private ): m_cobj( NULL )
   {
-    Error::pointer error = Error::create();
+    Error error = Error();
 
     if ( type != BusType::NONE ) {
 
       if ( is_private ) {
-        m_cobj = dbus_bus_get_private(( DBusBusType )type, error->cobj() );
-        if ( error->is_set() ) throw error;
-        if ( m_cobj == NULL ) throw ErrorFailed::create();
+        m_cobj = dbus_bus_get_private(( DBusBusType )type, error.cobj() );
+        if ( error.is_set() ) throw error;
+        if ( m_cobj == NULL ) throw ErrorFailed();
         this->initialize(is_private);
       }
       else {
-        m_cobj = dbus_bus_get(( DBusBusType )type, error->cobj() );
-	if ( error->is_set() ) throw error;
-        if ( m_cobj == NULL ) throw ErrorFailed::create();
+        m_cobj = dbus_bus_get(( DBusBusType )type, error.cobj() );
+	if ( error.is_set() ) throw error;
+        if ( m_cobj == NULL ) throw ErrorFailed();
         this->initialize(is_private);
       }
     }
@@ -80,7 +80,7 @@ namespace DBus
   {
     std::shared_ptr<Connection> p( new Connection(cobj, is_private) );
 
-    if ( m_weak_pointer_slot == -1 ) throw ErrorNotInitialized::create();
+    if ( m_weak_pointer_slot == -1 ) throw ErrorNotInitialized();
     if ( p and p->is_valid() )
     {
       dbus_bool_t result;
@@ -97,7 +97,7 @@ namespace DBus
   {
     std::shared_ptr<Connection> p( new Connection(type, is_private) );
 
-    if ( m_weak_pointer_slot == -1 ) throw ErrorNotInitialized::create();
+    if ( m_weak_pointer_slot == -1 ) throw ErrorNotInitialized();
     if ( p and p->is_valid() )
     {
       dbus_bool_t result;
@@ -115,7 +115,7 @@ namespace DBus
   {
     std::shared_ptr<Connection> p( new Connection(other) );
     
-    if ( m_weak_pointer_slot == -1 ) throw  ErrorNotInitialized::create();
+    if ( m_weak_pointer_slot == -1 ) throw  ErrorNotInitialized();
     if ( p and p->is_valid() )
     {
       dbus_bool_t result;
@@ -190,10 +190,10 @@ namespace DBus
   bool Connection::bus_register()
   {
     dbus_bool_t result;
-    Error::pointer error = Error::create();
+    Error error = Error();
     if ( not this->is_valid() ) return false;
-    result = dbus_bus_register( m_cobj, error->cobj() );
-    if ( error->is_set() ) throw error;
+    result = dbus_bus_register( m_cobj, error.cobj() );
+    if ( error.is_set() ) throw error;
     return result;
   }
 
@@ -210,48 +210,48 @@ namespace DBus
 
   unsigned long Connection::unix_user( const std::string & name ) const
   {
-    Error::pointer error = Error::create();
+    Error error = Error();
     if ( not this->is_valid() ) return -1;
-    return dbus_bus_get_unix_user( m_cobj, name.c_str(), error->cobj() );
+    return dbus_bus_get_unix_user( m_cobj, name.c_str(), error.cobj() );
   }
 
   const char* Connection::bus_id() const
   {
-    Error::pointer error = Error::create();
+    Error error = Error();
     if ( not this->is_valid() ) return NULL;
-    return dbus_bus_get_id( m_cobj, error->cobj() );
+    return dbus_bus_get_id( m_cobj, error.cobj() );
   }
 
   int Connection::request_name( const std::string& name, unsigned int flags )
   {
     int result;
-    Error::pointer error = Error::create();
+    Error error = Error();
 
     if ( not this->is_valid() ) return -1;
-    result = dbus_bus_request_name( m_cobj, name.c_str(), flags, error->cobj() );
-    if ( error->is_set() ) throw error;
+    result = dbus_bus_request_name( m_cobj, name.c_str(), flags, error.cobj() );
+    if ( error.is_set() ) throw error;
     return result;
   }
 
   int Connection::release_name( const std::string& name )
   {
     int result;
-    Error::pointer error = Error::create();
+    Error error = Error();
 
     if ( not this->is_valid() ) return -1;
-    result = dbus_bus_release_name( m_cobj, name.c_str(), error->cobj() );
-    if ( error->is_set() ) throw error;
+    result = dbus_bus_release_name( m_cobj, name.c_str(), error.cobj() );
+    if ( error.is_set() ) throw error;
     return result;
   }
 
   bool Connection::name_has_owner( const std::string& name ) const
   {
     dbus_bool_t result;
-    Error::pointer error = Error::create();
+    Error error = Error();
 
     if ( not this->is_valid() ) return false;
-    result = dbus_bus_name_has_owner( m_cobj, name.c_str(), error->cobj() );
-    if ( error->is_set() ) throw error;
+    result = dbus_bus_name_has_owner( m_cobj, name.c_str(), error.cobj() );
+    if ( error.is_set() ) throw error;
     return result;
   }
 
@@ -259,13 +259,13 @@ namespace DBus
   {
     dbus_bool_t succeeded;
     dbus_uint32_t result_code;
-    Error::pointer error = Error::create();
+    Error error = Error();
 
     if ( not this->is_valid() ) return StartReply::FAILED;
 
-    succeeded = dbus_bus_start_service_by_name( m_cobj, name.c_str(), flags, &result_code, error->cobj() );
+    succeeded = dbus_bus_start_service_by_name( m_cobj, name.c_str(), flags, &result_code, error.cobj() );
 
-    if ( error->is_set() ) throw error;
+    if ( error.is_set() ) throw error;
 
     if ( succeeded )
       switch ( result_code ) {
@@ -278,12 +278,12 @@ namespace DBus
 
   bool Connection::add_match( const std::string& rule )
   {
-    Error::pointer error = Error::create();
+    Error error = Error();
 
     if ( not this->is_valid() ) return false;
-    dbus_bus_add_match( m_cobj, rule.c_str(), error->cobj() );
+    dbus_bus_add_match( m_cobj, rule.c_str(), error.cobj() );
 
-    if ( error->is_set() ) return false;
+    if ( error.is_set() ) return false;
     return true;
   }
 
@@ -295,12 +295,12 @@ namespace DBus
 
   bool Connection::remove_match( const std::string& rule )
   {
-    Error::pointer error = Error::create();
+    Error error = Error();
 
     if ( not this->is_valid() ) return false;
-    dbus_bus_remove_match( m_cobj, rule.c_str(), error->cobj() );
+    dbus_bus_remove_match( m_cobj, rule.c_str(), error.cobj() );
 
-    if ( error->is_set() ) return false;
+    if ( error.is_set() ) return false;
     return true;
   }
 
@@ -337,9 +337,9 @@ namespace DBus
   uint32_t Connection::send( std::shared_ptr<const Message> msg )
   {
     uint32_t serial;
-    if ( not this->is_valid() ) throw ErrorDisconnected::create();
+    if ( not this->is_valid() ) throw ErrorDisconnected();
     if ( not msg or not *msg ) return 0;
-    if ( not dbus_connection_send( m_cobj, msg->cobj(), &serial ) ) throw ErrorNoMemory::create();
+    if ( not dbus_connection_send( m_cobj, msg->cobj(), &serial ) ) throw ErrorNoMemory();
     return serial;
   }
 
@@ -352,27 +352,27 @@ namespace DBus
   std::shared_ptr<PendingCall> Connection::send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds ) const
   {
     DBusPendingCall* reply;
-    if ( not this->is_valid() ) throw ErrorDisconnected::create();
+    if ( not this->is_valid() ) throw ErrorDisconnected();
     if ( not message or not *message ) return std::shared_ptr<PendingCall>();
     if ( not dbus_connection_send_with_reply( m_cobj, message->cobj(), &reply, timeout_milliseconds ) )
-      throw ErrorNoMemory::create( "Unable to start asynchronous call" );
+      throw ErrorNoMemory( "Unable to start asynchronous call" );
     return PendingCall::create( reply );
   }
 
   std::shared_ptr<const ReturnMessage> Connection::send_with_reply_blocking( std::shared_ptr<const Message> message, int timeout_milliseconds ) const
   {
     DBusMessage* reply;
-    Error::pointer error = Error::create();
+    Error error = Error();
 
-    if ( not this->is_valid() ) throw ErrorDisconnected::create();
+    if ( not this->is_valid() ) throw ErrorDisconnected();
 
     if ( not message or not *message ) return std::shared_ptr<const ReturnMessage>();
 
     dbus_message_set_no_reply(message->cobj(),FALSE);
 
-    reply = dbus_connection_send_with_reply_and_block( m_cobj, message->cobj(), timeout_milliseconds, error->cobj() );
+    reply = dbus_connection_send_with_reply_and_block( m_cobj, message->cobj(), timeout_milliseconds, error.cobj() );
 
-    if ( error->is_set() ){ 
+    if ( error.is_set() ){ 
 /*
       SIMPLELOGGER_ERROR( "dbus.Connection", "Message: [" 
         << error->message() 
@@ -832,7 +832,7 @@ namespace DBus
                                                   this,
                                                   NULL
                                                 );
-    if ( not result ) throw ErrorNoMemory::create();
+    if ( not result ) throw ErrorNoMemory();
   
     result = dbus_connection_set_timeout_functions( m_cobj,
                                                   Connection::on_add_timeout_callback,
@@ -841,14 +841,14 @@ namespace DBus
                                                   this,
                                                   NULL
                                                 );
-    if ( not result ) throw ErrorNoMemory::create();
+    if ( not result ) throw ErrorNoMemory();
   
     dbus_connection_set_wakeup_main_function( m_cobj, Connection::on_wakeup_main_callback, this, NULL );
   
     dbus_connection_set_dispatch_status_function( m_cobj, Connection::on_dispatch_status_callback, this, NULL );
 
     result = dbus_connection_add_filter( m_cobj, Connection::on_filter_callback, this, NULL );
-    if ( not result ) throw ErrorNoMemory::create();
+    if ( not result ) throw ErrorNoMemory();
   
   }
 

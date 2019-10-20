@@ -63,7 +63,7 @@ namespace DBus
   bool ObjectPathHandler::register_with_connection(std::shared_ptr<Connection> conn)
   {
     dbus_bool_t result;
-    std::shared_ptr<Error> error = Error::create();
+    Error error = Error();
 
     SIMPLELOGGER_DEBUG("dbus.ObjectPathHandler","Registering path " << m_path << " with connection");
 
@@ -76,10 +76,10 @@ namespace DBus
     
 #ifdef DBUS_CXX_HAVE_DBUS_12
     if ( m_primary_fallback == PrimaryFallback::PRIMARY )
-      result = dbus_connection_try_register_object_path( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this, error->cobj() );
+      result = dbus_connection_try_register_object_path( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this, error.cobj() );
     else
-      result = dbus_connection_try_register_fallback( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this, error->cobj() );
-    if ( error->is_set() ) return false;
+      result = dbus_connection_try_register_fallback( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this, error.cobj() );
+    if ( error.is_set() ) return false;
 #else
     if ( m_primary_fallback == PrimaryFallback::PRIMARY )
       result = dbus_connection_register_object_path( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this );

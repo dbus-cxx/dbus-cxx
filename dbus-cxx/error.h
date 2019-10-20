@@ -18,8 +18,6 @@
  ***************************************************************************/
 #include <exception>
 
-#include <memory>
-
 #include <dbus/dbus.h>
 
 #include <string>
@@ -50,9 +48,7 @@ namespace DBus
    */
   class Error : public std::exception
   {
-
-    protected:
-   
+    public:
       Error();
 
       Error( DBusError* cobj );
@@ -60,17 +56,6 @@ namespace DBus
       Error( const char* name, const char* message=NULL );
 
       Error( Message& );
-
-    public:
-      typedef std::shared_ptr<Error> pointer;
-
-      static pointer create();
-
-      static pointer create( DBusError* cobj );
-
-      static pointer create( const char* name, const char* message );
-
-      static pointer create( Message& );
 
       ~Error() throw();
 
@@ -98,14 +83,9 @@ namespace DBus
 
 #define DBUSCXX_ERROR( CPPTYPE, DBUS_ERROR_CODE )            \
   class CPPTYPE : public Error {                             \
-    protected:                                               \
+    public:                                                  \
     CPPTYPE( const char* message = NULL )                    \
         : Error( DBUS_ERROR_CODE, message ) {}               \
-    public:                                                  \
-      typedef std::shared_ptr<CPPTYPE> pointer;               \
-      static pointer create( const char* message = NULL ) {  \
-        return pointer( new CPPTYPE(message) );              \
-      }                                                      \
   }
 
   /**

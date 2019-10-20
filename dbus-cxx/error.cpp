@@ -44,26 +44,6 @@ namespace DBus
     dbus_set_error_from_message( &m_cobj, m.cobj() );
   }
 
-  Error::pointer Error::create()
-  {
-    return pointer( new Error() );
-  }
-
-  Error::pointer Error::create( DBusError* cobj )
-  {
-    return pointer( new Error( cobj ) );
-  }
-
-  Error::pointer Error::create( const char* name, const char* message )
-  {
-    return pointer( new Error( name, message ) );
-  }
-
-  Error::pointer Error::create( Message& message )
-  {
-     return pointer( new Error( message ) );
-  }
-
   Error::~Error( ) throw()
   {
     dbus_error_free( &m_cobj );

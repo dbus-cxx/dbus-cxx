@@ -29,10 +29,10 @@ namespace DBus
   ErrorMessage::ErrorMessage( DBusMessage* msg )
   {
     if ( msg == NULL )
-      throw ErrorInvalidCObject::create();
+      throw ErrorInvalidCObject();
 
     if ( dbus_message_get_type( msg ) != DBUS_MESSAGE_TYPE_ERROR )
-      throw ErrorInvalidMessageType::create();
+      throw ErrorInvalidMessageType();
 
     m_cobj = msg;
     dbus_message_ref( m_cobj );
@@ -41,7 +41,7 @@ namespace DBus
   ErrorMessage::ErrorMessage(std::shared_ptr<Message> msg )
   {
     if ( msg->type() != MessageType::ERROR )
-      throw ErrorInvalidMessageType::create();
+      throw ErrorInvalidMessageType();
 
     if ( msg and *msg )
     {

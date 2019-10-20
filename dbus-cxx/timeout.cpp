@@ -54,19 +54,19 @@ namespace DBus
 
   int Timeout::interval( ) const
   {
-    if ( not this->is_valid() ) throw ErrorInvalidCObject::create();
+    if ( not this->is_valid() ) throw ErrorInvalidCObject();
     return dbus_timeout_get_interval( m_cobj );
   }
 
   bool Timeout::is_enabled( ) const
   {
-    if ( not this->is_valid() ) throw ErrorInvalidCObject::create();
+    if ( not this->is_valid() ) throw ErrorInvalidCObject();
     return dbus_timeout_get_enabled( m_cobj );
   }
 
   bool Timeout::handle( )
   {
-    if ( not this->is_valid() ) throw ErrorInvalidCObject::create();
+    if ( not this->is_valid() ) throw ErrorInvalidCObject();
     return dbus_timeout_handle( m_cobj );
   }
 

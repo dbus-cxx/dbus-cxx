@@ -25,21 +25,21 @@ namespace DBus
       Message(cobj, m)
   {
     if ( not cobj or dbus_message_get_type(cobj) != DBUS_MESSAGE_TYPE_SIGNAL )
-      throw ErrorInvalidMessageType::create();
+      throw ErrorInvalidMessageType();
   }
   
   SignalMessage::SignalMessage( std::shared_ptr<Message> msg ):
       Message( msg )
   {
     if ( not msg or not *msg or msg->type() != MessageType::SIGNAL )
-      throw ErrorInvalidMessageType::create();
+      throw ErrorInvalidMessageType();
   }
 
   SignalMessage::SignalMessage( std::shared_ptr<const Message> msg ):
       Message( msg )
   {
     if ( not msg or not *msg or msg->type() != MessageType::SIGNAL )
-      throw ErrorInvalidMessageType::create();
+      throw ErrorInvalidMessageType();
   }
 
   SignalMessage::SignalMessage( const std::string& name ):
@@ -52,7 +52,7 @@ namespace DBus
   {
     m_cobj = dbus_message_new_signal( path.c_str(), interface.c_str(), name.c_str() );
     if ( m_cobj == NULL )
-      throw( ErrorNoMemory::create( "SignalMessage::SignalMessage: constructor failed because dbus couldn't allocate memory for signal" ) );
+      throw( ErrorNoMemory( "SignalMessage::SignalMessage: constructor failed because dbus couldn't allocate memory for signal" ) );
   }
 
   std::shared_ptr<SignalMessage> SignalMessage::create( DBusMessage* cobj, CreateMethod m )

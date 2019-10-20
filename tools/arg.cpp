@@ -57,7 +57,7 @@ std::string Arg::cpp_type(ProxyAdapter pa)
 std::string Arg::cpp_dbus_type()
 {
   switch ( type() ) {
-    case DBus::Type::INVALID:     throw DBus::ErrorInvalidMessageType::create();
+    case DBus::Type::INVALID:     throw DBus::ErrorInvalidMessageType();
     case DBus::Type::BYTE:        return "uint8_t";
     case DBus::Type::BOOLEAN:     return "bool";
     case DBus::Type::INT16:       return "int16_t";
@@ -71,19 +71,19 @@ std::string Arg::cpp_dbus_type()
     case DBus::Type::OBJECT_PATH: return "::DBus::Path";
     case DBus::Type::SIGNATURE:   return "::DBus::Signature";
     case DBus::Type::ARRAY:       return "::std::vector";
-    case DBus::Type::VARIANT:     throw DBus::ErrorInvalidMessageType::create();
-    case DBus::Type::STRUCT:      throw DBus::ErrorInvalidMessageType::create();
-    case DBus::Type::DICT_ENTRY:  throw DBus::ErrorInvalidMessageType::create();
+    case DBus::Type::VARIANT:     throw DBus::ErrorInvalidMessageType();
+    case DBus::Type::STRUCT:      throw DBus::ErrorInvalidMessageType();
+    case DBus::Type::DICT_ENTRY:  throw DBus::ErrorInvalidMessageType();
     case DBus::Type::UNIX_FD:     return "DBus::FileDescriptor";
   }
 
-  throw DBus::ErrorInvalidMessageType::create();
+  throw DBus::ErrorInvalidMessageType();
 }
 
 std::string Arg::stubsignature()
 {
   switch ( type() ) {
-    case DBus::Type::INVALID:     throw DBus::ErrorInvalidMessageType::create();
+    case DBus::Type::INVALID:     throw DBus::ErrorInvalidMessageType();
     case DBus::Type::BYTE:        return DBus::signature( (uint8_t)0 );
     case DBus::Type::BOOLEAN:     return DBus::signature( false );
     case DBus::Type::INT16:       return DBus::signature( (int16_t)0 );
@@ -112,14 +112,14 @@ std::string Arg::stubsignature()
         DBus::Signature sig;
         return DBus::signature( sig );
         }
-    case DBus::Type::ARRAY:       throw DBus::ErrorInvalidMessageType::create();
-    case DBus::Type::VARIANT:     throw DBus::ErrorInvalidMessageType::create();
-    case DBus::Type::STRUCT:      throw DBus::ErrorInvalidMessageType::create();
-    case DBus::Type::DICT_ENTRY:  throw DBus::ErrorInvalidMessageType::create();
-    case DBus::Type::UNIX_FD:     throw DBus::ErrorInvalidMessageType::create();
+    case DBus::Type::ARRAY:       throw DBus::ErrorInvalidMessageType();
+    case DBus::Type::VARIANT:     throw DBus::ErrorInvalidMessageType();
+    case DBus::Type::STRUCT:      throw DBus::ErrorInvalidMessageType();
+    case DBus::Type::DICT_ENTRY:  throw DBus::ErrorInvalidMessageType();
+    case DBus::Type::UNIX_FD:     throw DBus::ErrorInvalidMessageType();
   }
 
-  throw DBus::ErrorInvalidMessageType::create();
+  throw DBus::ErrorInvalidMessageType();
 }
 
 DBus::Type Arg::type()

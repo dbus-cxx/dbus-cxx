@@ -32,10 +32,10 @@ namespace DBus
   CallMessage::CallMessage( DBusMessage* cobj )
   {
     if ( cobj == NULL )
-      throw ErrorInvalidCObject::create();
+      throw ErrorInvalidCObject();
 
     if ( dbus_message_get_type( cobj ) != DBUS_MESSAGE_TYPE_METHOD_CALL )
-      throw ErrorInvalidMessageType::create();
+      throw ErrorInvalidMessageType();
 
     m_cobj = cobj;
     dbus_message_ref( m_cobj );
@@ -44,7 +44,7 @@ namespace DBus
   CallMessage::CallMessage( std::shared_ptr<Message> msg )
   {
     if ( msg->type() != MessageType::CALL )
-      throw ErrorInvalidMessageType::create();
+      throw ErrorInvalidMessageType();
 
     if ( msg and *msg )
     {
@@ -56,7 +56,7 @@ namespace DBus
   CallMessage::CallMessage( std::shared_ptr<const Message> msg )
   {
     if ( msg->type() != MessageType::CALL )
-      throw ErrorInvalidMessageType::create();
+      throw ErrorInvalidMessageType();
 
     if ( msg and *msg )
     {

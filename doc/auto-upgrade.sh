@@ -28,6 +28,7 @@ sed -i 's/DBus::SignalMessage::pointer/std::shared_ptr<DBus::SignalMessage>/g' $
 sed -i 's/DBus::SignalMessage::const_pointer/std::shared_ptr<const DBus::SignalMessage>/g' $FILE
 sed -i 's/DBus::signal_proxy_simple::pointer/std::shared_ptr<DBus::signal_proxy_base>/g' $FILE
 sed -i 's/DBus::Path::Decomposed/std::vector<std::string>/g' $FILE
+sed -i 's/Error::pointer/Error/g' $FILE
 
 # Enum changes
 sed -i 's/BUS_NONE/BusType::NONE/g' $FILE
@@ -82,3 +83,4 @@ sed -i 's/WATCH_HANGUP/WatchStatus::HANGUP/g' $FILE
 sed -i 's/PRIMARY/PrimaryFallback::PRIMARY/g' $FILE
 sed -i 's/FALLBACK/PrimaryFallback::FALLBACK/g' $FILE
 sed -i 's/DBUS_REQUEST_NAME_REPLY_PrimaryFallback::PRIMARY_OWNER/DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER/g' $FILE
+

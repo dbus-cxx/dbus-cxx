@@ -47,7 +47,7 @@ namespace DBus
   {
     if( socketpair( AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, process_fd ) < 0 ){
         SIMPLELOGGER_ERROR( "dbus.Dispatcher", "error creating socket pair" );
-        throw ErrorDispatcherInitFailed::create();
+        throw ErrorDispatcherInitFailed();
     }
 
     if ( is_running ) this->start();
