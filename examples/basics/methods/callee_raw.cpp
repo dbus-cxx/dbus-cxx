@@ -29,7 +29,7 @@ int main()
   
   std::shared_ptr<DBus::Message> msg;
   int ret;
-  std::shared_ptr<DBus::Connection> conn = DBus::Connection::create(DBus::BUS_SESSION);
+  std::shared_ptr<DBus::Connection> conn = DBus::Connection::create(DBus::BusType::SESSION);
 
   // request a name on the bus
   ret = conn->request_name( "dbuscxx.example.calculator.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
@@ -48,7 +48,7 @@ int main()
     }
 
     // check this is a method call for the right interface and method
-    if ( msg->type() == DBus::CALL_MESSAGE ) reply_to_method_call( DBus::CallMessage::create(msg), conn );
+    if ( msg->type() == DBus::MessageType::CALL ) reply_to_method_call( DBus::CallMessage::create(msg), conn );
   }
 }
 
@@ -62,7 +62,7 @@ void reply_to_method_call( std::shared_ptr<DBus::CallMessage> msg, std::shared_p
   // read the arguments
   if ( msg->begin() == msg->end() )
     std::cerr << "Message has no arguments!" << std::endl;
-  else if ( msg->begin().arg_type() != DBus::TYPE_DOUBLE )
+  else if ( msg->begin().arg_type() != DBus::Type::DOUBLE )
     std::cerr << "Argument is not double!" << std::endl;
   else
     msg >> param1 >> param2;

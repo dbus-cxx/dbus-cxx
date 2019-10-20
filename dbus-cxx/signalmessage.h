@@ -39,7 +39,7 @@ namespace DBus
   {
     protected:
 
-      SignalMessage( DBusMessage* cobj=NULL, CreateMethod m = CREATE_ALIAS );
+      SignalMessage( DBusMessage* cobj=NULL, CreateMethod m = CreateMethod::ALIAS );
       
       SignalMessage( std::shared_ptr<Message> msg );
 
@@ -50,7 +50,7 @@ namespace DBus
       SignalMessage( const std::string& path, const std::string& interface, const std::string& name );
 
     public:
-      static std::shared_ptr<SignalMessage> create( DBusMessage* cobj=NULL, CreateMethod m = CREATE_ALIAS );
+      static std::shared_ptr<SignalMessage> create( DBusMessage* cobj=NULL, CreateMethod m = CreateMethod::ALIAS );
       
       static std::shared_ptr<SignalMessage> create( std::shared_ptr<Message> msg );
 

@@ -50,7 +50,7 @@ namespace DBus
   {
     SIMPLELOGGER_DEBUG( "dbus.SignalReceiver","SignalReceiver::handle_message" );
     
-    if ( not this->matches(msg) ) return NOT_HANDLED;
+    if ( not this->matches(msg) ) return HandlerResult::NOT_HANDLED;
 
     return m_signal_message.emit(conn, msg);
   }
@@ -154,7 +154,7 @@ namespace DBus
   bool SignalReceiver::matches(std::shared_ptr<const Message> msg)
   {
     if (not msg or not msg->is_valid()) return false;
-    if ( msg->type() != SIGNAL_MESSAGE ) return false;
+    if ( msg->type() != MessageType::SIGNAL ) return false;
     if ( m_interface.empty() or m_member.empty() ) return false;
 
     std::shared_ptr<const SignalMessage> smsg;

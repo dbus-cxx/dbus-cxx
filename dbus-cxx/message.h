@@ -60,20 +60,20 @@ namespace DBus
       
       Message( MessageType type );
 
-      Message( DBusMessage* cobj=NULL, CreateMethod m = CREATE_ALIAS );
+      Message( DBusMessage* cobj=NULL, CreateMethod m = CreateMethod::ALIAS );
 
-      Message( std::shared_ptr<Message> other, CreateMethod m = CREATE_ALIAS );
+      Message( std::shared_ptr<Message> other, CreateMethod m = CreateMethod::ALIAS );
 
-      Message( std::shared_ptr<const Message> other, CreateMethod m = CREATE_ALIAS );
+      Message( std::shared_ptr<const Message> other, CreateMethod m = CreateMethod::ALIAS );
 
     public:
       static std::shared_ptr<Message> create( MessageType type );
 
-      static std::shared_ptr<Message> create( DBusMessage* cobj=NULL, CreateMethod m = CREATE_ALIAS );
+      static std::shared_ptr<Message> create( DBusMessage* cobj=NULL, CreateMethod m = CreateMethod::ALIAS );
 
-      static std::shared_ptr<Message> create( std::shared_ptr<Message> other, CreateMethod m = CREATE_ALIAS );
+      static std::shared_ptr<Message> create( std::shared_ptr<Message> other, CreateMethod m = CreateMethod::ALIAS );
 
-      static std::shared_ptr<Message> create( std::shared_ptr<const Message> other, CreateMethod m = CREATE_ALIAS );
+      static std::shared_ptr<Message> create( std::shared_ptr<const Message> other, CreateMethod m = CreateMethod::ALIAS );
 
       std::shared_ptr<ReturnMessage> create_reply() const;
 
@@ -93,7 +93,7 @@ namespace DBus
 
 //       Message copy();
 
-      int type() const;
+      MessageType type() const;
 
       void set_auto_start( bool auto_start);
 

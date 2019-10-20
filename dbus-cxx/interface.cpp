@@ -325,7 +325,7 @@ namespace DBus
     
     Methods::iterator current, upper;
     std::shared_ptr<MethodBase> method;
-    HandlerResult result = NOT_HANDLED;
+    HandlerResult result = HandlerResult::NOT_HANDLED;
 
     // ========== READ LOCK ==========
 //     pthread_rwlock_rdlock( &m_methods_rwlock );
@@ -337,16 +337,16 @@ namespace DBus
       // ========== UNLOCK ==========
 //       pthread_rwlock_unlock( &m_methods_rwlock );
 
-      return NOT_HANDLED;
+      return HandlerResult::NOT_HANDLED;
     }
     
     upper = m_methods.upper_bound( message->member() );
 
     for ( ; current != upper; current++ )
     {
-      if ( current->second and current->second->handle_call_message( connection, message ) == HANDLED )
+      if ( current->second and current->second->handle_call_message( connection, message ) == HandlerResult::HANDLED )
       {
-        result = HANDLED;
+        result = HandlerResult::HANDLED;
         break;
       }
     }

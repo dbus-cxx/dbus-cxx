@@ -34,7 +34,7 @@ int main(int argc, const char** argv)
 
   std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 
   //We need to create an object proxy in order to say that we have methods
   //on it.  An object proxy consists of at minimum a dbus name(in this case

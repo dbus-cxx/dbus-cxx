@@ -83,10 +83,10 @@ class signal_proxy
         std::apply(&signal_proxy::emit, std::tuple_cat(std::make_tuple(this), tup_args) );
       }
       catch ( ErrorInvalidTypecast& e ) {
-          return NOT_HANDLED;
+          return HandlerResult::NOT_HANDLED;
       }
     
-      return HANDLED;
+      return HandlerResult::HANDLED;
     }
 
 };

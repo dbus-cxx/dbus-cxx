@@ -40,7 +40,7 @@ namespace DBus
 
   ErrorMessage::ErrorMessage(std::shared_ptr<Message> msg )
   {
-    if ( msg->type() != ERROR_MESSAGE )
+    if ( msg->type() != MessageType::ERROR )
       throw ErrorInvalidMessageType::create();
 
     if ( msg and *msg )

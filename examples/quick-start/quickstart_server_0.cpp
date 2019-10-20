@@ -29,7 +29,7 @@ int main()
   
   std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BUS_SESSION);
+  std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BusType::SESSION);
   
   ret = conn->request_name( "dbuscxx.quickstart_0.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
   if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) return 1;

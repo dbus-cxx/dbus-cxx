@@ -28,7 +28,7 @@ int main(int argc, const char** argv)
 
   std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 
   std::shared_ptr<DBus::ObjectProxy> object = connection->create_object_proxy("dbuscxx.example.time.server", "/dbuscxx/example/Time");
 

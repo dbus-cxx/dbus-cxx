@@ -28,7 +28,7 @@ namespace DBus
 
   Message::Message( MessageType type ): m_valid(false)
   {
-    m_cobj = dbus_message_new( type );
+    m_cobj = dbus_message_new( static_cast<int>( type ) );
   }
 
   Message::Message( DBusMessage* cobj, CreateMethod m ): m_valid(false)
@@ -37,7 +37,7 @@ namespace DBus
     {
       m_cobj = cobj;
     }
-    else if ( m == CREATE_ALIAS )
+    else if ( m == CreateMethod::ALIAS )
     {
       m_cobj = cobj;
       m_valid = true;
@@ -54,7 +54,7 @@ namespace DBus
   {
     if ( other and other->m_cobj != NULL )
     {
-      if ( m == CREATE_ALIAS )
+      if ( m == CreateMethod::ALIAS )
       {
         m_cobj = other->m_cobj;
         dbus_message_ref(m_cobj);
@@ -70,7 +70,7 @@ namespace DBus
   {
     if ( other and other->m_cobj != NULL )
     {
-      if ( m == CREATE_ALIAS )
+      if ( m == CreateMethod::ALIAS )
       {
         m_cobj = other->m_cobj;
         dbus_message_ref(m_cobj);
@@ -105,7 +105,7 @@ namespace DBus
   std::shared_ptr<ReturnMessage> Message::create_reply() const
   {
     if ( not this->is_valid() ) return std::shared_ptr<ReturnMessage>();
-    if ( not this->type() == CALL_MESSAGE ) return std::shared_ptr<ReturnMessage>();
+    if ( this->type() != MessageType::CALL ) return std::shared_ptr<ReturnMessage>();
     DBusMessage* rmcobj = dbus_message_new_method_return( this->cobj() );
     if ( not rmcobj ) return std::shared_ptr<ReturnMessage>();
     //when we create a new return message, this will increment the ref count.
@@ -162,13 +162,13 @@ namespace DBus
 //   Message Message::copy()
 //   {
     // TODO fix
-//     return Message( *this, CREATE_COPY );
+//     return Message( *this, CreateMethod::COPY );
 //   }
 
-  int Message::type() const
+  MessageType Message::type() const
   {
-    if ( m_cobj ) return dbus_message_get_type( m_cobj );
-    return TYPE_INVALID;
+    if ( m_cobj ) return static_cast<MessageType>( dbus_message_get_type( m_cobj ) );
+    return MessageType::INVALID;
   }
 
   void Message::set_auto_start( bool auto_start)

@@ -33,7 +33,7 @@ int main()
 
   std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 
   std::shared_ptr<DBus::signal<std::string>> signal = connection->create_signal<std::string>("/test/signal/Object", "test.signal.Type", "Test");
 

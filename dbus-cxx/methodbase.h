@@ -137,22 +137,22 @@ namespace DBus
           debug_str << name();
           DBUSCXX_DEBUG_STDSTR( "dbus.Method", debug_str.str() );
 
-          if( !connection || !message ) return NOT_HANDLED;
+          if( !connection || !message ) return HandlerResult::NOT_HANDLED;
 
           try{
               std::shared_ptr<ReturnMessage> retmsg = message->create_reply();
-              if( !retmsg ) return NOT_HANDLED;
+              if( !retmsg ) return HandlerResult::NOT_HANDLED;
 
               //Message::iterator i = message->begin();
               method_sig_gen.extractAndCall(message, retmsg, m_slot );
 
               sendMessage( connection, retmsg );
           }catch( ErrorInvalidTypecast ){
-              return NOT_HANDLED;
+              return HandlerResult::NOT_HANDLED;
          }catch( const std::exception &e ){
             std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, e.what() );
 
-            if( !errmsg ) return NOT_HANDLED;
+            if( !errmsg ) return HandlerResult::NOT_HANDLED;
 
             sendMessage( connection, errmsg );
          }catch( ... ){
@@ -163,12 +163,12 @@ namespace DBus
                    << ": unknown error(uncaught exception)";
             std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, stream.str() );
 
-            if( !errmsg ) return NOT_HANDLED;
+            if( !errmsg ) return HandlerResult::NOT_HANDLED;
 
             sendMessage( connection, errmsg );
          }
 
-         return HANDLED;
+         return HandlerResult::HANDLED;
       }
 
 

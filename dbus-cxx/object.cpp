@@ -294,7 +294,7 @@ namespace DBus
   {
     Interfaces::iterator current, upper;
     std::shared_ptr<Interface> interface;
-    HandlerResult result = NOT_HANDLED;
+    HandlerResult result = HandlerResult::NOT_HANDLED;
 
     SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: before call message test");
 
@@ -302,16 +302,16 @@ namespace DBus
     try{
       callmessage = CallMessage::create( message );
     }catch(std::shared_ptr<DBus::ErrorInvalidMessageType> err){
-      return NOT_HANDLED;
+      return HandlerResult::NOT_HANDLED;
     }
 
-    if ( not callmessage ) return NOT_HANDLED;
+    if ( not callmessage ) return HandlerResult::NOT_HANDLED;
 
     SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: message is good (it's a call message) for interface '" << callmessage->interface() << "'");
 
     if ( callmessage->interface() == NULL ){
         //If for some reason the message that we are getting has a NULL interface, we will segfault.
-        return NOT_HANDLED;
+        return HandlerResult::NOT_HANDLED;
     }
 
     // Handle the introspection interface
@@ -323,7 +323,7 @@ namespace DBus
       introspection += this->introspect();
       *return_message << introspection;
       connection << return_message;
-      return HANDLED;
+      return HandlerResult::HANDLED;
     }
 
     std::shared_lock lock( m_interfaces_rwlock );
@@ -352,18 +352,18 @@ namespace DBus
       {
         SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: trying to handle with interface " << current->second->name() );
         // If an interface handled the message unlock and return
-        if ( current->second->handle_call_message(connection, callmessage) == HANDLED )
+        if ( current->second->handle_call_message(connection, callmessage) == HandlerResult::HANDLED )
         {
-          result = HANDLED;
+          result = HandlerResult::HANDLED;
           break;
         }
       }
     }
 
-    if (result == NOT_HANDLED and m_default_interface)
+    if (result == HandlerResult::NOT_HANDLED and m_default_interface)
       result = m_default_interface->handle_call_message(connection, callmessage);
 
-    SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: message was " << ((result==HANDLED)?"handled":"not handled"));
+    SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: message was " << ((result==HandlerResult::HANDLED)?"handled":"not handled"));
 
     return result;
   }

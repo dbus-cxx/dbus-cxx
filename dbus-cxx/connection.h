@@ -251,17 +251,17 @@ namespace DBus
       
       void remove_unhandled_watch(const std::shared_ptr<Watch> w);
 
-      std::shared_ptr<Object> create_object( const std::string& path, PrimaryFallback pf=PRIMARY );
+      std::shared_ptr<Object> create_object( const std::string& path, PrimaryFallback pf=PrimaryFallback::PRIMARY );
 
       bool register_object( std::shared_ptr<Object> object );
 
       std::shared_ptr<ObjectPathHandler> create_object( const std::string& path, 
                       sigc::slot<HandlerResult(std::shared_ptr<Connection>, std::shared_ptr<const Message>)>& slot, 
-                      PrimaryFallback pf=PRIMARY );
+                      PrimaryFallback pf=PrimaryFallback::PRIMARY );
 
       std::shared_ptr<ObjectPathHandler> create_object( const std::string& path, 
                       HandlerResult (*MessageFunction)(std::shared_ptr<Connection>, std::shared_ptr<const Message>), 
-                      PrimaryFallback pf=PRIMARY );
+                      PrimaryFallback pf=PrimaryFallback::PRIMARY );
 
       std::shared_ptr<ObjectProxy> create_object_proxy( const std::string& path );
 

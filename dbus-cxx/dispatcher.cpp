@@ -35,9 +35,9 @@ namespace DBus
   /* Debug output strings */
   static constexpr const char* dispatch_status_string[] =
   {
-    "DISPATCH_DATA_REMAINS",
-    "DISPATCH_COMPLETE",
-    "DISPATCH_NEED_MEMORY",
+    "DispatchStatus::DATA_REMAINS",
+    "DispatchStatus::COMPLETE",
+    "DispatchStatus::NEED_MEMORY",
   };
 
   Dispatcher::Dispatcher(bool is_running):
@@ -254,11 +254,11 @@ namespace DBus
 
     for ( ci = m_connections.begin(); ci != m_connections.end(); ci++ )
     {
-      // If the dispatch loop limit is zero we will loop as long as status is DISPATCH_DATA_REMAINS
+      // If the dispatch loop limit is zero we will loop as long as status is DispatchStatus::DATA_REMAINS
       if ( m_dispatch_loop_limit == 0 )
       {
-        SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "Dispatch Status: " << dispatch_status_string[ (*ci)->dispatch_status() ] );
-        while ( (*ci)->dispatch_status() == DISPATCH_DATA_REMAINS )
+        SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "Dispatch Status: " << dispatch_status_string[ static_cast<int>( (*ci)->dispatch_status() ) ] );
+        while ( (*ci)->dispatch_status() == DispatchStatus::DATA_REMAINS )
           (*ci)->dispatch();
       }
       // Otherwise, we will only perform a number of dispatches up to the loop limit
@@ -267,14 +267,14 @@ namespace DBus
         for ( loop_count = 0; loop_count < m_dispatch_loop_limit; loop_count++ )
         {
           // Make sure we need to dispatch before calling it
-          if ( (*ci)->dispatch_status() != DISPATCH_COMPLETE ) (*ci)->dispatch();
+          if ( (*ci)->dispatch_status() != DispatchStatus::COMPLETE ) (*ci)->dispatch();
 
           // Are we done? If so, let's break out of the loop.
-          if ( (*ci)->dispatch_status() != DISPATCH_DATA_REMAINS ) break;
+          if ( (*ci)->dispatch_status() != DispatchStatus::DATA_REMAINS ) break;
         }
 
         // If we still have more to process let's set the processing flag to true
-        if ( (*ci)->dispatch_status() != DISPATCH_DATA_REMAINS )
+        if ( (*ci)->dispatch_status() != DispatchStatus::DATA_REMAINS )
         {
           wakeup_thread();
         }
@@ -382,9 +382,9 @@ namespace DBus
 
   void Dispatcher::on_dispatch_status_changed(DispatchStatus status, std::shared_ptr<Connection> conn)
   {
-    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "dispatch status changed: " << status );
+    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "dispatch status changed: " << static_cast<int>( status ) );
 
-    if ( status == DISPATCH_DATA_REMAINS )
+    if ( status == DispatchStatus::DATA_REMAINS )
     {
       wakeup_thread();
     }

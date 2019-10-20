@@ -79,7 +79,7 @@ int main(int argc, const char** argv)
 
   std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 
   //Create the calculator from the connection
   Calculator::pointer calculator = Calculator::create(connection);

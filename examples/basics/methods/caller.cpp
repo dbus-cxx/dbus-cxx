@@ -71,7 +71,7 @@ int main(int argc, const char** argv)
   std::shared_ptr<DBus::PendingCall> pending;
   std::shared_ptr<DBus::Message> retmsg;
 
-  std::shared_ptr<DBus::Connection> connection = DBus::Connection::create( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Connection> connection = DBus::Connection::create( DBus::BusType::SESSION );
 
   std::shared_ptr<DBus::ObjectProxy> object = connection->create_object_proxy("dbuscxx.example.calculator.server", "/dbuscxx/example/Calculator");
 
@@ -91,7 +91,7 @@ int main(int argc, const char** argv)
 
   retmsg = pending->steal_reply();
 
-  if ( retmsg->type() == DBus::ERROR_MESSAGE )
+  if ( retmsg->type() == DBus::MessageType::ERROR )
   {
     std::shared_ptr<DBus::ErrorMessage> errormsg = DBus::ErrorMessage::create(retmsg);
     std::cout << "Oops... got an error: " << errormsg->name() << std::endl;

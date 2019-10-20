@@ -36,7 +36,7 @@ int main()
   
   std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BUS_SESSION);
+  std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BusType::SESSION);
   
   // request a name on the bus
   ret = conn->request_name( "dbuscxx.example.calculator.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
@@ -78,7 +78,7 @@ DBus::HandlerResult reply_to_method_call( std::shared_ptr<DBus::Connection> conn
     reply = msg->create_reply( );
 
     // Was the reply created successfully
-    if ( not reply ) return DBus::NOT_HANDLED;
+    if ( not reply ) return DBus::HandlerResult::NOT_HANDLED;
     
     // add the arguments to the reply
     reply << answer;
@@ -87,5 +87,5 @@ DBus::HandlerResult reply_to_method_call( std::shared_ptr<DBus::Connection> conn
     conn << reply;
   }
 
-  return DBus::HANDLED;
+  return DBus::HandlerResult::HANDLED;
 }

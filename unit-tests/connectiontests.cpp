@@ -23,7 +23,7 @@
 std::shared_ptr<DBus::Dispatcher> dispatch;
 
 bool connection_create_signal_proxy(){
-    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BUS_SESSION);
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
 
     std::shared_ptr<DBus::signal_proxy_base> proxy = conn->create_signal_proxy("interface.name", "myname");
 
@@ -40,7 +40,7 @@ bool connection_create_signal_proxy(){
 }
 
 bool connection_get_signal_proxy_by_iface(){
-    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BUS_SESSION);
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
 
     std::shared_ptr<DBus::signal_proxy_base> proxy = conn->create_signal_proxy("interface.name", "myname");
 
@@ -51,7 +51,7 @@ bool connection_get_signal_proxy_by_iface(){
 }
 
 bool connection_get_signal_proxy_by_iface_and_name(){
-    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BUS_SESSION);
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
 
     std::shared_ptr<DBus::signal_proxy_base> proxy = conn->create_signal_proxy("interface.name", "myname");
 
@@ -67,7 +67,7 @@ static double add(double a, double b){
 }
 
 bool connection_test_method_2arg(){
-    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BUS_SESSION);
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
 
     std::shared_ptr<DBus::Object> object = conn->create_object("/dbuscxx/example/Calculator");
 

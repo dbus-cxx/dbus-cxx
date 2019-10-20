@@ -54,7 +54,7 @@ namespace DBus
 
   HandlerResult signal_proxy_base::handle_signal( std::shared_ptr<const SignalMessage> msg )
   {
-    if ( not this->matches( msg ) ) return NOT_HANDLED;
+    if ( not this->matches( msg ) ) return HandlerResult::NOT_HANDLED;
 
     return m_signal_dbus_incoming.emit( msg );
   }
@@ -82,7 +82,7 @@ namespace DBus
   bool signal_proxy_base::matches( std::shared_ptr<const Message> msg )
   {
     if ( not msg or not msg->is_valid() ) return false;
-    if ( msg->type() != SIGNAL_MESSAGE ) return false;
+    if ( msg->type() != MessageType::SIGNAL ) return false;
     if ( m_interface.empty() or m_name.empty() ) return false;
 
     std::shared_ptr<const SignalMessage> smsg;

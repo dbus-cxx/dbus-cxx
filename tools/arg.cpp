@@ -57,24 +57,24 @@ std::string Arg::cpp_type(ProxyAdapter pa)
 std::string Arg::cpp_dbus_type()
 {
   switch ( type() ) {
-    case DBus::TYPE_INVALID:     throw DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_BYTE:        return "uint8_t";
-    case DBus::TYPE_BOOLEAN:     return "bool";
-    case DBus::TYPE_INT16:       return "int16_t";
-    case DBus::TYPE_UINT16:      return "uint16_t";
-    case DBus::TYPE_INT32:       return "int32_t";
-    case DBus::TYPE_UINT32:      return "uint32_t";
-    case DBus::TYPE_INT64:       return "int64_t";
-    case DBus::TYPE_UINT64:      return "uint64_t";
-    case DBus::TYPE_DOUBLE:      return "double";
-    case DBus::TYPE_STRING:      return "::std::string";
-    case DBus::TYPE_OBJECT_PATH: return "::DBus::Path";
-    case DBus::TYPE_SIGNATURE:   return "::DBus::Signature";
-    case DBus::TYPE_ARRAY:       return "::std::vector";
-    case DBus::TYPE_VARIANT:     throw DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_STRUCT:      throw DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_DICT_ENTRY:  throw DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_UNIX_FD:     return "DBus::FileDescriptor";
+    case DBus::Type::INVALID:     throw DBus::ErrorInvalidMessageType::create();
+    case DBus::Type::BYTE:        return "uint8_t";
+    case DBus::Type::BOOLEAN:     return "bool";
+    case DBus::Type::INT16:       return "int16_t";
+    case DBus::Type::UINT16:      return "uint16_t";
+    case DBus::Type::INT32:       return "int32_t";
+    case DBus::Type::UINT32:      return "uint32_t";
+    case DBus::Type::INT64:       return "int64_t";
+    case DBus::Type::UINT64:      return "uint64_t";
+    case DBus::Type::DOUBLE:      return "double";
+    case DBus::Type::STRING:      return "::std::string";
+    case DBus::Type::OBJECT_PATH: return "::DBus::Path";
+    case DBus::Type::SIGNATURE:   return "::DBus::Signature";
+    case DBus::Type::ARRAY:       return "::std::vector";
+    case DBus::Type::VARIANT:     throw DBus::ErrorInvalidMessageType::create();
+    case DBus::Type::STRUCT:      throw DBus::ErrorInvalidMessageType::create();
+    case DBus::Type::DICT_ENTRY:  throw DBus::ErrorInvalidMessageType::create();
+    case DBus::Type::UNIX_FD:     return "DBus::FileDescriptor";
   }
 
   throw DBus::ErrorInvalidMessageType::create();
@@ -83,40 +83,40 @@ std::string Arg::cpp_dbus_type()
 std::string Arg::stubsignature()
 {
   switch ( type() ) {
-    case DBus::TYPE_INVALID:     throw DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_BYTE:        return DBus::signature( (uint8_t)0 );
-    case DBus::TYPE_BOOLEAN:     return DBus::signature( false );
-    case DBus::TYPE_INT16:       return DBus::signature( (int16_t)0 );
-    case DBus::TYPE_UINT16:      return DBus::signature( (int16_t)0 );
-    case DBus::TYPE_INT32:       return DBus::signature( (int32_t)0 );
-    case DBus::TYPE_UINT32:      return DBus::signature( (int32_t)0 );
-    case DBus::TYPE_INT64:       return DBus::signature( (int64_t)0 );
-    case DBus::TYPE_UINT64:      return DBus::signature( (uint64_t)0 );
-    case DBus::TYPE_DOUBLE:      
+    case DBus::Type::INVALID:     throw DBus::ErrorInvalidMessageType::create();
+    case DBus::Type::BYTE:        return DBus::signature( (uint8_t)0 );
+    case DBus::Type::BOOLEAN:     return DBus::signature( false );
+    case DBus::Type::INT16:       return DBus::signature( (int16_t)0 );
+    case DBus::Type::UINT16:      return DBus::signature( (int16_t)0 );
+    case DBus::Type::INT32:       return DBus::signature( (int32_t)0 );
+    case DBus::Type::UINT32:      return DBus::signature( (int32_t)0 );
+    case DBus::Type::INT64:       return DBus::signature( (int64_t)0 );
+    case DBus::Type::UINT64:      return DBus::signature( (uint64_t)0 );
+    case DBus::Type::DOUBLE:      
         {
         double d = 0.0;
         return DBus::signature( d );
         }
-    case DBus::TYPE_STRING:      
+    case DBus::Type::STRING:      
         {
         std::string str;
         return DBus::signature( str );
         }
-    case DBus::TYPE_OBJECT_PATH: 
+    case DBus::Type::OBJECT_PATH: 
         {
         DBus::Path path;
         return DBus::signature( path );
         }
-    case DBus::TYPE_SIGNATURE:   
+    case DBus::Type::SIGNATURE:   
         {
         DBus::Signature sig;
         return DBus::signature( sig );
         }
-    case DBus::TYPE_ARRAY:       throw DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_VARIANT:     throw DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_STRUCT:      throw DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_DICT_ENTRY:  throw DBus::ErrorInvalidMessageType::create();
-    case DBus::TYPE_UNIX_FD:     throw DBus::ErrorInvalidMessageType::create();
+    case DBus::Type::ARRAY:       throw DBus::ErrorInvalidMessageType::create();
+    case DBus::Type::VARIANT:     throw DBus::ErrorInvalidMessageType::create();
+    case DBus::Type::STRUCT:      throw DBus::ErrorInvalidMessageType::create();
+    case DBus::Type::DICT_ENTRY:  throw DBus::ErrorInvalidMessageType::create();
+    case DBus::Type::UNIX_FD:     throw DBus::ErrorInvalidMessageType::create();
   }
 
   throw DBus::ErrorInvalidMessageType::create();
@@ -124,8 +124,8 @@ std::string Arg::stubsignature()
 
 DBus::Type Arg::type()
 {
-  if ( not signature.is_singleton() ) return DBus::TYPE_INVALID;
-  //if ( not signature.begin().is_basic() ) return DBus::TYPE_INVALID;
+  if ( not signature.is_singleton() ) return DBus::Type::INVALID;
+  //if ( not signature.begin().is_basic() ) return DBus::Type::INVALID;
   return signature.begin().type();
 }
 

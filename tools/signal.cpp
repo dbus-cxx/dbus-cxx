@@ -60,7 +60,7 @@ bool DBusSignal::args_valid()
   if ( args.size() > 7 ) return false;
 
   for ( unsigned int i=0; i < args.size(); i++ )
-    if ( args[i].type() == DBus::TYPE_INVALID ) return false;
+    if ( args[i].type() == DBus::Type::INVALID ) return false;
 
   return true;
 }

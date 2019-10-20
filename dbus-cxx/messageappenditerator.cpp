@@ -33,7 +33,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return false;
 
-    result = dbus_message_iter_append_basic( &m_cobj, TYPE_BOOLEAN, &b );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::BOOLEAN ), &b );
 
     if ( ! result ) m_message->invalidate();
 
@@ -51,7 +51,7 @@ namespace DBus
     if ( not this->is_valid() ) return false;
     const std::string& sig = v;
     const char* pstr = sig.c_str();
-    result = dbus_message_iter_append_basic( &m_cobj, TYPE_SIGNATURE, &(pstr) );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::SIGNATURE ), &(pstr) );
     if ( ! result ) m_message->invalidate();
     return result;
   }
@@ -61,7 +61,7 @@ namespace DBus
     bool result;
     if ( not this->is_valid() ) return false;
     const char* pstr = v.c_str();
-    result = dbus_message_iter_append_basic( &m_cobj, TYPE_OBJECT_PATH, &(pstr) );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::OBJECT_PATH ), &(pstr) );
     if ( ! result ) m_message->invalidate();
     return result;
   }
@@ -74,7 +74,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return false;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::type( v ), &v );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DBus::type( v ) ), &v );
 
     if ( ! result ) m_message->invalidate();
 
@@ -87,7 +87,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return false;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::type( *fd ), &raw_fd );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DBus::type( *fd ) ), &raw_fd );
 
     if ( ! result ) m_message->invalidate();
 
@@ -269,10 +269,10 @@ namespace DBus
     else
       m_subiter = new MessageAppendIterator();
 
-    if ( t == CONTAINER_STRUCT || t == CONTAINER_DICT_ENTRY )
-      success = dbus_message_iter_open_container( &m_cobj, t, NULL, m_subiter->cobj() );
+    if ( t == ContainerType::STRUCT || t == ContainerType::DICT_ENTRY )
+      success = dbus_message_iter_open_container( &m_cobj, DBus::typeToDBusContainerType( t ), NULL, m_subiter->cobj() );
     else
-      success = dbus_message_iter_open_container( &m_cobj, t, sig.c_str(), m_subiter->cobj() );
+      success = dbus_message_iter_open_container( &m_cobj, DBus::typeToDBusContainerType( t ), sig.c_str(), m_subiter->cobj() );
     
     return success;
   }

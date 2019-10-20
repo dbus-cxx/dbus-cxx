@@ -47,7 +47,7 @@ namespace DBus
   {
     Error::pointer error = Error::create();
 
-    if ( type != BUS_NONE ) {
+    if ( type != BusType::NONE ) {
 
       if ( is_private ) {
         m_cobj = dbus_bus_get_private(( DBusBusType )type, error->cobj() );
@@ -261,7 +261,7 @@ namespace DBus
     dbus_uint32_t result_code;
     Error::pointer error = Error::create();
 
-    if ( not this->is_valid() ) return START_REPLY_FAILED;
+    if ( not this->is_valid() ) return StartReply::FAILED;
 
     succeeded = dbus_bus_start_service_by_name( m_cobj, name.c_str(), flags, &result_code, error->cobj() );
 
@@ -269,11 +269,11 @@ namespace DBus
 
     if ( succeeded )
       switch ( result_code ) {
-        case DBUS_START_REPLY_SUCCESS: return START_REPLY_SUCCESS;
-        case DBUS_START_REPLY_ALREADY_RUNNING: return START_REPLY_ALREADY_RUNNING;
+        case DBUS_START_REPLY_SUCCESS: return StartReply::SUCCESS;
+        case DBUS_START_REPLY_ALREADY_RUNNING: return StartReply::ALREADY_RUNNING;
       }
 
-    return START_REPLY_FAILED;
+    return StartReply::FAILED;
   }
 
   bool Connection::add_match( const std::string& rule )
@@ -440,13 +440,13 @@ namespace DBus
 
   DispatchStatus Connection::dispatch_status( ) const
   {
-    if ( not this->is_valid() ) return DISPATCH_COMPLETE;
+    if ( not this->is_valid() ) return DispatchStatus::COMPLETE;
     return static_cast<DispatchStatus>( dbus_connection_get_dispatch_status( m_cobj ) );
   }
 
   DispatchStatus Connection::dispatch( )
   {
-    if ( not this->is_valid() ) return DISPATCH_COMPLETE;
+    if ( not this->is_valid() ) return DispatchStatus::COMPLETE;
     dbus_connection_dispatch( m_cobj );
     return static_cast<DispatchStatus>( dbus_connection_get_dispatch_status( m_cobj ) );
   }
@@ -956,16 +956,16 @@ namespace DBus
     if ( message == NULL ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     
     std::shared_ptr<Connection> conn = static_cast<Connection*>(data)->self();
-    FilterResult filter_result = DONT_FILTER;
-    HandlerResult signal_result = NOT_HANDLED;
+    FilterResult filter_result = FilterResult::DONT_FILTER;
+    HandlerResult signal_result = HandlerResult::NOT_HANDLED;
     std::shared_ptr<Message> msg = Message::create(message);
 
     filter_result = conn->signal_filter().emit(conn, msg);
 
-    SIMPLELOGGER_DEBUG( "dbus.Connection", "Filter callback.  filter_result: " << filter_result );
+    SIMPLELOGGER_DEBUG( "dbus.Connection", "Filter callback.  filter_result: " << static_cast<int>( filter_result ) );
 
     // Deliver signals to signal proxies
-    if ( filter_result != FILTER and msg->type() == SIGNAL_MESSAGE )
+    if ( filter_result != FilterResult::FILTER and msg->type() == MessageType::SIGNAL )
     {
       InterfaceToNameProxySignalMap::iterator i;
       NameToProxySignalMap::iterator j;
@@ -979,26 +979,26 @@ namespace DBus
         j = i->second.find(smsg->member());
         if ( j != i->second.end() )
         {
-          signal_result = NOT_HANDLED;
+          signal_result = HandlerResult::NOT_HANDLED;
           for ( k = j->second.begin(); k != j->second.end(); k++ )
           {
             result = (*k)->handle_signal( smsg );
-            if ( result == HANDLED )
+            if ( result == HandlerResult::HANDLED )
             {
-              signal_result = HANDLED;
+              signal_result = HandlerResult::HANDLED;
               break;
             }
-            else if ( result == HANDLER_NEEDS_MEMORY )
+            else if ( result == HandlerResult::NEEDS_MEMORY )
             {
-              signal_result = HANDLER_NEEDS_MEMORY;
+              signal_result = HandlerResult::NEEDS_MEMORY;
             }
           }
         }
       }
     }
 
-    if ( signal_result == HANDLED or filter_result == FILTER ) return DBUS_HANDLER_RESULT_HANDLED;
-    if ( signal_result == HANDLER_NEEDS_MEMORY or filter_result == FILTER_NEEDS_MEMORY ) return DBUS_HANDLER_RESULT_NEED_MEMORY;
+    if ( signal_result == HandlerResult::HANDLED or filter_result == FilterResult::FILTER ) return DBUS_HANDLER_RESULT_HANDLED;
+    if ( signal_result == HandlerResult::NEEDS_MEMORY or filter_result == FilterResult::NEEDS_MEMORY ) return DBUS_HANDLER_RESULT_NEED_MEMORY;
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
 

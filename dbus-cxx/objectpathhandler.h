@@ -41,7 +41,7 @@ namespace DBus
       ObjectPathHandler(const std::string& path, PrimaryFallback pf);
 
     public:
-      static std::shared_ptr<ObjectPathHandler> create(const std::string& path, PrimaryFallback pf=PRIMARY);
+      static std::shared_ptr<ObjectPathHandler> create(const std::string& path, PrimaryFallback pf=PrimaryFallback::PRIMARY);
       
       virtual ~ObjectPathHandler();
 

@@ -101,7 +101,7 @@ namespace DBus
       bool append( const std::vector<T>& v){
         bool success;
         T type;
-        success = this->open_container( CONTAINER_ARRAY, DBus::signature(type).c_str() );
+        success = this->open_container( ContainerType::ARRAY, DBus::signature(type).c_str() );
 
         if( not success ){
           throw ErrorNoMemory::create();
@@ -117,9 +117,9 @@ namespace DBus
       bool append( const std::map<Key,Data>& dictionary ){
         std::string sig = signature_dict_data( dictionary );
         typename std::map<Key,Data>::const_iterator it;
-        this->open_container( CONTAINER_ARRAY, sig );
+        this->open_container( ContainerType::ARRAY, sig );
         for ( it = dictionary.begin(); it != dictionary.end(); it++ ) {
-          m_subiter->open_container( CONTAINER_DICT_ENTRY, std::string() );
+          m_subiter->open_container( ContainerType::DICT_ENTRY, std::string() );
           m_subiter->m_subiter->append( (*it).first );
           m_subiter->m_subiter->append( (*it).second );
           m_subiter->close_container();
@@ -131,7 +131,7 @@ namespace DBus
       template <typename T>
       bool append( const std::variant<T> & var){
         T value = std::get<T>( var );
-        this->open_container( CONTAINER_VARIANT, signature(value)  );
+        this->open_container( ContainerType::VARIANT, signature(value)  );
         m_subiter->append(value);
         return this->close_container();
       }
@@ -146,7 +146,7 @@ namespace DBus
 
 //           template <typename T0, typename T1>
 //           void append(const Struct<T0,T1>& s) {
-//             this->open_container( CONTAINER_STRUCT, std::string() );
+//             this->open_container( ContainerType::STRUCT, std::string() );
 //             m_subiter->append( boost::get<0>(s) );
 //             m_subiter->append( boost::get<1>(s) );
 //             this->close_container();
@@ -154,7 +154,7 @@ namespace DBus
       //
 //           template <typename T0, typename T1, typename T2>
 //           void append(const Struct<T0,T1,T2>& s) {
-//             this->open_container( CONTAINER_STRUCT, std::string() );
+//             this->open_container( ContainerType::STRUCT, std::string() );
 //             m_subiter->append( boost::get<0>(s) );
 //             m_subiter->append( boost::get<1>(s) );
 //             m_subiter->append( boost::get<2>(s) );
@@ -163,7 +163,7 @@ namespace DBus
       //
 //           template <typename T0, typename T1, typename T2, typename T3>
 //           void append(const Struct<T0,T1,T2,T3>& s) {
-//             this->open_container( CONTAINER_STRUCT, std::string() );
+//             this->open_container( ContainerType::STRUCT, std::string() );
 //             m_subiter->append( boost::get<0>(s) );
 //             m_subiter->append( boost::get<1>(s) );
 //             m_subiter->append( boost::get<2>(s) );
@@ -173,7 +173,7 @@ namespace DBus
       //
 //           template <typename T0, typename T1, typename T2, typename T3, typename T4>
 //           void append(const Struct<T0,T1,T2,T3,T4>& s) {
-//             this->open_container( CONTAINER_STRUCT, std::string() );
+//             this->open_container( ContainerType::STRUCT, std::string() );
 //             m_subiter->append( boost::get<0>(s) );
 //             m_subiter->append( boost::get<1>(s) );
 //             m_subiter->append( boost::get<2>(s) );
@@ -184,7 +184,7 @@ namespace DBus
       //
 //           template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5>
 //           void append(const Struct<T0,T1,T2,T3,T4,T5>& s) {
-//             this->open_container( CONTAINER_STRUCT, std::string() );
+//             this->open_container( ContainerType::STRUCT, std::string() );
 //             m_subiter->append( boost::get<0>(s) );
 //             m_subiter->append( boost::get<1>(s) );
 //             m_subiter->append( boost::get<2>(s) );
@@ -196,7 +196,7 @@ namespace DBus
       //
 //           template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
 //           void append(const Struct<T0,T1,T2,T3,T4,T5,T6>& s) {
-//             this->open_container( CONTAINER_STRUCT, std::string() );
+//             this->open_container( ContainerType::STRUCT, std::string() );
 //             m_subiter->append( boost::get<0>(s) );
 //             m_subiter->append( boost::get<1>(s) );
 //             m_subiter->append( boost::get<2>(s) );

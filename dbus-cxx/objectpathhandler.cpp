@@ -75,13 +75,13 @@ namespace DBus
     }
     
 #ifdef DBUS_CXX_HAVE_DBUS_12
-    if ( m_primary_fallback == PRIMARY )
+    if ( m_primary_fallback == PrimaryFallback::PRIMARY )
       result = dbus_connection_try_register_object_path( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this, error->cobj() );
     else
       result = dbus_connection_try_register_fallback( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this, error->cobj() );
     if ( error->is_set() ) return false;
 #else
-    if ( m_primary_fallback == PRIMARY )
+    if ( m_primary_fallback == PrimaryFallback::PRIMARY )
       result = dbus_connection_register_object_path( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this );
     else
       result = dbus_connection_register_fallback( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this );
@@ -115,12 +115,12 @@ namespace DBus
 
   DBusHandlerResult ObjectPathHandler::message_handler_callback(DBusConnection * connection, DBusMessage * message, void * user_data)
   {
-    bool result;
+    DBus::HandlerResult result;
     if ( user_data == NULL ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     ObjectPathHandler* handler = static_cast<ObjectPathHandler*>(user_data);
     result = handler->handle_message(Connection::self(connection), Message::create(message));
-    SIMPLELOGGER_DEBUG("dbus.ObjectPathHandler","ObjectPathHandler::message_handler_callback: result = " << result );
-    if ( result == HANDLED ) return DBUS_HANDLER_RESULT_HANDLED;
+    SIMPLELOGGER_DEBUG("dbus.ObjectPathHandler","ObjectPathHandler::message_handler_callback: result = " << static_cast<int>( result ) );
+    if ( result == HandlerResult::HANDLED ) return DBUS_HANDLER_RESULT_HANDLED;
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
 

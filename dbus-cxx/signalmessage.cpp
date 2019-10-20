@@ -31,19 +31,19 @@ namespace DBus
   SignalMessage::SignalMessage( std::shared_ptr<Message> msg ):
       Message( msg )
   {
-    if ( not msg or not *msg or msg->type() != SIGNAL_MESSAGE )
+    if ( not msg or not *msg or msg->type() != MessageType::SIGNAL )
       throw ErrorInvalidMessageType::create();
   }
 
   SignalMessage::SignalMessage( std::shared_ptr<const Message> msg ):
       Message( msg )
   {
-    if ( not msg or not *msg or msg->type() != SIGNAL_MESSAGE )
+    if ( not msg or not *msg or msg->type() != MessageType::SIGNAL )
       throw ErrorInvalidMessageType::create();
   }
 
   SignalMessage::SignalMessage( const std::string& name ):
-      Message( SIGNAL_MESSAGE )
+      Message( MessageType::SIGNAL )
   {
     this->set_member( name );
   }

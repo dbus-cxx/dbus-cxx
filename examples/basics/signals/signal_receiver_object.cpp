@@ -71,7 +71,7 @@ int main()
 
   std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
 
-  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BUS_SESSION );
+  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 
   Calculator::pointer calculator = Calculator::create(connection);
 

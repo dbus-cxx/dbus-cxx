@@ -61,18 +61,18 @@ namespace DBus
 
   unsigned int Watch::flags( ) const
   {
-    if ( not this->is_valid() ) return WATCH_ERROR;
+    if ( not this->is_valid() ) return DBUS_WATCH_ERROR;
     return dbus_watch_get_flags( m_cobj );
   }
 
   bool Watch::is_readable() const
   {
-    return this->flags() & WATCH_READABLE;
+    return this->flags() & DBUS_WATCH_READABLE;
   }
 
   bool Watch::is_writable() const
   {
-    return this->flags() & WATCH_WRITABLE;
+    return this->flags() & DBUS_WATCH_WRITABLE;
   }
 
   bool Watch::is_enabled( ) const
@@ -89,25 +89,25 @@ namespace DBus
 
   bool Watch::handle_read(bool error, bool hangup)
   {
-    int flags = WATCH_READABLE;
-    if ( error ) flags |= WATCH_ERROR;
-    if ( hangup ) flags |= WATCH_HANGUP;
+    int flags = DBUS_WATCH_READABLE;
+    if ( error ) flags |= DBUS_WATCH_ERROR;
+    if ( hangup ) flags |= DBUS_WATCH_HANGUP;
     return handle(flags);
   }
 
   bool Watch::handle_write(bool error, bool hangup)
   {
-    int flags = WATCH_WRITABLE;
-    if ( error ) flags |= WATCH_ERROR;
-    if ( hangup ) flags |= WATCH_HANGUP;
+    int flags = DBUS_WATCH_WRITABLE;
+    if ( error ) flags |= DBUS_WATCH_ERROR;
+    if ( hangup ) flags |= DBUS_WATCH_HANGUP;
     return handle(flags);
   }
 
   bool Watch::handle_readwrite(bool error, bool hangup)
   {
-    int flags = WATCH_READABLE | WATCH_WRITABLE;
-    if ( error ) flags |= WATCH_ERROR;
-    if ( hangup ) flags |= WATCH_HANGUP;
+    int flags = DBUS_WATCH_READABLE | DBUS_WATCH_WRITABLE;
+    if ( error ) flags |= DBUS_WATCH_ERROR;
+    if ( hangup ) flags |= DBUS_WATCH_HANGUP;
     return handle(flags);
   }
 

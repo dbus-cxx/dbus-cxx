@@ -50,7 +50,7 @@ namespace DBus
        * This class has a protected constructor. Use the \c create() methods
        * to obtain a smart pointer to a new instance.
        */
-      Object( const std::string& path, PrimaryFallback pf=PRIMARY );
+      Object( const std::string& path, PrimaryFallback pf=PrimaryFallback::PRIMARY );
 
     public:
       /**
@@ -80,9 +80,9 @@ namespace DBus
       /**
        * Creates a named Object that will register as a primary or fallback handler
        * @param path The path the object will handle
-       * @param pf Determines whether the Object will registar as a primary or fallback handler (\e default = \c PRIMARY)
+       * @param pf Determines whether the Object will registar as a primary or fallback handler (\e default = \c PrimaryFallback::PRIMARY)
        */
-      static std::shared_ptr<Object> create( const std::string& path = std::string(), PrimaryFallback pf=PRIMARY );
+      static std::shared_ptr<Object> create( const std::string& path = std::string(), PrimaryFallback pf=PrimaryFallback::PRIMARY );
 
       virtual ~Object();
 
@@ -258,13 +258,13 @@ namespace DBus
        * the default interface will be used.
        *
        * If the specified interface is found, all matching interfaces will be
-       * tried until an interface handler returns \c HANDLED. Once an interface
-       * returns \c HANDLED no further interfaces will be tried.
+       * tried until an interface handler returns \c HandlerResult::HANDLED. Once an interface
+       * returns \c HandlerResult::HANDLED no further interfaces will be tried.
        *
-       * If no interface returns \c HANDLED the default interface (if one is
+       * If no interface returns \c HandlerResult::HANDLED the default interface (if one is
        * set) will be tried.
        * 
-       * @return \c HANDLED if this object handled the message, \c NOT_HANDLED otherwise
+       * @return \c HandlerResult::HANDLED if this object handled the message, \c HandlerResult::NOT_HANDLED otherwise
        * @param conn The Connection to send the reply message on
        * @param msg The message to handle; must be a CallMessage or it will not be handled
        */

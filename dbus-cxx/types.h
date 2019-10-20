@@ -33,58 +33,66 @@
 namespace DBus
 {
 
-  inline Type type( const uint8_t& )            { return TYPE_BYTE; }
-  inline Type type( const bool& )               { return TYPE_BOOLEAN; }
-  inline Type type( const int16_t& )            { return TYPE_INT16; }
-  inline Type type( const uint16_t& )           { return TYPE_UINT16; }
-  inline Type type( const int32_t& )            { return TYPE_INT32; }
-  inline Type type( const uint32_t& )           { return TYPE_UINT32; }
-  inline Type type( const int64_t& )            { return TYPE_INT64; }
-  inline Type type( const uint64_t& )           { return TYPE_UINT64; }
-  inline Type type( const double& )             { return TYPE_DOUBLE; }
-  inline Type type( const std::string& ) { return TYPE_STRING; }
-  inline Type type( const char* )        { return TYPE_STRING; }
-  inline Type type( const Path& )               { return TYPE_OBJECT_PATH; }
-  inline Type type( const Signature& )          { return TYPE_SIGNATURE; }
+  inline int typeToDBusType( Type t ){
+      return static_cast<int>( t );
+  }
+
+  inline int typeToDBusContainerType( ContainerType t ){
+      return static_cast<int>( t );
+  }
+
+  inline Type type( const uint8_t& )            { return Type::BYTE; }
+  inline Type type( const bool& )               { return Type::BOOLEAN; }
+  inline Type type( const int16_t& )            { return Type::INT16; }
+  inline Type type( const uint16_t& )           { return Type::UINT16; }
+  inline Type type( const int32_t& )            { return Type::INT32; }
+  inline Type type( const uint32_t& )           { return Type::UINT32; }
+  inline Type type( const int64_t& )            { return Type::INT64; }
+  inline Type type( const uint64_t& )           { return Type::UINT64; }
+  inline Type type( const double& )             { return Type::DOUBLE; }
+  inline Type type( const std::string& ) { return Type::STRING; }
+  inline Type type( const char* )        { return Type::STRING; }
+  inline Type type( const Path& )               { return Type::OBJECT_PATH; }
+  inline Type type( const Signature& )          { return Type::SIGNATURE; }
   template <typename... args>
-  inline Type type( const std::variant<args...>& )            { return TYPE_VARIANT; }
-  inline Type type( const FileDescriptor& )     { return TYPE_UNIX_FD; }
+  inline Type type( const std::variant<args...>& )            { return Type::VARIANT; }
+  inline Type type( const FileDescriptor& )     { return Type::UNIX_FD; }
   
-  inline Type type( const char& )               { return TYPE_BYTE; }
-  inline Type type( const int8_t& )             { return TYPE_BYTE; }
+  inline Type type( const char& )               { return Type::BYTE; }
+  inline Type type( const int8_t& )             { return Type::BYTE; }
 
 #if DBUS_CXX_SIZEOF_LONG_INT == 4
-  inline Type type( const long int& )            { return TYPE_INT32; }
-  inline Type type( const long unsigned int& )   { return TYPE_UINT32; }
+  inline Type type( const long int& )            { return Type::INT32; }
+  inline Type type( const long unsigned int& )   { return Type::UINT32; }
 #endif
   
-  inline Type type( const float& )               { return TYPE_DOUBLE; }
+  inline Type type( const float& )               { return Type::DOUBLE; }
 
   template <typename T> 
-  inline Type type(const std::vector<T>&) { return TYPE_ARRAY; }
+  inline Type type(const std::vector<T>&) { return Type::ARRAY; }
 
-//   template <typename T> inline Type type(const std::vector<T>&) { return TYPE_ARRAY; }
+//   template <typename T> inline Type type(const std::vector<T>&) { return Type::ARRAY; }
 
 //   template <typename T0>
-//   inline Type type( const Struct<T0>& ) { return TYPE_STRUCT; }
+//   inline Type type( const Struct<T0>& ) { return Type::STRUCT; }
 // 
 //   template <typename T0, typename T1>
-//   inline Type type( const Struct<T0,T1>& ) { return TYPE_STRUCT; }
+//   inline Type type( const Struct<T0,T1>& ) { return Type::STRUCT; }
 // 
 //   template <typename T0, typename T1, typename T2>
-//   inline Type type( const Struct<T0,T1,T2>& ) { return TYPE_STRUCT; }
+//   inline Type type( const Struct<T0,T1,T2>& ) { return Type::STRUCT; }
 // 
 //   template <typename T0, typename T1, typename T2, typename T3>
-//   inline Type type( const Struct<T0,T1,T2,T3>& ) { return TYPE_STRUCT; }
+//   inline Type type( const Struct<T0,T1,T2,T3>& ) { return Type::STRUCT; }
 // 
 //   template <typename T0, typename T1, typename T2, typename T3, typename T4>
-//   inline Type type( const Struct<T0,T1,T2,T3,T4>& ) { return TYPE_STRUCT; }
+//   inline Type type( const Struct<T0,T1,T2,T3,T4>& ) { return Type::STRUCT; }
 // 
 //   template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5>
-//   inline Type type( const Struct<T0,T1,T2,T3,T4,T5>& ) { return TYPE_STRUCT; }
+//   inline Type type( const Struct<T0,T1,T2,T3,T4,T5>& ) { return Type::STRUCT; }
 // 
 //   template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-//   inline Type type( const Struct<T0,T1,T2,T3,T4,T5,T6>& ) { return TYPE_STRUCT; }
+//   inline Type type( const Struct<T0,T1,T2,T3,T4,T5,T6>& ) { return Type::STRUCT; }
 
   inline std::string type_string( const uint8_t& )     { return "byte"; }
   inline std::string type_string( const int8_t& )      { return "byte"; }
@@ -126,39 +134,39 @@ template <class T>
   {
     switch ( t )
     {
-      case TYPE_BYTE:
+      case Type::BYTE:
         return "uint8_t";
-      case TYPE_BOOLEAN:
+      case Type::BOOLEAN:
         return "bool";
-      case TYPE_INT16:
+      case Type::INT16:
         return "int16_t";
-      case TYPE_UINT16:
+      case Type::UINT16:
         return "uint16_t";
-      case TYPE_INT32:
+      case Type::INT32:
         return "int32_t";
-      case TYPE_UINT32:
+      case Type::UINT32:
         return "uint32_t";
-      case TYPE_INT64:
+      case Type::INT64:
         return "int64_t";
-      case TYPE_UINT64:
+      case Type::UINT64:
         return "uint64_t";
-      case TYPE_DOUBLE:
+      case Type::DOUBLE:
         return "double";
-      case TYPE_STRING:
+      case Type::STRING:
         return "std::string";
-      case TYPE_OBJECT_PATH:
+      case Type::OBJECT_PATH:
         return "DBus::Path";
-      case TYPE_SIGNATURE:
+      case Type::SIGNATURE:
         return "DBus::Signature";
-      case TYPE_ARRAY:
+      case Type::ARRAY:
         return "std::vector";
-      case TYPE_VARIANT:
+      case Type::VARIANT:
         return "DBus::Variant<>";
-      case TYPE_STRUCT:
+      case Type::STRUCT:
         return "Struct";
-      case TYPE_DICT_ENTRY:
+      case Type::DICT_ENTRY:
         return "std::pair<>";
-      case TYPE_UNIX_FD:
+      case Type::UNIX_FD:
         return "FileDescriptor";
       default:
         break;
@@ -169,19 +177,19 @@ template <class T>
   inline std::string include_file_for_type( DBus::Type t ){
     switch ( t )
     {
-      case TYPE_BYTE:
-      case TYPE_INT16:
-      case TYPE_UINT16:
-      case TYPE_INT32:
-      case TYPE_UINT32:
-      case TYPE_INT64:
-      case TYPE_UINT64:
+      case Type::BYTE:
+      case Type::INT16:
+      case Type::UINT16:
+      case Type::INT32:
+      case Type::UINT32:
+      case Type::INT64:
+      case Type::UINT64:
         return "stdint.h";
-      case TYPE_STRING:
+      case Type::STRING:
         return "string";
-      case TYPE_ARRAY:
+      case Type::ARRAY:
         return "vector";
-      case TYPE_DICT_ENTRY:
+      case Type::DICT_ENTRY:
         return "map";
     }
     return std::string("");
@@ -190,9 +198,9 @@ template <class T>
   inline bool type_is_templated( DBus::Type t ){
     switch( t )
     {
-        case TYPE_ARRAY:
+        case Type::ARRAY:
           return true;
-        case TYPE_DICT_ENTRY:
+        case Type::DICT_ENTRY:
           return true;
     }
     return false;

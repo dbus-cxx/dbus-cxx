@@ -66,9 +66,9 @@ int main( int argc, const char** argv )
   std::shared_ptr<Connection> conn;
 
   if ( use_system )
-    conn = Connection::create(BUS_SYSTEM);
+    conn = Connection::create(BusType::SYSTEM);
   else
-    conn = Connection::create(BUS_SESSION);
+    conn = Connection::create(BusType::SESSION);
 
   std::string introspection = conn->introspect( dest, path );
 

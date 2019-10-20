@@ -27,7 +27,7 @@ int main()
   dispatcher = DBus::Dispatcher::create();
 
   std::shared_ptr<DBus::Connection> connection;
-  connection = dispatcher->create_connection( DBus::BUS_SESSION );
+  connection = dispatcher->create_connection( DBus::BusType::SESSION );
 
   //create an object proxy, which stands in for a real object.
   //a proxy exists over the dbus

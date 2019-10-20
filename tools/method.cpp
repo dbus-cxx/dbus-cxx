@@ -184,10 +184,10 @@ bool Method::args_valid()
   if ( in_args.size() > 7 ) return false;
 
   for ( unsigned int i=0; i < in_args.size(); i++ )
-    if ( in_args[i].type() == DBus::TYPE_INVALID ) return false;
+    if ( in_args[i].type() == DBus::Type::INVALID ) return false;
 
   for ( unsigned int i=0; i < out_args.size(); i++ )
-    if ( out_args[i].type() == DBus::TYPE_INVALID ) return false;
+    if ( out_args[i].type() == DBus::Type::INVALID ) return false;
 
   if ( out_args.size() > 1 ) return false;
 

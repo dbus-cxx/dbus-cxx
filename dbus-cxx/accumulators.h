@@ -66,28 +66,28 @@ namespace DBus
 
   /**
    * This accumulator will try each slot and stop when the first slot returns
-   * HANDLED.
+   * HandlerResult::HANDLED.
    *
-   * If no slot returned HANDLED it will return HANDLER_NEEDS_MEMORY if any
+   * If no slot returned HandlerResult::HANDLED it will return HandlerResult::NEEDS_MEMORY if any
    * handler indicated this condition.
    *
-   * Otherwise it will return NOT_HANDLED.
+   * Otherwise it will return HandlerResult::NOT_HANDLED.
    */
   struct MessageHandlerAccumulator {
     typedef HandlerResult result_type;
 
     template <typename T_iterator>
     result_type operator()( T_iterator first, T_iterator last ) const {
-      HandlerResult retval = NOT_HANDLED;
+      HandlerResult retval = HandlerResult::NOT_HANDLED;
       while ( first != last ) {
         switch ( *first )
         {
-          case HANDLED:
-            return HANDLED;
-          case HANDLER_NEEDS_MEMORY:
-            retval = HANDLER_NEEDS_MEMORY;
+          case HandlerResult::HANDLED:
+            return HandlerResult::HANDLED;
+          case HandlerResult::NEEDS_MEMORY:
+            retval = HandlerResult::NEEDS_MEMORY;
             // no break because we'll slide through to the next case
-          case NOT_HANDLED:
+          case HandlerResult::NOT_HANDLED:
             ++first;
         }
       }
@@ -97,28 +97,28 @@ namespace DBus
 
   /**
    * This accumulator will try each slot and stop when the first slot returns
-   * FILTER.
+   * FilterResult::FILTER.
    *
-   * If no slot returned FILTER it will return FILTER_NEEDS_MEMORY if any
+   * If no slot returned FilterResult::FILTER it will return FilterResult::NEEDS_MEMORY if any
    * handler indicated this condition.
    *
-   * Otherwise it will return DONT_FILTER.
+   * Otherwise it will return FilterResult::DONT_FILTER.
    */
   struct FilterAccumulator {
     typedef FilterResult result_type;
 
     template <typename T_iterator>
         result_type operator()( T_iterator first, T_iterator last ) const {
-      FilterResult retval = DONT_FILTER;
+      FilterResult retval = FilterResult::DONT_FILTER;
       while ( first != last ) {
         switch ( *first )
         {
-          case FILTER:
-            return FILTER;
-          case FILTER_NEEDS_MEMORY:
-            retval = FILTER_NEEDS_MEMORY;
+          case FilterResult::FILTER:
+            return FilterResult::FILTER;
+          case FilterResult::NEEDS_MEMORY:
+            retval = FilterResult::NEEDS_MEMORY;
             // no break because we'll slide through to the next case
-          case DONT_FILTER:
+          case FilterResult::DONT_FILTER:
             ++first;
         }
       }
