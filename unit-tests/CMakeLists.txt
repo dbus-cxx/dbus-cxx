@@ -111,3 +111,27 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper.sh ${CMAKE_CURRENT_BINA
 add_test( NAME connection-proxy-create1 COMMAND dbus-wrapper.sh test-connection create_signal_proxy)
 add_test( NAME connection-proxy-get-iface COMMAND dbus-wrapper.sh test-connection get_signal_proxy_by_iface)
 add_test( NAME connection-proxy-get-iface-name COMMAND dbus-wrapper.sh test-connection get_signal_proxy_by_iface_and_name)
+
+#
+# Object Tests
+#
+add_executable( object-tests objecttests.cpp )
+target_link_libraries( object-tests ${TEST_LINK} )
+target_include_directories( object-tests PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( object-tests PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+
+add_test( NAME create-object-proxy COMMAND dbus-wrapper.sh object-tests proxy_create)
+add_test( NAME object-proxy-create-method COMMAND dbus-wrapper.sh object-tests proxy_create_method1)
+add_test( NAME export-method COMMAND dbus-wrapper.sh object-tests export_method)
+
+#
+# Data Sending tests - make sure we can actually send data across the bus correctly
+#
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper-data-tests.sh ${CMAKE_CURRENT_BINARY_DIR}/dbus-wrapper-data-tests.sh COPYONLY)
+add_executable( data-tests datatests.cpp )
+target_link_libraries( data-tests ${TEST_LINK} )
+target_include_directories( data-tests PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( data-tests PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+
+add_test( NAME send-integers COMMAND dbus-wrapper-data-tests.sh send_integers)
+add_test( NAME call-void-method COMMAND dbus-wrapper-data-tests.sh void_method)
