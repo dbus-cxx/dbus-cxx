@@ -135,3 +135,13 @@ target_include_directories( data-tests PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
 
 add_test( NAME send-integers COMMAND dbus-wrapper-data-tests.sh send_integers)
 add_test( NAME call-void-method COMMAND dbus-wrapper-data-tests.sh void_method)
+
+#
+# Signal tests - make sure we can tx and rx singals correctly
+add_executable( signal-tests signaltests.cpp )
+target_link_libraries( signal-tests ${TEST_LINK} )
+target_include_directories( signal-tests PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( signal-tests PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+
+add_test( NAME create-signal COMMAND dbus-wrapper.sh signal-tests create)
+add_test( NAME signal-tx-rx COMMAND dbus-wrapper.sh signal-tests tx_rx)
