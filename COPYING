@@ -1,3 +1,17 @@
+The dbus-cxx library contains software from several different sources.
+
+Code under cmake-modules is released under the Boost license.
+See cmake-modules/LICENSE_1_0.txt for details.
+Original source: https://github.com/bilke/cmake-modules
+
+Code under tools/libcppgenerate is released under the Apache 2.0 license
+Original source: https://github.com/rm5248/libcppgenerate
+See tools/libcppgenerate/LICENSE for details.
+
+All other code is released under the GNU GPL 3.0, whose license text follows.
+
+
+-------------------------------------------------------------------------------
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 

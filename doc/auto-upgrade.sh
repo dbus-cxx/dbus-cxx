@@ -14,6 +14,7 @@ sed -i 's/DBus::ObjectProxy::pointer/std::shared_ptr<DBus::ObjectProxy>/g' $FILE
 sed -i 's/DBus::Object::pointer/std::shared_ptr<DBus::Object>/g' $FILE
 sed -i 's/DBus::FileDescriptor::pointer/std::shared_ptr<DBus::FileDescriptor>/g' $FILE
 sed -i 's/DBus::MethodProxy<\(.*\)>::pointer/std::shared_ptr<DBus::MethodProxy<\1>>/g' $FILE
+sed -i 's/DBus::Method<\(.*\)>::pointer/std::shared_ptr<DBus::Method<\1>>/g' $FILE
 sed -i 's/DBus::signal_proxy<\(.*\)>::pointer/std::shared_ptr<DBus::signal_proxy<\1>>/g' $FILE
 sed -i 's/DBus::signal<\(.*\)>::pointer/std::shared_ptr<DBus::signal<\1>>/g' $FILE
 sed -i 's/DBus::CallMessage::pointer/std::shared_ptr<DBus::CallMessage>/g' $FILE

@@ -16,10 +16,13 @@ project( dbus-cxx )
 
 cmake_minimum_required( VERSION 3.8 )
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake-modules")
+
 include( CheckIncludeFiles )
 include( GNUInstallDirs )
 include( FindPkgConfig )
 include( CheckTypeSize )
+include( CodeCoverage )
 
 # version information
 set( DBUS_CXX_PACKAGE_MAJOR_VERSION 2 )
@@ -42,6 +45,7 @@ option( ENABLE_TOOLS "Enable dbus-cxx tools" OFF )
 option( ENABLE_GLIBMM "Enable GLibMM support" OFF )
 option( BUILD_SITE "Build the dbus-cxx website reference" OFF )
 option( TOOLS_BUNDLED_CPPGENERATE "Use bundled libcppgenerate" ON )
+option( ENABLE_CODE_COVERAGE_REPORT "Enable code coverage report" OFF )
 
 #
 # Configure our compile options
@@ -271,6 +275,25 @@ if( ENABLE_TESTS )
 endif( ENABLE_TESTS )
 
 #
+# See if code coverage is enabled
+#
+if( ENABLE_CODE_COVERAGE_REPORT )
+    APPEND_COVERAGE_COMPILER_FLAGS()
+    set(COVERAGE_LCOV_EXCLUDES 'unit-tests/*' '/usr/include/*' '/usr/local/include/*' )
+    SETUP_TARGET_FOR_COVERAGE_LCOV(
+        NAME dbus-cxx-coverage
+        EXECUTABLE "ctest" )
+endif( ENABLE_CODE_COVERAGE_REPORT )
+
+#
+# Cpack for creating the dist files
+#
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "dbus-cxx-${PKG_VERSION}")
+set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_SOURCE_IGNORE_FILES ".git/;build/")
+include(CPack)
+
+#
 # Print configuration information for the user
 #
 message(STATUS "")
@@ -288,3 +311,4 @@ message(STATUS "  Build tools ..................... : ${ENABLE_TOOLS}")
 message(STATUS "  Use bundled cppgenerate ......... : ${TOOLS_BUNDLED_CPPGENERATE}")
 message(STATUS "  Enable GLibmm support ........... : ${ENABLE_GLIBMM}")
 message(STATUS "  Build website ................... : ${BUILD_SITE}")
+message(STATUS "  Enable code coverage report ..... : ${ENABLE_CODE_COVERAGE_REPORT}")
