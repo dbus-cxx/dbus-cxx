@@ -174,7 +174,10 @@ namespace DBus
       if ( selresult == -1 && errno == EINTR ){
         //if we were interrupted, continue on
         continue;
-      } else if( selresult == -1 ) throw(errno);
+      } else if( selresult == -1 ){
+        SIMPLELOGGER_ERROR( "dbus.Dispatcher", "poll() got errno " << errno );
+        throw ErrorPollFailed();
+      }
 
       // Discard data from process_fd if we were woken up by that
       if( fds[ 0 ].revents & POLLIN ){

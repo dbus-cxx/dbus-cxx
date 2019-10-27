@@ -380,7 +380,18 @@ namespace DBus
    * @ingroup errors
    */
   DBUSCXX_ERROR( ErrorDispatcherInitFailed, "DBus::Dispatcher initialization failed" );
-  
+
+  /**
+   * @class ErrorInvalidSharedPtr
+   * @ingroup errors
+   */
+  DBUSCXX_ERROR( ErrorInvalidSharedPtr, "shared_ptr was invalid" );
+
+  /**
+   * @class ErrorPollFailed
+   * @ingroup errors
+   */
+  DBUSCXX_ERROR( ErrorPollFailed, "poll() syscall failed" );
 
 }
 
