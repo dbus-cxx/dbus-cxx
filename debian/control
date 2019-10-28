@@ -9,20 +9,18 @@ Build-Depends: cmake,
                doxygen,
                graphviz,
                libcppgenerate-dev,
-               libcppunit-dev,
                libdbus-1-dev,
                libexpat1-dev,
-               libglibmm-2.4-dev,
+               libglib2.0-dev,
                libpopt-dev,
-               libsigc++-2.0-dev,
-               m4,
+               libsigc++-3.0-dev,
                quilt,
                xsltproc
 Standards-Version: 3.9.5
 Section: libs
 Homepage: http://dbus-cxx.github.io/
 
-Package: dbus-cxx0
+Package: dbus-cxx2
 Section: libs
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
@@ -32,7 +30,7 @@ Description: C++ bindings for the D-Bus library
 Package: dbus-cxx-dev
 Section: libdevel
 Architecture: any
-Depends: dbus-cxx0 (= ${binary:Version}), libsigc++-2.0-dev, libdbus-1-dev
+Depends: dbus-cxx2 (= ${binary:Version}), libsigc++-3.0-dev, libdbus-1-dev
 Description: C++ development headers for dbus-cxx
  This package contains the C++ libraries and header files needed for
  developing dbus-cxx applications.
@@ -41,7 +39,7 @@ Description: C++ development headers for dbus-cxx
 Package: dbus-cxx-tools
 Section: utils
 Architecture: any
-Depends: dbus-cxx0 (= ${binary:Version}), ${misc:Depends}, ${shlibs:Depends}
+Depends: dbus-cxx2 (= ${binary:Version}), ${misc:Depends}, ${shlibs:Depends}
 Description: Tools to support dbus-cxx application development
  This package contains tools to assist with dbus-cxx application development.
  * dbus-cxx-xml2cpp:
@@ -50,21 +48,21 @@ Description: Tools to support dbus-cxx application development
  * dbus-cxx-introspect:
    Command line utility to simplify introspection
 
-Package: dbus-cxx-glibmm0
+Package: dbus-cxx-glib2
 Section: libs
 Architecture: any
-Depends: dbus-cxx0 (= ${binary:Version}), ${misc:Depends}, ${shlibs:Depends}
-Description: Adds support to dbus-cxx (C++ bindings for dbus) for glibmm integration
- Adds support to dbus-cxx (C++ bindings for dbus) for glibmm integration
+Depends: dbus-cxx2 (= ${binary:Version}), ${misc:Depends}, ${shlibs:Depends}
+Description: Adds support to dbus-cxx (C++ bindings for dbus) for glib integration
+ Adds support to dbus-cxx (C++ bindings for dbus) for glib integration
 
-Package: dbus-cxx-glibmm-dev
+Package: dbus-cxx-glib-dev
 Section: libdevel
 Architecture: any
-Depends: dbus-cxx-glibmm0 (= ${binary:Version})
-Description: Headers for developing programs that will use dbus-cxx-glibmm
- dbus-cxx provides C++ bindings for the dbus library. dbus-cxx-glibmm
- provides dbus-cxx a means of integrating with glibmm.
+Depends: dbus-cxx-glib2 (= ${binary:Version})
+Description: Headers for developing programs that will use dbus-cxx-glib
+ dbus-cxx provides C++ bindings for the dbus library. dbus-cxx-glib
+ provides dbus-cxx a means of integrating with glib.
  Since gtkmm relies on glibmm for main-loop operations this library
  can also be used to integrate dbus-cxx with gtkmm applications.
  This package contains the libraries and header files needed for
- developing dbus-cxx-glibmm applications.
+ developing dbus-cxx-glib applications.
