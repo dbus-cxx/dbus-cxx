@@ -35,7 +35,6 @@ set( DBUS_CXX_MAJMIN_VERSION ${DBUS_CXX_PACKAGE_MAJOR_VERSION}.${DBUS_CXX_PACKAG
 pkg_check_modules( dbus REQUIRED dbus-1>=1.3 )
 pkg_check_modules( sigc REQUIRED sigc++-3.0 )
 
-
 #
 # Check our options
 #
@@ -165,19 +164,18 @@ set_property( TARGET dbus-cxx PROPERTY CXX_STANDARD 17 )
 # If GLIBMM is used, add in the appropriate packages
 #
 if( ENABLE_GLIBMM )
-    pkg_check_modules( glibmm-2.4 REQUIRED glibmm-2.4 )
+    add_library( dbus-cxx-glib SHARED dbus-cxx-glib/dispatcher.cpp )
+    set_target_properties( dbus-cxx-glib PROPERTIES VERSION 2.0.0 SOVERSION 2 )
+    #target_include_directories( dbus-cxx-glib PRIVATE  )
+    add_dependencies( dbus-cxx-glib dbus-cxx )
+    set_property( TARGET dbus-cxx-glib PROPERTY CXX_STANDARD 17 )
 
-    add_library( dbus-cxx-glibmm SHARED dbus-cxx-glibmm/dispatcher.cpp )
-    set_target_properties( dbus-cxx-glibmm PROPERTIES VERSION 2.0.0 SOVERSION 2 )
-    target_include_directories( dbus-cxx-glibmm PRIVATE ${glibmm-2.4_INCLUDE_DIRS} )
-    add_dependencies( dbus-cxx-glibmm dbus-cxx )
-
-    set( install_targets ${install_targets} dbus-cxx-glibmm )
+    set( install_targets ${install_targets} dbus-cxx-glib )
     install( TARGETS ${install_targets}
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
-    install( FILES dbus-cxx-glibmm.h DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION} )
-    install( FILES dbus-cxx-glibmm/dispatcher.h DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/dbus-cxx-glibmm/ )
+    install( FILES dbus-cxx-glib.h DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION} )
+    install( FILES dbus-cxx-glib/dispatcher.h DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/dbus-cxx-glib/ )
 endif( ENABLE_GLIBMM )
 
 #
@@ -202,8 +200,8 @@ SET(PKG_CONFIG_INCLUDEDIR
 SET(PKG_CONFIG_LIBS
     "-L\${libdir} -ldbus-cxx"
 )
-SET(PKG_CONFIG_LIBS_MM
-    "-L\${libdir} -ldbus-cxx-glibmm"
+SET(PKG_CONFIG_LIBS_GLIB
+    "-L\${libdir} -ldbus-cxx-glib"
 )
 SET(PKG_CONFIG_CFLAGS
     "-I\${includedir}"
@@ -221,10 +219,10 @@ INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-2.0.pc"
 
 if( ENABLE_GLIBMM )
     CONFIGURE_FILE(
-        "${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx-glibmm-2.0.pc.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-glibmm-2.0.pc"
+        "${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx-glib-2.0.pc.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-glib-2.0.pc"
     )
-    INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-glibmm-2.0.pc"
+    INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-glib-2.0.pc"
             DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 endif( ENABLE_GLIBMM )
 

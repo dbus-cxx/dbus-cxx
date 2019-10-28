@@ -17,11 +17,9 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/dispatcher.h>
-#include <glibmm/main.h>
-#include <glibmm/dispatcher.h>
 
-#ifndef DBUSCXX_GLIBMM_DISPATCHER_H
-#define DBUSCXX_GLIBMM_DISPATCHER_H
+#ifndef DBUSCXX_GLIB_DISPATCHER_H
+#define DBUSCXX_GLIB_DISPATCHER_H
 
 namespace DBus
 {
@@ -43,18 +41,14 @@ namespace DBus
     class Dispatcher : public ::DBus::Dispatcher
     {
       public:
+        static std::shared_ptr<Dispatcher> create( bool is_running=true );
 
-        typedef std::shared_ptr<Dispatcher> pointer;
+        static std::shared_ptr<Dispatcher> create( bool is_running, const ::Glib::RefPtr< ::Glib::MainContext >& context );
 
-        typedef std::shared_ptr<const Dispatcher> const_pointer;
-
+      private: 
         Dispatcher(bool is_running=true);
         
         Dispatcher(bool is_running, const ::Glib::RefPtr< ::Glib::MainContext >& context );
-
-        static pointer create( bool is_running=true );
-
-        static pointer create( bool is_running, const ::Glib::RefPtr< ::Glib::MainContext >& context );
 
         virtual ~Dispatcher();
 
