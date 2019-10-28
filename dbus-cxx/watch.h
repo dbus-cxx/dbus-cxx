@@ -41,11 +41,7 @@ namespace DBus
       Watch( DBusWatch* cobj = NULL );
       
     public:
-      
-      typedef std::shared_ptr<Watch> pointer;
-      typedef std::weak_ptr<Watch> weak_pointer;
-      
-      static pointer create( DBusWatch* cobj = NULL );
+      static std::shared_ptr<Watch> create( DBusWatch* cobj = NULL );
       
       ~Watch();
 
