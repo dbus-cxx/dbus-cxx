@@ -22,8 +22,8 @@
 #include <iostream>
 #include <dbus/dbus.h>
 #include <dbus-cxx/error.h>
-
 #include <dbus-cxx/signalmessage.h>
+#include <dbus-cxx/connection.h>
 
 #include <unistd.h>
 #include <errno.h>

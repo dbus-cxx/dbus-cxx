@@ -23,7 +23,6 @@
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/accumulators.h>
 #include <dbus-cxx/forward_decls.h>
-#include <dbus-cxx/message.h>
 
 #ifndef DBUSCXX_MESSAGEHANDLER_H
 #define DBUSCXX_MESSAGEHANDLER_H

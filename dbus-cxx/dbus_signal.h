@@ -21,6 +21,7 @@
 #include <dbus-cxx/utility.h>
 #include <dbus-cxx/signal_base.h>
 #include <dbus-cxx/headerlog.h>
+#include <dbus-cxx/signalmessage.h>
 
 #ifndef DBUSCXX_DBUS_SIGNAL_H_
 #define DBUSCXX_DBUS_SIGNAL_H_

@@ -17,6 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/signal_base.h>
+#include <dbus-cxx/accumulators.h>
 
 #ifndef DBUSCXX_SIGNALPROXYBASE_H
 #define DBUSCXX_SIGNALPROXYBASE_H

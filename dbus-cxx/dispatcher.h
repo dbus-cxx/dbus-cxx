@@ -22,12 +22,11 @@
 #include <thread>
 #include <mutex>
 
+#include <dbus/dbus.h>
+
 #include <poll.h>
 
-#include <dbus/dbus.h>
-#include <dbus-cxx/connection.h>
-#include <dbus-cxx/watch.h>
-#include <dbus-cxx/timeout.h>
+#include "forward_decls.h"
 
 #ifndef DBUSCXX_DISPATCHER_H
 #define DBUSCXX_DISPATCHER_H

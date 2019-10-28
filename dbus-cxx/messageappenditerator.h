@@ -22,6 +22,7 @@
 
 #include <dbus/dbus.h>
 
+#include <dbus-cxx/enums.h>
 #include <dbus-cxx/types.h>
 #include <dbus-cxx/filedescriptor.h>
 

@@ -16,8 +16,6 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <dbus-cxx/types.h>
-
 #ifndef DBUSCXX_FORWARD_DECLS_H
 #define DBUSCXX_FORWARD_DECLS_H
 
@@ -36,23 +34,13 @@ namespace DBus {
   template <class T_type>
   class Method;
 
-/*
-  template <typename T_return, typename... T_arg>
-  class Method;
-*/
+  class Watch;
 
-/*
-  template <class T_return,
-            class T_arg1 = nil,
-            class T_arg2 = nil,
-            class T_arg3 = nil,
-            class T_arg4 = nil,
-            class T_arg5 = nil,
-            class T_arg6 = nil,
-            class T_arg7 = nil
-           >
-  class MethodProxy; 
-*/
+  class Timeout;
+
+  class Message;
+
+  class SignalMessage;
 
 };
 

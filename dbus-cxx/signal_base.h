@@ -21,9 +21,8 @@
 
 #include <sigc++/sigc++.h>
 
-#include <dbus-cxx/enums.h>
-#include <dbus-cxx/accumulators.h>
-#include <dbus-cxx/signalmessage.h>
+#include <dbus-cxx/forward_decls.h>
+#include <dbus-cxx/path.h>
 
 #ifndef DBUSCXX_SIGNALBASE_H
 #define DBUSCXX_SIGNALBASE_H

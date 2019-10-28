@@ -20,8 +20,8 @@
 #include <memory>
 #include <dbus/dbus.h>
 #include <dbus-cxx/simplelogger_defs.h>
-#include <dbus-cxx/message.h>
 #include <dbus-cxx/returnmessage.h>
+#include <dbus-cxx/callmessage.h>
 #include <dbus-cxx/messageiterator.h>
 #include <functional>
 #include <sstream>

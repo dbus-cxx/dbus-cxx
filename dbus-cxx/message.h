@@ -24,6 +24,7 @@
 
 #include <dbus/dbus.h>
 
+#include <dbus-cxx/error.h>
 #include <dbus-cxx/messageiterator.h>
 #include <dbus-cxx/messageappenditerator.h>
 
@@ -32,7 +33,6 @@
 
 namespace DBus
 {
-
   class ReturnMessage;
 
   /**

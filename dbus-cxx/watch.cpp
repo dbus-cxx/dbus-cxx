@@ -28,9 +28,9 @@ namespace DBus
     if ( m_cobj ) dbus_watch_set_data( cobj, this, NULL );
   }
 
-  Watch::pointer Watch::create(DBusWatch * cobj)
+  std::shared_ptr<Watch> Watch::create(DBusWatch * cobj)
   {
-    return pointer( new Watch(cobj) );
+    return std::shared_ptr<Watch>( new Watch(cobj) );
   }
     
   Watch::~Watch()

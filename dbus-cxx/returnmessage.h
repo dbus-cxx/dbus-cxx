@@ -16,7 +16,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <dbus-cxx/callmessage.h>
+#include <dbus-cxx/message.h>
 
 #ifndef DBUSCXX_RETURNMESSAGE_H
 #define DBUSCXX_RETURNMESSAGE_H

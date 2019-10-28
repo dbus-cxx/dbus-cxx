@@ -17,6 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/messagehandler.h>
+#include <dbus-cxx/path.h>
 
 #ifndef DBUSCXX_SIGNALRECEIVER_H
 #define DBUSCXX_SIGNALRECEIVER_H

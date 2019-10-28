@@ -129,9 +129,7 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/dbus_signal.h
     dbus-cxx/interface.h
     dbus-cxx/interfaceproxy.h
-    dbus-cxx/method_impl.h
     dbus-cxx/methodproxybase.h
-    dbus-cxx/methodproxy.h
     dbus-cxx/objectproxy.h
     dbus-cxx/signal_proxy.h
     dbus-cxx/connection.h
