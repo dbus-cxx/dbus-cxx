@@ -77,7 +77,7 @@ class signal_proxy
 
       try {
         MessageIterator i = msg->begin();
-        std::apply( [i](auto ...arg) mutable {
+        std::apply( [i](auto&& ...arg) mutable {
                (i >> ... >> arg);
               },
         tup_args );

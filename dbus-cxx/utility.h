@@ -216,7 +216,7 @@ struct dbus_function_traits<std::function<void(Args...)>>
   void extractAndCall(std::shared_ptr<const CallMessage> callmsg, std::shared_ptr<ReturnMessage> retmsg, sigc::slot<void(Args...)> slot ){
     MessageIterator i = callmsg->begin();
     std::tuple<Args...> tup_args;
-    std::apply( [i](auto ...arg) mutable {
+    std::apply( [i](auto&& ...arg) mutable {
                (i >> ... >> arg);
               },
     tup_args );
@@ -268,13 +268,14 @@ struct dbus_function_traits<std::function<T_ret(Args...)>>
   void extractAndCall(std::shared_ptr<const CallMessage> callmsg, std::shared_ptr<ReturnMessage> retmsg, sigc::slot<T_ret(Args...)> slot ){
     MessageIterator i = callmsg->begin();
     std::tuple<Args...> tup_args;
-    std::apply( [i](auto ...arg) mutable {
+    std::apply( [i](auto&& ...arg) mutable {
                (i >> ... >> arg);
               },
     tup_args );
     T_ret retval;
 
     retval = std::apply(slot, tup_args);
+    retmsg << retval;
   }
 };
 
