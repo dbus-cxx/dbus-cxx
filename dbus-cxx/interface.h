@@ -126,7 +126,13 @@ namespace DBus {
        */
       template <typename T_type>
       std::shared_ptr<Method<T_type> >
-      create_method( const std::string& name );
+      create_method( const std::string& name )
+      {
+        std::shared_ptr< Method<T_type> > method;
+        method = Method<T_type>::create(name);
+        this->add_method( method );
+        return method;
+      }
 
       /**
        * Creates a method with a signature equivalent to the provided @param slot parameter's signature
@@ -138,7 +144,14 @@ namespace DBus {
        */
       template <typename T_type>
       std::shared_ptr<Method<T_type> >
-      create_method( const std::string& name, sigc::slot<T_type> slot );
+      create_method( const std::string& name, sigc::slot<T_type> slot )
+      {
+        std::shared_ptr< Method<T_type> > method;
+        method = Method<T_type>::create(name);
+        method->set_method( slot );
+        this->add_method( method );
+        return method;
+      }
 
       /** Adds the named method */
       bool add_method( std::shared_ptr<MethodBase> method );
@@ -177,13 +190,19 @@ namespace DBus {
       bool has_signal( const std::string& name ) const;
 
       /**
-       * Creates a signal with a return value (possibly \c void ) and $1 parameters
+       * Creates a signal with a return value (possibly \c void ) and any number of parameters
        * @return A smart pointer to the newly created signal
        * @param name The name that will be associated with this signal
        */
       template <class... T_type>
       std::shared_ptr<signal<T_type...> >
-      create_signal( const std::string& name );
+      create_signal( const std::string& name )
+      {
+        std::shared_ptr<DBus::signal<T_type...> > sig;
+        sig = DBus::signal<T_type...>::create(m_name, name);
+        if ( this->add_signal(sig) ) return sig;
+        return std::shared_ptr<DBus::signal<T_type...> >();
+      }
 
       /** Returns the signals associated with this interface */
       const Signals& signals();
@@ -251,41 +270,6 @@ namespace DBus {
       void set_path( const std::string& new_path );
 
   };
-
-}
-
-namespace DBus {
-
-      template <class T_type>
-      std::shared_ptr<Method<T_type> >
-      Interface::create_method( const std::string& name )
-      {
-        std::shared_ptr< Method<T_type> > method;
-        method = Method<T_type>::create(name);
-        this->add_method( method );
-        return method;
-      }
-
-      template <class T_type>
-      std::shared_ptr<Method<T_type> >
-      Interface::create_method( const std::string& name, sigc::slot<T_type> slot )
-      {
-        std::shared_ptr< Method<T_type> > method;
-        method = Method<T_type>::create(name);
-        method->set_method( slot );
-        this->add_method( method );
-        return method;
-      }
-
-      template <class... T_type>
-      std::shared_ptr<signal<T_type...> >
-      Interface::create_signal( const std::string& name )
-      {
-        std::shared_ptr<DBus::signal<T_type...> > sig;
-        sig = DBus::signal<T_type...>::create(m_name, name);
-        if ( this->add_signal(sig) ) return sig;
-        return std::shared_ptr<DBus::signal<T_type...> >();
-      }
 
 } /* namespace DBus */
 
