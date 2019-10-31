@@ -31,7 +31,7 @@ void sigHandle( std::string value ){
 bool signal_create(){
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
 
-    std::shared_ptr<DBus::signal<std::string>> signal = conn->create_signal<std::string>( "/test/signal", "test.signal.type" );
+    std::shared_ptr<DBus::signal<std::string>> signal = conn->create_signal<std::string>( "/test/signal", "test.signal.type", "Path" );
 
     TEST_ASSERT_RET_FAIL( signal );
     return true;
