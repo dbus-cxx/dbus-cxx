@@ -31,9 +31,9 @@ namespace DBus
     if ( m_cobj ) dbus_timeout_set_data( cobj, this, NULL );
   }
 
-  Timeout::pointer Timeout::create(DBusTimeout * cobj)
+  std::shared_ptr<Timeout> Timeout::create(DBusTimeout * cobj)
   {
-    return pointer( new Timeout(cobj) );
+    return std::shared_ptr<Timeout>( new Timeout(cobj) );
   }
     
   Timeout::~Timeout()

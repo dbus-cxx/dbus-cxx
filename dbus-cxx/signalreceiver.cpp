@@ -32,14 +32,14 @@ namespace DBus
   {
   }
 
-  SignalReceiver::pointer SignalReceiver::create(const std::string & interface, const std::string & member)
+  std::shared_ptr<SignalReceiver> SignalReceiver::create(const std::string & interface, const std::string & member)
   {
-    return pointer( new SignalReceiver(std::string(), interface, member) );
+    return std::shared_ptr<SignalReceiver>( new SignalReceiver(std::string(), interface, member) );
   }
 
-  SignalReceiver::pointer SignalReceiver::create(const std::string & path, const std::string & interface, const std::string & member)
+  std::shared_ptr<SignalReceiver> SignalReceiver::create(const std::string & path, const std::string & interface, const std::string & member)
   {
-    return pointer( new SignalReceiver(path, interface, member) );
+    return std::shared_ptr<SignalReceiver>( new SignalReceiver(path, interface, member) );
   }
 
   SignalReceiver::~SignalReceiver()

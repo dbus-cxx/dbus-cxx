@@ -48,13 +48,9 @@ namespace DBus
 
     public:
 
-      typedef std::shared_ptr<SignalReceiver> pointer;
+      static std::shared_ptr<SignalReceiver> create(const std::string& interface, const std::string& member);
 
-      typedef std::weak_ptr<SignalReceiver> weak_pointer;
-
-      static pointer create(const std::string& interface, const std::string& member);
-
-      static pointer create(const std::string& path, const std::string& interface, const std::string& member);
+      static std::shared_ptr<SignalReceiver> create(const std::string& path, const std::string& interface, const std::string& member);
 
       ~SignalReceiver();
 

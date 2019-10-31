@@ -45,10 +45,7 @@ namespace DBus
 
     public:
       
-      typedef std::shared_ptr<Timeout> pointer;
-      typedef std::weak_ptr<Timeout> weak_pointer;
-      
-      static pointer create( DBusTimeout* cobj=NULL );
+      static std::shared_ptr<Timeout> create( DBusTimeout* cobj=NULL );
       
       ~Timeout();
 
