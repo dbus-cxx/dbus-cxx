@@ -27,6 +27,7 @@
 #include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/objectpathhandler.h>
 #include <dbus-cxx/dbus_signal.h>
+#include <dbus-cxx/interface.h>
 
 #ifndef DBUSCXXOBJECT_H
 #define DBUSCXXOBJECT_H
@@ -115,7 +116,20 @@ namespace DBus
        */
       template <typename T_type>
       std::shared_ptr<Method<T_type> >
-      create_method( const std::string& method_name, sigc::slot<T_type> slot );
+      create_method( const std::string& method_name, sigc::slot<T_type> slot )
+      {
+        if ( not m_default_interface )
+        {
+          this->create_interface("");
+          this->set_default_interface("");
+        }
+        // TODO throw an error if the default interface still doesn't exist
+
+        std::shared_ptr< Method<T_type> > method;
+        method = m_default_interface->create_method<T_type>(method_name);
+        method->set_method( slot );
+        return method;
+      }
 
       /**
        * Creates a method with a signature based on the @param slot parameter signature and adds it to the named interface
@@ -129,7 +143,18 @@ namespace DBus
        */
       template <typename T_type>
       std::shared_ptr<Method<T_type> >
-      create_method( const std::string& interface_name, const std::string& method_name, sigc::slot<T_type> slot );
+      create_method( const std::string& interface_name, const std::string& method_name, sigc::slot<T_type> slot )
+      {
+        std::shared_ptr<Interface> interface;
+        interface = this->interface(interface_name);
+        if ( not interface ) interface = this->create_interface(interface_name);
+        // TODO throw an error if the interface still doesn't exist
+
+        std::shared_ptr< Method<T_type> > method;
+        method = interface->create_method<T_type>(method_name);
+        method->set_method( slot );
+        return method;
+      }
 
       /** Removes the first interface found with the given name */
       void remove_interface( const std::string& name );
@@ -173,7 +198,14 @@ namespace DBus
        */
       template <class... T_type>
       std::shared_ptr<signal<T_type...> >
-      create_signal( const std::string& name );
+      create_signal( const std::string& name )
+      {
+        std::shared_ptr<DBus::signal<T_type...> > sig;
+        std::shared_ptr<Interface> iface = this->default_interface();
+        if ( not iface ) iface = this->create_interface("");
+        sig = iface->create_signal<T_type...>(name);
+        return sig;
+      }
 
       /**
        * Creates a signal with a return value (possibly \c void ) and $1 parameters and adds it to the named interface
@@ -184,7 +216,13 @@ namespace DBus
        */
       template <class... T_type>
       std::shared_ptr<signal<T_type...> >
-      create_signal( const std::string& iface, const std::string& name );
+      create_signal( const std::string& iface, const std::string& name )
+      {
+        std::shared_ptr<DBus::signal<T_type...> > sig;
+        if ( not has_interface(iface) ) this->create_interface(iface);
+        sig = this->interface(iface)->create_signal<T_type...>(name);
+        return sig;
+      }
 
       /** Get the children associated with this object instance */
       const Children& children() const;
@@ -301,68 +339,4 @@ namespace DBus
   };
 
 }
-
-#include <dbus-cxx/interface.h>
-
-/************************
- * Template definitions *
- ************************/
-
-namespace DBus {
-
-  template <typename T_type>
-  std::shared_ptr<Method<T_type> >
-  Object::create_method( const std::string& method_name, sigc::slot<T_type> slot )
-  {
-    if ( not m_default_interface )
-    {
-      this->create_interface("");
-      this->set_default_interface("");
-    }
-    // TODO throw an error if the default interface still doesn't exist
-
-    std::shared_ptr< Method<T_type> > method;
-    method = m_default_interface->create_method<T_type>(method_name);
-    method->set_method( slot );
-    return method;
-  }
-
-  template <typename T_type>
-  std::shared_ptr<Method<T_type> >
-  Object::create_method( const std::string& interface_name, const std::string& method_name, sigc::slot<T_type> slot )
-  {
-    std::shared_ptr<Interface> interface;
-    interface = this->interface(interface_name);
-    if ( not interface ) interface = this->create_interface(interface_name);
-    // TODO throw an error if the interface still doesn't exist
-
-    std::shared_ptr< Method<T_type> > method;
-    method = interface->create_method<T_type>(method_name);
-    method->set_method( slot );
-    return method;
-  }
-
-  template <class... T_type>
-  std::shared_ptr<signal<T_type...> >
-  Object::create_signal( const std::string& name )
-  {
-    std::shared_ptr<DBus::signal<T_type...> > sig;
-    std::shared_ptr<Interface> iface = this->default_interface();
-    if ( not iface ) iface = this->create_interface("");
-    sig = iface->create_signal<T_type...>(name);
-    return sig;
-  }
-
-  template <class... T_type>
-  std::shared_ptr<signal<T_type...> >
-  Object::create_signal( const std::string& iface, const std::string& name )
-  {
-    std::shared_ptr<DBus::signal<T_type...> > sig;
-    if ( not has_interface(iface) ) this->create_interface(iface);
-    sig = this->interface(iface)->create_signal<T_type...>(name);
-    return sig;
-  }
-
-}
-
 #endif
