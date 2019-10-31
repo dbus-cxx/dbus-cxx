@@ -40,7 +40,7 @@ bool signal_create(){
 bool signal_tx_rx(){
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
 
-    std::shared_ptr<DBus::signal<std::string>> signal = conn->create_signal<std::string>( "/test/signal", "test.signal.type" );
+    std::shared_ptr<DBus::signal<std::string>> signal = conn->create_signal<std::string>( "/test/signal", "test.signal.type", "Path" );
     std::shared_ptr<DBus::signal_proxy<std::string>> proxy = conn->create_signal_proxy<std::string>( "/test/signal", "test.signal.type", "Path" );
 
     proxy->connect( sigc::ptr_fun( sigHandle ) );
