@@ -24,3 +24,15 @@ This code now becomes:
 
     object->create_method<double(double,double)>("Calculator.Basic", "add", sigc::ptr_fun(add) );
 ```
+
+========
+# NOTES FOR REVIEW
+* Should we allow appending of float values?  Only double values can be sent
+* Should we allow appending of int8_t?  Only uint8_t can be sent
+* Check all examples to make sure they all work
+* Do we need to have `long long int` and/or `long int` as a type we can send out?
+ It seems like you should just used the fixed-sized types if you want this.
+* What should the template of signals be?  Currently, it is similar to v1, except
+ that the first template arg(retrun val) has been removed.  This is because DBus
+ signals can't have a return value.  However, this makes them very different from
+ methods, which take the method type as the template param.
