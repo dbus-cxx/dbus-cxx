@@ -1,7 +1,8 @@
 /***************************************************************************
- *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
+ *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
  *   rvinyard@cs.nmsu.edu                                                  *
- *   Copyright (C) 2014- by Robert Middleton                               *
+ *   Copyright (C) 2019 by Robert Middleton                                *
+ *   robert.middleton@rm5248.com                                           *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
  *                                                                         *
@@ -17,51 +18,30 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#ifndef CUSTOMTYPE_H
+#define CUSTOMTYPE_H
 
-#ifndef DBUS_CXX_FILEDESCRIPTOR
-#define DBUS_CXX_FILEDESCRIPTOR
+#include <string>
 
-namespace DBus{
-
-/**
- * A FileDescriptor holds a UNIX file descriptor that can be passed between processes.
- *
- */
-class FileDescriptor{
-protected:
-	FileDescriptor() :
-		m_valid( false ),
-		m_fd( -1 ) {}
-
-        explicit FileDescriptor( int fd ) :
-		m_valid( true ),
-		m_fd( fd ) {}
-
-        explicit FileDescriptor( const FileDescriptor& other ) :
-		m_valid( other.m_valid ),
-		m_fd( other.m_fd ) {}
-
-public:
-      static std::shared_ptr<FileDescriptor> create( int fd ){
-          std::shared_ptr<FileDescriptor> p(new FileDescriptor( fd ));
-          return p;
-      }
-
-	~FileDescriptor(){}
-
-	int getDescriptor() const{
-		return m_fd;
-	}
-
-	operator bool() const {
-		return m_valid;
-	}
-
-private:
-	bool m_valid;
-	int m_fd;
+struct custom {
+   int first;
+   int second;
 };
 
+namespace DBus {
+  inline std::string signature(struct custom)     { return "ii";        }
 }
 
+#include <dbus-cxx/messageiterator.h>
+#include <dbus-cxx/messageappenditerator.h>
+
+DBus::MessageIterator& operator>>(DBus::MessageIterator& i, struct custom& c);
+
+DBus::MessageAppendIterator& operator<<(DBus::MessageAppendIterator& i, const struct custom& c);
+
+#include <dbus-cxx.h>
+
+
 #endif
+
+

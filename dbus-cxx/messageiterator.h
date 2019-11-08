@@ -19,6 +19,7 @@
 #include <dbus/dbus.h>
 #include <dbus-cxx/types.h>
 #include <dbus-cxx/headerlog.h>
+#include <iostream>
 
 #ifndef DBUSCXX_MESSAGEITERATOR_H
 #define DBUSCXX_MESSAGEITERATOR_H

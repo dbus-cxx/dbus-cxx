@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <iostream>
 
 #include <dbus/dbus.h>
 
@@ -74,32 +75,31 @@ namespace DBus
       /** True if the iterator is valid and initialized, false otherwise */
       operator bool() const;
 
-      bool append(std::any){ return false; }
-      bool append( bool v );
-      bool append( uint8_t v );
-      bool append( int16_t v );
-      bool append( uint16_t v );
-      bool append( int32_t v );
-      bool append( uint32_t v );
-      bool append( int64_t v );
-      bool append( uint64_t v );
-      bool append( double v );
-      bool append( const char* v );
-      bool append( const std::string& v );
-      bool append( const Signature& v );
-      bool append( const Path& v );
-      bool append( const std::shared_ptr<FileDescriptor>& fd);
-      
-      bool append( char v );
-      bool append( int8_t v );
-      bool append( float v );
+      MessageAppendIterator& operator<<( const bool& v );
+      MessageAppendIterator& operator<<( const int8_t& v );
+      MessageAppendIterator& operator<<( const uint8_t& v );
+      MessageAppendIterator& operator<<( const int16_t& v );
+      MessageAppendIterator& operator<<( const uint16_t& v );
+      MessageAppendIterator& operator<<( const int32_t& v );
+      MessageAppendIterator& operator<<( const uint32_t& v );
+      MessageAppendIterator& operator<<( const int64_t& v );
+      MessageAppendIterator& operator<<( const uint64_t& v );
+      MessageAppendIterator& operator<<( const double& v );
+      MessageAppendIterator& operator<<( const float& v );
+      MessageAppendIterator& operator<<( const char* v );
+      MessageAppendIterator& operator<<( const std::string& v );
+      MessageAppendIterator& operator<<( const Signature& v );
+      MessageAppendIterator& operator<<( const Path& v );
+      MessageAppendIterator& operator<<( const std::shared_ptr<FileDescriptor> v );
+/*
       #if DBUS_CXX_SIZEOF_LONG_INT == 4
         bool append( long int v );
         bool append( long unsigned int v );
       #endif
+*/
 
       template <typename T>
-      bool append( const std::vector<T>& v){
+      MessageAppendIterator& operator<<( const std::vector<T>& v){
         bool success;
         T type;
         success = this->open_container( ContainerType::ARRAY, DBus::signature(type).c_str() );
@@ -111,39 +111,37 @@ namespace DBus
         for ( size_t i=0; i < v.size(); i++ )
           *m_subiter << v[i];
 
-        return this->close_container();
+        success = this->close_container();
+        if( not success ){
+          throw ErrorNoMemory();
+        }
+
+        return *this;
       }
 
       template <typename Key, typename Data>
-      bool append( const std::map<Key,Data>& dictionary ){
+      MessageAppendIterator& operator<<( const std::map<Key,Data>& dictionary ){
         std::string sig = signature_dict_data( dictionary );
         typename std::map<Key,Data>::const_iterator it;
         this->open_container( ContainerType::ARRAY, sig );
         for ( it = dictionary.begin(); it != dictionary.end(); it++ ) {
           m_subiter->open_container( ContainerType::DICT_ENTRY, std::string() );
-          m_subiter->m_subiter->append( (*it).first );
-          m_subiter->m_subiter->append( (*it).second );
+          m_subiter->m_subiter << (*it).first;
+          m_subiter->m_subiter << (*it).second;
           m_subiter->close_container();
         }
-        return this->close_container();
-
-      }
-
-      template <typename T>
-      bool append( const std::variant<T> & var){
-        T value = std::get<T>( var );
-        this->open_container( ContainerType::VARIANT, signature(value)  );
-        m_subiter->append(value);
-        return this->close_container();
-      }
-
-      template <typename T>
-      MessageAppendIterator& operator<<( const T& v )
-      {
-        this->append( v );
+        this->close_container();
         return *this;
       }
 
+      template <typename T>
+      MessageAppendIterator& append( const std::variant<T> & var){
+        T value = std::get<T>( var );
+        this->open_container( ContainerType::VARIANT, signature(value)  );
+        m_subiter->append(value);
+        this->close_container();
+        return *this;
+      }
 
 //           template <typename T0, typename T1>
 //           void append(const Struct<T0,T1>& s) {
@@ -230,13 +228,6 @@ namespace DBus
       Message* m_message;
       DBusMessageIter m_cobj;
       MessageAppendIterator* m_subiter;
-
-      template <typename T> bool protected_append( const T& v );
-      bool protected_append( const bool& v );
-      bool protected_append( const std::string& v );
-      bool protected_append( const Signature& v );
-      bool protected_append( const Path& v );
-      bool protected_append( const std::shared_ptr<FileDescriptor>& fd );
   };
 
 }

@@ -29,7 +29,7 @@ bool test_numeric_call_message_append_extract_iterator( T v )
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
-  iter1.append( v );
+  iter1 << v;
 
   DBus::MessageIterator iter2(msg);
   v2 = (T)iter2;
@@ -98,7 +98,7 @@ bool call_message_append_extract_iterator_cstring()
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
-  iter1.append( v );
+  iter1 << v;
 
   DBus::MessageIterator iter2(msg);
   v2 = (const char*)iter2;
@@ -113,7 +113,7 @@ bool call_message_append_extract_iterator_string()
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
-  iter1.append( v );
+  iter1 << v;
 
   DBus::MessageIterator iter2(msg);
   v2 = (const char*)iter2;
@@ -128,7 +128,7 @@ bool call_message_append_extract_iterator_signature()
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
-  iter1.append( v );
+  iter1 << v;
 
   DBus::MessageIterator iter2(msg);
   v2 = (DBus::Signature)iter2;
@@ -175,7 +175,7 @@ bool call_message_append_extract_iterator_array_int( )
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
-  iter1.append( v );
+  iter1 << v;
 
   DBus::MessageIterator iter2(msg);
   iter2 >> v2;
@@ -200,7 +200,7 @@ bool call_message_append_extract_iterator_array_string( )
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
-  iter1.append( v );
+  iter1 << v;
 
   DBus::MessageIterator iter2(msg);
   iter2 >> v2;
@@ -230,7 +230,7 @@ bool call_message_append_extract_iterator_array_array_string( )
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
-  iter1.append( sv );
+  iter1 << sv;
 
   DBus::MessageIterator iter2(msg);
   iter2 >> sv2;
@@ -264,7 +264,7 @@ bool call_message_iterator_insertion_extraction_operator_filedescriptor(){
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
-  iter1.append( v );
+  iter1 << v;
 
   DBus::MessageIterator iter2(msg);
   v2 = (std::shared_ptr<DBus::FileDescriptor>)iter2;
@@ -301,7 +301,7 @@ bool call_message_append_extract_iterator_filedescriptor(){
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
-  iter1.append( v );
+  iter1 << v;
 
   DBus::MessageIterator iter2(msg);
   iter2 >> v2;
@@ -536,24 +536,24 @@ bool call_message_append_extract_iterator_multiple( )
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
-  iter1.append( b_1 );
-  iter1.append( ui8_1 );
-  iter1.append( i16_1 );
-  iter1.append( ui16_1 );
-  iter1.append( i32_1 );
-  iter1.append( ui32_1 );
-  iter1.append( i64_1 );
-  iter1.append( ui64_1 );
-  iter1.append( d_1 );
-  iter1.append( cs_1 );
-  iter1.append( s_1 );
-  iter1.append( sig_1 );
-  iter1.append( c_1 );
-  iter1.append( i8_1 );
-  iter1.append( f_1 );
-  iter1.append( li_1 );
-  iter1.append( uli_1 );
-  iter1.append( ad_1 );
+  iter1 << b_1;
+  iter1 << ui8_1;
+  iter1 << i16_1;
+  iter1 << ui16_1;
+  iter1 << i32_1;
+  iter1 << ui32_1;
+  iter1 << i64_1;
+  iter1 << ui64_1;
+  iter1 << d_1;
+  iter1 << cs_1;
+  iter1 << s_1;
+  iter1 << sig_1;
+  iter1 << c_1;
+  iter1 << i8_1;
+  iter1 << f_1;
+  iter1 << li_1;
+  iter1 << uli_1;
+  iter1 << ad_1;
 
   DBus::MessageIterator iter2(msg);
   b_2    = (bool)iter2;              iter2.next();

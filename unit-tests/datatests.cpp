@@ -16,10 +16,11 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <dbus-cxx.h>
+//#include <dbus-cxx.h>
 #include <unistd.h>
 
 #include "test_macros.h"
+#include "custom-type.h"
 
 std::shared_ptr<DBus::Dispatcher> dispatch;
 std::shared_ptr<DBus::Connection> conn;
@@ -27,10 +28,14 @@ std::shared_ptr<DBus::Connection> conn;
 std::shared_ptr<DBus::ObjectProxy> proxy;
 std::shared_ptr<DBus::MethodProxy<int(int,int)>> int_method_proxy;
 std::shared_ptr<DBus::MethodProxy<void()>> void_method_proxy;
+std::shared_ptr<DBus::MethodProxy<void(struct custom)>> void_custom_method_proxy;
+std::shared_ptr<DBus::MethodProxy<int(int, struct custom)>> int_custom_method_proxy2;
 
 std::shared_ptr<DBus::Object> object;
 std::shared_ptr<DBus::Method<int(int,int)>> int_method;
 std::shared_ptr<DBus::Method<void()>> void_method;
+std::shared_ptr<DBus::Method<void(struct custom)>> void_custom_method;
+std::shared_ptr<DBus::Method<int(int,struct custom)>> int_custom_method2;
 
 int add(int a, int b){
     return a + b;
@@ -38,11 +43,23 @@ int add(int a, int b){
 
 void void_method_symbol(){}
 
+void void_custom_method_symbol(struct custom c){
+std::cout << "void custommethod" << std::endl;
+std::cout << "c.first = " << c.first << " c.second = " << c.second << std::endl;
+}
+
+int int_intcustom_symbol(int i, struct custom c){
+std::cout << "intcustom i = " << i << " c.first = " << c.first << " c.second = " << c.second << std::endl;
+  return i + c.first + c.second;
+}
+
 void client_setup(){
     proxy = conn->create_object_proxy( "dbuscxx.test", "/test" );
 
     int_method_proxy = proxy->create_method<int(int,int)>( "foo.what", "add" );
     void_method_proxy = proxy->create_method<void()>( "foo.what", "void" );
+    void_custom_method_proxy = proxy->create_method<void(struct custom)>( "foo.what", "void_custom" );
+    int_custom_method_proxy2 = proxy->create_method<int(int,struct custom)>( "foo.what", "int_intcustom" );
 }
 
 void server_setup(){
@@ -52,6 +69,8 @@ void server_setup(){
     object = conn->create_object("/test");
     int_method = object->create_method<int(int,int)>("foo.what", "add", sigc::ptr_fun( add ) );
     void_method = object->create_method<void()>("foo.what", "void", sigc::ptr_fun( void_method_symbol ) );
+    void_custom_method = object->create_method<void(struct custom)>("foo.what", "void_custom", sigc::ptr_fun( void_custom_method_symbol ) );
+    int_custom_method2 = object->create_method<int(int,struct custom)>("foo.what", "int_intcustom", sigc::ptr_fun( int_intcustom_symbol ) );
 }
 
 bool data_send_integers(){
@@ -64,6 +83,25 @@ bool data_void_method(){
     (*void_method_proxy)();
 
     return true;
+}
+
+bool data_void_custom(){
+    struct custom c;
+    c.first = 5;
+    c.second = 10;
+std::cout << "calling void method with custom struct" << std::endl;
+    (*void_custom_method_proxy)( c );
+
+    return true;
+}
+
+bool data_send_intcustom(){
+    struct custom c;
+    c.first = 5;
+    c.second = 10;
+    int val = (*int_custom_method_proxy2)( 10, c );
+ 
+    return TEST_EQUALS( val, 25 );
 }
 
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
@@ -87,6 +125,8 @@ int main(int argc, char** argv){
     client_setup();
     ADD_TEST(send_integers);
     ADD_TEST(void_method);
+    ADD_TEST(void_custom);
+    ADD_TEST(send_intcustom);
   }else{
     server_setup();
     ret = true;

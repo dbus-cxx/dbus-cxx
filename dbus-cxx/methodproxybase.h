@@ -145,7 +145,8 @@ namespace DBus
         //TODO add debug here(see methodbase.h)
         //DBUSCXX_DEBUG_STDSTR( "dbus.MethodProxy", 
         std::shared_ptr<CallMessage> _callmsg = this->create_call_message();
-        (*_callmsg << ... << args);
+        MessageAppendIterator iter = _callmsg->append();
+        (iter << ... << args);
         std::shared_ptr<const ReturnMessage> retmsg = this->call( _callmsg, -1 );
         T_return _retval;
         retmsg >> _retval;

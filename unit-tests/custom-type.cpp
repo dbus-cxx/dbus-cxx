@@ -1,7 +1,8 @@
 /***************************************************************************
- *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
+ *   Copyright (C) 2009 by Rick L. Vinyard, Jr.                            *
  *   rvinyard@cs.nmsu.edu                                                  *
- *   Copyright (C) 2014- by Robert Middleton                               *
+ *   Copyright (C) 2019 by Robert Middleton                                *
+ *   robert.middleton@rm5248.com                                           *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
  *                                                                         *
@@ -17,51 +18,22 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#include "custom-type.h"
 
-#ifndef DBUS_CXX_FILEDESCRIPTOR
-#define DBUS_CXX_FILEDESCRIPTOR
-
-namespace DBus{
-
-/**
- * A FileDescriptor holds a UNIX file descriptor that can be passed between processes.
- *
- */
-class FileDescriptor{
-protected:
-	FileDescriptor() :
-		m_valid( false ),
-		m_fd( -1 ) {}
-
-        explicit FileDescriptor( int fd ) :
-		m_valid( true ),
-		m_fd( fd ) {}
-
-        explicit FileDescriptor( const FileDescriptor& other ) :
-		m_valid( other.m_valid ),
-		m_fd( other.m_fd ) {}
-
-public:
-      static std::shared_ptr<FileDescriptor> create( int fd ){
-          std::shared_ptr<FileDescriptor> p(new FileDescriptor( fd ));
-          return p;
-      }
-
-	~FileDescriptor(){}
-
-	int getDescriptor() const{
-		return m_fd;
-	}
-
-	operator bool() const {
-		return m_valid;
-	}
-
-private:
-	bool m_valid;
-	int m_fd;
-};
-
+DBus::MessageIterator& operator>>(DBus::MessageIterator& i, struct custom& c)
+{
+std::cout << "extracting custom" << std::endl;
+  c.first = i.get_int32();
+  i.next();
+  c.second = i.get_int32();
+  i.next();
+  return i;
 }
 
-#endif
+DBus::MessageAppendIterator& operator<<(DBus::MessageAppendIterator& i, const struct custom& c)
+{
+std::cout << "appending to iterator" << std::endl;
+  i << (int32_t)c.first;
+  i << (int32_t)c.second;
+  return i;
+}

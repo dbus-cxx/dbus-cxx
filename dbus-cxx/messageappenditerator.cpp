@@ -23,76 +23,9 @@
 
 #include "message.h"
 
+
 namespace DBus
 {
-
-  bool MessageAppendIterator::protected_append( const bool& v )
-  {
-    bool result;
-    dbus_bool_t b = v;
-
-    if ( not this->is_valid() ) return false;
-
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::BOOLEAN ), &b );
-
-    if ( ! result ) m_message->invalidate();
-
-    return result;
-  }
-
-  bool MessageAppendIterator::protected_append( const std::string& v )
-  {
-    return protected_append( v.c_str() );
-  }
-
-  bool MessageAppendIterator::protected_append( const Signature& v )
-  {
-    bool result;
-    if ( not this->is_valid() ) return false;
-    const std::string& sig = v;
-    const char* pstr = sig.c_str();
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::SIGNATURE ), &(pstr) );
-    if ( ! result ) m_message->invalidate();
-    return result;
-  }
-
-  bool MessageAppendIterator::protected_append( const Path& v )
-  {
-    bool result;
-    if ( not this->is_valid() ) return false;
-    const char* pstr = v.c_str();
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::OBJECT_PATH ), &(pstr) );
-    if ( ! result ) m_message->invalidate();
-    return result;
-  }
-
-  template <typename T>
-      inline
-      bool MessageAppendIterator::protected_append( const T& v )
-  {
-    bool result;
-
-    if ( not this->is_valid() ) return false;
-
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DBus::type( v ) ), &v );
-
-    if ( ! result ) m_message->invalidate();
-
-    return result;
-  }
-
-  bool MessageAppendIterator::protected_append( const std::shared_ptr<FileDescriptor>& fd ){
-    bool result;
-    int raw_fd = fd->getDescriptor();
-
-    if ( not this->is_valid() ) return false;
-
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DBus::type( *fd ) ), &raw_fd );
-
-    if ( ! result ) m_message->invalidate();
-
-    return result;
-  }
 
   MessageAppendIterator::MessageAppendIterator():
       m_message( NULL ), m_subiter( NULL )
@@ -158,104 +91,197 @@ namespace DBus
     return this->is_valid();
   }
 
-  bool MessageAppendIterator::append( bool v )
-  {
-    return this->protected_append( v );
+  MessageAppendIterator& MessageAppendIterator::operator<<( const bool& v ){
+    bool result;
+    dbus_bool_t b = v;
+
+    if ( not this->is_valid() ) return *this;
+
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::BOOLEAN ), &b );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
   }
 
-  bool MessageAppendIterator::append( uint8_t v )
-  {
-    return this->protected_append( v );
+  MessageAppendIterator& MessageAppendIterator::operator<<( const int8_t& v ){
+    bool result;
+
+    if ( not this->is_valid() ) return *this;
+
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::BYTE ), &v );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
   }
 
-  bool MessageAppendIterator::append( int16_t v )
-  {
-    return this->protected_append( v );
+  MessageAppendIterator& MessageAppendIterator::operator<<( const uint8_t& v ){
+    bool result;
+
+    if ( not this->is_valid() ) return *this;
+
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::BYTE ), &v );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
   }
 
-  bool MessageAppendIterator::append( uint16_t v )
-  {
-    return this->protected_append( v );
+  MessageAppendIterator& MessageAppendIterator::operator<<( const int16_t& v ){
+    bool result;
+
+    if ( not this->is_valid() ) return *this;
+
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::INT16 ), &v );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
   }
 
-  bool MessageAppendIterator::append( int32_t v )
-  {
-    return this->protected_append( v );
+  MessageAppendIterator& MessageAppendIterator::operator<<( const uint16_t& v ){
+    bool result;
+
+    if ( not this->is_valid() ) return *this;
+
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::UINT16 ), &v );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
   }
 
-  bool MessageAppendIterator::append( uint32_t v )
-  {
-    return this->protected_append( v );
+  MessageAppendIterator& MessageAppendIterator::operator<<( const int32_t& v ){
+    bool result;
+
+    if ( not this->is_valid() ) return *this;
+
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::INT32 ), &v );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
   }
 
-  bool MessageAppendIterator::append( int64_t v )
-  {
-    return this->protected_append( v );
+  MessageAppendIterator& MessageAppendIterator::operator<<( const uint32_t& v ){
+    bool result;
+
+    if ( not this->is_valid() ) return *this;
+
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::UINT32 ), &v );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
   }
 
-  bool MessageAppendIterator::append( uint64_t v )
-  {
-    return this->protected_append( v );
+  MessageAppendIterator& MessageAppendIterator::operator<<( const int64_t& v ){
+    bool result;
+
+    if ( not this->is_valid() ) return *this;
+
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::INT64 ), &v );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
   }
 
-  bool MessageAppendIterator::append( double v )
-  {
-    return this->protected_append( v );
+  MessageAppendIterator& MessageAppendIterator::operator<<( const uint64_t& v ){
+    bool result;
+
+    if ( not this->is_valid() ) return *this;
+
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::UINT64 ), &v );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
   }
 
-  bool MessageAppendIterator::append( const char* v )
-  {
-    return this->protected_append( v );
+  MessageAppendIterator& MessageAppendIterator::operator<<( const double& v ){
+    bool result;
+
+    if ( not this->is_valid() ) return *this;
+
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::DOUBLE ), &v );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
   }
 
-  bool MessageAppendIterator::append( const std::string& v )
-  {
-    return this->protected_append( v );
-  }
-
-  bool MessageAppendIterator::append( const Signature& v )
-  {
-    return this->protected_append( v );
-  }
-
-  bool MessageAppendIterator::append( const Path& v )
-  {
-    return this->protected_append( v );
-  }
-  
-  bool MessageAppendIterator::append( char v )
-  {
-    return this->protected_append( v );
-  }
-  
-  bool MessageAppendIterator::append( int8_t v )
-  {
-    return this->protected_append( v );
-  }
-  
-  bool MessageAppendIterator::append( float v )
-  {
+  MessageAppendIterator& MessageAppendIterator::operator<<( const float& v ){
+    bool result;
     double d = v;
-    return this->protected_append( d );
+
+    if ( not this->is_valid() ) return *this;
+
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::DOUBLE ), &d );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
   }
 
-  bool MessageAppendIterator::append( const std::shared_ptr<FileDescriptor>& fd ){
-    return this->protected_append( fd );
+  MessageAppendIterator& MessageAppendIterator::operator<<( const char* v ){
+    bool result;
+
+    if ( not this->is_valid() ) return *this;
+
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::STRING ), &v );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
   }
 
-#if DBUS_CXX_SIZEOF_LONG_INT == 4
-  
-  bool MessageAppendIterator::append( long int v )
-  {
-    return this->protected_append( v );
-  }
-  
-  bool MessageAppendIterator::append( long unsigned int v )
-  {
-    return this->protected_append( v );
+  MessageAppendIterator& MessageAppendIterator::operator<<( const std::string& v ){
+    return this->operator<<( v.c_str() );
   }
 
-#endif
+  MessageAppendIterator& MessageAppendIterator::operator<<( const Signature& v ){
+    bool result;
+
+    if ( not this->is_valid() ) return *this;
+
+    const std::string sig = v.str();
+    const char* sig_val = sig.c_str();
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::SIGNATURE ), &sig_val );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
+  }
+
+  MessageAppendIterator& MessageAppendIterator::operator<<( const Path& v ){
+    bool result;
+
+    if ( not this->is_valid() ) return *this;
+
+    const char* path_val = v.c_str();
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::OBJECT_PATH ), &path_val );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
+  }
+
+  MessageAppendIterator& MessageAppendIterator::operator<<( const std::shared_ptr<FileDescriptor> v ){
+    bool result;
+    int raw_fd;
+
+    if ( not this->is_valid() ) return *this;
+    if ( not v ) return *this;
+
+    raw_fd = v->getDescriptor();
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::UNIX_FD ), &raw_fd );
+
+    if ( ! result ) m_message->invalidate();
+
+    return *this;
+  }
 
 
   bool MessageAppendIterator::open_container( ContainerType t, const std::string& sig )

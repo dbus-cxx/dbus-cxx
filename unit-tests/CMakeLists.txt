@@ -133,7 +133,7 @@ add_test( NAME export-method COMMAND dbus-wrapper.sh object-tests export_method)
 # Data Sending tests - make sure we can actually send data across the bus correctly
 #
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper-data-tests.sh ${CMAKE_CURRENT_BINARY_DIR}/dbus-wrapper-data-tests.sh COPYONLY)
-add_executable( data-tests datatests.cpp )
+add_executable( data-tests datatests.cpp custom-type.cpp )
 target_link_libraries( data-tests ${TEST_LINK} )
 target_include_directories( data-tests PUBLIC ${CMAKE_SOURCE_DIR} )
 target_include_directories( data-tests PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
@@ -141,6 +141,8 @@ set_property( TARGET data-tests PROPERTY CXX_STANDARD 17 )
 
 add_test( NAME send-integers COMMAND dbus-wrapper-data-tests.sh send_integers)
 add_test( NAME call-void-method COMMAND dbus-wrapper-data-tests.sh void_method)
+add_test( NAME call-void-custom-method COMMAND dbus-wrapper-data-tests.sh void_custom)
+add_test( NAME call-int-custom-method COMMAND dbus-wrapper-data-tests.sh send_intcustom)
 
 #
 # Signal tests - make sure we can tx and rx singals correctly
