@@ -143,6 +143,7 @@ add_test( NAME send-integers COMMAND dbus-wrapper-data-tests.sh send_integers)
 add_test( NAME call-void-method COMMAND dbus-wrapper-data-tests.sh void_method)
 add_test( NAME call-void-custom-method COMMAND dbus-wrapper-data-tests.sh void_custom)
 add_test( NAME call-int-custom-method COMMAND dbus-wrapper-data-tests.sh send_intcustom)
+add_test( NAME call-int-vec-custom-method COMMAND dbus-wrapper-data-tests.sh send_intveccustom)
 
 #
 # Signal tests - make sure we can tx and rx singals correctly
