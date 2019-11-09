@@ -40,7 +40,7 @@ DBus::MessageIterator& operator>>(DBus::MessageIterator& i, struct timeval& t)
  */
 DBus::MessageAppendIterator& operator<<(DBus::MessageAppendIterator& i, const struct timeval& t)
 {
-  i.append( (int32_t)t.tv_sec );
-  i.append( (int32_t)t.tv_usec );
+  i << (int32_t)t.tv_sec;
+  i << (int32_t)t.tv_usec;
   return i;
 }
