@@ -28,14 +28,7 @@ include_directories( ${CMAKE_SOURCE_DIR}/dbus-cxx
     ${cppgenerate_INCLUDE_DIRS} )
 
 add_executable( dbus-cxx-xml2cpp 
-    generate_adapter.cpp
-    generate_proxy.cpp
-    parsed_object.cpp
     xml2cpp.cpp
-    xml_parser.cpp
-    arg.cpp
-    method.cpp
-    signal.cpp 
     code-generator.cpp 
 )
 target_link_libraries( dbus-cxx-xml2cpp ${TOOLS_LINK} ${cppgenerate_LDFLAGS} )

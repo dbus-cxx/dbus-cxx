@@ -376,19 +376,16 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
 
 std::string CodeGenerator::getTemplateArgsFromSignature( SignatureIterator it ){
     std::string ret;
-    std::string include_file;
 
     do{
-        include_file = include_file_for_type( it.type() );
-        if( include_file.size() > 1 ){
+        TypeInfo info( it.type() );
+        for( std::string include_file : info.includeFilesForType() ){
             m_adapteeClasses[ m_adapteeClasses.size() - 1 ].addSystemInclude( include_file );
             m_adapterClasses[ m_adapterClasses.size() - 1 ].addSystemInclude( include_file );
         }
 
-        ret += type_string_from_code( it.type() );
-        if( it.is_container() ||
-            it.is_array() ||
-            it.is_dict() ){
+        ret += info.cppType();
+        if( info.isTemplated() ){
             ret += "<";
             ret += getTemplateArgsFromSignature( it.recurse() );
             ret += ">";

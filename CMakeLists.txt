@@ -85,6 +85,7 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/signatureiterator.cpp
     dbus-cxx/timeout.cpp
     dbus-cxx/utility.cpp
+    dbus-cxx/types.cpp
     dbus-cxx/watch.cpp )
 
 # headers that need to go in the include/ directory
@@ -125,6 +126,7 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/timeout.h
     dbus-cxx/types.h
     dbus-cxx/utility.h
+    dbus-cxx/demangle.h
     dbus-cxx/watch.h
     dbus-cxx/dbus_signal.h
     dbus-cxx/interface.h

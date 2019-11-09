@@ -143,7 +143,6 @@ namespace DBus
               std::shared_ptr<ReturnMessage> retmsg = message->create_reply();
               if( !retmsg ) return HandlerResult::NOT_HANDLED;
 
-              //Message::iterator i = message->begin();
               method_sig_gen.extractAndCall(message, retmsg, m_slot );
 
               sendMessage( connection, retmsg );

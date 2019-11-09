@@ -23,9 +23,9 @@
 #include <dbus-cxx/returnmessage.h>
 #include <dbus-cxx/callmessage.h>
 #include <dbus-cxx/messageiterator.h>
+#include <dbus-cxx/demangle.h>
 #include <functional>
 #include <sstream>
-#include <cxxabi.h>
 
 #ifndef DBUSCXX_UTILITY_H
 #define DBUSCXX_UTILITY_H
@@ -111,6 +111,7 @@ namespace DBus
    */
   void setLogLevel( const enum ::SL_LogLevel level );
 
+
 namespace priv {
 /*
  * dbus_signature class - signature of a given type
@@ -156,6 +157,7 @@ template<typename arg1, typename... argn>
 class method_signature<arg1, argn...> : public method_signature<argn...> {
 public:
   std::string method_sig() const {
+/*
 #ifdef DBUS_CXX_CXA_DEMANGLE
     int status;
     char* demangled = abi::__cxa_demangle( typeid(arg1).name(), nullptr, nullptr, &status );
@@ -167,6 +169,8 @@ public:
 #else
     std::string arg1_name = typeid(arg1).name();
 #endif
+*/
+    std::string arg1_name = demangle<arg1>();
     std::string remaining_args = method_signature<argn...>::method_sig();
     if( remaining_args.size() > 1 ){
         arg1_name += ",";

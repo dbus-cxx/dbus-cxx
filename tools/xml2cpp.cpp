@@ -25,12 +25,7 @@
 #include <stack>
 #include <cppgenerate/class.h>
 
-#include "xml_parser.h"
-#include "parsed_object.h"
-#include "generate_adapter.h"
-#include "generate_proxy.h"
 #include "code-generator.h"
-
 
 int main( int argc, const char** argv )
 {
@@ -115,82 +110,6 @@ int main( int argc, const char** argv )
     if( make_adapter ){
         generator.generateAdapterClasses( output_to_file, outputDirString );
     }
-return 0;
 
-    Nodes nodes;
-
-    nodes = parse_xml( specification );
-
-    std::string proxy_h, proxy_cpp, adapter_h, adapter_cpp, filename;
-    std::ofstream fout;
-
-//     std::cout << "Nodes: " << nodes.size() << std::endl;
-
-//     std::cout << "Parsed" << std::endl;
-
-    for ( unsigned i = 0; i < nodes.size(); i++ )
-    {
-      proxy_h.clear();
-      proxy_cpp.clear();
-      adapter_h.clear();
-      adapter_cpp.clear();
-
-//       std::cout << nodes[i].strfmt() << std::endl;
-
-      if ( make_proxy )
-      {
-        proxy_h = generate_proxy_h(nodes[i]);
-        proxy_cpp = generate_proxy_cpp(nodes[i]);
-      }
-
-      if ( make_adapter )
-      {
-        adapter_h = generate_adapter_h(nodes[i]);
-        adapter_cpp = generate_adapter_cpp(nodes[i]);
-      }
-
-      if ( output_to_file )
-      {
-        std::string full_file_prefix = file_prefix;
-        full_file_prefix += nodes[i].file_prefix;
-        
-        if ( not proxy_h.empty() )
-        {
-          filename = full_file_prefix + nodes[i].name_lower() + "_proxy.h";
-          fout.open( filename.c_str(), std::ios_base::trunc );
-          fout << proxy_h;
-          fout.close();
-        }
-        if ( not proxy_cpp.empty() )
-        {
-          filename = full_file_prefix + nodes[i].name_lower() + "_proxy.cpp";
-          fout.open( filename.c_str(), std::ios_base::trunc );
-          fout << proxy_cpp;
-          fout.close();
-        }
-        if ( not adapter_h.empty() )
-        {
-          filename = full_file_prefix + nodes[i].name_lower() + "_adapter.h";
-          fout.open( filename.c_str(), std::ios_base::trunc );
-          fout << adapter_h;
-          fout.close();
-        }
-        if ( not adapter_cpp.empty() )
-        {
-          filename = full_file_prefix + nodes[i].name_lower() + "_adapter.cpp";
-          fout.open( filename.c_str(), std::ios_base::trunc );
-          fout << adapter_cpp;
-          fout.close();
-        }
-      }
-      else
-      {
-        if ( not proxy_h.empty() )     std::cout << proxy_h     << std::endl;
-        if ( not proxy_cpp.empty() )   std::cout << proxy_cpp   << std::endl;
-        if ( not adapter_h.empty() )   std::cout << adapter_h   << std::endl;
-        if ( not adapter_cpp.empty() ) std::cout << adapter_cpp << std::endl;
-      }
-    }
-
-	return 0;
+    return 0;
 }

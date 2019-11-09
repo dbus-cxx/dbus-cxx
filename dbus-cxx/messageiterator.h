@@ -19,6 +19,8 @@
 #include <dbus/dbus.h>
 #include <dbus-cxx/types.h>
 #include <dbus-cxx/headerlog.h>
+#include <dbus-cxx/demangle.h>
+#include <dbus-cxx/types.h>
 
 #ifndef DBUSCXX_MESSAGEITERATOR_H
 #define DBUSCXX_MESSAGEITERATOR_H
@@ -281,10 +283,11 @@ namespace DBus
         
         T type;
         if ( this->element_type() != DBus::type( type ) ) {
+          TypeInfo t( DBus::type( type ) );
           std::string s = "MessageIterator: Extracting DBus array type ";
-          s += type_string(type);
-          s += " into C++ vector with RTTI type ";
-          s += typeid( T ).name();
+          s += t.cppType();
+          s += " into C++ vector with type ";
+          s += demangle<T>();
 	  throw ErrorInvalidTypecast( s.c_str() );
         }
         
@@ -322,33 +325,6 @@ namespace DBus
           subiter >> val;
           array.push_back( val );
         }
-     }
-
-      template <typename T>
-      std::vector<T> get_array_complex() {
-        if ( not this->is_array() ) /* Should never happen */
-          throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
-
-        T type;
-        if ( this->element_type() != DBus::type( type ) ) {
-          std::string s = "MessageIterator: Extracting DBus array type ";
-          s += type_string(type);
-          s += " into C++ vector with RTTI type ";
-          s += typeid( T ).name();
-          throw ErrorInvalidTypecast( s.c_str() );
-        }
-
-        std::vector<T> array;
-
-        MessageIterator subiter = this->recurse();
-        while( subiter.is_valid() )
-        {
-          T val;
-          subiter >> val;
-          array.push_back( val );
-        }
-
-        return array;
      }
 
      template <typename Key, typename Data>
@@ -437,10 +413,11 @@ namespace DBus
       template <typename T>
       void value( T& temp ) {
         if ( this->arg_type() != DBus::type( temp ) ) {
+          TypeInfo t( DBus::type( temp ) );
           std::string s = "MessageIterator: Extracting DBus type ";
-          s += type_string( temp );
-          s += " into C++ RTTI type ";
-          s += typeid( T ).name();
+          s += t.cppType();
+          s += " into C++ type ";
+          s += demangle<T>();
           throw ErrorInvalidTypecast( s.c_str() );
         }
         dbus_message_iter_get_basic( &m_cobj, &temp );
