@@ -33,7 +33,7 @@
 namespace DBus
 {
 
-  inline int typeToDBusType( Type t ){
+  inline int typeToDBusType( DataType t ){
       return static_cast<int>( t );
   }
 
@@ -41,58 +41,58 @@ namespace DBus
       return static_cast<int>( t );
   }
 
-  inline Type type( const uint8_t& )            { return Type::BYTE; }
-  inline Type type( const bool& )               { return Type::BOOLEAN; }
-  inline Type type( const int16_t& )            { return Type::INT16; }
-  inline Type type( const uint16_t& )           { return Type::UINT16; }
-  inline Type type( const int32_t& )            { return Type::INT32; }
-  inline Type type( const uint32_t& )           { return Type::UINT32; }
-  inline Type type( const int64_t& )            { return Type::INT64; }
-  inline Type type( const uint64_t& )           { return Type::UINT64; }
-  inline Type type( const double& )             { return Type::DOUBLE; }
-  inline Type type( const std::string& ) { return Type::STRING; }
-  inline Type type( const char* )        { return Type::STRING; }
-  inline Type type( const Path& )               { return Type::OBJECT_PATH; }
-  inline Type type( const Signature& )          { return Type::SIGNATURE; }
+  inline DataType type( const uint8_t& )            { return DataType::BYTE; }
+  inline DataType type( const bool& )               { return DataType::BOOLEAN; }
+  inline DataType type( const int16_t& )            { return DataType::INT16; }
+  inline DataType type( const uint16_t& )           { return DataType::UINT16; }
+  inline DataType type( const int32_t& )            { return DataType::INT32; }
+  inline DataType type( const uint32_t& )           { return DataType::UINT32; }
+  inline DataType type( const int64_t& )            { return DataType::INT64; }
+  inline DataType type( const uint64_t& )           { return DataType::UINT64; }
+  inline DataType type( const double& )             { return DataType::DOUBLE; }
+  inline DataType type( const std::string& ) { return DataType::STRING; }
+  inline DataType type( const char* )        { return DataType::STRING; }
+  inline DataType type( const Path& )               { return DataType::OBJECT_PATH; }
+  inline DataType type( const Signature& )          { return DataType::SIGNATURE; }
   template <typename... args>
-  inline Type type( const std::variant<args...>& )            { return Type::VARIANT; }
-  inline Type type( const FileDescriptor& )     { return Type::UNIX_FD; }
+  inline DataType type( const std::variant<args...>& )            { return DataType::VARIANT; }
+  inline DataType type( const FileDescriptor& )     { return DataType::UNIX_FD; }
   
-  inline Type type( const char& )               { return Type::BYTE; }
-  inline Type type( const int8_t& )             { return Type::BYTE; }
+  inline DataType type( const char& )               { return DataType::BYTE; }
+  inline DataType type( const int8_t& )             { return DataType::BYTE; }
 
 #if DBUS_CXX_SIZEOF_LONG_INT == 4
-  inline Type type( const long int& )            { return Type::INT32; }
-  inline Type type( const long unsigned int& )   { return Type::UINT32; }
+  inline DataType type( const long int& )            { return DataType::INT32; }
+  inline DataType type( const long unsigned int& )   { return DataType::UINT32; }
 #endif
   
-  inline Type type( const float& )               { return Type::DOUBLE; }
+  inline DataType type( const float& )               { return DataType::DOUBLE; }
 
   template <typename T> 
-  inline Type type(const std::vector<T>&) { return Type::ARRAY; }
+  inline DataType type(const std::vector<T>&) { return DataType::ARRAY; }
 
-//   template <typename T> inline Type type(const std::vector<T>&) { return Type::ARRAY; }
+//   template <typename T> inline DataType type(const std::vector<T>&) { return DataType::ARRAY; }
 
 //   template <typename T0>
-//   inline Type type( const Struct<T0>& ) { return Type::STRUCT; }
+//   inline DataType type( const Struct<T0>& ) { return DataType::STRUCT; }
 // 
 //   template <typename T0, typename T1>
-//   inline Type type( const Struct<T0,T1>& ) { return Type::STRUCT; }
+//   inline DataType type( const Struct<T0,T1>& ) { return DataType::STRUCT; }
 // 
 //   template <typename T0, typename T1, typename T2>
-//   inline Type type( const Struct<T0,T1,T2>& ) { return Type::STRUCT; }
+//   inline DataType type( const Struct<T0,T1,T2>& ) { return DataType::STRUCT; }
 // 
 //   template <typename T0, typename T1, typename T2, typename T3>
-//   inline Type type( const Struct<T0,T1,T2,T3>& ) { return Type::STRUCT; }
+//   inline DataType type( const Struct<T0,T1,T2,T3>& ) { return DataType::STRUCT; }
 // 
 //   template <typename T0, typename T1, typename T2, typename T3, typename T4>
-//   inline Type type( const Struct<T0,T1,T2,T3,T4>& ) { return Type::STRUCT; }
+//   inline DataType type( const Struct<T0,T1,T2,T3,T4>& ) { return DataType::STRUCT; }
 // 
 //   template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5>
-//   inline Type type( const Struct<T0,T1,T2,T3,T4,T5>& ) { return Type::STRUCT; }
+//   inline DataType type( const Struct<T0,T1,T2,T3,T4,T5>& ) { return DataType::STRUCT; }
 // 
 //   template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-//   inline Type type( const Struct<T0,T1,T2,T3,T4,T5,T6>& ) { return Type::STRUCT; }
+//   inline DataType type( const Struct<T0,T1,T2,T3,T4,T5,T6>& ) { return DataType::STRUCT; }
 
   inline std::string type_string( const uint8_t& )     { return "byte"; }
   inline std::string type_string( const int8_t& )      { return "byte"; }
@@ -130,43 +130,43 @@ template <class T>
   template<> inline std::string type_string<Signature>()   { return "Signature"; }
   template<> inline std::string type_string<Variant<class T>>()     { return "Variant"; }
 */
-  inline std::string type_string_from_code( DBus::Type t )
+  inline std::string type_string_from_code( DBus::DataType t )
   {
     switch ( t )
     {
-      case Type::BYTE:
+      case DataType::BYTE:
         return "uint8_t";
-      case Type::BOOLEAN:
+      case DataType::BOOLEAN:
         return "bool";
-      case Type::INT16:
+      case DataType::INT16:
         return "int16_t";
-      case Type::UINT16:
+      case DataType::UINT16:
         return "uint16_t";
-      case Type::INT32:
+      case DataType::INT32:
         return "int32_t";
-      case Type::UINT32:
+      case DataType::UINT32:
         return "uint32_t";
-      case Type::INT64:
+      case DataType::INT64:
         return "int64_t";
-      case Type::UINT64:
+      case DataType::UINT64:
         return "uint64_t";
-      case Type::DOUBLE:
+      case DataType::DOUBLE:
         return "double";
-      case Type::STRING:
+      case DataType::STRING:
         return "std::string";
-      case Type::OBJECT_PATH:
+      case DataType::OBJECT_PATH:
         return "DBus::Path";
-      case Type::SIGNATURE:
+      case DataType::SIGNATURE:
         return "DBus::Signature";
-      case Type::ARRAY:
+      case DataType::ARRAY:
         return "std::vector";
-      case Type::VARIANT:
+      case DataType::VARIANT:
         return "DBus::Variant<>";
-      case Type::STRUCT:
+      case DataType::STRUCT:
         return "Struct";
-      case Type::DICT_ENTRY:
+      case DataType::DICT_ENTRY:
         return "std::pair<>";
-      case Type::UNIX_FD:
+      case DataType::UNIX_FD:
         return "FileDescriptor";
       default:
         break;
@@ -174,42 +174,42 @@ template <class T>
     return std::string("Invalid");
   }
 
-  inline std::string include_file_for_type( DBus::Type t ){
+  inline std::string include_file_for_type( DBus::DataType t ){
     switch ( t )
     {
-      case Type::BYTE:
-      case Type::INT16:
-      case Type::UINT16:
-      case Type::INT32:
-      case Type::UINT32:
-      case Type::INT64:
-      case Type::UINT64:
+      case DataType::BYTE:
+      case DataType::INT16:
+      case DataType::UINT16:
+      case DataType::INT32:
+      case DataType::UINT32:
+      case DataType::INT64:
+      case DataType::UINT64:
         return "stdint.h";
-      case Type::STRING:
+      case DataType::STRING:
         return "string";
-      case Type::ARRAY:
+      case DataType::ARRAY:
         return "vector";
-      case Type::DICT_ENTRY:
+      case DataType::DICT_ENTRY:
         return "map";
     }
     return std::string("");
   }
 
-  inline bool type_is_templated( DBus::Type t ){
+  inline bool type_is_templated( DBus::DataType t ){
     switch( t )
     {
-        case Type::ARRAY:
+        case DataType::ARRAY:
           return true;
-        case Type::DICT_ENTRY:
+        case DataType::DICT_ENTRY:
           return true;
     }
     return false;
   }
 
   inline
-  Type checked_type_cast(int n)
+  DataType checked_type_cast(int n)
   {
-    return (Type)(n);
+    return (DataType)(n);
   }
 
 

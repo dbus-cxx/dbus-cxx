@@ -62,7 +62,7 @@ void reply_to_method_call( std::shared_ptr<DBus::CallMessage> msg, std::shared_p
   // read the arguments
   if ( msg->begin() == msg->end() )
     std::cerr << "Message has no arguments!" << std::endl;
-  else if ( msg->begin().arg_type() != DBus::Type::DOUBLE )
+  else if ( msg->begin().arg_type() != DBus::DataType::DOUBLE )
     std::cerr << "Argument is not double!" << std::endl;
   else
     msg >> param1 >> param2;

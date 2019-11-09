@@ -80,14 +80,14 @@ namespace DBus
       bool operator==( const MessageIterator& other );
 
       /** Returns the argument type that the iterator points to */
-      Type arg_type() const;
+      DataType arg_type() const;
 
       /**
        * Returns the element type of the array that the iterator points to
        *
        * If the iterator does not point to an array TYPE_INVALID is returned.
        */
-      Type element_type() const;
+      DataType element_type() const;
 
       /** True if the element type is a fixed type */
       bool is_fixed() const;

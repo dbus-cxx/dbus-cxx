@@ -38,7 +38,7 @@ namespace DBus {
     COPY,
   };
 
-  enum class Type
+  enum class DataType
   {
     INVALID = DBUS_TYPE_INVALID,
     BYTE = DBUS_TYPE_BYTE,

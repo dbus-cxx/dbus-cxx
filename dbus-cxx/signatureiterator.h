@@ -75,14 +75,14 @@ namespace DBus
       bool operator==( const SignatureIterator& other );
 
       /** Returns the argument type that the iterator points to */
-      Type type() const;
+      DataType type() const;
 
       /**
        * Returns the element type of the array that the iterator points to
        *
        * If the iterator does not point to an array TYPE_INVALID is returned.
        */
-      Type element_type() const;
+      DataType element_type() const;
 
       /** True if the element type is a basic type */
       bool is_basic() const;

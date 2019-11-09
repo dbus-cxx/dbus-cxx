@@ -97,7 +97,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::BOOLEAN ), &b );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::BOOLEAN ), &b );
 
     if ( ! result ) m_message->invalidate();
 
@@ -109,7 +109,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::BYTE ), &v );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::BYTE ), &v );
 
     if ( ! result ) m_message->invalidate();
 
@@ -121,7 +121,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::BYTE ), &v );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::BYTE ), &v );
 
     if ( ! result ) m_message->invalidate();
 
@@ -133,7 +133,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::INT16 ), &v );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::INT16 ), &v );
 
     if ( ! result ) m_message->invalidate();
 
@@ -145,7 +145,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::UINT16 ), &v );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::UINT16 ), &v );
 
     if ( ! result ) m_message->invalidate();
 
@@ -157,7 +157,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::INT32 ), &v );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::INT32 ), &v );
 
     if ( ! result ) m_message->invalidate();
 
@@ -169,7 +169,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::UINT32 ), &v );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::UINT32 ), &v );
 
     if ( ! result ) m_message->invalidate();
 
@@ -181,7 +181,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::INT64 ), &v );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::INT64 ), &v );
 
     if ( ! result ) m_message->invalidate();
 
@@ -193,7 +193,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::UINT64 ), &v );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::UINT64 ), &v );
 
     if ( ! result ) m_message->invalidate();
 
@@ -205,7 +205,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::DOUBLE ), &v );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::DOUBLE ), &v );
 
     if ( ! result ) m_message->invalidate();
 
@@ -218,7 +218,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::DOUBLE ), &d );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::DOUBLE ), &d );
 
     if ( ! result ) m_message->invalidate();
 
@@ -230,7 +230,7 @@ namespace DBus
 
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::STRING ), &v );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::STRING ), &v );
 
     if ( ! result ) m_message->invalidate();
 
@@ -248,7 +248,7 @@ namespace DBus
 
     const std::string sig = v.str();
     const char* sig_val = sig.c_str();
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::SIGNATURE ), &sig_val );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::SIGNATURE ), &sig_val );
 
     if ( ! result ) m_message->invalidate();
 
@@ -261,7 +261,7 @@ namespace DBus
     if ( not this->is_valid() ) return *this;
 
     const char* path_val = v.c_str();
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::OBJECT_PATH ), &path_val );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::OBJECT_PATH ), &path_val );
 
     if ( ! result ) m_message->invalidate();
 
@@ -276,7 +276,7 @@ namespace DBus
     if ( not v ) return *this;
 
     raw_fd = v->getDescriptor();
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( Type::UNIX_FD ), &raw_fd );
+    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::UNIX_FD ), &raw_fd );
 
     if ( ! result ) m_message->invalidate();
 

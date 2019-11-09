@@ -69,7 +69,7 @@ namespace DBus
 
   bool SignatureIterator::is_valid() const
   {
-    return ( m_valid and this->type() != Type::INVALID );
+    return ( m_valid and this->type() != DataType::INVALID );
   }
 
   SignatureIterator::operator bool() const
@@ -85,7 +85,7 @@ namespace DBus
 
     result = dbus_signature_iter_next( & m_cobj );
 
-    if ( not result or this->type() == Type::INVALID )
+    if ( not result or this->type() == DataType::INVALID )
     {
       this->invalidate();
       return false;
@@ -113,16 +113,16 @@ namespace DBus
     return ( memcmp( &m_cobj, &( other.m_cobj ), sizeof( DBusSignatureIter ) ) == 0 );
   }
 
-  Type SignatureIterator::type() const
+  DataType SignatureIterator::type() const
   {
-    if ( not m_valid ) return Type::INVALID;
+    if ( not m_valid ) return DataType::INVALID;
     
     return checked_type_cast( dbus_signature_iter_get_current_type(& m_cobj) );
   }
 
-  Type SignatureIterator::element_type() const
+  DataType SignatureIterator::element_type() const
   {
-    if ( this->type() != Type::ARRAY ) return Type::INVALID;
+    if ( this->type() != DataType::ARRAY ) return DataType::INVALID;
     return checked_type_cast( dbus_signature_iter_get_element_type(&m_cobj) );
   }
 
@@ -143,12 +143,12 @@ namespace DBus
 
   bool SignatureIterator::is_array() const
   {
-    return this->type() == Type::ARRAY;
+    return this->type() == DataType::ARRAY;
   }
 
   bool SignatureIterator::is_dict() const
   {
-    return this->is_array() && this->element_type() == Type::DICT_ENTRY;
+    return this->is_array() && this->element_type() == DataType::DICT_ENTRY;
   }
 
   SignatureIterator SignatureIterator::recurse()

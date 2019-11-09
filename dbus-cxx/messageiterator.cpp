@@ -76,7 +76,7 @@ namespace DBus
   bool MessageIterator::is_valid() const
   {
     if ( not (m_message and m_message->is_valid() ) ) return false;
-    if ( this->arg_type() == Type::INVALID ) return false;
+    if ( this->arg_type() == DataType::INVALID ) return false;
     return true;
   }
 
@@ -94,7 +94,7 @@ namespace DBus
 
     result = dbus_message_iter_next( & m_cobj );
 
-    if ( not result or this->arg_type() == Type::INVALID )
+    if ( not result or this->arg_type() == DataType::INVALID )
     {
       this->invalidate();
       return false;
@@ -122,15 +122,15 @@ namespace DBus
     return ( m_message == other.m_message && memcmp( &m_cobj, &( other.m_cobj ), sizeof( DBusMessageIter ) ) == 0 );
   }
 
-  Type MessageIterator::arg_type() const
+  DataType MessageIterator::arg_type() const
   {
     return checked_type_cast(dbus_message_iter_get_arg_type( const_cast<DBusMessageIter*>( & m_cobj ) ));
   }
 
-  Type MessageIterator::element_type() const
+  DataType MessageIterator::element_type() const
   {
-    if ( this->arg_type() != Type::ARRAY )
-      return Type::INVALID;
+    if ( this->arg_type() != DataType::ARRAY )
+      return DataType::INVALID;
     return checked_type_cast(dbus_message_iter_get_element_type( const_cast<DBusMessageIter*>( & m_cobj ) ));
   }
 
@@ -146,12 +146,12 @@ namespace DBus
 
   bool MessageIterator::is_array() const
   {
-    return this->arg_type() == Type::ARRAY;
+    return this->arg_type() == DataType::ARRAY;
   }
 
   bool MessageIterator::is_dict() const
   {
-    return this->is_array() && this->element_type() == Type::DICT_ENTRY;
+    return this->is_array() && this->element_type() == DataType::DICT_ENTRY;
   }
 
   MessageIterator MessageIterator::recurse()
@@ -184,15 +184,15 @@ namespace DBus
     // TODO check for invalid
     switch ( this->arg_type() )
     {
-      case Type::BYTE:    return (uint8_t)(*this);
-      case Type::BOOLEAN: return get_bool();
-      case Type::INT16:   return (int16_t)(*this);
-      case Type::UINT16:  return (uint16_t)(*this);
-      case Type::INT32:   return (int32_t)(*this);
-      case Type::UINT32:  return (uint32_t)(*this);
-      case Type::INT64:   return (int64_t)(*this);
-      case Type::UINT64:  return (uint64_t)(*this);
-      case Type::DOUBLE:  return (double)(*this);
+      case DataType::BYTE:    return (uint8_t)(*this);
+      case DataType::BOOLEAN: return get_bool();
+      case DataType::INT16:   return (int16_t)(*this);
+      case DataType::UINT16:  return (uint16_t)(*this);
+      case DataType::INT32:   return (int32_t)(*this);
+      case DataType::UINT32:  return (uint32_t)(*this);
+      case DataType::INT64:   return (int64_t)(*this);
+      case DataType::UINT64:  return (uint64_t)(*this);
+      case DataType::DOUBLE:  return (double)(*this);
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to boolean value");
     }
@@ -203,15 +203,15 @@ namespace DBus
     // TODO check for invalid
     switch ( this->arg_type() )
     {
-      case Type::BYTE:    return get_uint8();
-      case Type::BOOLEAN: return (bool)(*this);
-      case Type::INT16:   return (int16_t)(*this);
-      case Type::UINT16:  return (uint16_t)(*this);
-      case Type::INT32:   return (int32_t)(*this);
-      case Type::UINT32:  return (uint32_t)(*this);
-      case Type::INT64:   return (int64_t)(*this);
-      case Type::UINT64:  return (uint64_t)(*this);
-      case Type::DOUBLE:  return (double)(*this);
+      case DataType::BYTE:    return get_uint8();
+      case DataType::BOOLEAN: return (bool)(*this);
+      case DataType::INT16:   return (int16_t)(*this);
+      case DataType::UINT16:  return (uint16_t)(*this);
+      case DataType::INT32:   return (int32_t)(*this);
+      case DataType::UINT32:  return (uint32_t)(*this);
+      case DataType::INT64:   return (int64_t)(*this);
+      case DataType::UINT64:  return (uint64_t)(*this);
+      case DataType::DOUBLE:  return (double)(*this);
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
@@ -222,15 +222,15 @@ namespace DBus
     // TODO check for invalid
     switch ( this->arg_type() )
     {
-      case Type::BYTE:    return (uint8_t)(*this);
-      case Type::BOOLEAN: return (bool)(*this);
-      case Type::INT16:   return (int16_t)(*this);
-      case Type::UINT16:  return get_uint16();
-      case Type::INT32:   return (int32_t)(*this);
-      case Type::UINT32:  return (uint32_t)(*this);
-      case Type::INT64:   return (int64_t)(*this);
-      case Type::UINT64:  return (uint64_t)(*this);
-      case Type::DOUBLE:  return (double)(*this);
+      case DataType::BYTE:    return (uint8_t)(*this);
+      case DataType::BOOLEAN: return (bool)(*this);
+      case DataType::INT16:   return (int16_t)(*this);
+      case DataType::UINT16:  return get_uint16();
+      case DataType::INT32:   return (int32_t)(*this);
+      case DataType::UINT32:  return (uint32_t)(*this);
+      case DataType::INT64:   return (int64_t)(*this);
+      case DataType::UINT64:  return (uint64_t)(*this);
+      case DataType::DOUBLE:  return (double)(*this);
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
@@ -241,15 +241,15 @@ namespace DBus
     // TODO check for invalid
     switch ( this->arg_type() )
     {
-      case Type::BYTE:    return (uint8_t)(*this);
-      case Type::BOOLEAN: return (bool)(*this);
-      case Type::INT16:   return get_int16();
-      case Type::UINT16:  return (uint16_t)(*this);
-      case Type::INT32:   return (int32_t)(*this);
-      case Type::UINT32:  return (uint32_t)(*this);
-      case Type::INT64:   return (int64_t)(*this);
-      case Type::UINT64:  return (uint64_t)(*this);
-      case Type::DOUBLE:  return (double)(*this);
+      case DataType::BYTE:    return (uint8_t)(*this);
+      case DataType::BOOLEAN: return (bool)(*this);
+      case DataType::INT16:   return get_int16();
+      case DataType::UINT16:  return (uint16_t)(*this);
+      case DataType::INT32:   return (int32_t)(*this);
+      case DataType::UINT32:  return (uint32_t)(*this);
+      case DataType::INT64:   return (int64_t)(*this);
+      case DataType::UINT64:  return (uint64_t)(*this);
+      case DataType::DOUBLE:  return (double)(*this);
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
@@ -260,15 +260,15 @@ namespace DBus
     // TODO check for invalid
     switch ( this->arg_type() )
     {
-      case Type::BYTE:    return (uint8_t)(*this);
-      case Type::BOOLEAN: return (bool)(*this);
-      case Type::INT16:   return (int16_t)(*this);
-      case Type::UINT16:  return (uint16_t)(*this);
-      case Type::INT32:   return (int32_t)(*this);
-      case Type::UINT32:  return get_uint32();
-      case Type::INT64:   return (int64_t)(*this);
-      case Type::UINT64:  return (uint64_t)(*this);
-      case Type::DOUBLE:  return (double)(*this);
+      case DataType::BYTE:    return (uint8_t)(*this);
+      case DataType::BOOLEAN: return (bool)(*this);
+      case DataType::INT16:   return (int16_t)(*this);
+      case DataType::UINT16:  return (uint16_t)(*this);
+      case DataType::INT32:   return (int32_t)(*this);
+      case DataType::UINT32:  return get_uint32();
+      case DataType::INT64:   return (int64_t)(*this);
+      case DataType::UINT64:  return (uint64_t)(*this);
+      case DataType::DOUBLE:  return (double)(*this);
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
@@ -279,15 +279,15 @@ namespace DBus
     // TODO check for invalid
     switch ( this->arg_type() )
     {
-      case Type::BYTE:    return (uint8_t)(*this);
-      case Type::BOOLEAN: return (bool)(*this);
-      case Type::INT16:   return (int16_t)(*this);
-      case Type::UINT16:  return (uint16_t)(*this);
-      case Type::INT32:   return get_int32();
-      case Type::UINT32:  return (uint32_t)(*this);
-      case Type::INT64:   return (int64_t)(*this);
-      case Type::UINT64:  return (uint64_t)(*this);
-      case Type::DOUBLE:  return (double)(*this);
+      case DataType::BYTE:    return (uint8_t)(*this);
+      case DataType::BOOLEAN: return (bool)(*this);
+      case DataType::INT16:   return (int16_t)(*this);
+      case DataType::UINT16:  return (uint16_t)(*this);
+      case DataType::INT32:   return get_int32();
+      case DataType::UINT32:  return (uint32_t)(*this);
+      case DataType::INT64:   return (int64_t)(*this);
+      case DataType::UINT64:  return (uint64_t)(*this);
+      case DataType::DOUBLE:  return (double)(*this);
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
@@ -298,15 +298,15 @@ namespace DBus
     // TODO check for invalid
     switch ( this->arg_type() )
     {
-      case Type::BYTE:    return (uint8_t)(*this);
-      case Type::BOOLEAN: return (bool)(*this);
-      case Type::INT16:   return (int16_t)(*this);
-      case Type::UINT16:  return (uint16_t)(*this);
-      case Type::INT32:   return (int32_t)(*this);
-      case Type::UINT32:  return (uint32_t)(*this);
-      case Type::INT64:   return (int64_t)(*this);
-      case Type::UINT64:  return get_uint64();
-      case Type::DOUBLE:  return (double)(*this);
+      case DataType::BYTE:    return (uint8_t)(*this);
+      case DataType::BOOLEAN: return (bool)(*this);
+      case DataType::INT16:   return (int16_t)(*this);
+      case DataType::UINT16:  return (uint16_t)(*this);
+      case DataType::INT32:   return (int32_t)(*this);
+      case DataType::UINT32:  return (uint32_t)(*this);
+      case DataType::INT64:   return (int64_t)(*this);
+      case DataType::UINT64:  return get_uint64();
+      case DataType::DOUBLE:  return (double)(*this);
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
@@ -317,15 +317,15 @@ namespace DBus
     // TODO check for invalid
     switch ( this->arg_type() )
     {
-      case Type::BYTE:    return (uint8_t)(*this);
-      case Type::BOOLEAN: return (bool)(*this);
-      case Type::INT16:   return (int16_t)(*this);
-      case Type::UINT16:  return (uint16_t)(*this);
-      case Type::INT32:   return (int32_t)(*this);
-      case Type::UINT32:  return (uint32_t)(*this);
-      case Type::INT64:   return get_int64();
-      case Type::UINT64:  return (uint64_t)(*this);
-      case Type::DOUBLE:  return (double)(*this);
+      case DataType::BYTE:    return (uint8_t)(*this);
+      case DataType::BOOLEAN: return (bool)(*this);
+      case DataType::INT16:   return (int16_t)(*this);
+      case DataType::UINT16:  return (uint16_t)(*this);
+      case DataType::INT32:   return (int32_t)(*this);
+      case DataType::UINT32:  return (uint32_t)(*this);
+      case DataType::INT64:   return get_int64();
+      case DataType::UINT64:  return (uint64_t)(*this);
+      case DataType::DOUBLE:  return (double)(*this);
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
@@ -336,15 +336,15 @@ namespace DBus
     // TODO check for invalid
     switch ( this->arg_type() )
     {
-      case Type::BYTE:    return (uint8_t)(*this);
-      case Type::BOOLEAN: return (bool)(*this);
-      case Type::INT16:   return (int16_t)(*this);
-      case Type::UINT16:  return (uint16_t)(*this);
-      case Type::INT32:   return (int32_t)(*this);
-      case Type::UINT32:  return (uint32_t)(*this);
-      case Type::INT64:   return (int64_t)(*this);
-      case Type::UINT64:  return (uint64_t)(*this);
-      case Type::DOUBLE:  return get_double();
+      case DataType::BYTE:    return (uint8_t)(*this);
+      case DataType::BOOLEAN: return (bool)(*this);
+      case DataType::INT16:   return (int16_t)(*this);
+      case DataType::UINT16:  return (uint16_t)(*this);
+      case DataType::INT32:   return (int32_t)(*this);
+      case DataType::UINT32:  return (uint32_t)(*this);
+      case DataType::INT64:   return (int64_t)(*this);
+      case DataType::UINT64:  return (uint64_t)(*this);
+      case DataType::DOUBLE:  return get_double();
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
@@ -354,9 +354,9 @@ namespace DBus
   {
     switch ( this->arg_type() )
     {
-      case Type::STRING:
-      case Type::OBJECT_PATH:
-      case Type::SIGNATURE:
+      case DataType::STRING:
+      case DataType::OBJECT_PATH:
+      case DataType::SIGNATURE:
         return get_string();
       default:
         throw ErrorInvalidTypecast("MessageIterator:: extracting non-string type to char*");
@@ -368,15 +368,15 @@ namespace DBus
     // TODO check for invalid
     switch ( this->arg_type() )
     {
-      case Type::BYTE:    return static_cast<char>(get_uint8());
-      case Type::BOOLEAN: return (bool)(*this);
-      case Type::INT16:   return (int16_t)(*this);
-      case Type::UINT16:  return (uint16_t)(*this);
-      case Type::INT32:   return (int32_t)(*this);
-      case Type::UINT32:  return (uint32_t)(*this);
-      case Type::INT64:   return (int64_t)(*this);
-      case Type::UINT64:  return (uint64_t)(*this);
-      case Type::DOUBLE:  return (double)(*this);
+      case DataType::BYTE:    return static_cast<char>(get_uint8());
+      case DataType::BOOLEAN: return (bool)(*this);
+      case DataType::INT16:   return (int16_t)(*this);
+      case DataType::UINT16:  return (uint16_t)(*this);
+      case DataType::INT32:   return (int32_t)(*this);
+      case DataType::UINT32:  return (uint32_t)(*this);
+      case DataType::INT64:   return (int64_t)(*this);
+      case DataType::UINT64:  return (uint64_t)(*this);
+      case DataType::DOUBLE:  return (double)(*this);
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
@@ -387,15 +387,15 @@ namespace DBus
     // TODO check for invalid
     switch ( this->arg_type() )
     {
-      case Type::BYTE:    return static_cast<int8_t>(get_uint8());
-      case Type::BOOLEAN: return (bool)(*this);
-      case Type::INT16:   return (int16_t)(*this);
-      case Type::UINT16:  return (uint16_t)(*this);
-      case Type::INT32:   return (int32_t)(*this);
-      case Type::UINT32:  return (uint32_t)(*this);
-      case Type::INT64:   return (int64_t)(*this);
-      case Type::UINT64:  return (uint64_t)(*this);
-      case Type::DOUBLE:  return (double)(*this);
+      case DataType::BYTE:    return static_cast<int8_t>(get_uint8());
+      case DataType::BOOLEAN: return (bool)(*this);
+      case DataType::INT16:   return (int16_t)(*this);
+      case DataType::UINT16:  return (uint16_t)(*this);
+      case DataType::INT32:   return (int32_t)(*this);
+      case DataType::UINT32:  return (uint32_t)(*this);
+      case DataType::INT64:   return (int64_t)(*this);
+      case DataType::UINT64:  return (uint64_t)(*this);
+      case DataType::DOUBLE:  return (double)(*this);
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
@@ -406,15 +406,15 @@ namespace DBus
     // TODO check for invalid
     switch ( this->arg_type() )
     {
-      case Type::BYTE:    return (uint8_t)(*this);
-      case Type::BOOLEAN: return (bool)(*this);
-      case Type::INT16:   return (int16_t)(*this);
-      case Type::UINT16:  return (uint16_t)(*this);
-      case Type::INT32:   return (int32_t)(*this);
-      case Type::UINT32:  return (uint32_t)(*this);
-      case Type::INT64:   return (int64_t)(*this);
-      case Type::UINT64:  return (uint64_t)(*this);
-      case Type::DOUBLE:  return static_cast<float>(get_double());
+      case DataType::BYTE:    return (uint8_t)(*this);
+      case DataType::BOOLEAN: return (bool)(*this);
+      case DataType::INT16:   return (int16_t)(*this);
+      case DataType::UINT16:  return (uint16_t)(*this);
+      case DataType::INT32:   return (int32_t)(*this);
+      case DataType::UINT32:  return (uint32_t)(*this);
+      case DataType::INT64:   return (int64_t)(*this);
+      case DataType::UINT64:  return (uint64_t)(*this);
+      case DataType::DOUBLE:  return static_cast<float>(get_double());
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
@@ -423,7 +423,7 @@ namespace DBus
   MessageIterator::operator std::shared_ptr<FileDescriptor>(){
     switch ( this->arg_type() )
     {
-      case Type::UNIX_FD: return get_filedescriptor();
+      case DataType::UNIX_FD: return get_filedescriptor();
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
@@ -435,15 +435,15 @@ namespace DBus
     // TODO check for invalid
     switch ( this->arg_type() )
     {
-      case Type::BYTE:    return (uint8_t)(*this);
-      case Type::BOOLEAN: return (bool)(*this);
-      case Type::INT16:   return (int16_t)(*this);
-      case Type::UINT16:  return (uint16_t)(*this);
-      case Type::INT32:   return (int32_t)(*this);
-      case Type::UINT32:  return get_uint32();
-      case Type::INT64:   return (int64_t)(*this);
-      case Type::UINT64:  return (uint64_t)(*this);
-      case Type::DOUBLE:  return (double)(*this);
+      case DataType::BYTE:    return (uint8_t)(*this);
+      case DataType::BOOLEAN: return (bool)(*this);
+      case DataType::INT16:   return (int16_t)(*this);
+      case DataType::UINT16:  return (uint16_t)(*this);
+      case DataType::INT32:   return (int32_t)(*this);
+      case DataType::UINT32:  return get_uint32();
+      case DataType::INT64:   return (int64_t)(*this);
+      case DataType::UINT64:  return (uint64_t)(*this);
+      case DataType::DOUBLE:  return (double)(*this);
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
@@ -454,15 +454,15 @@ namespace DBus
     // TODO check for invalid
     switch ( this->arg_type() )
     {
-      case Type::BYTE:    return (uint8_t)(*this);
-      case Type::BOOLEAN: return (bool)(*this);
-      case Type::INT16:   return (int16_t)(*this);
-      case Type::UINT16:  return (uint16_t)(*this);
-      case Type::INT32:   return get_int32();
-      case Type::UINT32:  return (uint32_t)(*this);
-      case Type::INT64:   return (int64_t)(*this);
-      case Type::UINT64:  return (uint64_t)(*this);
-      case Type::DOUBLE:  return (double)(*this);
+      case DataType::BYTE:    return (uint8_t)(*this);
+      case DataType::BOOLEAN: return (bool)(*this);
+      case DataType::INT16:   return (int16_t)(*this);
+      case DataType::UINT16:  return (uint16_t)(*this);
+      case DataType::INT32:   return get_int32();
+      case DataType::UINT32:  return (uint32_t)(*this);
+      case DataType::INT64:   return (int64_t)(*this);
+      case DataType::UINT64:  return (uint64_t)(*this);
+      case DataType::DOUBLE:  return (double)(*this);
       default:
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
@@ -474,8 +474,8 @@ namespace DBus
   {
     // TODO check for invalid
     dbus_bool_t ptr;
-    if ( this->arg_type() != Type::BOOLEAN )
-      throw ErrorInvalidTypecast("MessageIterator: getting bool and type is not Type::BOOLEAN");
+    if ( this->arg_type() != DataType::BOOLEAN )
+      throw ErrorInvalidTypecast("MessageIterator: getting bool and type is not DataType::BOOLEAN");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -484,8 +484,8 @@ namespace DBus
   {
     // TODO check for invalid
     uint8_t ptr;
-    if ( this->arg_type() != Type::BYTE )
-      throw ErrorInvalidTypecast("MessageIterator: getting uint8_t and type is not Type::BYTE");
+    if ( this->arg_type() != DataType::BYTE )
+      throw ErrorInvalidTypecast("MessageIterator: getting uint8_t and type is not DataType::BYTE");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -494,8 +494,8 @@ namespace DBus
   {
     // TODO check for invalid
     dbus_int16_t ptr;
-    if ( this->arg_type() != Type::INT16 )
-      throw ErrorInvalidTypecast("MessageIterator: getting int16_t and type is not Type::INT16");
+    if ( this->arg_type() != DataType::INT16 )
+      throw ErrorInvalidTypecast("MessageIterator: getting int16_t and type is not DataType::INT16");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -504,8 +504,8 @@ namespace DBus
   {
     // TODO check for invalid
     dbus_uint16_t ptr;
-    if ( this->arg_type() != Type::UINT16 )
-      throw ErrorInvalidTypecast("MessageIterator: getting uint16_t and type is not Type::UINT16");
+    if ( this->arg_type() != DataType::UINT16 )
+      throw ErrorInvalidTypecast("MessageIterator: getting uint16_t and type is not DataType::UINT16");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -514,8 +514,8 @@ namespace DBus
   {
     // TODO check for invalid
     dbus_int32_t ptr;
-    if ( this->arg_type() != Type::INT32 )
-      throw ErrorInvalidTypecast("MessageIterator: getting int32_t and type is not Type::INT32");
+    if ( this->arg_type() != DataType::INT32 )
+      throw ErrorInvalidTypecast("MessageIterator: getting int32_t and type is not DataType::INT32");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -524,8 +524,8 @@ namespace DBus
   {
     // TODO check for invalid
     dbus_uint32_t ptr;
-    if ( this->arg_type() != Type::UINT32 )
-      throw ErrorInvalidTypecast("MessageIterator: getting uint32_t and type is not Type::UINT32");
+    if ( this->arg_type() != DataType::UINT32 )
+      throw ErrorInvalidTypecast("MessageIterator: getting uint32_t and type is not DataType::UINT32");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -534,8 +534,8 @@ namespace DBus
   {
     // TODO check for invalid
     dbus_int64_t ptr;
-    if ( this->arg_type() != Type::INT64 )
-      throw ErrorInvalidTypecast("MessageIterator: getting int64_t and type is not Type::INT64");
+    if ( this->arg_type() != DataType::INT64 )
+      throw ErrorInvalidTypecast("MessageIterator: getting int64_t and type is not DataType::INT64");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -544,8 +544,8 @@ namespace DBus
   {
     // TODO check for invalid
     dbus_uint64_t ptr;
-    if ( this->arg_type() != Type::UINT64 )
-      throw ErrorInvalidTypecast("MessageIterator: getting uint64_t and type is not Type::UINT64");
+    if ( this->arg_type() != DataType::UINT64 )
+      throw ErrorInvalidTypecast("MessageIterator: getting uint64_t and type is not DataType::UINT64");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -554,8 +554,8 @@ namespace DBus
   {
     // TODO check for invalid
     double ptr;
-    if ( this->arg_type() != Type::DOUBLE )
-      throw ErrorInvalidTypecast("MessageIterator: getting double and type is not Type::DOUBLE");
+    if ( this->arg_type() != DataType::DOUBLE )
+      throw ErrorInvalidTypecast("MessageIterator: getting double and type is not DataType::DOUBLE");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -563,8 +563,8 @@ namespace DBus
   const char* MessageIterator::get_string()
   {
     char* ptr;
-    if ( not ( this->arg_type() == Type::STRING or this->arg_type() == Type::OBJECT_PATH or this->arg_type() == Type::SIGNATURE ) )
-      throw ErrorInvalidTypecast("MessageIterator: getting char* and type is not one of Type::STRING, Type::OBJECT_PATH or Type::SIGNATURE");
+    if ( not ( this->arg_type() == DataType::STRING or this->arg_type() == DataType::OBJECT_PATH or this->arg_type() == DataType::SIGNATURE ) )
+      throw ErrorInvalidTypecast("MessageIterator: getting char* and type is not one of DataType::STRING, DataType::OBJECT_PATH or DataType::SIGNATURE");
     dbus_message_iter_get_basic( &m_cobj, &ptr );
     return ptr;
   }
@@ -572,8 +572,8 @@ namespace DBus
   std::shared_ptr<FileDescriptor> MessageIterator::get_filedescriptor(){
     std::shared_ptr<FileDescriptor> fd;
     int raw_fd;
-    if( this->arg_type() != Type::UNIX_FD )
-      throw ErrorInvalidTypecast("MessageIterator: getting FileDescriptor and type is not Type::UNIX_FD");
+    if( this->arg_type() != DataType::UNIX_FD )
+      throw ErrorInvalidTypecast("MessageIterator: getting FileDescriptor and type is not DataType::UNIX_FD");
     dbus_message_iter_get_basic( &m_cobj, &raw_fd );
     fd = FileDescriptor::create( raw_fd );
     return fd;
@@ -583,84 +583,84 @@ namespace DBus
 //   {
 // 
 //     switch ( this->arg_type() ) {
-//       case Type::BYTE: {
+//       case DataType::BYTE: {
 //         uint8_t x;
 //         this->value( x );
 //         temp = x;
 //       }
 //       return;
 // 
-//       case Type::BOOLEAN: {
+//       case DataType::BOOLEAN: {
 //         bool x;
 //         this->value( x );
 //         temp = x;
 //       }
 //       return;
 // 
-//       case Type::INT16: {
+//       case DataType::INT16: {
 //         int16_t x;
 //         this->value( x );
 //         temp = x;
 //       }
 //       return;
 // 
-//       case Type::UINT16: {
+//       case DataType::UINT16: {
 //         uint16_t x;
 //         this->value( x );
 //         temp = x;
 //       }
 //       return;
 // 
-//       case Type::INT32: {
+//       case DataType::INT32: {
 //         int32_t x;
 //         this->value( x );
 //         temp = x;
 //       }
 //       return;
 // 
-//       case Type::UINT32: {
+//       case DataType::UINT32: {
 //         uint32_t x;
 //         this->value( x );
 //         temp = x;
 //       }
 //       return;
 // 
-//       case Type::INT64: {
+//       case DataType::INT64: {
 //         int64_t x;
 //         this->value( x );
 //         temp = x;
 //       }
 //       return;
 // 
-//       case Type::UINT64: {
+//       case DataType::UINT64: {
 //         uint64_t x;
 //         this->value( x );
 //         temp = x;
 //       }
 //       return;
 // 
-//       case Type::DOUBLE: {
+//       case DataType::DOUBLE: {
 //         double x;
 //         this->value( x );
 //         temp = x;
 //       }
 //       return;
 // 
-//       case Type::STRING: {
+//       case DataType::STRING: {
 //         std::string x;
 //         this->value( x );
 //         temp = x;
 //       }
 //       return;
 // 
-//       case Type::OBJECT_PATH: {
+//       case DataType::OBJECT_PATH: {
 //         Path x;
 //         this->value( x );
 //         temp = x;
 //       }
 //       return;
 // 
-//       case Type::SIGNATURE: {
+//       case DataType::SIGNATURE: {
 //         Signature x;
 //         this->value( x );
 //         temp = x;
@@ -687,7 +687,7 @@ namespace DBus
 //   {
 //     MessageIterator arr( msg() );
 //     dbus_message_iter_open_container(
-//         ( DBusMessageIter* ) & _iter, DBUS_Type::ARRAY, sig, ( DBusMessageIter* ) & ( arr._iter )
+//         ( DBusMessageIter* ) & _iter, DBUS_DataType::ARRAY, sig, ( DBusMessageIter* ) & ( arr._iter )
 //                                     );
 //     return arr;
 //   }
@@ -696,7 +696,7 @@ namespace DBus
 //   {
 //     MessageIterator var( msg() );
 //     dbus_message_iter_open_container(
-//         ( DBusMessageIter* ) _iter, DBUS_Type::VARIANT, sig, ( DBusMessageIter* ) & ( var._iter )
+//         ( DBusMessageIter* ) _iter, DBUS_DataType::VARIANT, sig, ( DBusMessageIter* ) & ( var._iter )
 //                                     );
 //     return var;
 //   }
@@ -705,7 +705,7 @@ namespace DBus
 //   {
 //     MessageIterator stu( msg() );
 //     dbus_message_iter_open_container(
-//         ( DBusMessageIter* ) _iter, DBUS_Type::STRUCT, NULL, ( DBusMessageIter* ) & ( stu._iter )
+//         ( DBusMessageIter* ) _iter, DBUS_DataType::STRUCT, NULL, ( DBusMessageIter* ) & ( stu._iter )
 //                                     );
 //     return stu;
 //   }
@@ -714,7 +714,7 @@ namespace DBus
 //   {
 //     MessageIterator ent( msg() );
 //     dbus_message_iter_open_container(
-//         ( DBusMessageIter* ) _iter, DBUS_Type::DICT_ENTRY, NULL, ( DBusMessageIter* ) & ( ent._iter )
+//         ( DBusMessageIter* ) _iter, DBUS_DataType::DICT_ENTRY, NULL, ( DBusMessageIter* ) & ( ent._iter )
 //                                     );
 //     return ent;
 //   }
