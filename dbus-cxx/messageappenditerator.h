@@ -25,6 +25,7 @@
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/types.h>
 #include <dbus-cxx/filedescriptor.h>
+#include <dbus-cxx/signature.h>
 
 #ifndef DBUSCXX_MESSAGEAPPENDITERATOR_H
 #define DBUSCXX_MESSAGEAPPENDITERATOR_H
@@ -142,68 +143,20 @@ namespace DBus
         return *this;
       }
 
-//           template <typename T0, typename T1>
-//           void append(const Struct<T0,T1>& s) {
-//             this->open_container( ContainerType::STRUCT, std::string() );
-//             m_subiter->append( boost::get<0>(s) );
-//             m_subiter->append( boost::get<1>(s) );
-//             this->close_container();
-//           }
-      //
-//           template <typename T0, typename T1, typename T2>
-//           void append(const Struct<T0,T1,T2>& s) {
-//             this->open_container( ContainerType::STRUCT, std::string() );
-//             m_subiter->append( boost::get<0>(s) );
-//             m_subiter->append( boost::get<1>(s) );
-//             m_subiter->append( boost::get<2>(s) );
-//             this->close_container();
-//           }
-      //
-//           template <typename T0, typename T1, typename T2, typename T3>
-//           void append(const Struct<T0,T1,T2,T3>& s) {
-//             this->open_container( ContainerType::STRUCT, std::string() );
-//             m_subiter->append( boost::get<0>(s) );
-//             m_subiter->append( boost::get<1>(s) );
-//             m_subiter->append( boost::get<2>(s) );
-//             m_subiter->append( boost::get<3>(s) );
-//             this->close_container();
-//           }
-      //
-//           template <typename T0, typename T1, typename T2, typename T3, typename T4>
-//           void append(const Struct<T0,T1,T2,T3,T4>& s) {
-//             this->open_container( ContainerType::STRUCT, std::string() );
-//             m_subiter->append( boost::get<0>(s) );
-//             m_subiter->append( boost::get<1>(s) );
-//             m_subiter->append( boost::get<2>(s) );
-//             m_subiter->append( boost::get<3>(s) );
-//             m_subiter->append( boost::get<4>(s) );
-//             this->close_container();
-//           }
-      //
-//           template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5>
-//           void append(const Struct<T0,T1,T2,T3,T4,T5>& s) {
-//             this->open_container( ContainerType::STRUCT, std::string() );
-//             m_subiter->append( boost::get<0>(s) );
-//             m_subiter->append( boost::get<1>(s) );
-//             m_subiter->append( boost::get<2>(s) );
-//             m_subiter->append( boost::get<3>(s) );
-//             m_subiter->append( boost::get<4>(s) );
-//             m_subiter->append( boost::get<5>(s) );
-//             this->close_container();
-//           }
-      //
-//           template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-//           void append(const Struct<T0,T1,T2,T3,T4,T5,T6>& s) {
-//             this->open_container( ContainerType::STRUCT, std::string() );
-//             m_subiter->append( boost::get<0>(s) );
-//             m_subiter->append( boost::get<1>(s) );
-//             m_subiter->append( boost::get<2>(s) );
-//             m_subiter->append( boost::get<3>(s) );
-//             m_subiter->append( boost::get<4>(s) );
-//             m_subiter->append( boost::get<5>(s) );
-//             m_subiter->append( boost::get<6>(s) );
-//             this->close_container();
-//           }
+      template <typename... T>
+      MessageAppendIterator& operator<<( const std::tuple<T...>& tup){
+        bool success;
+        std::string signature = DBus::priv::dbus_signature<T...>().dbus_sig();
+        success = this->open_container( ContainerType::STRUCT, signature.c_str() );
+        MessageAppendIterator* subiter = sub_iterator();
+        std::apply( [subiter](auto&& ...arg) mutable {
+               (*subiter << ... << arg);
+              },
+        tup );
+        this->close_container();
+
+        return *this;
+      }
 
       bool open_container( ContainerType t, const std::string& contained_signature );
 

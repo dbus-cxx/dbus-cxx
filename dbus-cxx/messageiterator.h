@@ -258,6 +258,13 @@ namespace DBus
         return get_dict<Key,Data>();
       }
 
+      template <typename... T>
+      operator std::tuple<T...>() {
+        std::tuple<T...> tup;
+        get_struct<T...>(tup);
+        return tup;
+      }
+
 
       bool        get_bool();
       uint8_t     get_uint8();
@@ -327,6 +334,15 @@ namespace DBus
         }
      }
 
+      template <typename... T>
+      void get_struct(std::tuple<T...> &tup) {
+        MessageIterator subiter = this->recurse();
+        std::apply( [subiter](auto&& ...arg) mutable {
+               (subiter >> ... >> arg);
+              },
+        tup );
+     }
+
      template <typename Key, typename Data>
      void get_dict( std::map<Key,Data>& dict ){
 	Key val_key;
@@ -368,6 +384,17 @@ namespace DBus
 	}
       }
        
+      template <typename... T>
+      MessageIterator& operator>>( std::tuple<T...>& v )
+      {
+	try{
+          this->get_struct<T...>(v);
+          this->next();
+          return *this;
+	}catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
+	  throw (ErrorInvalidTypecast)*e;
+	}
+      }
 
       template <typename T>
       MessageIterator& operator>>( std::vector<T>& v )

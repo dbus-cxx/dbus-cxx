@@ -24,6 +24,7 @@
 #include <dbus-cxx/callmessage.h>
 #include <dbus-cxx/messageiterator.h>
 #include <dbus-cxx/demangle.h>
+#include <dbus-cxx/signature.h>
 #include <functional>
 #include <sstream>
 
@@ -114,28 +115,6 @@ namespace DBus
 
 namespace priv {
 /*
- * dbus_signature class - signature of a given type
- */
-template<typename... argn>
-class dbus_signature;
- 
-template<> class dbus_signature<>{
-public:
-  std::string dbus_sig() const {
-    return "";
-  }
-};
- 
-template<typename arg1, typename... argn>
-class dbus_signature<arg1, argn...> : public dbus_signature<argn...> {
-public:
-  std::string dbus_sig() const {
-    arg1 arg;
-    return signature(arg) + dbus_signature<argn...>::dbus_sig();
-  }
-};
-
-/*
  * method_signature class - like dbus_signature, but outputs the args of the signature
  * in a C++-like manner
  */
@@ -157,19 +136,6 @@ template<typename arg1, typename... argn>
 class method_signature<arg1, argn...> : public method_signature<argn...> {
 public:
   std::string method_sig() const {
-/*
-#ifdef DBUS_CXX_CXA_DEMANGLE
-    int status;
-    char* demangled = abi::__cxa_demangle( typeid(arg1).name(), nullptr, nullptr, &status );
-    std::string arg1_name( demangled );
-    free( demangled );
-    if( status < 0 ){
-        arg1_name = typeid(arg1).name();
-    }
-#else
-    std::string arg1_name = typeid(arg1).name();
-#endif
-*/
     std::string arg1_name = demangle<arg1>();
     std::string remaining_args = method_signature<argn...>::method_sig();
     if( remaining_args.size() > 1 ){

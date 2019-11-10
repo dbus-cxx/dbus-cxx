@@ -146,73 +146,30 @@ namespace DBus
      return sig;
    }
 
-   template<typename... argn> class sig;
+  namespace priv {
+    /*
+     * dbus_signature class - signature of a given type
+     */
+    template<typename... argn>
+    class dbus_signature;
+ 
+    template<> class dbus_signature<>{
+    public:
+      std::string dbus_sig() const {
+        return "";
+      }
+    };
+ 
+    template<typename arg1, typename... argn>
+    class dbus_signature<arg1, argn...> : public dbus_signature<argn...> {
+    public:
+      std::string dbus_sig() const {
+        arg1 arg;
+        return signature(arg) + dbus_signature<argn...>::dbus_sig();
+      }
+    };
 
-   template<> class sig<>{
-   public:
-   std::string sigg() const {
-     return "";
-   }
-   };
-
-   template<typename arg1, typename... argn> 
-   class sig<arg1, argn...> : public sig<argn...> {
-   public:
-   std::string sigg() const{
-     arg1 arg;
-     return signature(arg) + sig<argn...>::sigg();
-   }
-   };
-
-//   template <typename T1>
-//   inline std::string signature( const Struct<T1>& )
-//   {
-//     T1 t1;
-//     return DBUS_STRUCT_BEGIN_CHAR_AS_STRING + signature( t1 ) + DBUS_STRUCT_END_CHAR_AS_STRING;
-//   }
-// 
-//   template <typename T1, typename T2>
-//   inline std::string signature( const Struct<T1,T2>& )
-//   {
-//     T1 t1; T2 t2;
-//     return DBUS_STRUCT_BEGIN_CHAR_AS_STRING + signature( t1 ) + signature( t2 ) + DBUS_STRUCT_END_CHAR_AS_STRING;
-//   }
-// 
-//   template <typename T1, typename T2, typename T3>
-//   inline std::string signature( const Struct<T1,T2,T3>& )
-//   {
-//     T1 t1; T2 t2; T3 t3;
-//     return DBUS_STRUCT_BEGIN_CHAR_AS_STRING + signature( t1 ) + signature( t2 ) + signature( t3 ) + DBUS_STRUCT_END_CHAR_AS_STRING;
-//   }
-// 
-//   template <typename T1, typename T2, typename T3, typename T4>
-//   inline std::string signature( const Struct<T1,T2,T3,T4>& )
-//   {
-//     T1 t1; T2 t2; T3 t3; T4 t4;
-//     return DBUS_STRUCT_BEGIN_CHAR_AS_STRING + signature( t1 ) + signature( t2 ) + signature( t3 ) + signature( t4 ) + DBUS_STRUCT_END_CHAR_AS_STRING;
-//   }
-// 
-//   template <typename T1, typename T2, typename T3, typename T4, typename T5>
-//   inline std::string signature( const Struct<T1,T2,T3,T4,T5>& )
-//   {
-//     T1 t1; T2 t2; T3 t3; T4 t4; T5 t5;
-//     return DBUS_STRUCT_BEGIN_CHAR_AS_STRING + signature( t1 ) + signature( t2 ) + signature( t3 ) + signature( t4 ) + signature( t5 ) + DBUS_STRUCT_END_CHAR_AS_STRING;
-//   }
-// 
-//   template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-//   inline std::string signature( const Struct<T1,T2,T3,T4,T5,T6>& )
-//   {
-//     T1 t1; T2 t2; T3 t3; T4 t4; T5 t5; T6 t6;
-//     return DBUS_STRUCT_BEGIN_CHAR_AS_STRING + signature( t1 ) + signature( t2 ) + signature( t3 ) + signature( t4 ) + signature( t5 ) + signature( t6 ) + DBUS_STRUCT_END_CHAR_AS_STRING;
-//   }
-// 
-//   template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7>
-//   inline std::string signature( const Struct<T1,T2,T3,T4,T5,T6,T7>& )
-//   {
-//     T1 t1; T2 t2; T3 t3; T4 t4; T5 t5; T6 t6; T7 t7;
-//     return DBUS_STRUCT_BEGIN_CHAR_AS_STRING + signature( t1 ) + signature( t2 ) + signature( t3 ) + signature( t4 ) + signature( t5 ) + signature( t6 ) + signature( t7 ) + DBUS_STRUCT_END_CHAR_AS_STRING;
-//   }
-
+  } /* namespace priv */
 
 }
 

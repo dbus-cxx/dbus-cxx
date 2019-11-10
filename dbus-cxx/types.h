@@ -71,28 +71,8 @@ namespace DBus
   template <typename T> 
   inline DataType type(const std::vector<T>&) { return DataType::ARRAY; }
 
-//   template <typename T> inline DataType type(const std::vector<T>&) { return DataType::ARRAY; }
-
-//   template <typename T0>
-//   inline DataType type( const Struct<T0>& ) { return DataType::STRUCT; }
-// 
-//   template <typename T0, typename T1>
-//   inline DataType type( const Struct<T0,T1>& ) { return DataType::STRUCT; }
-// 
-//   template <typename T0, typename T1, typename T2>
-//   inline DataType type( const Struct<T0,T1,T2>& ) { return DataType::STRUCT; }
-// 
-//   template <typename T0, typename T1, typename T2, typename T3>
-//   inline DataType type( const Struct<T0,T1,T2,T3>& ) { return DataType::STRUCT; }
-// 
-//   template <typename T0, typename T1, typename T2, typename T3, typename T4>
-//   inline DataType type( const Struct<T0,T1,T2,T3,T4>& ) { return DataType::STRUCT; }
-// 
-//   template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5>
-//   inline DataType type( const Struct<T0,T1,T2,T3,T4,T5>& ) { return DataType::STRUCT; }
-// 
-//   template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-//   inline DataType type( const Struct<T0,T1,T2,T3,T4,T5,T6>& ) { return DataType::STRUCT; }
+  template <typename ...T>
+  inline DataType type(const std::tuple<T...>&) { return DataType::STRUCT; }
 
   inline
   DataType checked_type_cast(int n)

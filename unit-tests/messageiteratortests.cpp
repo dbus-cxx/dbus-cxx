@@ -320,6 +320,23 @@ bool call_message_append_extract_iterator_filedescriptor(){
   return TEST_EQUALS( memcmp( appended, readData, 23 ), 0 );
 }
 
+bool call_message_append_extract_iterator_struct(){
+  std::tuple<int,char> struct1 = std::make_tuple( 68, 'o' );
+  std::tuple<int,char> struct2;
+
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  DBus::MessageAppendIterator iter1(msg);
+  iter1 << struct1;
+
+  DBus::MessageIterator iter2(msg);
+  struct2 = (std::tuple<int,char>)iter2;
+
+  TEST_EQUALS_RET_FAIL( std::get<int>(struct2), 68 );
+  TEST_EQUALS_RET_FAIL( std::get<char>(struct2), 'o' );
+
+  return true;
+}
+
 template <typename T>
     bool test_numeric_call_message_iterator_insertion_extraction_operator( T v )
 {
@@ -657,6 +674,23 @@ bool call_message_iterator_insertion_extraction_operator_multiple( )
   return true;
 }
 
+bool call_message_iterator_insertion_extraction_operator_struct(){
+  std::tuple<int,char> struct1 = std::make_tuple( 68, 'o' );
+  std::tuple<int,char> struct2;
+
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  DBus::MessageAppendIterator iter1(msg);
+  iter1 << struct1;
+
+  DBus::MessageIterator iter2(msg);
+  struct2 = (std::tuple<int,char>)iter2;
+
+  TEST_EQUALS_RET_FAIL( std::get<int>(struct2), 68 );
+  TEST_EQUALS_RET_FAIL( std::get<char>(struct2), 'o' );
+
+  return true;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
   ret = call_message_append_extract_iterator_##name();\
 } \
@@ -696,6 +730,7 @@ int main(int argc, char** argv){
   ADD_TEST(array_array_string);
   ADD_TEST(filedescriptor);
   ADD_TEST(multiple);
+  ADD_TEST(struct);
 
   ADD_TEST2(bool);
   ADD_TEST2(byte);
@@ -718,6 +753,7 @@ int main(int argc, char** argv){
   ADD_TEST2(array_string);
   ADD_TEST2(filedescriptor);
   ADD_TEST2(multiple);
+  ADD_TEST2(struct);
 
   return !ret;
 }

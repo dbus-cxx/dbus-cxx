@@ -58,6 +58,9 @@ namespace DBus {
       case DataType::DICT_ENTRY:
         ret.push_back( "map" );
         break;
+      case DataType::STRUCT:
+        ret.push_back( "tuple" );
+        break;
     }
 
     return ret;
