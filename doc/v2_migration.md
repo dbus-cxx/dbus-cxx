@@ -36,3 +36,8 @@ This code now becomes:
  that the first template arg(retrun val) has been removed.  This is because DBus
  signals can't have a return value.  However, this makes them very different from
  methods, which take the method type as the template param.
+* Do we have a pointer to private data?  This would allow us to hide implementation
+ details(such as libdbus vs gdbus) but could be problematic for subclasses
+ and/or implementation that must happen in headers due to templates.  We would gain
+ ABI stability at that point though, so that you can swap out the library without
+ having to recompile any dependent applications.
