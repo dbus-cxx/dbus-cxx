@@ -193,7 +193,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             .setPureVirtual( true );
     } else if( tagName.compare( "arg" ) == 0 ){
         cppgenerate::Argument arg;
-        ///TODO: Signals should be assumed to have outwards direction.
+
         if( tagAttrs.find( "direction" ) == tagAttrs.end() ){
             //XML_GetCurrentLineNumber
             std::cerr << "WARNING: No direction for arg found(assuming in)." << std::endl;
@@ -286,7 +286,6 @@ void CodeGenerator::end_element( std::string tagName ){
                       "sigc::mem_fun( adaptee, &" + m_adapteeClasses.data()[ m_adapteeClasses.size() - 1 ].getName() +
                       "::" + m_currentAdapteeMethod.name() + " ) );" ) );
 
-	///TODO: If method has return values, we must specify the arg names for the return types before the inputs
         //Set the names for the return values/arguments
         if(m_currentProxyMethod.returnType() != "void") {
             m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
