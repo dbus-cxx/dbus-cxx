@@ -66,8 +66,8 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
         if( tagAttrs.find( "dest" ) != tagAttrs.end() ){
             dest = "\"" + tagAttrs[ "dest" ] + "\"";
         }else{
-            std::cerr << "WARNING: Did not find 'dest' in XML for node \'" 
-                      << tagName << "\'.  Line:" 
+            std::cerr << "WARNING: Did not find 'dest' in XML for node \'"
+                      << tagName << "\'.  Line:"
                       << XML_GetCurrentLineNumber( m_parser )
                       << std::endl;
         }
@@ -76,7 +76,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             path = "\"" + tagAttrs[ "path" ] + "\"";
         }else{
             std::cerr << "WARNING: Did not find 'path' in xml for node \'"
-                      << tagName << "\'.  Line:" 
+                      << tagName << "\'.  Line:"
                       << XML_GetCurrentLineNumber( m_parser )
                       << std::endl;
         }
@@ -131,7 +131,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
               .setType( "std::string" )
               .setName( "path" )
               .setDefaultValue( path ) );
-              
+
         m_proxyClasses.push_back( newclass );
 
         /* Add new adapter class */
@@ -191,7 +191,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             .setName( tagAttrs[ "name" ] )
             .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
             .setPureVirtual( true );
-    }else if( tagName.compare( "arg" ) == 0 ){
+    } else if( tagName.compare( "arg" ) == 0 ){
         cppgenerate::Argument arg;
 
         if( tagAttrs.find( "direction" ) == tagAttrs.end() ){
@@ -270,8 +270,8 @@ void CodeGenerator::end_element( std::string tagName ){
             .addMemberVariable( memberVar );
 
         m_currentProxyConstructor.addCode( cppgenerate::CodeBlock::create()
-            .addLine( "m_method_" + m_currentProxyMethod.name() + 
-                      " = this->create_method" + methodProxyType + 
+            .addLine( "m_method_" + m_currentProxyMethod.name() +
+                      " = this->create_method" + methodProxyType +
                       "(\"" + m_currentInterface + "\",\"" + m_currentProxyMethod.name() + "\");" ) );
 
         /* Add our new virtual method that needs to be implemented to our adaptee */
@@ -280,11 +280,20 @@ void CodeGenerator::end_element( std::string tagName ){
 
         /* Add our internal construction of the adaptee method */
         m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
-            .addLine( "temp_method = this->create_method" + methodProxyType + 
-                      "( \"" + m_currentInterface + "\", \"" + 
+            .addLine( "temp_method = this->create_method" + methodProxyType +
+                      "( \"" + m_currentInterface + "\", \"" +
                       m_currentAdapteeMethod.name() + "\"," +
                       "sigc::mem_fun( adaptee, &" + m_adapteeClasses.data()[ m_adapteeClasses.size() - 1 ].getName() +
                       "::" + m_currentAdapteeMethod.name() + " ) );" ) );
+
+        //Set the names for the return values/arguments
+        if(m_currentProxyMethod.returnType() != "void") {
+            m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
+                .addLine( "temp_method->set_arg_name( " + std::to_string( argNum ) + ", \"" + "return_value" + "\" );" ) );
+            argNum++;
+        }
+
+        //Now set the names for the input arguments
         for( cppgenerate::Argument arg : args ){
             m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
                 .addLine( "temp_method->set_arg_name( " + std::to_string( argNum ) + ", \"" + arg.name() + "\" );" ) );
