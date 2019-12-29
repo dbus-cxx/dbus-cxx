@@ -62,6 +62,31 @@ namespace DBus
     }
   }
 
+  Connection::Connection( std::string address, bool is_private ): m_cobj( NULL )
+  {
+    Error::pointer error = Error::create();
+
+    if ( is_private ) {
+      m_cobj = dbus_connection_open_private(address.c_str(), error->cobj() );
+      if ( error->is_set() ) throw error;
+      if ( m_cobj == NULL ) throw ErrorFailed::create();
+    }
+    else {
+      m_cobj = dbus_connection_open(address.c_str(), error->cobj() );
+      if ( error->is_set() ) throw error;
+      if ( m_cobj == NULL ) throw ErrorFailed::create();  
+    }
+
+    //Make sure the DBus doesn't kick us for not sending the org.freedesktop.DBus.Hello
+    if(!is_registered()) {
+      if(!bus_register()) {
+        throw ErrorFailed::create(); 
+      }
+    }
+
+    this->initialize(is_private);    
+  }
+
   Connection::Connection( const Connection& other )
   {
     m_cobj = other.m_cobj;
@@ -106,6 +131,24 @@ namespace DBus
     }
     
     return p;
+  }
+
+  Connection::pointer Connection::create( std::string address, bool is_private )
+  {
+    pointer p = pointer( new Connection(address, is_private) );
+
+    if ( m_weak_pointer_slot == -1 ) throw ErrorNotInitialized::create();
+    if ( p and p->is_valid() )
+    {
+      dbus_bool_t result;
+      weak_pointer* wp = new weak_pointer;
+      *wp = p;
+      result = dbus_connection_set_data( p->cobj(), m_weak_pointer_slot, wp, conn_wp_deleter );
+      if ( not result ) throw -1; // TODO throw something better
+    }
+    
+    return p;
+
   }
 
   Connection::pointer Connection::create( const Connection& other )
