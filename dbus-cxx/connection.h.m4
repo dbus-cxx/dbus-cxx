@@ -147,6 +147,8 @@ namespace DBus
        */
       Connection( BusType type, bool is_private=false );
 
+      Connection( std::string address, bool is_private=false );
+
       Connection( const Connection& other );
 
     public:
@@ -165,6 +167,8 @@ namespace DBus
        * @param is_private if true a private connection will be created. Otherwise a shared connection is created.
        */
       static pointer create( BusType type, bool is_private=false );
+
+      static pointer create( std::string address, bool is_private=false );
 
       static pointer create( const Connection& other );
 
