@@ -62,6 +62,26 @@ namespace DBus
     }
   }
 
+  Connection::Connection( std::string address, bool is_private ): m_cobj( NULL )
+  {
+    Error::pointer error = Error::create();
+
+
+      if ( is_private ) {
+        m_cobj = dbus_bus_get_private(( DBusBusType )type, error->cobj() );
+        if ( error->is_set() ) throw error;
+        if ( m_cobj == NULL ) throw ErrorFailed::create();
+        this->initialize(is_private);
+      }
+      else {
+        m_cobj = dbus_bus_get(( DBusBusType )type, error->cobj() );
+	if ( error->is_set() ) throw error;
+        if ( m_cobj == NULL ) throw ErrorFailed::create();
+        this->initialize(is_private);
+      }
+    
+  }
+
   Connection::Connection( const Connection& other )
   {
     m_cobj = other.m_cobj;
@@ -106,6 +126,24 @@ namespace DBus
     }
     
     return p;
+  }
+
+  Connection::pointer Connection::create( std::string address, bool is_private )
+  {
+    pointer p = pointer( new Connection(address, is_private) );
+
+    if ( m_weak_pointer_slot == -1 ) throw ErrorNotInitialized::create();
+    if ( p and p->is_valid() )
+    {
+      dbus_bool_t result;
+      weak_pointer* wp = new weak_pointer;
+      *wp = p;
+      result = dbus_connection_set_data( p->cobj(), m_weak_pointer_slot, wp, conn_wp_deleter );
+      if ( not result ) throw -1; // TODO throw something better
+    }
+    
+    return p;
+
   }
 
   Connection::pointer Connection::create( const Connection& other )
