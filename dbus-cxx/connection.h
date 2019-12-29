@@ -72,6 +72,8 @@ namespace DBus
        */
       Connection( BusType type, bool is_private=false );
 
+      Connection( std::string address, bool is_private=false );
+
       Connection( const Connection& other );
 
     public:
@@ -87,6 +89,8 @@ namespace DBus
       static std::shared_ptr<Connection> create( BusType type, bool is_private=false );
 
       static std::shared_ptr<Connection> create( const Connection& other );
+
+      static std::shared_ptr<Connection> create( std::string address, bool is_private=false );
 
       virtual ~Connection();
 
