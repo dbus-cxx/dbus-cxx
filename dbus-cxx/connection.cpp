@@ -68,17 +68,24 @@ namespace DBus
 
 
       if ( is_private ) {
-        m_cobj = dbus_bus_get_private(( DBusBusType )type, error->cobj() );
+        m_cobj = dbus_connection_open_private(address.c_str(), error->cobj() );
         if ( error->is_set() ) throw error;
         if ( m_cobj == NULL ) throw ErrorFailed::create();
-        this->initialize(is_private);
       }
       else {
-        m_cobj = dbus_bus_get(( DBusBusType )type, error->cobj() );
+        m_cobj = dbus_connection_open(address.c_str(), error->cobj() );
 	if ( error->is_set() ) throw error;
-        if ( m_cobj == NULL ) throw ErrorFailed::create();
-        this->initialize(is_private);
+        if ( m_cobj == NULL ) throw ErrorFailed::create();  
       }
+
+      //Make sure the DBus doesn't kick us for not sending the org.freedesktop.DBus.Hello
+      if(!is_registered()) {
+        if(!bus_register()) {
+          throw ErrorFailed::create(); 
+	}
+      }
+
+      this->initialize(is_private);
     
   }
 
