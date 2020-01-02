@@ -68,6 +68,8 @@ namespace DBus
 
       std::shared_ptr<Connection> create_connection( const Connection& other );
 
+      std::shared_ptr<Connection> create_connection( std::string address, bool is_private = false );
+
       bool add_connection( std::shared_ptr<Connection> connection );
 
       //@}

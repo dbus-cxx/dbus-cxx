@@ -70,6 +70,13 @@ namespace DBus
     return std::shared_ptr<Connection>();
   }
 
+  std::shared_ptr<Connection> Dispatcher::create_connection(std::string address, bool is_private)
+  {
+    std::shared_ptr<Connection> conn = Connection::create(address, is_private);
+    if ( this->add_connection(conn) ) return conn;
+    return std::shared_ptr<Connection>();
+  }
+
   std::shared_ptr<Connection> Dispatcher::create_connection(BusType type, bool is_private)
   {
     std::shared_ptr<Connection> conn = Connection::create(type, is_private);
