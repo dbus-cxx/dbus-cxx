@@ -71,6 +71,8 @@ namespace DBus
 
       Connection::pointer create_connection( BusType type, bool is_private=false );
 
+      Connection::pointer create_connection( std::string address, bool is_private = false );
+
       Connection::pointer create_connection( const Connection& other );
 
       bool add_connection( Connection::pointer connection );

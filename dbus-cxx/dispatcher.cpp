@@ -70,6 +70,13 @@ namespace DBus
     return Connection::pointer();
   }
 
+  Connection::pointer Dispatcher::create_connection(std::string address, bool is_private)
+  {
+    Connection::pointer conn = Connection::create(address, is_private);
+    if ( this->add_connection(conn) ) return conn;
+    return Connection::pointer();
+  }
+
   Connection::pointer Dispatcher::create_connection(BusType type, bool is_private)
   {
     Connection::pointer conn = Connection::create(type, is_private);
