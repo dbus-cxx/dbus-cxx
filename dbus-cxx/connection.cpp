@@ -95,7 +95,7 @@ namespace DBus
     if ( m_cobj ) dbus_connection_ref( m_cobj );
   }
 
-  void conn_wp_deleter( void* v )
+  static void conn_wp_deleter( void* v )
   {
     std::weak_ptr<Connection>* wp = static_cast<std::weak_ptr<Connection>*>(v);
     delete wp;
