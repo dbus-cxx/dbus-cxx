@@ -185,8 +185,9 @@ template <class T>
         return "vector";
       case TYPE_DICT_ENTRY:
         return "map";
+      default:
+	return "";
     }
-    return std::string("");
   }
 
   inline bool type_is_templated( DBus::Type t ){
@@ -196,8 +197,9 @@ template <class T>
           return true;
         case TYPE_DICT_ENTRY:
           return true;
+	default:
+	  return false;
     }
-    return false;
   }
 
   inline
