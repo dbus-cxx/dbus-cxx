@@ -186,7 +186,7 @@ template <class T>
       case TYPE_DICT_ENTRY:
         return "map";
       default:
-	return "";
+        return "";
     }
   }
 
@@ -198,7 +198,7 @@ template <class T>
         case TYPE_DICT_ENTRY:
           return true;
 	default:
-	  return false;
+          return false;
     }
   }
 
