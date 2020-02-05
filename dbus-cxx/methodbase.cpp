@@ -60,5 +60,18 @@ namespace DBus
     return m_signal_name_changed;
   }
 
+  std::string MethodBase::introspect(int space_depth) const
+  {
+    return std::string();
+  }
+
+  std::string MethodBase::arg_name(size_t i)
+  {
+   return std::string();
+  }
+
+  void MethodBase::set_arg_name(size_t i, const std::string& name)
+  {
+  }
 }
 
