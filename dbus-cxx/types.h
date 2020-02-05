@@ -197,7 +197,7 @@ template <class T>
           return true;
         case TYPE_DICT_ENTRY:
           return true;
-	default:
+        default:
           return false;
     }
   }
