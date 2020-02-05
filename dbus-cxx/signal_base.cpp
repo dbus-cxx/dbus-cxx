@@ -126,6 +126,20 @@ namespace DBus
     m_destination = s;
   }
 
+  std::string signal_base::introspect(int space_depth) const
+  {
+    return std::string();
+  }
+
+  std::string signal_base::arg_name(size_t i)
+  {
+    return std::string();
+  }
+
+  void signal_base::set_arg_name(size_t i, const std::string& name)
+  {
+  }
+
   bool signal_base::handle_dbus_outgoing(Message::const_pointer msg)
   {
     Connection::pointer conn = m_connection.lock();
