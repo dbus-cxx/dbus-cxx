@@ -98,10 +98,9 @@ namespace DBus
 
 #define DBUSCXX_ERROR( CPPTYPE, DBUS_ERROR_CODE )            \
   class CPPTYPE : public Error {                             \
-    protected:                                               \
+    public:                                                  \
     CPPTYPE( const char* message = NULL )                    \
         : Error( DBUS_ERROR_CODE, message ) {}               \
-    public:                                                  \
       typedef DBusCxxPointer<CPPTYPE> pointer;               \
       static pointer create( const char* message = NULL ) {  \
         return pointer( new CPPTYPE(message) );              \
