@@ -547,7 +547,7 @@ DBUS_CXX_DEBUG( "ERR: " << __FILE__ << __LINE__ );
           s += type_string( temp );
           s += " into C++ RTTI type ";
           s += typeid( T ).name();
-          throw ErrorInvalidTypecast( s.c_str() );
+          throw ErrorInvalidTypecast::create( s.c_str() );
         }
         dbus_message_iter_get_basic( &m_cobj, &temp );
       }
