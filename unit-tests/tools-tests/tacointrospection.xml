@@ -1,0 +1,8 @@
+<node cppname="DbusTaco" path="com/amazon/josharenson" name="/com/amazon/josharenson/TacoOrderer">
+<interface name="com.amazon.josharenson.TacoOrdererInterface">
+  <method name="OrderTaco">
+    <arg name="meatType" direction="in" type="s"/>
+    <arg name="tacoPlate" direction="out" type="s"/>
+  </method>
+</interface>
+</node>

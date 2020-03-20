@@ -56,3 +56,5 @@ function(add_xml_test xml_file proxy_or_adapter gen_files test_compile)
 endfunction()
 
 #add_xml_test( "some.thing.xml" proxy "some_nameProxy.h;some_nameProxy.cpp" some-name-proxy )
+add_xml_test( tacointrospection.xml proxy "DbusTacoProxy.h;DbusTacoProxy.cpp" taco-proxy )
+add_xml_test( tacointrospection.xml adapter "DbusTacoAdapter.h;DbusTacoAdapter.cpp" taco-adapter )
