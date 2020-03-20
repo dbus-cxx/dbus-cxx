@@ -22,6 +22,7 @@ include( CheckIncludeFiles )
 include( GNUInstallDirs )
 include( FindPkgConfig )
 include( CheckTypeSize )
+include( CTest )
 IF( CMAKE_BUILD_TYPE MATCHES DEBUG )
 include( CodeCoverage )
 ENDIF( CMAKE_BUILD_TYPE MATCHES DEBUG )
@@ -40,7 +41,6 @@ pkg_check_modules( sigc REQUIRED sigc++-3.0 )
 #
 # Check our options
 #
-option( ENABLE_TESTS "Enable the unit tests" OFF )
 option( ENABLE_EXAMPLES "Enable the examples" OFF )
 option( ENABLE_TOOLS "Enable dbus-cxx tools" OFF )
 option( ENABLE_GLIBMM "Enable GLibMM support" OFF )
@@ -269,10 +269,9 @@ endif( BUILD_SITE )
 #
 # Check if tests are enabled
 #
-if( ENABLE_TESTS )
-    enable_testing()
+if( BUILD_TESTING )
     add_subdirectory( unit-tests )
-endif( ENABLE_TESTS )
+endif( BUILD_TESTING )
 
 #
 # See if code coverage is enabled
@@ -306,7 +305,7 @@ message(STATUS "  Install prefix .................. : ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  Library location ................ : ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 message(STATUS "  C++ compiler .................... : ${CMAKE_CXX_COMPILER}")
 message(STATUS "  Build examples .................. : ${ENABLE_EXAMPLES}")
-message(STATUS "  Build tests ..................... : ${ENABLE_TESTS}")
+message(STATUS "  Build tests ..................... : ${BUILD_TESTING}")
 message(STATUS "  Build tools ..................... : ${ENABLE_TOOLS}")
 message(STATUS "  Use bundled cppgenerate ......... : ${TOOLS_BUNDLED_CPPGENERATE}")
 message(STATUS "  Enable GLibmm support ........... : ${ENABLE_GLIBMM}")
