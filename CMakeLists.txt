@@ -22,7 +22,9 @@ include( CheckIncludeFiles )
 include( GNUInstallDirs )
 include( FindPkgConfig )
 include( CheckTypeSize )
+IF( CMAKE_BUILD_TYPE MATCHES DEBUG )
 include( CodeCoverage )
+ENDIF( CMAKE_BUILD_TYPE MATCHES DEBUG )
 
 # version information
 set( DBUS_CXX_PACKAGE_MAJOR_VERSION 2 )
