@@ -271,6 +271,9 @@ endif( BUILD_SITE )
 #
 if( BUILD_TESTING )
     add_subdirectory( unit-tests )
+    if( ENABLE_TOOLS )
+        add_subdirectory( unit-tests/tools-tests )
+    endif( ENABLE_TOOLS )
 endif( BUILD_TESTING )
 
 #

@@ -82,9 +82,11 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
         }
 
         if( tagAttrs.find( "cppname" ) != tagAttrs.end() ){
-            newclass.setName( tagAttrs[ "cppname" ] + "Proxy" );
-            newAdapterClass.setName( tagAttrs[ "cppname" ] + "Adapter" );
-            newAdapteeClass.setName( tagAttrs[ "cppname" ] + "Adaptee" );
+            std::string cppname = tagAttrs[ "cppname" ];
+            std::replace( cppname.begin(), cppname.end(), '.', '_' );
+            newclass.setName( cppname + "Proxy" );
+            newAdapterClass.setName( cppname + "Adapter" );
+            newAdapteeClass.setName( cppname + "Adaptee" );
         }else{
             newclass.setName( "NONAME_Proxy" );
             newAdapterClass.setName( "NONAME_Adapter" );
@@ -107,7 +109,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             .addCode( cppgenerate::CodeBlock::create()
                 .addLine( "return std::shared_ptr<" + newclass.getName() + ">( new " + newclass.getName() + "( conn, dest, path ) );" ) )
             .addArgument( cppgenerate::Argument::create()
-              .setType( "DBus::Connection::pointer" )
+              .setType( "std::shared_ptr<DBus::Connection>" )
               .setName( "conn" ) )
             .addArgument( cppgenerate::Argument::create()
               .setType( "std::string" )
@@ -121,7 +123,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
         m_currentProxyConstructor = cppgenerate::Constructor::create()
             .setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
             .addArgument( cppgenerate::Argument::create()
-              .setType( "DBus::Connection::pointer" )
+              .setType( "std::shared_ptr<DBus::Connection>" )
               .setName( "conn" ) )
             .addArgument( cppgenerate::Argument::create()
               .setType( "std::string" )
@@ -158,7 +160,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
               .setDefaultValue( path ) ) );
 
         m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
-            .addLine( "DBus::MethodBase::pointer temp_method;" ) )
+            .addLine( "std::shared_ptr<DBus::MethodBase> temp_method;" ) )
             .setAccessModifier( cppgenerate::AccessModifier::PROTECTED );
 
         m_currentAdapterConstructor.addArgument( cppgenerate::Argument::create()
@@ -183,12 +185,16 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             std::cerr << "WARNING: No name for method found" << std::endl;
             return;
         }
+
+        std::string methodName = tagAttrs[ "name" ];
+        std::replace( methodName.begin(), methodName.end(), '.', '_' );
+
         m_currentProxyMethod = cppgenerate::Method()
-            .setName( tagAttrs[ "name" ] )
+            .setName( methodName )
             .setAccessModifier( cppgenerate::AccessModifier::PUBLIC );
 
         m_currentAdapteeMethod = cppgenerate::Method()
-            .setName( tagAttrs[ "name" ] )
+            .setName( methodName )
             .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
             .setPureVirtual( true );
     }else if( tagName.compare( "arg" ) == 0 ){
@@ -244,6 +250,7 @@ void CodeGenerator::end_element( std::string tagName ){
         std::string block;
 
         methodProxyType += "<" + m_currentProxyMethod.returnType();
+        methodProxyType += "(";
         for( cppgenerate::Argument arg : args ){
             methodProxyType += ",";
             methodProxyType += arg.type();
@@ -252,11 +259,12 @@ void CodeGenerator::end_element( std::string tagName ){
             methodArguments += arg.name();
             argumentComma = true;
         }
+        methodProxyType += ")";
         methodProxyType += ">";
 
         memberVar.setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
                  .setName( "m_method_" + m_currentProxyMethod.name() )
-                 .setType( "DBus::MethodProxy" + methodProxyType + "::pointer " );
+                 .setType( "std::shared_ptr<DBus::MethodProxy" + methodProxyType + "> " );
 
         if( m_currentProxyMethod.returnType() != "void" ){
             block = "return ";
@@ -382,6 +390,10 @@ std::string CodeGenerator::getTemplateArgsFromSignature( SignatureIterator it ){
         for( std::string include_file : info.includeFilesForType() ){
             m_adapteeClasses[ m_adapteeClasses.size() - 1 ].addSystemInclude( include_file );
             m_adapterClasses[ m_adapterClasses.size() - 1 ].addSystemInclude( include_file );
+        }
+
+        if( ret.length() > 0 ){
+            ret += ",";
         }
 
         ret += info.cppType();
