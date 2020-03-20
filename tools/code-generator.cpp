@@ -252,7 +252,6 @@ void CodeGenerator::end_element( std::string tagName ){
         methodProxyType += "<" + m_currentProxyMethod.returnType();
         methodProxyType += "(";
         for( cppgenerate::Argument arg : args ){
-            methodProxyType += ",";
             methodProxyType += arg.type();
 
             if( argumentComma ) methodArguments += ",";
@@ -291,7 +290,7 @@ void CodeGenerator::end_element( std::string tagName ){
             .addLine( "temp_method = this->create_method" + methodProxyType + 
                       "( \"" + m_currentInterface + "\", \"" + 
                       m_currentAdapteeMethod.name() + "\"," +
-                      "sigc::mem_fun( adaptee, &" + m_adapteeClasses.data()[ m_adapteeClasses.size() - 1 ].getName() +
+                      "sigc::mem_fun( *adaptee, &" + m_adapteeClasses.data()[ m_adapteeClasses.size() - 1 ].getName() +
                       "::" + m_currentAdapteeMethod.name() + " ) );" ) );
         for( cppgenerate::Argument arg : args ){
             m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
