@@ -3,6 +3,7 @@
     <interface name="some.interface">
         <method name="some.method">
             <arg type="a{ss}" name="map" direction="out"/>
+            <arg type="as" name="list" direction="in"/>
         </method>
     </interface>
 </node>

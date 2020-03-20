@@ -100,7 +100,7 @@ namespace DBus {
       case DataType::STRUCT:
         return "std::tuple";
       case DataType::DICT_ENTRY:
-        return "std::pair";
+        return "std::map";
       case DataType::UNIX_FD:
         return "DBus::FileDescriptor";
     }

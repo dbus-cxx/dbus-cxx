@@ -395,11 +395,19 @@ std::string CodeGenerator::getTemplateArgsFromSignature( SignatureIterator it ){
             ret += ",";
         }
 
-        ret += info.cppType();
+        /* Special case: if we have a dictionary, we will recurse twice, so don't
+         * fill in anything for the cpp type.  This is also because a dict
+         * looks like a{ss}, which is at first glance indistinguishable from
+         * an array(given the 'a' type)
+         */
+        if( !it.is_dict() ){
+            ret += info.cppType();
+        }
+
         if( info.isTemplated() ){
-            ret += "<";
+            if( !it.is_dict() ) ret += "<";
             ret += getTemplateArgsFromSignature( it.recurse() );
-            ret += ">";
+            if( !it.is_dict() ) ret += ">";
         }
     }while( it.next() );
 
