@@ -157,3 +157,15 @@ set_property( TARGET signal-tests PROPERTY CXX_STANDARD 17 )
 
 add_test( NAME create-signal COMMAND dbus-wrapper.sh signal-tests create)
 add_test( NAME signal-tx-rx COMMAND dbus-wrapper.sh signal-tests tx_rx)
+
+#
+# Introspection Tests - make sure that we can introspect and get the correct data back
+#
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper-introspection-tests.sh ${CMAKE_CURRENT_BINARY_DIR}/dbus-wrapper-introspection-tests.sh COPYONLY)
+add_executable( introspection-tests introspection-test.cpp )
+target_link_libraries( introspection-tests ${TEST_LINK} )
+target_include_directories( introspection-tests PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( introspection-tests PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+set_property( TARGET introspection-tests PROPERTY CXX_STANDARD 17 )
+
+add_test( NAME basic-introspect COMMAND dbus-wrapper-introspection-tests.sh basic_introspect)
