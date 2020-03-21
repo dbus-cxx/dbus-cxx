@@ -149,10 +149,9 @@ public:
      std::ostringstream output;
      std::string name = names.size() > idx ? names[idx] : "";
      output << spaces;
-     output << "<arg name=\"";
-     output << name << "\" type=\"";
-     output << signature(arg);
-     output << "\" ";
+     output << "<arg ";
+     if( name.size() > 0 ) output << "name=\"" << name << "\" ";
+     output << "type=\"" << signature(arg) << "\" ";
      output << "direction=\"in\"/>\n";
      output << method_signature<argn...>().introspect(names, idx + 1, spaces);
      return output.str();
@@ -218,8 +217,9 @@ struct dbus_function_traits<std::function<T_ret(Args...)>>
     if( names.size() > 0 ){
       name = names[0];
     }
-    sout << spaces << "<arg name=\"" << name << "\" "
-         << "type=\"" << signature(ret_type) << "\" "
+    sout << spaces << "<arg ";
+    if( name.size() > 0 ) sout << "name=\"" << name << "\" ";
+    sout << "type=\"" << signature(ret_type) << "\" "
          << "direction=\"out\"/>\n";
     sout << method_signature<Args...>().introspect(names, idx + 1, spaces);
     return sout.str();
