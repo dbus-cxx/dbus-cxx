@@ -252,9 +252,12 @@ void CodeGenerator::end_element( std::string tagName ){
         methodProxyType += "<" + m_currentProxyMethod.returnType();
         methodProxyType += "(";
         for( cppgenerate::Argument arg : args ){
-            methodProxyType += arg.type();
+            if( argumentComma ){
+                methodArguments += ",";
+                methodProxyType += ",";
+            }
 
-            if( argumentComma ) methodArguments += ",";
+            methodProxyType += arg.type();
             methodArguments += arg.name();
             argumentComma = true;
         }
