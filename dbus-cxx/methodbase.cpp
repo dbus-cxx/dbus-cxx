@@ -59,8 +59,8 @@ namespace DBus
   }
 
   void MethodBase::set_arg_name(size_t i, const std::string& name){
-      if( m_arg_names.size() < i ){
-          m_arg_names.resize( i );
+      if( m_arg_names.size() <= i ){
+          m_arg_names.resize( i + 1 );
       }
       m_arg_names[i] = name;
   }

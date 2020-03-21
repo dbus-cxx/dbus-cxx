@@ -181,6 +181,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
         m_currentInterface = tagAttrs[ "name" ];
     }else if( tagName.compare( "method" ) == 0 ){
         m_argNum = 0;
+        m_returnName = "";
         if( tagAttrs.find( "name" ) == tagAttrs.end() ){
             std::cerr << "WARNING: No name for method found" << std::endl;
             return;
@@ -212,9 +213,9 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
 
         arg.setType( typestr );
         if( tagAttrs[ "name" ].length() == 0 ){
-           char buffer[10];
-           snprintf( buffer, 10, "arg%d", m_argNum );
-           arg.setName( std::string( buffer ) );
+            char buffer[10];
+            snprintf( buffer, 10, "arg%d", m_argNum );
+            arg.setName( std::string( buffer ) );
         }else{
             arg.setName( tagAttrs[ "name" ] );
         }
@@ -222,6 +223,9 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
         if( tagAttrs[ "direction" ] == "out" ){
             m_currentProxyMethod.setReturnType( typestr );
             m_currentAdapteeMethod.setReturnType( typestr );
+            if( tagAttrs[ "name" ].length() ){
+                m_returnName = tagAttrs[ "name" ];
+            }
         }else{
             m_currentProxyMethod.addArgument( arg );
             m_currentAdapteeMethod.addArgument( arg );
@@ -295,10 +299,12 @@ void CodeGenerator::end_element( std::string tagName ){
                       m_currentAdapteeMethod.name() + "\"," +
                       "sigc::mem_fun( *adaptee, &" + m_adapteeClasses.data()[ m_adapteeClasses.size() - 1 ].getName() +
                       "::" + m_currentAdapteeMethod.name() + " ) );" ) );
+        m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
+            .addLine( "temp_method->set_arg_name( 0, \"" + m_returnName + "\" );" ) );
         for( cppgenerate::Argument arg : args ){
+            argNum++;
             m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
                 .addLine( "temp_method->set_arg_name( " + std::to_string( argNum ) + ", \"" + arg.name() + "\" );" ) );
-            argNum++;
         }
     }else if( tagName == "node" ){
         m_proxyClasses.data()[ m_proxyClasses.size() - 1 ]
