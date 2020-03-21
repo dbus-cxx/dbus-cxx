@@ -147,7 +147,7 @@ public:
   std::string introspect(const std::vector<std::string>& names, int idx, const std::string& spaces) const {
      arg1 arg;
      std::ostringstream output;
-     std::string name = names.size() < idx ? names[idx] : "";
+     std::string name = names.size() > idx ? names[idx] : "";
      output << spaces;
      output << "<arg name=\"";
      output << name << "\" type=\"";
