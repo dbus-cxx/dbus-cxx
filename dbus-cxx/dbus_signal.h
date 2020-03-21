@@ -52,49 +52,18 @@ template <typename... T_type>
 class signal 
   : public sigc::signal<void(T_type...)>, public signal_base
 {
+private:
+  signal(const std::string& path, const std::string& interface, const std::string& member):
+    signal_base(path, interface, member)
+  {
+    m_internal_callback_connection =
+      this->connect( sigc::mem_fun(*this, &signal::internal_callback) );
+  }
+
 public:
-  signal(const std::string& interface, const std::string& name):
-    signal_base(interface, name)
+  static std::shared_ptr<signal> create(const std::string& path, const std::string& interface, const std::string& member)
   {
-    m_internal_callback_connection =
-      this->connect( sigc::mem_fun(*this, &signal::internal_callback) );
-  }
-  
-  signal(const std::string& path, const std::string& interface, const std::string& name):
-    signal_base(path, interface, name)
-  {
-    m_internal_callback_connection =
-      this->connect( sigc::mem_fun(*this, &signal::internal_callback) );
-  }
-  
-  signal(const std::string& interface, const std::string& name, const signal& src) :
-    sigc::signal<void(T_type...)>(src),
-    signal_base(interface, name)
-  { }
-
-  signal(const std::string& path, const std::string& interface, const std::string& name, const signal& src) :
-    sigc::signal<void(T_type...)>(src),
-    signal_base(path, interface, name)
-  { }
-
-  static std::shared_ptr<signal> create(const std::string& interface, const std::string& name)
-  {
-    return std::shared_ptr<signal>( new signal(interface, name) );
-  }
-
-  static std::shared_ptr<signal> create(const std::string& path, const std::string& interface, const std::string& name)
-  {
-    return std::shared_ptr<signal>( new signal(path, interface, name) );
-  }
-
-  static std::shared_ptr<signal> create(const std::string& interface, const std::string& name, const signal& src)
-  {
-    return std::shared_ptr<signal>( new signal(interface, name, src) );
-  }
-
-  static std::shared_ptr<signal> create(const std::string& path, const std::string& interface, const std::string& name, const signal& src)
-  {
-    return std::shared_ptr<signal>( new signal(path, interface, name, src) );
+    return std::shared_ptr<signal>( new signal(path, interface, member) );
   }
 
   virtual std::shared_ptr<signal_base> clone()

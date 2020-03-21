@@ -196,10 +196,10 @@ namespace DBus {
        */
       template <class... T_type>
       std::shared_ptr<signal<T_type...> >
-      create_signal( const std::string& name )
+      create_signal( const std::string& member )
       {
         std::shared_ptr<DBus::signal<T_type...> > sig;
-        sig = DBus::signal<T_type...>::create(m_name, name);
+        sig = DBus::signal<T_type...>::create(path(), m_name, member);
         if ( this->add_signal(sig) ) return sig;
         return std::shared_ptr<DBus::signal<T_type...> >();
       }

@@ -327,11 +327,12 @@ namespace DBus
       /** Gets the signal handlers for a specific interface and member */
       ProxySignals get_signal_proxies( const std::string& interface, const std::string& member );
 
+      /** Create a signal, that when it is emitted will send that signal over the DBus  */
       template <class T_return, class... T_arg>
-      std::shared_ptr<signal<T_return, T_arg...> > create_signal( const std::string& path, const std::string& interface, const std::string& name )
+      std::shared_ptr<signal<T_return, T_arg...> > create_signal( const std::string& path, const std::string& interface, const std::string& member )
       {
         std::shared_ptr<signal<T_return, T_arg...> > sig;
-        sig = signal<T_return, T_arg...>::create(path, interface, name);
+        sig = signal<T_return, T_arg...>::create(path, interface, member);
         sig->set_connection(this->self());
         return sig;
       }
