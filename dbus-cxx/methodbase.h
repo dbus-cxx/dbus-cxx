@@ -123,7 +123,8 @@ namespace DBus
           DBus::priv::dbus_function_traits<std::function<T_type>> method_sig_gen;
           for(int i = 0; i < space_depth; i++ ) spaces += " ";
           sout << spaces << "<method name=\"" << name() << "\">\n";
-          sout << method_sig_gen.introspect(m_arg_names, 0, spaces);
+          sout << method_sig_gen.introspect(m_arg_names, 0, spaces + "  " );
+          sout << spaces << "</method>\n";
           return sout.str();
       }
 
