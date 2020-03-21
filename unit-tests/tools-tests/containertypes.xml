@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<node cppname="structtypes">
+    <interface name="test.interface">
+        <method name="structMethod">
+            <arg type="(ii)" name="struct1" direction="in"/>
+            <arg type="(i(ii))" name="struct2" direction="in"/>
+        </method>
+    </interface>
+</node>
