@@ -346,7 +346,7 @@ bool call_message_append_extract_iterator_variant(){
   iter1 << var1;
 
   DBus::MessageIterator iter2(msg);
-  var2 = (DBus::Variant)iter2;
+  var2 = DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter2);
 
   TEST_EQUALS_RET_FAIL( std::any_cast<int>(var2.value()), 99 );
 

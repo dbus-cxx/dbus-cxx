@@ -159,7 +159,7 @@ DBus::Variant Variant::createFromMessage( MessageIterator iter ){
         return Variant( (Path)iter );
     }
     if( signature == DBUS_TYPE_VARIANT_AS_STRING ){
-        return Variant( (Variant)iter );
+        return DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT( iter );
     }
     if( signature == DBUS_TYPE_UNIX_FD_AS_STRING ){
         return Variant( (std::shared_ptr<FileDescriptor>)iter );
