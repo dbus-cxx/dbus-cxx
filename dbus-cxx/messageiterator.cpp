@@ -428,6 +428,15 @@ namespace DBus
         throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
+
+  MessageIterator::operator Variant(){
+    switch ( this->arg_type() )
+    {
+      case DataType::VARIANT: return get_variant();
+      default:
+        throw ErrorInvalidTypecast("MessageIterator:: casting invalid type to variant");
+    }
+  }
   
 #if DBUS_CXX_SIZEOF_LONG_INT == 4
   MessageIterator::operator unsigned long int()
@@ -577,6 +586,11 @@ namespace DBus
     dbus_message_iter_get_basic( &m_cobj, &raw_fd );
     fd = FileDescriptor::create( raw_fd );
     return fd;
+  }
+
+  Variant MessageIterator::get_variant(){
+    MessageIterator subiter = this->recurse();
+    return Variant::createFromMessage( subiter );
   }
 
 //   void MessageIterator::value( Variant& temp )

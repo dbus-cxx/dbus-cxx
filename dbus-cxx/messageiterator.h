@@ -21,6 +21,7 @@
 #include <dbus-cxx/headerlog.h>
 #include <dbus-cxx/demangle.h>
 #include <dbus-cxx/types.h>
+#include <dbus-cxx/variant.h>
 
 #ifndef DBUSCXX_MESSAGEITERATOR_H
 #define DBUSCXX_MESSAGEITERATOR_H
@@ -241,6 +242,7 @@ namespace DBus
         operator unsigned long int();
       #endif
       operator std::shared_ptr<FileDescriptor>();
+      operator Variant();
         
       template <typename T>
       operator std::vector<T>() {
@@ -277,6 +279,7 @@ namespace DBus
       double      get_double();
       const char* get_string();
       std::shared_ptr<FileDescriptor> get_filedescriptor();
+      Variant get_variant();
 
       /**
        * get_array for simple types - arithmetic types where the array is fixed and thus
@@ -408,6 +411,17 @@ namespace DBus
 	}catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
 	  throw (ErrorInvalidTypecast)*e;
 	}
+      }
+
+      MessageIterator& operator>>( Variant& v )
+      {
+	try{
+          v = this->get_variant();
+          this->next();
+          return *this;
+        }catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
+          throw (ErrorInvalidTypecast)*e;
+        }
       }
 
       template <typename T>

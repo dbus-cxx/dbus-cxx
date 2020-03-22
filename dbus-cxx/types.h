@@ -55,7 +55,7 @@ namespace DBus
   inline DataType type( const Path& )               { return DataType::OBJECT_PATH; }
   inline DataType type( const Signature& )          { return DataType::SIGNATURE; }
   template <typename... args>
-  inline DataType type( const std::variant<args...>& )            { return DataType::VARIANT; }
+  inline DataType type( const DBus::Variant& )            { return DataType::VARIANT; }
   inline DataType type( const FileDescriptor& )     { return DataType::UNIX_FD; }
   
   inline DataType type( const char& )               { return DataType::BYTE; }

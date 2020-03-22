@@ -20,7 +20,6 @@
 #include <ostream>
 #include <string>
 #include <map>
-#include <variant>
 #include <any>
 #include <dbus-cxx/signatureiterator.h>
 #include <dbus-cxx/path.h>
@@ -31,6 +30,8 @@
 
 namespace DBus
 {
+
+  class Variant;
 
   /**
    @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
@@ -92,7 +93,7 @@ namespace DBus
 
   };
 
-  inline std::string signature( std::any )     { return DBUS_TYPE_INVALID; }
+  inline std::string signature( std::any )     { return DBUS_TYPE_INVALID_AS_STRING; }
   inline std::string signature( uint8_t )     { return DBUS_TYPE_BYTE_AS_STRING; }
   inline std::string signature( bool )        { return DBUS_TYPE_BOOLEAN_AS_STRING; }
   inline std::string signature( int16_t )     { return DBUS_TYPE_INT16_AS_STRING; }
@@ -105,8 +106,7 @@ namespace DBus
   inline std::string signature( std::string ) { return DBUS_TYPE_STRING_AS_STRING;      }
   inline std::string signature( Signature )   { return DBUS_TYPE_SIGNATURE_AS_STRING;   }
   inline std::string signature( Path )        { return DBUS_TYPE_OBJECT_PATH_AS_STRING; }
-  template <typename... args>
-  inline std::string signature( const std::variant<args...>& )     { return DBUS_TYPE_VARIANT_AS_STRING; }
+  inline std::string signature( const DBus::Variant& )     { return DBUS_TYPE_VARIANT_AS_STRING; }
   inline std::string signature( const std::shared_ptr<FileDescriptor> )  { return DBUS_TYPE_UNIX_FD_AS_STRING; }
 
   inline std::string signature( char )        { return DBUS_TYPE_BYTE_AS_STRING;        }

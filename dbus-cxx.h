@@ -54,6 +54,7 @@
 #include <dbus-cxx/timeout.h>
 #include <dbus-cxx/utility.h>
 #include <dbus-cxx/watch.h>
+#include <dbus-cxx/variant.h>
 #include <dbus-cxx/filedescriptor.h>
 #include <dbus-cxx/simplelogger_defs.h>
 

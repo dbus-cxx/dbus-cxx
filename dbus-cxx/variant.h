@@ -1,7 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
- *   rvinyard@cs.nmsu.edu                                                  *
- *   Copyright (C) 2014- by Robert Middleton                               *
+ *   Copyright (C) 2020 by Robert Middleton                                *
+ *   robert.middleton@rm5248.com                                           *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
  *                                                                         *
@@ -17,53 +16,53 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#ifndef DBUSCXX_VARIANT_H
+#define DBUSCXX_VARIANT_H
 
-#ifndef DBUS_CXX_FILEDESCRIPTOR
-#define DBUS_CXX_FILEDESCRIPTOR
+#include <dbus-cxx/enums.h>
+#include <dbus-cxx/path.h>
+#include <dbus-cxx/filedescriptor.h>
+#include <dbus-cxx/signature.h>
+#include <string>
+#include <any>
+#include <stdint.h>
 
-#include <memory>
+namespace DBus {
 
-namespace DBus{
+class MessageIterator;
 
-/**
- * A FileDescriptor holds a UNIX file descriptor that can be passed between processes.
- *
- */
-class FileDescriptor{
-protected:
-	FileDescriptor() :
-		m_valid( false ),
-		m_fd( -1 ) {}
+class Variant {
+  public:
+    Variant();
+    Variant( uint8_t byte );
+    Variant( bool b );
+    Variant( int16_t i );
+    Variant( uint16_t i );
+    Variant( int32_t i );
+    Variant( uint32_t i );
+    Variant( int64_t i );
+    Variant( uint64_t i );
+    Variant( double i );
+    Variant( std::string str );
+    explicit Variant( Signature sig );
+    explicit Variant( Path path );
+    explicit Variant( std::shared_ptr<FileDescriptor> fd );
+    Variant( const Variant& other );
 
-        explicit FileDescriptor( int fd ) :
-		m_valid( true ),
-		m_fd( fd ) {}
+    std::string signature() const;
 
-        explicit FileDescriptor( const FileDescriptor& other ) :
-		m_valid( other.m_valid ),
-		m_fd( other.m_fd ) {}
+    DataType currentType() const;
 
-public:
-      static std::shared_ptr<FileDescriptor> create( int fd ){
-          std::shared_ptr<FileDescriptor> p(new FileDescriptor( fd ));
-          return p;
-      }
+    std::any value() const;
 
-	~FileDescriptor(){}
+    static Variant createFromMessage( MessageIterator iter );
 
-	int getDescriptor() const{
-		return m_fd;
-	}
-
-	operator bool() const {
-		return m_valid;
-	}
-
-private:
-	bool m_valid;
-	int m_fd;
+  private:
+    DataType m_currentType;
+    std::string m_signature;
+    std::any m_data;
 };
 
-}
+} /* namespace DBus */
 
-#endif
+#endif /* DBUSCXX_VARIANT_H */

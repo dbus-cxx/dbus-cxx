@@ -87,6 +87,7 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/timeout.cpp
     dbus-cxx/utility.cpp
     dbus-cxx/types.cpp
+    dbus-cxx/variant.cpp
     dbus-cxx/watch.cpp )
 
 # headers that need to go in the include/ directory
@@ -136,6 +137,7 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/signal_proxy.h
     dbus-cxx/connection.h
     dbus-cxx/object.h
+    dbus-cxx/variant.h
     ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
 )
 

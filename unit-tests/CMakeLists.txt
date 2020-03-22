@@ -58,6 +58,7 @@ add_test( NAME messageiterator-array_array_string COMMAND test-messageiterator a
 add_test( NAME messageiterator-filedescriptor COMMAND test-messageiterator filedescriptor)
 add_test( NAME messageiterator-multiple COMMAND test-messageiterator multiple)
 add_test( NAME messageiterator-struct COMMAND test-messageiterator struct)
+add_test( NAME messageiterator-variant COMMAND test-messageiterator variant)
 
 add_test( NAME messageiterator-Bool2 COMMAND test-messageiterator bool-2)
 add_test( NAME messageiterator-Byte2 COMMAND test-messageiterator byte-2)
@@ -81,6 +82,7 @@ add_test( NAME messageiterator-array_string-2 COMMAND test-messageiterator array
 add_test( NAME messageiterator-filedescriptor-2 COMMAND test-messageiterator filedescriptor-2)
 add_test( NAME messageiterator-multiple-2 COMMAND test-messageiterator multiple-2)
 add_test( NAME messageiterator-struct-2 COMMAND test-messageiterator struct-2)
+add_test( NAME messageiterator-variant-2 COMMAND test-messageiterator variant-2)
 
 add_executable( test-path pathclasstests.cpp )
 target_link_libraries( test-path ${TEST_LINK} )

@@ -91,6 +91,7 @@ namespace DBus
       MessageAppendIterator& operator<<( const Signature& v );
       MessageAppendIterator& operator<<( const Path& v );
       MessageAppendIterator& operator<<( const std::shared_ptr<FileDescriptor> v );
+      MessageAppendIterator& operator<<( const Variant& v );
 /*
       #if DBUS_CXX_SIZEOF_LONG_INT == 4
         bool append( long int v );
@@ -130,15 +131,6 @@ namespace DBus
           m_subiter->m_subiter << (*it).second;
           m_subiter->close_container();
         }
-        this->close_container();
-        return *this;
-      }
-
-      template <typename T>
-      MessageAppendIterator& append( const std::variant<T> & var){
-        T value = std::get<T>( var );
-        this->open_container( ContainerType::VARIANT, signature(value)  );
-        m_subiter->append(value);
         this->close_container();
         return *this;
       }

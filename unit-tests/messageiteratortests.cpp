@@ -337,6 +337,22 @@ bool call_message_append_extract_iterator_struct(){
   return true;
 }
 
+bool call_message_append_extract_iterator_variant(){
+  DBus::Variant var1( 99 );
+  DBus::Variant var2;
+
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  DBus::MessageAppendIterator iter1(msg);
+  iter1 << var1;
+
+  DBus::MessageIterator iter2(msg);
+  var2 = (DBus::Variant)iter2;
+
+  TEST_EQUALS_RET_FAIL( std::any_cast<int>(var2), 99 );
+
+  return true;
+}
+
 template <typename T>
     bool test_numeric_call_message_iterator_insertion_extraction_operator( T v )
 {
@@ -479,6 +495,23 @@ bool call_message_iterator_insertion_extraction_operator_unsigned_long_int()
 {
   unsigned long int v = 343673;
   return test_numeric_call_message_iterator_insertion_extraction_operator(v);
+}
+
+bool call_message_iterator_insertion_extraction_operator_variant()
+{
+  DBus::Variant var1( 99 );
+  DBus::Variant var2;
+
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  DBus::MessageAppendIterator iter1(msg);
+  iter1 << var1;
+
+  DBus::MessageIterator iter2(msg);
+  iter2 >> var2;
+
+  TEST_EQUALS_RET_FAIL( std::any_cast<int>(var2), 99 );
+
+  return true;
 }
 
 bool call_message_iterator_insertion_extraction_operator_array_string()
@@ -731,6 +764,7 @@ int main(int argc, char** argv){
   ADD_TEST(filedescriptor);
   ADD_TEST(multiple);
   ADD_TEST(struct);
+  ADD_TEST(variant);
 
   ADD_TEST2(bool);
   ADD_TEST2(byte);
@@ -754,6 +788,7 @@ int main(int argc, char** argv){
   ADD_TEST2(filedescriptor);
   ADD_TEST2(multiple);
   ADD_TEST2(struct);
+  ADD_TEST2(variant);
 
   return !ret;
 }

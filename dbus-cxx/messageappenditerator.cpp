@@ -16,6 +16,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#include <dbus-cxx/variant.h>
 #include "messageappenditerator.h"
 
 #include <cstring>
@@ -279,6 +280,63 @@ namespace DBus
     result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::UNIX_FD ), &raw_fd );
 
     if ( ! result ) m_message->invalidate();
+
+    return *this;
+  }
+
+  MessageAppendIterator& MessageAppendIterator::operator<<( const Variant& v ){
+    bool result;
+
+    if ( not this->is_valid() ) return *this;
+    if( v.currentType() == DataType::INVALID ) return *this;
+
+    this->open_container( ContainerType::VARIANT, v.signature()  );
+    switch( v.currentType() ){
+    case DataType::BYTE:
+        *m_subiter << std::any_cast<uint8_t>(v.value());
+        break;
+    case DataType::BOOLEAN:
+        *m_subiter << std::any_cast<bool>(v.value());
+        break;
+    case DataType::INT16:
+        *m_subiter << std::any_cast<int16_t>(v.value());
+        break;
+    case DataType::UINT16:
+        *m_subiter << std::any_cast<uint16_t>(v.value());
+        break;
+    case DataType::INT32:
+        *m_subiter << std::any_cast<int32_t>(v.value());
+        break;
+    case DataType::UINT32:
+        *m_subiter << std::any_cast<uint16_t>(v.value());
+        break;
+    case DataType::INT64:
+        *m_subiter << std::any_cast<int64_t>(v.value());
+        break;
+    case DataType::UINT64:
+        *m_subiter << std::any_cast<uint64_t>(v.value());
+        break;
+    case DataType::DOUBLE:
+        *m_subiter << std::any_cast<double>(v.value());
+        break;
+    case DataType::STRING:
+        *m_subiter << std::any_cast<std::string>(v.value());
+        break;
+    case DataType::OBJECT_PATH:
+        *m_subiter << std::any_cast<Path>(v.value());
+        break;
+    case DataType::SIGNATURE:
+        *m_subiter << std::any_cast<Signature>(v.value());
+        break;
+    case DataType::VARIANT:
+        *m_subiter << std::any_cast<Variant>(v.value());
+        break;
+    case DataType::UNIX_FD:
+        *m_subiter << std::any_cast<std::shared_ptr<FileDescriptor>>(v.value());
+        break;
+    default: break;
+    }
+    this->close_container();
 
     return *this;
   }
