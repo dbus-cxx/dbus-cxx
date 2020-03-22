@@ -29,7 +29,7 @@
 #include <dbus-cxx/timeout.h>
 #include <dbus-cxx/accumulators.h>
 #include <dbus-cxx/object.h>
-#include <dbus-cxx/signal_proxy.h>
+#include <dbus-cxx/signal_proxy_base.h>
 #include <dbus-cxx/dbus_signal.h>
 #include <dbus-cxx/messagefilter.h>
 #include <dbus-cxx/methodbase.h>
@@ -273,34 +273,11 @@ namespace DBus
 
       bool unregister_object( const std::string& path );
 
-      /**
-       * Adds a signal with the given interface and name
-       *
-       * @return Smart pointer to the newly added signal or a null smart pointer if it couldn't be added
-       */
-      std::shared_ptr<signal_proxy_base> create_signal_proxy( const std::string& interface, const std::string& name );
-
-      /**
-       * Adds a signal with the given path, interface and name
-       *
-       * @return Smart pointer to the newly added signal or a null smart pointer if it couldn't be added
-       */
-      std::shared_ptr<signal_proxy_base> create_signal_proxy( const std::string& path, const std::string& interface, const std::string& name );
-
       template<typename... T_arg>
-      std::shared_ptr<signal_proxy<T_arg...> > create_signal_proxy( const std::string& interface, const std::string& name )
+      std::shared_ptr<signal_proxy<T_arg...> > create_signal_proxy( const SignalMatchRule& rule )
       {
         std::shared_ptr<signal_proxy<T_arg...> > sig;
-        sig = signal_proxy<T_arg...>::create(interface, name);
-        this->add_signal_proxy( sig );
-        return sig;
-      }
-      
-      template<typename... T_arg>
-      std::shared_ptr<signal_proxy<T_arg...> > create_signal_proxy( const std::string& path, const std::string& interface, const std::string& name )
-      {
-        std::shared_ptr<signal_proxy<T_arg...> > sig;
-        sig = signal_proxy<T_arg...>::create(path, interface, name);
+        sig = signal_proxy<T_arg...>::create(rule);
         this->add_signal_proxy( sig );
         return sig;
       }
@@ -312,27 +289,25 @@ namespace DBus
 
       bool remove_signal_proxy( std::shared_ptr<signal_proxy_base> proxy );
 
-      typedef std::list<std::shared_ptr<signal_proxy_base>> ProxySignals;
+      typedef std::vector<std::shared_ptr<signal_proxy_base>> ProxySignals;
       
       typedef std::map<std::string,ProxySignals> NameToProxySignalMap;
 
-      typedef std::map<std::string,NameToProxySignalMap> InterfaceToNameProxySignalMap;
-
       /** Gets all the signal handlers */
-      const InterfaceToNameProxySignalMap& get_signal_proxies();
+      const ProxySignals& get_signal_proxies();
 
       /** Gets the signal handlers for a specific interface */
-      NameToProxySignalMap get_signal_proxies( const std::string& interface );
+      ProxySignals get_signal_proxies( const std::string& interface );
 
       /** Gets the signal handlers for a specific interface and member */
       ProxySignals get_signal_proxies( const std::string& interface, const std::string& member );
 
       /** Create a signal, that when it is emitted will send that signal over the DBus  */
-      template <class T_return, class... T_arg>
-      std::shared_ptr<signal<T_return, T_arg...> > create_signal( const std::string& path, const std::string& interface, const std::string& member )
+      template <class... T_arg>
+      std::shared_ptr<signal<T_arg...> > create_signal( const std::string& path, const std::string& interface, const std::string& member )
       {
-        std::shared_ptr<signal<T_return, T_arg...> > sig;
-        sig = signal<T_return, T_arg...>::create(path, interface, member);
+        std::shared_ptr<signal<T_arg...> > sig;
+        sig = signal<T_arg...>::create(path, interface, member);
         sig->set_connection(this->self());
         return sig;
       }
@@ -403,7 +378,7 @@ namespace DBus
 
       std::map<std::string,std::shared_ptr<ObjectPathHandler>> m_created_objects;
 
-      InterfaceToNameProxySignalMap m_proxy_signal_interface_map;
+      ProxySignals m_proxy_signals;
 
 //       std::map<SignalReceiver::pointer, sigc::connection> m_sighandler_iface_conn;
 

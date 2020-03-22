@@ -28,7 +28,7 @@ This code now becomes:
 ========
 # NOTES FOR REVIEW
 * Should we allow appending of float values?  Only double values can be sent
-* Should we allow appending of int8_t?  Only uint8_t can be sent
+* Should we allow appending of `int8_t`?  Only `uint8_t` can be sent
 * Check all examples to make sure they all work
 * Do we need to have `long long int` and/or `long int` as a type we can send out?
  It seems like you should just used the fixed-sized types if you want this.
@@ -41,3 +41,12 @@ This code now becomes:
  and/or implementation that must happen in headers due to templates.  We would gain
  ABI stability at that point though, so that you can swap out the library without
  having to recompile any dependent applications.
+* Make naming more consistent - sometimes it's `c_style`, other times its CamelCase
+* Removed signal creation methods that let you get the raw signal data
+ (`signal_proxy_simple`).  Is this required at all?  It seems weird to me that we
+ would want to do this, unless we were worried about sniffing the bus.
+* How much flexibility should there be in defining signals?  Currently we have a
+ map of signal handlers that require both the interface and the member to
+ be defined in order to work correctly.  If we make this super flexible, we can
+ then listen to somewhat arbitrary signals, but is this needed?  vector of all signals
+ as backup that we iterate over and handle that way if nothing better is found

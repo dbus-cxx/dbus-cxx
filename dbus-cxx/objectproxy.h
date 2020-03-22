@@ -23,7 +23,7 @@
 #include <mutex>
 #include <shared_mutex>
 
-#include <dbus-cxx/signal_proxy.h>
+#include <dbus-cxx/signal_proxy_base.h>
 #include <dbus-cxx/interfaceproxy.h>
 
 #ifndef DBUSCXX_OBJECTPROXY_H

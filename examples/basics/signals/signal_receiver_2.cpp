@@ -41,7 +41,11 @@ int main()
 
   std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 
-  std::shared_ptr<DBus::signal_proxy<std::string>> signal = connection->create_signal_proxy<std::string>("/test/signal/Object", "test.signal.Type", "Test");
+  std::shared_ptr<DBus::signal_proxy<std::string>> signal = connection->create_signal_proxy<std::string>( 
+                                            DBus::SignalMatchRule::create()
+                                            .setPath("/test/signal/Object")
+                                            .setInterface("test.signal.Type")
+                                            .setMember("Test") );
 
   signal->connect( sigc::ptr_fun(print) );
 

@@ -23,9 +23,14 @@
 
 std::shared_ptr<DBus::Dispatcher> dispatch;
 std::string signal_value;
+int num_rx = 0;
 
 void sigHandle( std::string value ){
     signal_value = value;
+}
+
+void voidSigHandle(){
+    num_rx++;
 }
 
 bool signal_create(){
@@ -41,7 +46,11 @@ bool signal_tx_rx(){
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
 
     std::shared_ptr<DBus::signal<std::string>> signal = conn->create_signal<std::string>( "/test/signal", "test.signal.type", "Path" );
-    std::shared_ptr<DBus::signal_proxy<std::string>> proxy = conn->create_signal_proxy<std::string>( "/test/signal", "test.signal.type", "Path" );
+    std::shared_ptr<DBus::signal_proxy<std::string>> proxy = conn->create_signal_proxy<std::string>(
+        DBus::SignalMatchRule::create()
+          .setPath("/test/signal")
+          .setInterface("test.signal.type")
+          .setMember( "Path" ) );
 
     proxy->connect( sigc::ptr_fun( sigHandle ) );
 
@@ -49,6 +58,129 @@ bool signal_tx_rx(){
     sleep( 1 );
 
     TEST_ASSERT_RET_FAIL( signal_value.compare( "TestSignal" ) == 0 );
+    return true;
+}
+
+bool signal_void_txrx(){
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
+
+    std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
+    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+        DBus::SignalMatchRule::create()
+          .setPath("/test/signal")
+          .setInterface("test.signal.type")
+          .setMember( "ExampleMember" ) );
+
+    proxy->connect( sigc::ptr_fun( voidSigHandle ) );
+
+    signal->emit();
+    sleep( 1 );
+
+    TEST_ASSERT_RET_FAIL( num_rx == 1 );
+    return true;
+}
+
+bool signal_path_match_only(){
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
+
+    std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
+    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+        DBus::SignalMatchRule::create()
+          .setPath("/test/signal") );
+
+    proxy->connect( sigc::ptr_fun( voidSigHandle ) );
+
+    signal->emit();
+    sleep( 1 );
+
+    TEST_ASSERT_RET_FAIL( num_rx == 1 );
+    return true;
+}
+
+bool signal_interface_match_only(){
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
+
+    std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
+    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+        DBus::SignalMatchRule::create()
+          .setInterface("test.signal.type") );
+
+    proxy->connect( sigc::ptr_fun( voidSigHandle ) );
+
+    signal->emit();
+    sleep( 1 );
+
+    TEST_ASSERT_RET_FAIL( num_rx == 1 );
+    return true;
+}
+
+bool signal_member_match_only(){
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
+
+    std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
+    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+        DBus::SignalMatchRule::create()
+          .setMember( "ExampleMember" ) );
+
+    proxy->connect( sigc::ptr_fun( voidSigHandle ) );
+
+    signal->emit();
+    sleep( 1 );
+
+    TEST_ASSERT_RET_FAIL( num_rx == 1 );
+    return true;
+}
+
+bool signal_multiple_handlers(){
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
+
+    std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
+    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+        DBus::SignalMatchRule::create()
+          .setPath("/test/signal")
+          .setInterface("test.signal.type")
+          .setMember( "ExampleMember" ) );
+    std::shared_ptr<DBus::signal_proxy<>> proxy2 = conn->create_signal_proxy<>(
+        DBus::SignalMatchRule::create()
+          .setMember( "ExampleMember" ) );
+
+    proxy->connect( sigc::ptr_fun( voidSigHandle ) );
+    proxy2->connect( sigc::ptr_fun( voidSigHandle ) );
+
+    signal->emit();
+    sleep( 1 );
+
+    TEST_ASSERT_RET_FAIL( num_rx == 2 );
+    return true;
+}
+
+bool signal_remove_handler(){
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
+
+    std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
+    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+        DBus::SignalMatchRule::create()
+          .setPath("/test/signal")
+          .setInterface("test.signal.type")
+          .setMember( "ExampleMember" ) );
+    std::shared_ptr<DBus::signal_proxy<>> proxy2 = conn->create_signal_proxy<>(
+        DBus::SignalMatchRule::create()
+          .setMember( "ExampleMember" ) );
+
+    proxy->connect( sigc::ptr_fun( voidSigHandle ) );
+    proxy2->connect( sigc::ptr_fun( voidSigHandle ) );
+
+    signal->emit();
+    sleep( 1 );
+
+    TEST_ASSERT_RET_FAIL( num_rx == 2 );
+
+    TEST_ASSERT_RET_FAIL( conn->remove_signal_proxy( proxy ) );
+
+    signal->emit();
+    sleep( 1 );
+    TEST_ASSERT_RET_FAIL( num_rx == 3 );
+
     return true;
 }
 
@@ -69,6 +201,12 @@ int main(int argc, char** argv){
 
   ADD_TEST(create);
   ADD_TEST(tx_rx);
+  ADD_TEST(void_txrx);
+  ADD_TEST(path_match_only);
+  ADD_TEST(interface_match_only);
+  ADD_TEST(member_match_only);
+  ADD_TEST(multiple_handlers);
+  ADD_TEST(remove_handler);
 
   return !ret;
 }

@@ -117,6 +117,8 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper.sh ${CMAKE_CURRENT_BINA
 add_test( NAME connection-proxy-create1 COMMAND dbus-wrapper.sh test-connection create_signal_proxy)
 add_test( NAME connection-proxy-get-iface COMMAND dbus-wrapper.sh test-connection get_signal_proxy_by_iface)
 add_test( NAME connection-proxy-get-iface-name COMMAND dbus-wrapper.sh test-connection get_signal_proxy_by_iface_and_name)
+add_test( NAME connection-proxy-create_signal COMMAND dbus-wrapper.sh test-connection create_void_signal)
+add_test( NAME connection-proxy-create_int_signal COMMAND dbus-wrapper.sh test-connection create_int_signal)
 
 #
 # Object Tests
@@ -149,6 +151,7 @@ add_test( NAME call-int-vec-custom-method COMMAND dbus-wrapper-data-tests.sh sen
 
 #
 # Signal tests - make sure we can tx and rx singals correctly
+#
 add_executable( signal-tests signaltests.cpp )
 target_link_libraries( signal-tests ${TEST_LINK} )
 target_include_directories( signal-tests PUBLIC ${CMAKE_SOURCE_DIR} )
@@ -157,6 +160,12 @@ set_property( TARGET signal-tests PROPERTY CXX_STANDARD 17 )
 
 add_test( NAME create-signal COMMAND dbus-wrapper.sh signal-tests create)
 add_test( NAME signal-tx-rx COMMAND dbus-wrapper.sh signal-tests tx_rx)
+add_test( NAME void-signal-tx-rx COMMAND dbus-wrapper.sh signal-tests void_txrx)
+add_test( NAME path-match-rx COMMAND dbus-wrapper.sh signal-tests path_match_only)
+add_test( NAME interface-match-rx COMMAND dbus-wrapper.sh signal-tests interface_match_only)
+add_test( NAME member-match-rx COMMAND dbus-wrapper.sh signal-tests member_match_only)
+add_test( NAME multiple-handlers COMMAND dbus-wrapper.sh signal-tests multiple_handlers)
+add_test( NAME remove-handler COMMAND dbus-wrapper.sh signal-tests remove_handler)
 
 #
 # Introspection Tests - make sure that we can introspect and get the correct data back

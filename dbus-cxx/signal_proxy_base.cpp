@@ -23,23 +23,64 @@
 namespace DBus
 {
 
-  signal_proxy_base::signal_proxy_base( const std::string& path, const std::string& interface, const std::string& name ):
-      signal_base( path, interface, name )
-  {
-  }
+SignalMatchRule::SignalMatchRule(){}
 
-  signal_proxy_base::signal_proxy_base( const std::string& interface, const std::string& name ):
-      signal_base( interface, name )
-  {
-  }
+SignalMatchRule& SignalMatchRule::setPath( const std::string& path ){
+    m_path = path;
+    return *this;
+}
 
-  signal_proxy_base::signal_proxy_base( std::shared_ptr<Connection>  connection, const std::string& path, const std::string& interface, const std::string& name ):
-      signal_base( connection, path, interface, name )
-  {
-  }
+SignalMatchRule& SignalMatchRule::setInterface( const std::string& interface ){
+    m_interface = interface;
+    return *this;
+}
 
-  signal_proxy_base::signal_proxy_base( std::shared_ptr<Connection>  connection, const std::string& interface, const std::string& name ):
-      signal_base( connection, interface, name )
+SignalMatchRule& SignalMatchRule::setMember( const std::string& member ){
+    m_member = member;
+    return *this;
+}
+
+SignalMatchRule& SignalMatchRule::setSender( const std::string& sender ){
+    m_sender = sender;
+    return *this;
+}
+
+SignalMatchRule& SignalMatchRule::setDestination( const std::string& destination ){
+    m_destination = destination;
+    return *this;
+}
+
+std::string SignalMatchRule::getPath() const {
+    return m_path;
+}
+
+std::string SignalMatchRule::getInterface() const {
+    return m_interface;
+}
+
+std::string SignalMatchRule::getMember() const {
+    return m_member;
+}
+
+
+std::string SignalMatchRule::getMatchRule() const {
+    std::string match_rule = "type='signal'";
+    if( !m_interface.empty() )   match_rule += ",interface='"   + m_interface   + "'";
+    if( !m_member.empty() )      match_rule += ",member='"      + m_member      + "'";
+    if( !m_sender.empty() )      match_rule += ",sender='"      + m_sender      + "'";
+    if( !m_path.empty() )        match_rule += ",path='"        + m_path        + "'";
+    if( !m_destination.empty() ) match_rule += ",destination='" + m_destination + "'";
+
+    return match_rule;
+}
+
+SignalMatchRule SignalMatchRule::create(){
+    return SignalMatchRule();
+}
+
+  signal_proxy_base::signal_proxy_base( const SignalMatchRule& matchRule ):
+      signal_base( matchRule.getPath(), matchRule.getInterface(), matchRule.getMember() ),
+      m_match_rule( matchRule.getMatchRule() )
   {
   }
 
@@ -57,112 +98,30 @@ namespace DBus
   {
     if ( not this->matches( msg ) ) return HandlerResult::NOT_HANDLED;
 
-    return m_signal_dbus_incoming.emit( msg );
+    return on_dbus_incoming( msg );
   }
 
-  sigc::signal< HandlerResult(std::shared_ptr<const SignalMessage>)>::accumulated< MessageHandlerAccumulator > signal_proxy_base::signal_dbus_incoming()
+  const std::string & signal_proxy_base::match_rule() const
   {
-    return m_signal_dbus_incoming;
-  }
-
-  const std::string & signal_proxy_base::match_rule()
-  {
-    if ( m_interface.empty() or m_name.empty() ) {
-      m_match_rule = std::string();
-      return m_match_rule;
-    }
-    m_match_rule = "type='signal'";
-    m_match_rule += ",interface='"   + m_interface   + "'";
-    m_match_rule += ",member='"      + m_name      + "'";
-    if ( not m_sender.empty() )      m_match_rule += ",sender='"      + m_sender      + "'";
-    if ( not m_path.empty() )        m_match_rule += ",path='"        + m_path        + "'";
-    if ( not m_destination.empty() ) m_match_rule += ",destination='" + m_destination + "'";
     return m_match_rule;
   }
 
-  bool signal_proxy_base::matches( std::shared_ptr<const Message> msg )
+  bool signal_proxy_base::matches( std::shared_ptr<const SignalMessage> msg )
   {
     if ( not msg or not msg->is_valid() ) return false;
-    if ( msg->type() != MessageType::SIGNAL ) return false;
-    if ( m_interface.empty() or m_name.empty() ) return false;
 
-    std::shared_ptr<const SignalMessage> smsg;
-    smsg = std::dynamic_pointer_cast<const SignalMessage>( msg );
+    if ( not m_interface.empty() && m_interface != msg->interface() ) return false;
 
-    if ( not smsg ) smsg = SignalMessage::create( msg );
+    if ( not m_name.empty() && m_name != msg->member() ) return false;
 
-    if ( m_interface != smsg->interface() ) return false;
+    if ( not m_sender.empty() and m_sender != msg->sender() ) return false;
 
-    if ( m_name != smsg->member() ) return false;
+    if ( not m_destination.empty() and m_destination != msg->destination() ) return false;
 
-    if ( not m_sender.empty() and m_sender != smsg->sender() ) return false;
-
-    if ( not m_destination.empty() and m_destination != smsg->destination() ) return false;
-
-    if ( not m_path.empty() and m_path != smsg->path() ) return false;
+    if ( not m_path.empty() and m_path != msg->path() ) return false;
 
     return true;
   }
 
-  signal_proxy_simple::signal_proxy_simple( const std::string& path, const std::string& interface, const std::string& name ):
-      signal_proxy_base( path, interface, name )
-  {
-  }
-
-  signal_proxy_simple::signal_proxy_simple( const std::string& interface, const std::string& name ):
-      signal_proxy_base( interface, name )
-  {
-  }
-
-  signal_proxy_simple::signal_proxy_simple( std::shared_ptr<Connection>  connection, const std::string& path, const std::string& interface, const std::string& name ):
-      signal_proxy_base( connection, path, interface, name )
-  {
-  }
-
-  signal_proxy_simple::signal_proxy_simple( std::shared_ptr<Connection>  connection, const std::string& interface, const std::string& name ):
-      signal_proxy_base( connection, interface, name )
-  {
-  }
-
-  signal_proxy_simple::signal_proxy_simple( const signal_proxy_simple& other ):
-      signal_proxy_base( other )
-  {
-    // TODO connect to the other's connection
-  }
-
-  std::shared_ptr<signal_proxy_simple> signal_proxy_simple::create( const std::string & path, const std::string & interface, const std::string & name )
-  {
-    return std::shared_ptr<signal_proxy_simple>( new signal_proxy_simple( path, interface, name ) );
-  }
-
-  std::shared_ptr<signal_proxy_simple> signal_proxy_simple::create( const std::string & interface, const std::string & name )
-  {
-    return std::shared_ptr<signal_proxy_simple>( new signal_proxy_simple( interface, name ) );
-  }
-
-  std::shared_ptr<signal_proxy_simple> signal_proxy_simple::create( std::shared_ptr< Connection > connection, const std::string & path, const std::string & interface, const std::string & name )
-  {
-    return std::shared_ptr<signal_proxy_simple>( new signal_proxy_simple( connection, path, interface, name ) );
-  }
-
-  std::shared_ptr<signal_proxy_simple> signal_proxy_simple::create( std::shared_ptr< Connection > connection, const std::string & interface, const std::string & name )
-  {
-    return std::shared_ptr<signal_proxy_simple>( new signal_proxy_simple( connection, interface, name ) );
-  }
-
-  std::shared_ptr<signal_proxy_simple> signal_proxy_simple::create( const signal_proxy_simple & other )
-  {
-    return std::shared_ptr<signal_proxy_simple>( new signal_proxy_simple( other ) );
-  }
-
-  signal_proxy_simple::~signal_proxy_simple()
-  {
-  }
-
-  std::shared_ptr<signal_base> signal_proxy_simple::clone()
-  {
-    return std::shared_ptr<signal_base>( new signal_proxy_simple( *this ) );
-  }
-  
 }
 

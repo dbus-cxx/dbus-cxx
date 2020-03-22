@@ -82,7 +82,6 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/signal_base.cpp
     dbus-cxx/signalmessage.cpp
     dbus-cxx/signal_proxy_base.cpp
-    dbus-cxx/signalreceiver.cpp
     dbus-cxx/signature.cpp
     dbus-cxx/signatureiterator.cpp
     dbus-cxx/timeout.cpp
@@ -120,7 +119,6 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/signal_base.h
     dbus-cxx/signalmessage.h
     dbus-cxx/signal_proxy_base.h
-    dbus-cxx/signalreceiver.h
     dbus-cxx/signature.h
     dbus-cxx/signatureiterator.h
     dbus-cxx/simplelogger_defs.h

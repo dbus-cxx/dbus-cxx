@@ -49,8 +49,6 @@
 #include <dbus-cxx/signal_base.h>
 #include <dbus-cxx/signalmessage.h>
 #include <dbus-cxx/signal_proxy_base.h>
-#include <dbus-cxx/signal_proxy.h>
-#include <dbus-cxx/signalreceiver.h>
 #include <dbus-cxx/signature.h>
 #include <dbus-cxx/signatureiterator.h>
 #include <dbus-cxx/timeout.h>

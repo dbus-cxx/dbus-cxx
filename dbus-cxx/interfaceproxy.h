@@ -25,7 +25,7 @@
 #include <shared_mutex>
 
 #include <dbus-cxx/methodproxybase.h>
-#include <dbus-cxx/signal_proxy.h>
+#include <dbus-cxx/signal_proxy_base.h>
 
 #ifndef DBUSCXX_INTERFACEPROXY_H
 #define DBUSCXX_INTERFACEPROXY_H
@@ -103,7 +103,11 @@ namespace DBus {
       std::shared_ptr<signal_proxy<T_return,T_arg...> > create_signal( const std::string& sig_name )
       {
         std::shared_ptr< signal_proxy<T_return,T_arg...> > sig;
-        sig = signal_proxy<T_return,T_arg...>::create(this->path(), m_name, sig_name);
+        SignalMatchRule match = SignalMatchRule::create()
+            .setPath( this->path() )
+            .setInterface( m_name )
+            .setMember( sig_name );
+        sig = signal_proxy<T_return,T_arg...>::create( match );
         this->add_signal(sig);
         return sig;
       }

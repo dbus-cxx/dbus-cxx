@@ -18,49 +18,81 @@
  ***************************************************************************/
 #include <dbus-cxx/signal_base.h>
 #include <dbus-cxx/accumulators.h>
+#include <dbus-cxx/signalmessage.h>
+#include <dbus-cxx/utility.h>
 
 #ifndef DBUSCXX_SIGNALPROXYBASE_H
 #define DBUSCXX_SIGNALPROXYBASE_H
 
 namespace DBus
 {
+
+/**
+ * A builder class to build up a match rule for a signal.  Define
+ * the particular parts of the signal that you want to listen for,
+ * and then pass it into the signal_proxy.
+ */
+class SignalMatchRule {
+  public:
+    SignalMatchRule();
+
+    SignalMatchRule& setPath( const std::string& path );
+
+    SignalMatchRule& setInterface( const std::string& interface );
+
+    SignalMatchRule& setMember( const std::string& member );
+
+    SignalMatchRule& setSender( const std::string& sender );
+
+    SignalMatchRule& setDestination( const std::string& destination );
+
+    std::string getMatchRule() const;
+
+    std::string getPath() const;
+
+    std::string getInterface() const;
+
+    std::string getMember() const;
+
+    static SignalMatchRule create();
+
+  private:
+    std::string m_path;
+    std::string m_interface;
+    std::string m_member;
+    std::string m_sender;
+    std::string m_destination;
+};
+
   /**
    * @ingroup proxy
    * @ingroup signals
    * 
    * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
    */
-
-  // TODO fix signals that expect a return value and partially specialize for void returns
-  
   class signal_proxy_base: public signal_base
   {
     public:
-      signal_proxy_base(const std::string& path, const std::string& interface, const std::string& name);
+      virtual HandlerResult handle_signal( std::shared_ptr<const SignalMessage> );
 
-      signal_proxy_base(const std::string& interface, const std::string& name);
+      const std::string& match_rule() const;
 
-      signal_proxy_base(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface, const std::string& name);
-
-      signal_proxy_base(std::shared_ptr<Connection> connection, const std::string& interface, const std::string& name);
+    protected:
+      signal_proxy_base(const SignalMatchRule& matchRule);
 
       signal_proxy_base(const signal_proxy_base& other);
 
       virtual ~signal_proxy_base();
 
-      virtual HandlerResult handle_signal( std::shared_ptr<const SignalMessage> );
-
-      sigc::signal<HandlerResult(std::shared_ptr<const SignalMessage>)>::accumulated<MessageHandlerAccumulator> signal_dbus_incoming();
-
-      const std::string& match_rule();
-
-      bool matches(std::shared_ptr<const Message> msg);
+      bool matches(std::shared_ptr<const SignalMessage> msg);
 
       /**
        * This method is needed to be able to create a duplicate of a child
        * capable of parsing their specific template type message.
        */
       virtual std::shared_ptr<signal_base> clone() = 0;
+
+      virtual HandlerResult on_dbus_incoming( std::shared_ptr<const SignalMessage> msg ) = 0;
 
     protected:
 
@@ -69,37 +101,62 @@ namespace DBus
       sigc::signal<HandlerResult(std::shared_ptr<const SignalMessage>)>::accumulated<MessageHandlerAccumulator> m_signal_dbus_incoming;
   };
 
-  class signal_proxy_simple: public signal_proxy_base, public sigc::trackable
-  {
-    public:
-      signal_proxy_simple(const std::string& path, const std::string& interface, const std::string& name);
+/**
+ * Subclass of the sigc::signal templates.
+ * A signal_proxy allows you to listen for signals that are emitted by other applications on the DBus.
+ *
+ * @ingroup signals
+ * @ingroup proxy
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+template <class... T_arg>
+class signal_proxy
+  : public sigc::signal<void(T_arg...)>, public signal_proxy_base
+{
+  public:
+    signal_proxy(const SignalMatchRule& matchRule):
+      signal_proxy_base(matchRule)
+    {  }
 
-      signal_proxy_simple(const std::string& interface, const std::string& name);
+    static std::shared_ptr<signal_proxy> create(const SignalMatchRule& matchRule)
+    { return std::shared_ptr<signal_proxy>( new signal_proxy(matchRule) ); }
 
-      signal_proxy_simple(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface, const std::string& name);
+    virtual std::shared_ptr<signal_base> clone()
+    { return std::shared_ptr<signal_base>( new signal_proxy(*this) ); }
 
-      signal_proxy_simple(std::shared_ptr<Connection> connection, const std::string& interface, const std::string& name);
+  protected:
+    HandlerResult on_dbus_incoming( std::shared_ptr<const SignalMessage> msg )
+    {
+      std::tuple<T_arg...> tup_args;
+      std::ostringstream debug_str;
+      DBus::priv::dbus_function_traits<std::function<void(T_arg...)>> method_sig_gen;
 
-      signal_proxy_simple(const signal_proxy_simple& other);
+      debug_str << "DBus::signal_proxy<";
+      debug_str << method_sig_gen.debug_string();
+      debug_str << ">::on_dbus_incoming method=";
+      debug_str << msg->member();
+      DBUSCXX_DEBUG_STDSTR( "dbus.signal_proxy", debug_str.str() );
 
-      static std::shared_ptr<signal_proxy_simple> create(const std::string& path, const std::string& interface, const std::string& name);
+      try {
+        MessageIterator i = msg->begin();
+        std::apply( [i](auto&& ...arg) mutable {
+               (i >> ... >> arg);
+              },
+        tup_args );
+        std::apply(&signal_proxy::emit, std::tuple_cat(std::make_tuple(this), tup_args) );
+      }catch ( ErrorInvalidTypecast& e ) {
+          DBUSCXX_DEBUG_STDSTR( "dbus.signal_proxy", "Caught error invalid typecast" );
+          return HandlerResult::NOT_HANDLED;
+      }catch( ... ){
+          DBUSCXX_DEBUG_STDSTR( "dbus.signal_proxy", "Unknown exception" );
+          return HandlerResult::NOT_HANDLED;
+      }
+    
+      return HandlerResult::HANDLED;
+    }
 
-      static std::shared_ptr<signal_proxy_simple> create(const std::string& interface, const std::string& name);
-
-      static std::shared_ptr<signal_proxy_simple> create(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface, const std::string& name);
-
-      static std::shared_ptr<signal_proxy_simple> create(std::shared_ptr<Connection> connection, const std::string& interface, const std::string& name);
-
-      static std::shared_ptr<signal_proxy_simple> create(const signal_proxy_simple& other);
-
-      virtual ~signal_proxy_simple();
-
-      /**
-       * This method is needed to be able to create a duplicate of a child
-       * capable of parsing their specific template type message.
-       */
-      virtual std::shared_ptr<signal_base> clone();
-  };
+};
 
 }
 

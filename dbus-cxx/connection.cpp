@@ -324,6 +324,7 @@ namespace DBus
     Error error = Error();
 
     if ( not this->is_valid() ) return false;
+    SIMPLELOGGER_DEBUG("dbus.Connection", "Adding the following match: " << rule );
     dbus_bus_add_match( m_cobj, rule.c_str(), error.cobj() );
 
     if ( error.is_set() ) return false;
@@ -708,32 +709,16 @@ namespace DBus
     return false;
   }
 
-  std::shared_ptr<signal_proxy_base> Connection::create_signal_proxy(const std::string & interface, const std::string & name)
-  {
-    return this->add_signal_proxy( signal_proxy_simple::create(interface, name) );
-  }
-
-  std::shared_ptr<signal_proxy_base> Connection::create_signal_proxy(const std::string& path, const std::string & interface, const std::string & name)
-  {
-    return this->add_signal_proxy( signal_proxy_simple::create(path, interface, name) );
-  }
-
   std::shared_ptr<signal_proxy_base> Connection::add_signal_proxy(std::shared_ptr<signal_proxy_base> signal)
   {
     if ( not signal ) return std::shared_ptr<signal_proxy_base>();
     
-    const std::string& interface = signal->interface();
-    const std::string& name = signal->name();
-    if ( interface.empty() or name.empty() ) return std::shared_ptr<signal_proxy_base>();
-
-    SIMPLELOGGER_DEBUG( "dbus.Connection", "Adding signal " << interface << ":" << name );
+    SIMPLELOGGER_DEBUG( "dbus.Connection", "Adding signal " << signal->interface() << ":" << signal->name() );
 
     if ( signal->connection() ) signal->connection()->remove_signal_proxy(signal);
 
-    SIMPLELOGGER_DEBUG( "dbus.Connection", "m_proxy_signal_interface_map.size(): " << m_proxy_signal_interface_map.size() );
-    SIMPLELOGGER_DEBUG( "dbus.Connection", "m_proxy_signal_interface_map[" << interface << "].size(): " << m_proxy_signal_interface_map[interface].size() );
-    SIMPLELOGGER_DEBUG( "dbus.Connection", "m_proxy_signal_interface_map[" << interface << "][" << name << "].size(): " << m_proxy_signal_interface_map[interface][name].size() );
-    m_proxy_signal_interface_map[interface][name].push_back(signal);
+    m_proxy_signals.push_back( signal );
+
     this->add_match( signal->match_rule() );
     signal->set_connection(this->self());
 
@@ -746,17 +731,15 @@ namespace DBus
 
     SIMPLELOGGER_DEBUG( "dbus.Connection", "remove_signal_proxy" );
 
-    const std::string& interface = signal->interface();
-    const std::string& name = signal->name();
-    if ( interface.empty() or name.empty() ) return false;
-
     this->remove_match( signal->match_rule() );
 
-    size_t s1 = m_proxy_signal_interface_map[interface][name].size();
-    m_proxy_signal_interface_map[interface][name].remove(signal);
-    size_t s2 = m_proxy_signal_interface_map[interface][name].size();
+    ProxySignals::iterator it = std::find( m_proxy_signals.begin(), m_proxy_signals.end(), signal );
+    if( it != m_proxy_signals.end() ){
+        m_proxy_signals.erase( it );
+        return true;
+    }
 
-    return s2 < s1;
+    return false;
   }
 
 //   bool Connection::register_signal_handler(SignalReceiver::pointer sighandler)
@@ -796,25 +779,36 @@ namespace DBus
 //     return false;
 //   }
 
-  const Connection::InterfaceToNameProxySignalMap & Connection::get_signal_proxies()
+  const Connection::ProxySignals& Connection::get_signal_proxies()
   {
-    return m_proxy_signal_interface_map;
+    return m_proxy_signals;
   }
 
-  Connection::NameToProxySignalMap Connection::get_signal_proxies(const std::string & interface)
+  Connection::ProxySignals Connection::get_signal_proxies(const std::string & interface)
   {
-    InterfaceToNameProxySignalMap::iterator i = m_proxy_signal_interface_map.find(interface);
-    if ( i == m_proxy_signal_interface_map.end() ) return NameToProxySignalMap();
-    return i->second;
+    ProxySignals ret;
+
+    for( std::shared_ptr<signal_proxy_base> base : m_proxy_signals ){
+        if( base->interface().compare( interface ) == 0 ){
+            ret.push_back( base );
+        }
+    }
+
+    return ret;
   }
 
   Connection::ProxySignals Connection::get_signal_proxies(const std::string & interface, const std::string & member)
   {
-    InterfaceToNameProxySignalMap::iterator i = m_proxy_signal_interface_map.find(interface);
-    if ( i == m_proxy_signal_interface_map.end() ) return ProxySignals();
-    NameToProxySignalMap::iterator j = i->second.find(member);
-    if ( j == i->second.end() ) return ProxySignals();
-    return j->second;
+    ProxySignals ret;
+
+    for( std::shared_ptr<signal_proxy_base> base : m_proxy_signals ){
+        if( base->interface().compare( interface ) == 0 &&
+            base->name().compare( member ) == 0 ){
+            ret.push_back( base );
+        }
+    }
+
+    return ret;
   }
 
 
@@ -1010,33 +1004,26 @@ namespace DBus
     // Deliver signals to signal proxies
     if ( filter_result != FilterResult::FILTER and msg->type() == MessageType::SIGNAL )
     {
-      InterfaceToNameProxySignalMap::iterator i;
-      NameToProxySignalMap::iterator j;
-      ProxySignals::iterator k;
       std::shared_ptr<SignalMessage> smsg = SignalMessage::create(msg);
-      HandlerResult result;
+      HandlerResult result = HandlerResult::NOT_HANDLED;
 
-      i = conn->m_proxy_signal_interface_map.find( smsg->interface() );
-      if ( i != conn->m_proxy_signal_interface_map.end() )
-      {
-        j = i->second.find(smsg->member());
-        if ( j != i->second.end() )
-        {
-          signal_result = HandlerResult::NOT_HANDLED;
-          for ( k = j->second.begin(); k != j->second.end(); k++ )
-          {
-            result = (*k)->handle_signal( smsg );
-            if ( result == HandlerResult::HANDLED )
-            {
-              signal_result = HandlerResult::HANDLED;
+      SIMPLELOGGER_DEBUG( "dbus.Connection", "Handling signal " 
+          << smsg->path()
+          << " "
+          << smsg->interface()
+          << " "
+          << smsg->member() );
+
+      for( std::shared_ptr<signal_proxy_base> sighandler : conn->m_proxy_signals ){
+          HandlerResult tmpResult = sighandler->handle_signal( smsg );
+          if( tmpResult == HandlerResult::HANDLED ){
+              result = HandlerResult::HANDLED;
+              // Go on at this point incase there are multiple handles for the signal
+          }else if( tmpResult == HandlerResult::NEEDS_MEMORY ){
+              result = HandlerResult::NEEDS_MEMORY;
+              // Can't do anything else at this point
               break;
-            }
-            else if ( result == HandlerResult::NEEDS_MEMORY )
-            {
-              signal_result = HandlerResult::NEEDS_MEMORY;
-            }
           }
-        }
       }
     }
 
