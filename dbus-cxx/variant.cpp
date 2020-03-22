@@ -125,6 +125,45 @@ DBus::Variant Variant::createFromMessage( MessageIterator iter ){
     if( signature == DBUS_TYPE_BYTE_AS_STRING ){
         return Variant( (uint8_t)iter );
     }
+    if( signature == DBUS_TYPE_BOOLEAN_AS_STRING ){
+        return Variant( (bool)iter );
+    }
+    if( signature == DBUS_TYPE_INT16_AS_STRING ){
+        return Variant( (int16_t)iter );
+    }
+    if( signature == DBUS_TYPE_UINT16_AS_STRING ){
+        return Variant( (uint16_t)iter );
+    }
+    if( signature == DBUS_TYPE_INT32_AS_STRING ){
+        return Variant( (int32_t)iter );
+    }
+    if( signature == DBUS_TYPE_UINT32_AS_STRING ){
+        return Variant( (uint32_t)iter );
+    }
+    if( signature == DBUS_TYPE_INT64_AS_STRING ){
+        return Variant( (int64_t)iter );
+    }
+    if( signature == DBUS_TYPE_UINT64_AS_STRING ){
+        return Variant( (uint64_t)iter );
+    }
+    if( signature == DBUS_TYPE_DOUBLE_AS_STRING ){
+        return Variant( (double)iter );
+    }
+    if( signature == DBUS_TYPE_STRING_AS_STRING ){
+        return Variant( (std::string)iter );
+    }
+    if( signature == DBUS_TYPE_SIGNATURE_AS_STRING ){
+        return Variant( (Signature)iter );
+    }
+    if( signature == DBUS_TYPE_OBJECT_PATH_AS_STRING ){
+        return Variant( (Path)iter );
+    }
+    if( signature == DBUS_TYPE_VARIANT_AS_STRING ){
+        return Variant( (Variant)iter );
+    }
+    if( signature == DBUS_TYPE_UNIX_FD_AS_STRING ){
+        return Variant( (std::shared_ptr<FileDescriptor>)iter );
+    }
 
     return Variant();
 }

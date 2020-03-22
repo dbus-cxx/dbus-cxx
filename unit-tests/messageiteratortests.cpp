@@ -348,7 +348,7 @@ bool call_message_append_extract_iterator_variant(){
   DBus::MessageIterator iter2(msg);
   var2 = (DBus::Variant)iter2;
 
-  TEST_EQUALS_RET_FAIL( std::any_cast<int>(var2), 99 );
+  TEST_EQUALS_RET_FAIL( std::any_cast<int>(var2.value()), 99 );
 
   return true;
 }
@@ -509,7 +509,7 @@ bool call_message_iterator_insertion_extraction_operator_variant()
   DBus::MessageIterator iter2(msg);
   iter2 >> var2;
 
-  TEST_EQUALS_RET_FAIL( std::any_cast<int>(var2), 99 );
+  TEST_EQUALS_RET_FAIL( std::any_cast<int>(var2.value()), 99 );
 
   return true;
 }
