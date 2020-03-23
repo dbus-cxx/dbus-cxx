@@ -160,6 +160,33 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
               .setName( "path" )
               .setDefaultValue( path ) ) );
 
+        newAdapterClass.addMethod( cppgenerate::Method::create()
+            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+            .setName( "create" )
+            .setStatic( true )
+            .setReturnType( "std::shared_ptr<" + newAdapterClass.getName() + ">" )
+            .addCode( cppgenerate::CodeBlock::create()
+                .addLine( "std::shared_ptr<" + newAdapterClass.getName() + "> " +
+                       "new_adaptee = std::shared_ptr<" +
+                          newAdapterClass.getName() +
+                       ">( new " + newAdapterClass.getName() + "( adaptee, path ) );" )
+                .addLine( "if( connection ){ " )
+                .addLine( "  if( connection->register_object( new_adaptee ) == false ){" )
+                .addLine( "    return std::shared_ptr<" + newAdapterClass.getName() + ">();" )
+                .addLine( "  }" )
+                .addLine( "}" )
+                .addLine( "return new_adaptee;" ) )
+            .addArgument( cppgenerate::Argument::create()
+              .setType( "std::shared_ptr<DBus::Connection>" )
+              .setName( "connection" ) )
+            .addArgument( cppgenerate::Argument::create()
+              .setType( newAdapteeClass.getName() + "*" )
+              .setName( "adaptee" ) )
+            .addArgument( cppgenerate::Argument::create()
+              .setType( "std::string" )
+              .setName( "path" )
+              .setDefaultValue( path ) ) );
+
         m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
             .addLine( "std::shared_ptr<DBus::MethodBase> temp_method;" ) )
             .setAccessModifier( cppgenerate::AccessModifier::PROTECTED );
