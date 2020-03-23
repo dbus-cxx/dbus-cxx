@@ -60,3 +60,4 @@ add_xml_test( tacointrospection.xml proxy "DbusTacoProxy.h;DbusTacoProxy.cpp" ta
 add_xml_test( tacointrospection.xml adapter "DbusTacoAdapter.h;DbusTacoAdapter.cpp" taco-adapter )
 add_xml_test( containertypes.xml adapter "structtypesAdapter.h;structtypesAdapter.cpp" struct-adapter )
 add_xml_test( simpletypes.xml adapter "SimpleTypesAdapter.h;SimpleTypesAdapter.cpp" simple-adapter )
+add_xml_test( signal-interface.xml adapter "signalNameAdapter.h;signalNameAdapter.cpp" signal-adapter )

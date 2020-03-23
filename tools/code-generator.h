@@ -27,6 +27,8 @@
 #include <cppgenerate/class.h>
 #include <dbus-cxx/signatureiterator.h>
 
+#include "signal-info.h"
+
 namespace DBus{
 
 class CodeGenerator {
@@ -63,6 +65,7 @@ private:
     cppgenerate::Method m_currentAdapteeMethod;
     cppgenerate::Constructor m_currentProxyConstructor;
     cppgenerate::Constructor m_currentAdapterConstructor;
+    SignalInfo m_currentSignal;
     int m_argNum;
     std::string m_returnName;
 };

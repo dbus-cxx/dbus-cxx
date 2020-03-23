@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<node cppname="signalName" dest="some.dest" path="/some/path">
+    <interface name="signal.name.interface">
+        <signal name="exampleSignal">
+            <arg type="s" name="signalArgument"/>
+        </signal>
+    </interface>
+</node>

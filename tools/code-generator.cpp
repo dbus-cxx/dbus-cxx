@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2018 by Robert Middleton                                *
+ *   Copyright (C) 2018-2020 by Robert Middleton                           *
  *   robert.middleton@rm5248.com                                           *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
@@ -50,6 +50,7 @@ bool CodeGenerator::parse(){
 }
 
 void CodeGenerator::start_element( std::string tagName, std::map<std::string,std::string> tagAttrs ){
+    std::string parentElement = m_tagStack.empty() ? "" : m_tagStack.top();
     m_tagStack.push( tagName );
 
     if( tagName.compare( "node" ) == 0 ){
@@ -198,11 +199,23 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             .setName( methodName )
             .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
             .setPureVirtual( true );
+    }else if( tagName.compare( "signal" ) == 0 ){
+        m_argNum = 0;
+        m_returnName = "";
+        if( tagAttrs.find( "name" ) == tagAttrs.end() ){
+            std::cerr << "WARNING: No name for signal found" << std::endl;
+            return;
+        }
+
+        std::string signalName = tagAttrs[ "name" ];
+        std::replace( signalName.begin(), signalName.end(), '.', '_' );
+
+        m_currentSignal = SignalInfo( signalName );
     }else if( tagName.compare( "arg" ) == 0 ){
         cppgenerate::Argument arg;
 
-        if( tagAttrs.find( "direction" ) == tagAttrs.end() ){
-            //XML_GetCurrentLineNumber
+        if( tagAttrs.find( "direction" ) == tagAttrs.end() &&
+            parentElement == "method" ){
             std::cerr << "WARNING: No direction for arg found(assuming in)." << std::endl;
         }
 
@@ -220,15 +233,17 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             arg.setName( tagAttrs[ "name" ] );
         }
 
-        if( tagAttrs[ "direction" ] == "out" ){
+        if( tagAttrs[ "direction" ] == "out" && parentElement == "method" ){
             m_currentProxyMethod.setReturnType( typestr );
             m_currentAdapteeMethod.setReturnType( typestr );
             if( tagAttrs[ "name" ].length() ){
                 m_returnName = tagAttrs[ "name" ];
             }
-        }else{
+        }else if( parentElement == "method" ){
             m_currentProxyMethod.addArgument( arg );
             m_currentAdapteeMethod.addArgument( arg );
+        }else if( parentElement == "signal" ){
+            m_currentSignal.addArgument( arg );
         }
 
         m_argNum++;
@@ -312,6 +327,59 @@ void CodeGenerator::end_element( std::string tagName ){
 
         m_adapterClasses.data()[ m_adapterClasses.size() - 1 ]
             .addConstructor( m_currentAdapterConstructor );
+    }else if( tagName == "signal" ){
+        cppgenerate::MemberVariable adapterMemberVar;
+        cppgenerate::Method getSignalMethod;
+        cppgenerate::Method emitSignalMethod;
+        std::vector<cppgenerate::Argument> args = m_currentSignal.arguments();
+        std::string templateType;
+        bool argumentComma = false;
+        std::string signalEmitCode;
+
+        templateType += "<";
+        signalEmitCode = "(*m_signal_" + m_currentSignal.name() + ")(";
+        for( cppgenerate::Argument arg : args ){
+            emitSignalMethod.addArgument( arg );
+
+            if( argumentComma ){
+                templateType += ",";
+                signalEmitCode += ",";
+            }
+
+            templateType += arg.type();
+            signalEmitCode += arg.name();
+            argumentComma = true;
+        }
+        templateType += ">";
+        signalEmitCode += ");";
+
+        adapterMemberVar.setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
+                 .setName( "m_signal_" + m_currentSignal.name() )
+                 .setType( "std::shared_ptr<DBus::signal" + templateType + ">" );
+
+        getSignalMethod = cppgenerate::Method::create()
+            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+            .setReturnType( "std::shared_ptr<DBus::signal" + templateType + ">" )
+            .setName( "signal_" + m_currentSignal.name() )
+            .setCode( cppgenerate::CodeBlock::create().addLine( "return m_signal_" + m_currentSignal.name() + ";" ) );
+
+        emitSignalMethod.setName( m_currentSignal.name() )
+            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+            .setCode( cppgenerate::CodeBlock::create().addLine( signalEmitCode ) );
+        
+        m_adapterClasses.data()[ m_adapterClasses.size() - 1 ]
+            .addMethod( m_currentProxyMethod )
+            .addMemberVariable( adapterMemberVar )
+            .addMethod( getSignalMethod )
+            .addMethod( emitSignalMethod );
+
+        /* Add our internal construction of the adapter signal */
+        m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
+            .addLine( adapterMemberVar.name() + 
+                      " = this->create_signal" + templateType + 
+                      "( \"" + m_currentInterface + "\", \"" + 
+                      m_currentSignal.name() + "\" );" ) );
+
     }
 }
 

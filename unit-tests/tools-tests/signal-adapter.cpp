@@ -16,26 +16,15 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include "structtypesAdapter.h"
+#include "signalNameAdapter.h"
 
-class MyStructType : public structtypesAdaptee {
-public:
-	void structMethod( std::tuple<int,int> struct1, std::tuple<int,std::tuple<int,int>> struct2 ){
-	}
-
-	void mapMethod( std::map<std::string,DBus::Variant> map ){}
-
-	void arrayMethod( std::vector<double> vector ){}
-
-	void mapMethod2( std::map<std::string,std::string> map ){}
-};
-
-int main(){
+int main( int argc, char** argv ){
     DBus::init();
 
     std::shared_ptr<DBus::Dispatcher> dispatch = DBus::Dispatcher::create();
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    MyStructType myStruct;
-    std::shared_ptr<structtypesAdapter> ptr = structtypesAdapter::create( &myStruct, "/path" );
+    std::shared_ptr<signalNameAdapter> sigAdapt = signalNameAdapter::create( nullptr );
+
+    sigAdapt->exampleSignal( "foobar" );
 }

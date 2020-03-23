@@ -16,26 +16,22 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include "structtypesAdapter.h"
+#include "signal-info.h"
 
-class MyStructType : public structtypesAdaptee {
-public:
-	void structMethod( std::tuple<int,int> struct1, std::tuple<int,std::tuple<int,int>> struct2 ){
-	}
+SignalInfo::SignalInfo(){}
 
-	void mapMethod( std::map<std::string,DBus::Variant> map ){}
+SignalInfo::SignalInfo( std::string name ) :
+	m_name( name )
+{}
 
-	void arrayMethod( std::vector<double> vector ){}
+void SignalInfo::addArgument( cppgenerate::Argument arg ){
+	m_arguments.push_back( arg );
+}
 
-	void mapMethod2( std::map<std::string,std::string> map ){}
-};
+std::vector<cppgenerate::Argument> SignalInfo::arguments() const {
+	return m_arguments;
+}
 
-int main(){
-    DBus::init();
-
-    std::shared_ptr<DBus::Dispatcher> dispatch = DBus::Dispatcher::create();
-    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
-
-    MyStructType myStruct;
-    std::shared_ptr<structtypesAdapter> ptr = structtypesAdapter::create( &myStruct, "/path" );
+std::string SignalInfo::name() const {
+	return m_name;
 }

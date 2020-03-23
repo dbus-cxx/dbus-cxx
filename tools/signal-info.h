@@ -16,26 +16,31 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include "structtypesAdapter.h"
+#ifndef SIGNAL_INFO_H
+#define SIGNAL_INFO_H
 
-class MyStructType : public structtypesAdaptee {
+#include <string>
+#include <vector>
+#include <cppgenerate/argument.h>
+
+/**
+ * Represents parsed information from the introspection XML on a DBus signal
+ */
+class SignalInfo {
 public:
-	void structMethod( std::tuple<int,int> struct1, std::tuple<int,std::tuple<int,int>> struct2 ){
-	}
+	SignalInfo();
 
-	void mapMethod( std::map<std::string,DBus::Variant> map ){}
+	SignalInfo( std::string name );
 
-	void arrayMethod( std::vector<double> vector ){}
+	void addArgument( cppgenerate::Argument arg );
 
-	void mapMethod2( std::map<std::string,std::string> map ){}
+	std::vector<cppgenerate::Argument> arguments() const;
+
+	std::string name() const;
+
+private:
+	std::string m_name;
+	std::vector<cppgenerate::Argument> m_arguments;
 };
 
-int main(){
-    DBus::init();
-
-    std::shared_ptr<DBus::Dispatcher> dispatch = DBus::Dispatcher::create();
-    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
-
-    MyStructType myStruct;
-    std::shared_ptr<structtypesAdapter> ptr = structtypesAdapter::create( &myStruct, "/path" );
-}
+#endif

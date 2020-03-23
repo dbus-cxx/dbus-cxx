@@ -30,6 +30,7 @@ include_directories( ${CMAKE_SOURCE_DIR}/dbus-cxx
 add_executable( dbus-cxx-xml2cpp 
     xml2cpp.cpp
     code-generator.cpp 
+    signal-info.cpp
 )
 target_link_libraries( dbus-cxx-xml2cpp ${TOOLS_LINK} ${cppgenerate_LDFLAGS} )
 install( TARGETS dbus-cxx-xml2cpp DESTINATION bin )
