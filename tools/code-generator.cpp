@@ -356,12 +356,22 @@ void CodeGenerator::end_element( std::string tagName ){
             .addConstructor( m_currentAdapterConstructor );
     }else if( tagName == "signal" ){
         cppgenerate::MemberVariable adapterMemberVar;
+        cppgenerate::MemberVariable proxyMemberVar;
         cppgenerate::Method getSignalMethod;
         cppgenerate::Method emitSignalMethod;
+        cppgenerate::Method proxy_getSignalMethod;
         std::vector<cppgenerate::Argument> args = m_currentSignal.arguments();
         std::string templateType;
         bool argumentComma = false;
         std::string signalEmitCode;
+
+/*
+    std::shared_ptr<DBus::signal_proxy<std::string>> proxy = conn->create_signal_proxy<std::string>(
+        DBus::SignalMatchRule::create()
+          .setPath("/test/signal")
+          .setInterface("test.signal.type")
+          .setMember( "Path" ) );
+*/
 
         templateType += "<";
         signalEmitCode = "(*m_signal_" + m_currentSignal.name() + ")(";
@@ -380,9 +390,19 @@ void CodeGenerator::end_element( std::string tagName ){
         templateType += ">";
         signalEmitCode += ");";
 
+        proxyMemberVar.setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
+                 .setName( "m_signalproxy_" + m_currentSignal.name() )
+                 .setType( "std::shared_ptr<DBus::signal_proxy" + templateType + ">" );
+
         adapterMemberVar.setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
                  .setName( "m_signal_" + m_currentSignal.name() )
                  .setType( "std::shared_ptr<DBus::signal" + templateType + ">" );
+
+        proxy_getSignalMethod = cppgenerate::Method::create()
+            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+            .setReturnType( "std::shared_ptr<DBus::signal_proxy" + templateType + ">" )
+            .setName( "signal_" + m_currentSignal.name() )
+            .setCode( cppgenerate::CodeBlock::create().addLine( "return m_signalproxy_" + m_currentSignal.name() + ";" ) );
 
         getSignalMethod = cppgenerate::Method::create()
             .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
@@ -395,14 +415,23 @@ void CodeGenerator::end_element( std::string tagName ){
             .setCode( cppgenerate::CodeBlock::create().addLine( signalEmitCode ) );
         
         m_adapterClasses.data()[ m_adapterClasses.size() - 1 ]
-            .addMethod( m_currentProxyMethod )
             .addMemberVariable( adapterMemberVar )
             .addMethod( getSignalMethod )
             .addMethod( emitSignalMethod );
 
+        m_proxyClasses.data()[ m_proxyClasses.size() - 1 ]
+            .addMemberVariable( proxyMemberVar )
+            .addMethod( proxy_getSignalMethod );
+
         /* Add our internal construction of the adapter signal */
         m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
             .addLine( adapterMemberVar.name() + 
+                      " = this->create_signal" + templateType + 
+                      "( \"" + m_currentInterface + "\", \"" + 
+                      m_currentSignal.name() + "\" );" ) );
+
+        m_currentProxyConstructor.addCode( cppgenerate::CodeBlock::create()
+            .addLine( proxyMemberVar.name() + 
                       " = this->create_signal" + templateType + 
                       "( \"" + m_currentInterface + "\", \"" + 
                       m_currentSignal.name() + "\" );" ) );
