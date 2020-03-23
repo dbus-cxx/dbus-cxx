@@ -5,5 +5,11 @@
             <arg type="(ii)" name="struct1" direction="in"/>
             <arg type="(i(ii))" name="struct2" direction="in"/>
         </method>
+        <method name="mapMethod">
+            <arg type="a{sv}" direction="in"/>
+        </method>
+        <method name="arrayMethod">
+            <arg type="ad" direction="in"/>
+        </method>
     </interface>
 </node>

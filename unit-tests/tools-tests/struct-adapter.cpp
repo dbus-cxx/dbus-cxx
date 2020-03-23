@@ -4,6 +4,10 @@ class MyStructType : public structtypesAdaptee {
 public:
 	void structMethod( std::tuple<int,int> struct1, std::tuple<int,std::tuple<int,int>> struct2 ){
 	}
+
+	void mapMethod( std::map<std::string,DBus::Variant> map ){}
+
+	void arrayMethod( std::vector<double> vector ){}
 };
 
 int main(){

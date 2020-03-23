@@ -96,7 +96,7 @@ namespace DBus {
       case DataType::ARRAY:
         return "std::vector";
       case DataType::VARIANT:
-        return "VARIANT(need impl)";
+        return "DBus::Variant";
       case DataType::STRUCT:
         return "std::tuple";
       case DataType::DICT_ENTRY:
