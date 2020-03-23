@@ -8,6 +8,8 @@ public:
 	void mapMethod( std::map<std::string,DBus::Variant> map ){}
 
 	void arrayMethod( std::vector<double> vector ){}
+
+	void mapMethod2( std::map<std::string,std::string> map ){}
 };
 
 int main(){

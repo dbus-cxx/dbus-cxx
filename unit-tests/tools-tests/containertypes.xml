@@ -11,5 +11,8 @@
         <method name="arrayMethod">
             <arg type="ad" direction="in"/>
         </method>
+        <method name="mapMethod2">
+            <arg type="a{ss}" direction="in"/>
+        </method>
     </interface>
 </node>
