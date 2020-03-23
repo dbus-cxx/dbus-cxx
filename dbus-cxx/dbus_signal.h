@@ -79,7 +79,7 @@ public:
     DBus::priv::dbus_function_traits<std::function<void(T_type...)>> method_sig_gen;
     for (int i=0; i < space_depth; i++ ) spaces += " ";
     sout << spaces << "<signal name=\"" << name() << "\">\n";
-    sout << method_sig_gen.introspect(m_arg_names, 0, spaces);
+    sout << spaces << method_sig_gen.introspect(m_arg_names, 0, spaces);
     sout << spaces << "</signal>\n";
     return sout.str();
   }
