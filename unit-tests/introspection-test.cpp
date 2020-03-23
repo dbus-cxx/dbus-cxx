@@ -40,7 +40,8 @@ struct XMLParseResults {
 		found_iface_whatbob( false ),
 		found_add_method_under_foowhat( false ),
 		first_arg_name_correct( false ),
-		second_arg_name_correct( false )
+		second_arg_name_correct( false ),
+                found_signal( false )
 	{}
 
 	bool found_iface_foowhat;
@@ -48,12 +49,14 @@ struct XMLParseResults {
 	bool found_add_method_under_foowhat;
 	bool first_arg_name_correct;
 	bool second_arg_name_correct;
+	bool found_signal;
 };
 
 XMLParseResults parseResults;
 std::stack<std::string> tagStack;
 std::string currentInterface;
 std::string currentMethod;
+std::string currentSignal;
 int argNum;
 
 //
@@ -108,6 +111,13 @@ static void startElement( void*, const XML_Char* name, const XML_Char** attrs ){
 	    parseResults.second_arg_name_correct = true;
         }
         argNum++;
+    }
+    if( elemName == "signal" ){
+        if( tagAttrs[ "name" ] == "tim" && currentInterface == "sig.interface" ){
+            parseResults.found_signal = true;
+        }
+        currentSignal = tagAttrs[ "name" ];
+        argNum = 0;
     }
 }
 
@@ -184,6 +194,18 @@ bool introspect_add_method_under_foowhat(){
     return parseResults.found_add_method_under_foowhat;
 }
 
+bool introspect_signal_found(){
+    std::string introspectionData = (*introspection_method_proxy)();
+
+    XML_Parser parser = XML_ParserCreate(NULL);
+    XML_SetElementHandler( parser, startElement, endElement );
+    if( XML_Parse( parser, introspectionData.c_str(), introspectionData.size(), 1 ) == XML_STATUS_ERROR ){
+        return false;
+    }
+    XML_ParserFree( parser );
+    return parseResults.found_signal;
+}
+
 void client_setup(){
     proxy = conn->create_object_proxy( "dbuscxx.test", "/test" );
 
@@ -203,6 +225,8 @@ void server_setup(){
     int_method->set_arg_name( 2, "second" );
 
     object->create_method<void(double)>("what.bob", "setBar", sigc::ptr_fun(doublefun) );
+
+    object->create_signal<std::string>( "sig.interface", "tim" );
 }
 
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
@@ -230,6 +254,7 @@ int main(int argc, char** argv){
     ADD_TEST(add_method_under_foowhat);
     ADD_TEST(first_argname_correct);
     ADD_TEST(second_argname_correct);
+    ADD_TEST(signal_found);
   }else{
     server_setup();
     ret = true;

@@ -186,6 +186,7 @@ add_test( NAME validate-interfaces COMMAND dbus-wrapper-introspection-tests.sh v
 add_test( NAME add-method-found COMMAND dbus-wrapper-introspection-tests.sh add_method_under_foowhat)
 add_test( NAME first-argname-correct COMMAND dbus-wrapper-introspection-tests.sh first_argname_correct)
 add_test( NAME second-argname-correct COMMAND dbus-wrapper-introspection-tests.sh second_argname_correct)
+add_test( NAME signal-found COMMAND dbus-wrapper-introspection-tests.sh signal_found)
 
 #
 # Custom DBus address test - make sure that we can connect to an arbitary bus, not just the default session bus
