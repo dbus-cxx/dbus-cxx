@@ -156,18 +156,6 @@ namespace DBus
 
       MessageAppendIterator* sub_iterator();
 
-//           bool append_array( char type, const void* ptr, size_t length );
-
-//           iterator new_array( const char* sig );
-
-//           iterator new_variant( const char* sig );
-
-//           iterator new_struct();
-
-//           iterator new_dict_entry();
-
-//           void close_container( iterator& container );
-
     protected:
       Message* m_message;
       DBusMessageIter m_cobj;

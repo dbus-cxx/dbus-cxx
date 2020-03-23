@@ -133,107 +133,6 @@ namespace DBus
        * - dbus_message_iter_get_array_len
        */
 
-//       void value( std::vector<std::string>& temp );
-
-//       void value( std::string& temp );
-
-//       void value( Variant& temp );
-
-//       template <typename T0>
-//       void value( Struct<T0>& temp ) {
-//         if ( this->element_type() != TYPE_STRUCT ) throw ErrorInvalidTypecast();
-//         MessageIterator subiter = this->recurse();
-//         subiter.value( boost::get<0>( temp ) );
-//       }
-
-//       template <typename T0, typename T1>
-//       void value( Struct<T0,T1>& temp ) {
-//         if ( this->element_type() != TYPE_STRUCT ) throw ErrorInvalidTypecast();
-//         MessageIterator subiter = this->recurse();
-//         subiter.value( boost::get<0>( temp ) );
-//         subiter.value( boost::get<1>( temp ) );
-//       }
-
-//       template <typename T0, typename T1, typename T2>
-//       void value( Struct<T0,T1,T2>& temp ) {
-//         if ( this->element_type() != TYPE_STRUCT ) throw ErrorInvalidTypecast();
-//         MessageIterator subiter = this->recurse();
-//         subiter.value( boost::get<0>( temp ) );
-//         subiter.value( boost::get<1>( temp ) );
-//         subiter.value( boost::get<2>( temp ) );
-//       }
-// 
-//       template <typename T0, typename T1, typename T2, typename T3>
-//       void value( Struct<T0,T1,T2,T3>& temp ) {
-//         if ( this->element_type() != TYPE_STRUCT ) throw ErrorInvalidTypecast();
-//         MessageIterator subiter = this->recurse();
-//         subiter.value( boost::get<0>( temp ) );
-//         subiter.value( boost::get<1>( temp ) );
-//         subiter.value( boost::get<2>( temp ) );
-//         subiter.value( boost::get<3>( temp ) );
-//       }
-// 
-//       template <typename T0, typename T1, typename T2, typename T3, typename T4>
-//       void value( Struct<T0,T1,T2,T3,T4>& temp ) {
-//         if ( this->element_type() != TYPE_STRUCT ) throw ErrorInvalidTypecast();
-//         MessageIterator subiter = this->recurse();
-//         subiter.value( boost::get<0>( temp ) );
-//         subiter.value( boost::get<1>( temp ) );
-//         subiter.value( boost::get<2>( temp ) );
-//         subiter.value( boost::get<3>( temp ) );
-//         subiter.value( boost::get<4>( temp ) );
-//       }
-// 
-//       template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5>
-//       void value( Struct<T0,T1,T2,T3,T4,T5>& temp ) {
-//         if ( this->element_type() != TYPE_STRUCT ) throw ErrorInvalidTypecast();
-//         MessageIterator subiter = this->recurse();
-//         subiter.value( boost::get<0>( temp ) );
-//         subiter.value( boost::get<1>( temp ) );
-//         subiter.value( boost::get<2>( temp ) );
-//         subiter.value( boost::get<3>( temp ) );
-//         subiter.value( boost::get<4>( temp ) );
-//         subiter.value( boost::get<5>( temp ) );
-//       }
-// 
-//       template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-//       void value( Struct<T0,T1,T2,T3,T4,T5,T6>& temp ) {
-//         if ( this->element_type() != TYPE_STRUCT ) throw ErrorInvalidTypecast();
-//         MessageIterator subiter = this->recurse();
-//         subiter.value( boost::get<0>( temp ) );
-//         subiter.value( boost::get<1>( temp ) );
-//         subiter.value( boost::get<2>( temp ) );
-//         subiter.value( boost::get<3>( temp ) );
-//         subiter.value( boost::get<4>( temp ) );
-//         subiter.value( boost::get<5>( temp ) );
-//         subiter.value( boost::get<6>( temp ) );
-//       }
-
-//       template <typename Key, typename Data>
-//       void value( std::vector<std::pair<Key,Data> >& temp ) {
-//         if ( this->element_type() != TYPE_ARRAY )
-//           throw ErrorInvalidTypecast( "Extracting non-array type into dictionary" );
-// 
-//         temp.clear();
-//         MessageIterator subiter = this->recurse();
-//         MessageIterator subsubiter;
-//         Key k;
-//         Data d;
-// 
-//         while ( subiter.has_next() ) {
-//           if ( subiter.element_type() != TYPE_DICT_ENTRY )
-//             throw ErrorInvalidTypecast( "Extracting non-dictionary-entry type into dictionary entry" );
-//           subsubiter = subiter.recurse();
-//           subsubiter.value( k );
-//           ++subsubiter;
-//           subsubiter.value( d );
-//           temp.push_back( std::make_pair( k,d ) );
-//           ++subiter;
-//         }
-//       }
-
-
-
       operator bool();
       operator uint8_t();
       operator uint16_t();
@@ -447,21 +346,6 @@ namespace DBus
         }
       }
 
-/*
-      template <typename T>
-      MessageIterator& operator>>( std::variant<T>& v )
-      {
-	try{
-          MessageIterator subiter = this->recurse();
-          v = (T)(*this);
-          this->next();
-          return *this;
-        }catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
-          throw (ErrorInvalidTypecast)*e;
-        }
-      }
-*/
-      
       template <typename T>
       void value( T& temp ) {
         if ( this->arg_type() != DBus::type( temp ) ) {
