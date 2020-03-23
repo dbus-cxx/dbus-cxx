@@ -175,9 +175,14 @@ add_test( NAME remove-handler COMMAND dbus-wrapper.sh signal-tests remove_handle
 #
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper-introspection-tests.sh ${CMAKE_CURRENT_BINARY_DIR}/dbus-wrapper-introspection-tests.sh COPYONLY)
 add_executable( introspection-tests introspection-test.cpp )
-target_link_libraries( introspection-tests ${TEST_LINK} )
+target_link_libraries( introspection-tests ${TEST_LINK} ${expat_LDFLAGS} )
 target_include_directories( introspection-tests PUBLIC ${CMAKE_SOURCE_DIR} )
 target_include_directories( introspection-tests PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
 set_property( TARGET introspection-tests PROPERTY CXX_STANDARD 17 )
 
 add_test( NAME basic-introspect COMMAND dbus-wrapper-introspection-tests.sh basic_introspect)
+add_test( NAME validate-xml COMMAND dbus-wrapper-introspection-tests.sh valid_xml)
+add_test( NAME validate-interfaces COMMAND dbus-wrapper-introspection-tests.sh validate_interfaces)
+add_test( NAME add-method-found COMMAND dbus-wrapper-introspection-tests.sh add_method_under_foowhat)
+add_test( NAME first-argname-correct COMMAND dbus-wrapper-introspection-tests.sh first_argname_correct)
+add_test( NAME second-argname-correct COMMAND dbus-wrapper-introspection-tests.sh second_argname_correct)
