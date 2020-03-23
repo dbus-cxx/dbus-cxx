@@ -365,14 +365,6 @@ void CodeGenerator::end_element( std::string tagName ){
         bool argumentComma = false;
         std::string signalEmitCode;
 
-/*
-    std::shared_ptr<DBus::signal_proxy<std::string>> proxy = conn->create_signal_proxy<std::string>(
-        DBus::SignalMatchRule::create()
-          .setPath("/test/signal")
-          .setInterface("test.signal.type")
-          .setMember( "Path" ) );
-*/
-
         templateType += "<";
         signalEmitCode = "(*m_signal_" + m_currentSignal.name() + ")(";
         for( cppgenerate::Argument arg : args ){
