@@ -59,6 +59,7 @@ add_test( NAME messageiterator-filedescriptor COMMAND test-messageiterator filed
 add_test( NAME messageiterator-multiple COMMAND test-messageiterator multiple)
 add_test( NAME messageiterator-struct COMMAND test-messageiterator struct)
 add_test( NAME messageiterator-variant COMMAND test-messageiterator variant)
+add_test( NAME messageiterator-map-variant COMMAND test-messageiterator map_string_variant)
 
 add_test( NAME messageiterator-Bool2 COMMAND test-messageiterator bool-2)
 add_test( NAME messageiterator-Byte2 COMMAND test-messageiterator byte-2)

@@ -79,6 +79,9 @@ Variant::Variant( double i ) :
     m_data( i )
 {}
 
+Variant::Variant( const char* cstr ) :
+    Variant( std::string( cstr ) ){}
+
 Variant::Variant( std::string str ) :
     m_currentType( DataType::STRING ),
     m_signature( DBus::signature( str ) ),

@@ -127,8 +127,8 @@ namespace DBus
         this->open_container( ContainerType::ARRAY, sig );
         for ( it = dictionary.begin(); it != dictionary.end(); it++ ) {
           m_subiter->open_container( ContainerType::DICT_ENTRY, std::string() );
-          m_subiter->m_subiter << (*it).first;
-          m_subiter->m_subiter << (*it).second;
+          *(m_subiter->m_subiter) << it->first;
+          *(m_subiter->m_subiter) << it->second;
           m_subiter->close_container();
         }
         this->close_container();

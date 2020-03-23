@@ -353,6 +353,49 @@ bool call_message_append_extract_iterator_variant(){
   return true;
 }
 
+bool call_message_append_extract_iterator_map_string_string(){
+  std::map<std::string,std::string> themap;
+  std::map<std::string,std::string> extracted_map;
+
+  themap[ "first" ] = "what";
+  themap[ "second" ] = "hi";
+
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  DBus::MessageAppendIterator iter1(msg);
+  iter1 << themap;
+
+  DBus::MessageIterator iter2(msg);
+  extracted_map = (std::map<std::string,std::string>)iter2;
+
+  TEST_EQUALS_RET_FAIL( extracted_map["first"], "what" );
+  TEST_EQUALS_RET_FAIL( extracted_map["second"], "hi" );
+
+  return true;
+}
+
+bool call_message_append_extract_iterator_map_string_variant(){
+  DBus::Variant var1( 99 );
+  DBus::Variant var2( "hi" );
+  std::map<std::string,DBus::Variant> themap;
+  std::map<std::string,DBus::Variant> extracted_map;
+
+  themap[ "one" ] = var1;
+  themap[ "xcom" ] = var2;
+
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  DBus::MessageAppendIterator iter1(msg);
+  iter1 << themap;
+
+  DBus::MessageIterator iter2(msg);
+  extracted_map = (std::map<std::string,DBus::Variant>)iter2;
+
+  TEST_EQUALS_RET_FAIL( std::any_cast<int>(extracted_map["one"].value()), 99 );
+std::cout << extracted_map["xcom"].value().type().name() << " << type" << std::endl;
+  TEST_EQUALS_RET_FAIL( std::any_cast<std::string>(extracted_map["xcom"].value()), "hi" );
+
+  return true;
+}
+
 template <typename T>
     bool test_numeric_call_message_iterator_insertion_extraction_operator( T v )
 {
@@ -765,6 +808,8 @@ int main(int argc, char** argv){
   ADD_TEST(multiple);
   ADD_TEST(struct);
   ADD_TEST(variant);
+  ADD_TEST(map_string_variant);
+  ADD_TEST(map_string_string);
 
   ADD_TEST2(bool);
   ADD_TEST2(byte);

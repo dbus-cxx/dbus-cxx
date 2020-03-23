@@ -43,6 +43,7 @@ class Variant {
     Variant( int64_t i );
     Variant( uint64_t i );
     Variant( double i );
+    Variant( const char* cstr );
     Variant( std::string str );
     explicit Variant( Signature sig );
     explicit Variant( Path path );
