@@ -186,3 +186,15 @@ add_test( NAME validate-interfaces COMMAND dbus-wrapper-introspection-tests.sh v
 add_test( NAME add-method-found COMMAND dbus-wrapper-introspection-tests.sh add_method_under_foowhat)
 add_test( NAME first-argname-correct COMMAND dbus-wrapper-introspection-tests.sh first_argname_correct)
 add_test( NAME second-argname-correct COMMAND dbus-wrapper-introspection-tests.sh second_argname_correct)
+
+#
+# Custom DBus address test - make sure that we can connect to an arbitary bus, not just the default session bus
+#
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper-customaddress.sh ${CMAKE_CURRENT_BINARY_DIR}/dbus-wrapper-customaddress.sh COPYONLY)
+add_executable( customaddress-tests customaddress-test.cpp )
+target_link_libraries( customaddress-tests ${TEST_LINK} )
+target_include_directories( customaddress-tests PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( customaddress-tests PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+set_property( TARGET customaddress-tests PROPERTY CXX_STANDARD 17 )
+
+add_test( NAME custom-address COMMAND dbus-wrapper-customaddress.sh customaddress-tests)
