@@ -27,6 +27,13 @@
 #define DBUS_CXX_INTROSPECTABLE_INTERFACE "org.freedesktop.DBus.Introspectable"
 
 /**
+ * \namespace DBus Global DBus namespace, where everything happens.
+ * \namespace DBus::priv Private namespace for internal dbux-cxx implementation.
+ *  This implementation may not be stable and may change between releases,
+ *  so use at your own risk!
+ */
+
+/**
  * \def DBUS_CXX_ITERATOR_SUPPORT(CppType,DBusType)
  * Provides support for unsupported types that can be cast to DBus supported types
  *
