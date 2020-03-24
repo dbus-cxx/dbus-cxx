@@ -17,12 +17,19 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/messagehandler.h>
+#include <dbus/dbus.h>
+#include <memory>
+#include <string>
+#include "enums.h"
+#include "path.h"
+#include <sigc++/sigc++.h>
 
 #ifndef DBUSCXX_OBJECTPATHHANDLER_H
 #define DBUSCXX_OBJECTPATHHANDLER_H
 
 namespace DBus
 {
+  class Connection;
 
   /**
    * Provides an object that handles messages for a given object path on a connection.

@@ -16,18 +16,33 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-
-#include "utility.h"
 #include "connection.h"
-#include "dbus-cxx-private.h"
-#include "objectproxy.h"
-
-#include <iostream>
-#include <sys/time.h>
+#include <dbus-cxx/interfaceproxy.h>
+#include <dbus-cxx/signalmessage.h>
+#include <dbus-cxx/accumulators.h>
+#include <algorithm>
 #include <cassert>
 #include <memory>
+#include <utility>
+#include "callmessage.h"
+#include "dbus-cxx-private.h"
+#include "error.h"
+#include "message.h"
+#include "messagefilter.h"
+#include "messagehandler.h"
+#include "object.h"
+#include "objectpathhandler.h"
+#include "objectproxy.h"
+#include "path.h"
+#include "pendingcall.h"
+#include "returnmessage.h"
+#include <sigc++/sigc++.h>
+#include "signal_proxy_base.h"
+#include "timeout.h"
+#include "watch.h"
 
-#include <dbus-cxx/signalmessage.h>
+namespace sigc { template <typename T_return, typename ...T_arg> class signal; }
+namespace sigc { template <typename T_return, typename ...T_arg> class slot; }
 
 namespace DBus
 {
@@ -43,7 +58,7 @@ namespace DBus
     }
   }
 
-  Connection::Connection( BusType type, bool is_private ): m_cobj( NULL )
+  Connection::Connection( BusType type, bool is_private ): m_cobj( nullptr )
   {
     Error error = Error();
 
@@ -52,31 +67,31 @@ namespace DBus
       if ( is_private ) {
         m_cobj = dbus_bus_get_private(( DBusBusType )type, error.cobj() );
         if ( error.is_set() ) throw error;
-        if ( m_cobj == NULL ) throw ErrorFailed();
+        if ( m_cobj == nullptr ) throw ErrorFailed();
         this->initialize(is_private);
       }
       else {
         m_cobj = dbus_bus_get(( DBusBusType )type, error.cobj() );
 	if ( error.is_set() ) throw error;
-        if ( m_cobj == NULL ) throw ErrorFailed();
+        if ( m_cobj == nullptr ) throw ErrorFailed();
         this->initialize(is_private);
       }
     }
   }
 
-  Connection::Connection( std::string address, bool is_private ): m_cobj( NULL )
+  Connection::Connection( std::string address, bool is_private ): m_cobj( nullptr )
   {
     Error error = Error();
 
     if ( is_private ) {
       m_cobj = dbus_connection_open_private(address.c_str(), error.cobj() );
       if ( error.is_set() ) throw error;
-      if ( m_cobj == NULL ) throw ErrorFailed();
+      if ( m_cobj == nullptr ) throw ErrorFailed();
     }
     else {
       m_cobj = dbus_connection_open(address.c_str(), error.cobj() );
       if ( error.is_set() ) throw error;
-      if ( m_cobj == NULL ) throw ErrorFailed();
+      if ( m_cobj == nullptr ) throw ErrorFailed();
     }
 
     //Make sure the DBus doesn't kick us for not sending the org.freedesktop.DBus.Hello
@@ -184,7 +199,7 @@ namespace DBus
     
     void* v = dbus_connection_get_data(this->cobj(), m_weak_pointer_slot);
 
-    if ( v == NULL ) return std::shared_ptr<Connection>();
+    if ( v == nullptr ) return std::shared_ptr<Connection>();
 
     std::weak_ptr<Connection>* wp = static_cast<std::weak_ptr<Connection>*>(v);
 
@@ -195,11 +210,11 @@ namespace DBus
 
   std::shared_ptr<Connection> Connection::self(DBusConnection * c)
   {
-    if ( c == NULL or m_weak_pointer_slot == -1 ) return std::shared_ptr<Connection>();
+    if ( c == nullptr or m_weak_pointer_slot == -1 ) return std::shared_ptr<Connection>();
     
     void* v = dbus_connection_get_data(c, m_weak_pointer_slot);
 
-    if ( v == NULL ) return std::shared_ptr<Connection>();
+    if ( v == nullptr ) return std::shared_ptr<Connection>();
 
     std::weak_ptr<Connection>* wp = static_cast<std::weak_ptr<Connection>*>(v);
 
@@ -242,12 +257,12 @@ namespace DBus
 
   bool Connection::is_registered() const
   {
-    return this->unique_name() != NULL;
+    return this->unique_name() != nullptr;
   }
 
   const char * Connection::unique_name() const
   {
-    if ( not this->is_valid() ) return NULL;
+    if ( not this->is_valid() ) return nullptr;
     return dbus_bus_get_unique_name(m_cobj);
   }
 
@@ -261,7 +276,7 @@ namespace DBus
   const char* Connection::bus_id() const
   {
     Error error = Error();
-    if ( not this->is_valid() ) return NULL;
+    if ( not this->is_valid() ) return nullptr;
     return dbus_bus_get_id( m_cobj, error.cobj() );
   }
 
@@ -334,7 +349,7 @@ namespace DBus
   void Connection::add_match_nonblocking( const std::string& rule )
   {
     if ( not this->is_valid() ) return;
-    dbus_bus_add_match( m_cobj, rule.c_str(), NULL );
+    dbus_bus_add_match( m_cobj, rule.c_str(), nullptr );
   }
 
   bool Connection::remove_match( const std::string& rule )
@@ -351,7 +366,7 @@ namespace DBus
   void Connection::remove_match_nonblocking( const std::string& rule )
   {
     if ( not this->is_valid() ) return;
-    dbus_bus_remove_match( m_cobj, rule.c_str(), NULL );
+    dbus_bus_remove_match( m_cobj, rule.c_str(), nullptr );
   }
 
   bool Connection::is_connected() const
@@ -374,7 +389,7 @@ namespace DBus
 
   const char* Connection::server_id() const
   {
-    if ( not this->is_valid() ) return NULL;
+    if ( not this->is_valid() ) return nullptr;
     return dbus_connection_get_server_id( m_cobj );
   }
 
@@ -830,7 +845,7 @@ namespace DBus
 //
 // //                            DEBUG_OUT( "Connection::register_signal()", "pre-creation interface VTable address is " << (unsigned long) interface_vtable );
 //
-//     if ( interface_vtable == NULL ) {
+//     if ( interface_vtable == nullptr ) {
 //       interface_vtable = new InterfaceVTable();
 //       dbus_connection_set_data( m_cobj, m_interface_vtable_slot, interface_vtable, operator delete );
 //     }
@@ -867,7 +882,7 @@ namespace DBus
                                                   Connection::on_remove_watch_callback,
                                                   Connection::on_watch_toggled_callback,
                                                   this,
-                                                  NULL
+                                                  nullptr
                                                 );
     if ( not result ) throw ErrorNoMemory();
   
@@ -876,15 +891,15 @@ namespace DBus
                                                   Connection::on_remove_timeout_callback,
                                                   Connection::on_timeout_toggled_callback,
                                                   this,
-                                                  NULL
+                                                  nullptr
                                                 );
     if ( not result ) throw ErrorNoMemory();
   
-    dbus_connection_set_wakeup_main_function( m_cobj, Connection::on_wakeup_main_callback, this, NULL );
+    dbus_connection_set_wakeup_main_function( m_cobj, Connection::on_wakeup_main_callback, this, nullptr );
   
-    dbus_connection_set_dispatch_status_function( m_cobj, Connection::on_dispatch_status_callback, this, NULL );
+    dbus_connection_set_dispatch_status_function( m_cobj, Connection::on_dispatch_status_callback, this, nullptr );
 
-    result = dbus_connection_add_filter( m_cobj, Connection::on_filter_callback, this, NULL );
+    result = dbus_connection_add_filter( m_cobj, Connection::on_filter_callback, this, nullptr );
     if ( not result ) throw ErrorNoMemory();
   
   }
@@ -990,7 +1005,7 @@ namespace DBus
 
   DBusHandlerResult Connection::on_filter_callback(DBusConnection * connection, DBusMessage * message, void * data)
   {
-    if ( message == NULL ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    if ( message == nullptr ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     
     std::shared_ptr<Connection> conn = static_cast<Connection*>(data)->self();
     FilterResult filter_result = FilterResult::DONT_FILTER;

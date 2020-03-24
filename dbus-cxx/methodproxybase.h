@@ -18,25 +18,24 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <string>
-
-#include <sigc++/sigc++.h>
-
-#include <mutex>
-#include <memory>
-
-#include <dbus-cxx/enums.h>
-#include <dbus-cxx/forward_decls.h>
-#include <dbus-cxx/accumulators.h>
 #include <dbus-cxx/callmessage.h>
-#include <dbus-cxx/returnmessage.h>
-#include <dbus-cxx/pendingcall.h>
+#include <memory>
+#include <mutex>
+#include <string>
+#include "messageappenditerator.h"
+#include <sigc++/sigc++.h>
 
 #ifndef DBUSCXX_METHODPROXYBASE_H
 #define DBUSCXX_METHODPROXYBASE_H
 
 namespace DBus
 {
+
+  class InterfaceProxy;
+  class PendingCall;
+  class ReturnMessage;
+  template <typename signature> class MethodProxy;
+
   /**
    * @ingroup objects
    * @ingroup proxy
@@ -108,9 +107,6 @@ namespace DBus
       sigc::signal<void(const std::string&, const std::string&)> m_signal_name_changed;
 
   };
-
-  template<typename signature>
-  class MethodProxy;
 
   template<typename... T_arg>
   class MethodProxy<void(T_arg...)> : public MethodProxyBase

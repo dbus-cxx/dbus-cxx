@@ -17,7 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus/dbus.h>
-#include <sigc++/signal.h>
+#include <sigc++/sigc++.h>
 #include <memory>
 
 #ifndef DBUSCXX_PENDING_CALL_H
@@ -38,12 +38,12 @@ namespace DBus
   {
     protected:
 
-      PendingCall( DBusPendingCall* cobj = NULL );
+      PendingCall( DBusPendingCall* cobj = nullptr );
 
       PendingCall( const PendingCall& );
 
     public:
-      static std::shared_ptr<PendingCall> create( DBusPendingCall* cobj = NULL );
+      static std::shared_ptr<PendingCall> create( DBusPendingCall* cobj = nullptr );
 
       static std::shared_ptr<PendingCall> create( const PendingCall& );
 

@@ -16,9 +16,10 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <dbus-cxx/signalmessage.h>
-
 #include "signal_proxy_base.h"
+#include <dbus-cxx/signalmessage.h>
+#include "path.h"
+#include "signal_base.h"
 
 namespace DBus
 {

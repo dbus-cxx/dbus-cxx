@@ -16,13 +16,13 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-
 #include "methodbase.h"
 #include "dbus-cxx-private.h"
 #include "dbus-cxx/connection.h"
 
 namespace DBus
 {
+  class Message;
 
   MethodBase::MethodBase(const std::string& name):
       m_name(name)

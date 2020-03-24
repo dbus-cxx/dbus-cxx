@@ -19,6 +19,7 @@
 #include <dbus-cxx.h>
 #include <unistd.h>
 #include <cmath>
+#include <iostream>
 
 /**
  * This example extends the signal-emitter example emits an array

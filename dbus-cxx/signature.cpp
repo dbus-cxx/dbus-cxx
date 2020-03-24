@@ -17,6 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "signature.h"
+#include <dbus/dbus.h>
 
 namespace DBus
 {
@@ -96,13 +97,13 @@ namespace DBus
   bool Signature::is_valid() const
   {
     if ( m_signature.empty() ) return false;
-    return dbus_signature_validate( m_signature.c_str(), NULL );
+    return dbus_signature_validate( m_signature.c_str(), nullptr );
   }
 
   bool Signature::is_singleton() const
   {
     if ( m_signature.empty() ) return false;
-    return dbus_signature_validate_single( m_signature.c_str(), NULL );
+    return dbus_signature_validate_single( m_signature.c_str(), nullptr );
   }
 
 }

@@ -17,6 +17,9 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/message.h>
+#include <dbus/dbus.h>
+#include <memory>
+#include <string>
 
 #ifndef DBUSCXX_ERRORMESSAGE_H
 #define DBUSCXX_ERRORMESSAGE_H

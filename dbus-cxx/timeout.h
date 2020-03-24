@@ -41,11 +41,11 @@ namespace DBus
   class Timeout
   {
     protected:
-      Timeout( DBusTimeout* cobj=NULL );
+      Timeout( DBusTimeout* cobj=nullptr );
 
     public:
       
-      static std::shared_ptr<Timeout> create( DBusTimeout* cobj=NULL );
+      static std::shared_ptr<Timeout> create( DBusTimeout* cobj=nullptr );
       
       ~Timeout();
 

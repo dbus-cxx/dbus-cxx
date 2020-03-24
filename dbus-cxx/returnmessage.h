@@ -16,7 +16,11 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#include <stdint.h>
 #include <dbus-cxx/message.h>
+#include <dbus/dbus.h>
+#include <memory>
+#include <string>
 
 #ifndef DBUSCXX_RETURNMESSAGE_H
 #define DBUSCXX_RETURNMESSAGE_H

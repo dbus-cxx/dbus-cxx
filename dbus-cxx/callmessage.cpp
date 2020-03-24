@@ -16,10 +16,11 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include "message.h"
 #include "callmessage.h"
-
-#include "returnmessage.h"
+#include "enums.h"
+#include "error.h"
+#include "message.h"
+#include "path.h"
 
 namespace DBus
 {
@@ -31,7 +32,7 @@ namespace DBus
 
   CallMessage::CallMessage( DBusMessage* cobj )
   {
-    if ( cobj == NULL )
+    if ( cobj == nullptr )
       throw ErrorInvalidCObject();
 
     if ( dbus_message_get_type( cobj ) != DBUS_MESSAGE_TYPE_METHOD_CALL )
@@ -73,13 +74,13 @@ namespace DBus
 
   CallMessage::CallMessage( const std::string& path, const std::string& iface, const std::string& method )
   {
-    m_cobj = dbus_message_new_method_call( NULL, path.c_str(), iface.c_str(), method.c_str() );
+    m_cobj = dbus_message_new_method_call( nullptr, path.c_str(), iface.c_str(), method.c_str() );
     m_valid = true;
   }
 
   CallMessage::CallMessage( const std::string& path, const std::string& method )
   {
-    m_cobj = dbus_message_new_method_call( NULL, path.c_str(), NULL, method.c_str() );
+    m_cobj = dbus_message_new_method_call( nullptr, path.c_str(), nullptr, method.c_str() );
     m_valid = true;
   }
 
@@ -138,7 +139,7 @@ namespace DBus
     std::vector<std::string> decomposed;
     char** p;
     dbus_message_get_path_decomposed( m_cobj, &p );
-    for ( char** q=p; q != NULL; q++ )
+    for ( char** q=p; q != nullptr; q++ )
       decomposed.push_back( *q );
     dbus_free_string_array( p );
     return decomposed;
@@ -190,13 +191,13 @@ namespace DBus
 
   void CallMessage::set_no_reply( bool no_reply )
   {
-    if ( m_cobj == NULL ) return;
+    if ( m_cobj == nullptr ) return;
     dbus_message_set_no_reply( m_cobj, no_reply );
   }
 
   bool CallMessage::expects_reply() const
   {
-    if ( m_cobj == NULL ) return false;
+    if ( m_cobj == nullptr ) return false;
     return !dbus_message_get_no_reply( m_cobj );
   }
 

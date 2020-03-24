@@ -18,8 +18,6 @@
  ***************************************************************************/
 #include "messagefilter.h"
 
-#include <dbus-cxx/connection.h>
-
 namespace DBus
 {
 

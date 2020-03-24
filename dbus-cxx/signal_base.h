@@ -16,13 +16,10 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <string>
-#include <memory>
-
-#include <sigc++/sigc++.h>
-
-#include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/path.h>
+#include <stddef.h>
+#include <memory>
+#include <string>
 
 #ifndef DBUSCXX_SIGNALBASE_H
 #define DBUSCXX_SIGNALBASE_H
@@ -30,6 +27,7 @@
 namespace DBus
 {
   class Connection;
+  class Message;
 
   /**
    * @defgroup signals Signals

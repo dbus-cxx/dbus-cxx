@@ -16,14 +16,16 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <cstdint>
+#include <stdint.h>
+#include <dbus-cxx/path.h>
+#include <dbus-cxx/signatureiterator.h>
+#include <any>
+#include <map>
+#include <memory>
 #include <ostream>
 #include <string>
-#include <map>
-#include <any>
-#include <dbus-cxx/signatureiterator.h>
-#include <dbus-cxx/path.h>
-#include <dbus-cxx/filedescriptor.h>
+#include <vector>
+#include <dbus/dbus.h>
 
 #ifndef DBUSCXX_SIGNATURE_H
 #define DBUSCXX_SIGNATURE_H
@@ -31,6 +33,7 @@
 namespace DBus
 {
 
+  class FileDescriptor;
   class Variant;
 
   /**

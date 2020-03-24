@@ -17,17 +17,23 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "interfaceproxy.h"
-#include "connection.h"
-#include "objectproxy.h"
-
 #include <map>
-#include <dbus/dbus.h>
+#include <utility>
+#include "connection.h"
+#include "methodproxybase.h"
+#include "objectproxy.h"
+#include <sigc++/sigc++.h>
+#include "signal_proxy_base.h"
 
 namespace DBus
 {
 
+  class CallMessage;
+  class PendingCall;
+  class ReturnMessage;
+
   InterfaceProxy::InterfaceProxy( const std::string& name ):
-      m_object(NULL),
+      m_object(nullptr),
       m_name(name)
   {
   }
@@ -152,7 +158,7 @@ namespace DBus
         }
       }
     }
-    method->m_interface = NULL;
+    method->m_interface = nullptr;
     
     if ( method ) m_signal_method_removed.emit( method );
   }
@@ -188,7 +194,7 @@ namespace DBus
       }
     }
 
-    method->m_interface = NULL;
+    method->m_interface = nullptr;
     
     if ( method ) m_signal_method_removed.emit( method );
   }

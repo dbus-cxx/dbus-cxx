@@ -18,6 +18,9 @@
  ***************************************************************************/
 #include "messagehandler.h"
 #include "connection.h"
+#include "enums.h"
+#include "message.h"
+#include "accumulators.h"
 
 namespace DBus
 {
@@ -39,7 +42,7 @@ namespace DBus
 
   DBusHandlerResult MessageHandler::message_handler_callback(DBusConnection * conn, DBusMessage * message, void * user_data)
   {
-    if ( user_data == NULL ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    if ( user_data == nullptr ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
     MessageHandler* handler = static_cast<MessageHandler*>(user_data);
 

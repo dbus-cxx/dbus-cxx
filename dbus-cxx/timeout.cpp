@@ -17,9 +17,11 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "timeout.h"
-#include "error.h"
-#include "utility.h"
+#include <signal.h>
+#include <sys/time.h>
+#include <time.h>
 #include "dbus-cxx-private.h"
+#include "error.h"
 
 namespace DBus
 {
@@ -28,7 +30,7 @@ namespace DBus
       m_cobj( cobj ),
       m_is_armed(false)
   {
-    if ( m_cobj ) dbus_timeout_set_data( cobj, this, NULL );
+    if ( m_cobj ) dbus_timeout_set_data( cobj, this, nullptr );
   }
 
   std::shared_ptr<Timeout> Timeout::create(DBusTimeout * cobj)
@@ -44,7 +46,7 @@ namespace DBus
 
   bool Timeout::is_valid() const
   {
-    return m_cobj != NULL;
+    return m_cobj != nullptr;
   }
 
   Timeout::operator bool() const
@@ -103,7 +105,7 @@ namespace DBus
       nsec = (intv % 1000) * 1000000;
       struct itimerspec its = { {sec, nsec}, {sec, nsec} };
 
-      timer_settime( m_timer_id, 0, &its, NULL );
+      timer_settime( m_timer_id, 0, &its, nullptr );
 
       m_is_armed = true;
     }
@@ -137,7 +139,7 @@ namespace DBus
     Timeout* t;
     t = ( Timeout* ) sv.sival_ptr;
 
-    if ( t != NULL and t->is_valid() ) t->handle();
+    if ( t != nullptr and t->is_valid() ) t->handle();
   }
 
 }

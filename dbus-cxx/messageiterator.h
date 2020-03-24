@@ -16,12 +16,19 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <dbus/dbus.h>
-#include <dbus-cxx/types.h>
-#include <dbus-cxx/headerlog.h>
+#include <stdint.h>
 #include <dbus-cxx/demangle.h>
 #include <dbus-cxx/types.h>
 #include <dbus-cxx/variant.h>
+#include <dbus/dbus.h>
+#include <map>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <type_traits>
+#include <vector>
+#include "enums.h"
+#include "error.h"
 
 #ifndef DBUSCXX_MESSAGEITERATOR_H
 #define DBUSCXX_MESSAGEITERATOR_H
@@ -40,6 +47,7 @@
 namespace DBus
 {
 
+  class FileDescriptor;
   class Message;
 
   /**

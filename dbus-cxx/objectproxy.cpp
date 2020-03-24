@@ -17,14 +17,18 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "objectproxy.h"
+#include <utility>
+#include "callmessage.h"
 #include "connection.h"
-#include "interface.h"
-
-#include <map>
-#include <dbus/dbus.h>
+#include "interfaceproxy.h"
+#include <sigc++/sigc++.h>
 
 namespace DBus
 {
+  class MethodProxyBase;
+  class PendingCall;
+  class ReturnMessage;
+
   ObjectProxy::ObjectProxy( std::shared_ptr<Connection> conn, const std::string& destination, const std::string& path ):
       m_connection(conn),
       m_destination(destination),
@@ -244,7 +248,7 @@ namespace DBus
             need_emit_default_changed = true;
           }
 
-          interface->m_object = NULL;
+          interface->m_object = nullptr;
           m_interfaces.erase(current);
 
           interface_removed = true;

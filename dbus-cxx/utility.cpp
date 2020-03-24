@@ -16,25 +16,28 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <mutex>
-#include <thread>
-#include <iostream>
-
 #include "utility.h"
-#include "error.h"
+#include <dbus/dbus.h>
+#include <stdio.h>
+#include <iostream>
+#include <mutex>
+#include <new>
+#include <thread>
 #include "connection.h"
 #include "dbus-cxx-private.h"
+#include "error.h"
+#include "message.h"
+#include "simplelogger_defs.h"
 
+/* Extern function for logging in headers */
 simplelogger_log_function dbuscxx_log_function = nullptr;
 
 namespace DBus
 {
   
   /** mutex to lock when initializing */
-  std::mutex init_mutex;
-
-  bool initialized_var = false;
-
+  static std::mutex init_mutex;
+  static bool initialized_var = false;
   static enum SL_LogLevel log_level = SL_INFO;
 
   void init(bool threadsafe)

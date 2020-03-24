@@ -17,10 +17,10 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "signatureiterator.h"
-
-#include "types.h"
-
 #include <cstring>
+#include <dbus/dbus.h>
+#include "enums.h"
+#include "types.h"
 
 namespace DBus
 {
@@ -45,7 +45,7 @@ namespace DBus
 
   bool SignatureIterator::init(const std::string& signature)
   {
-    bool valid_check = dbus_signature_validate( signature.c_str(), NULL );
+    bool valid_check = dbus_signature_validate( signature.c_str(), nullptr );
 
     if ( valid_check )
     {

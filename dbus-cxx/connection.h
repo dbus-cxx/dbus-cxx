@@ -18,34 +18,35 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <list>
-#include <deque>
-#include <memory>
-
-#include <dbus-cxx/message.h>
-#include <dbus-cxx/returnmessage.h>
-#include <dbus-cxx/pendingcall.h>
-#include <dbus-cxx/watch.h>
-#include <dbus-cxx/timeout.h>
-#include <dbus-cxx/accumulators.h>
-#include <dbus-cxx/object.h>
-#include <dbus-cxx/signal_proxy_base.h>
+#include <stdint.h>
 #include <dbus-cxx/dbus_signal.h>
 #include <dbus-cxx/messagefilter.h>
-#include <dbus-cxx/methodbase.h>
-
-#include <iostream>
+#include <dbus-cxx/signal_proxy_base.h>
+#include <dbus/dbus.h>
+#include <deque>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+#include <dbus/dbus.h>
+#include "enums.h"
+#include <sigc++/sigc++.h>
 
 #ifndef DBUSCXX_CONNECTION_H
 #define DBUSCXX_CONNECTION_H
 
 namespace DBus
 {
-
+  class Message;
   class Object;
-  class signal_base;
-  class PendingCall;
+  class ObjectPathHandler;
   class ObjectProxy;
+  class PendingCall;
+  class ReturnMessage;
+  class SignalMessage;
+  class Timeout;
+  class Watch;
+ struct InterruptablePredicateAccumulatorDefaultFalse;
 
   /**
    * Connection point to the DBus

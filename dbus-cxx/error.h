@@ -17,10 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <exception>
-
 #include <dbus/dbus.h>
-
-#include <string>
 
 #ifndef DBUSCXX_ERROR_H
 #define DBUSCXX_ERROR_H
@@ -53,7 +50,7 @@ namespace DBus
 
       Error( DBusError* cobj );
 
-      Error( const char* name, const char* message=NULL );
+      Error( const char* name, const char* message=nullptr );
 
       Error( Message& );
 
@@ -84,7 +81,7 @@ namespace DBus
 #define DBUSCXX_ERROR( CPPTYPE, DBUS_ERROR_CODE )            \
   class CPPTYPE : public Error {                             \
     public:                                                  \
-    CPPTYPE( const char* message = NULL )                    \
+    CPPTYPE( const char* message = nullptr )                 \
         : Error( DBUS_ERROR_CODE, message ) {}               \
   }
 

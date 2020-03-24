@@ -38,10 +38,10 @@ namespace DBus
   class Watch
   {
     protected:
-      Watch( DBusWatch* cobj = NULL );
+      Watch( DBusWatch* cobj = nullptr );
       
     public:
-      static std::shared_ptr<Watch> create( DBusWatch* cobj = NULL );
+      static std::shared_ptr<Watch> create( DBusWatch* cobj = nullptr );
       
       ~Watch();
 

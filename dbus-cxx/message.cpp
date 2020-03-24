@@ -17,11 +17,10 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "message.h"
-#include "returnmessage.h"
 #include <dbus/dbus.h>
-
-#include <cstring>
-#include <iostream>
+#include "messageappenditerator.h"
+#include "messageiterator.h"
+#include "returnmessage.h"
 
 namespace DBus
 {
@@ -33,7 +32,7 @@ namespace DBus
 
   Message::Message( DBusMessage* cobj, CreateMethod m ): m_valid(false)
   {
-    if ( cobj == NULL )
+    if ( cobj == nullptr )
     {
       m_cobj = cobj;
     }
@@ -50,9 +49,9 @@ namespace DBus
     }
   }
 
-  Message::Message( std::shared_ptr<Message> other, CreateMethod m ): m_cobj(NULL), m_valid(false)
+  Message::Message( std::shared_ptr<Message> other, CreateMethod m ): m_cobj(nullptr), m_valid(false)
   {
-    if ( other and other->m_cobj != NULL )
+    if ( other and other->m_cobj != nullptr )
     {
       if ( m == CreateMethod::ALIAS )
       {
@@ -66,9 +65,9 @@ namespace DBus
     }
   }
 
-  Message::Message( std::shared_ptr<const Message> other, CreateMethod m ): m_cobj(NULL), m_valid(false)
+  Message::Message( std::shared_ptr<const Message> other, CreateMethod m ): m_cobj(nullptr), m_valid(false)
   {
-    if ( other and other->m_cobj != NULL )
+    if ( other and other->m_cobj != nullptr )
     {
       if ( m == CreateMethod::ALIAS )
       {
@@ -122,10 +121,10 @@ namespace DBus
 
   Message& Message::operator = ( const Message& m )
   {
-    if ( m_cobj != NULL )
+    if ( m_cobj != nullptr )
       dbus_message_unref( m_cobj );
     m_cobj = m.m_cobj;
-    if ( m_cobj != NULL ) {
+    if ( m_cobj != nullptr ) {
       dbus_message_ref( m_cobj );
     }
     return *this;
@@ -139,8 +138,8 @@ namespace DBus
   bool Message::is_valid() const
   {
     // TODO fix this
-//     return ( m_cobj != NULL and m_valid );
-    return m_cobj != NULL;
+//     return ( m_cobj != nullptr and m_valid );
+    return m_cobj != nullptr;
   }
 
   void Message::invalidate()
@@ -173,67 +172,67 @@ namespace DBus
 
   void Message::set_auto_start( bool auto_start)
   {
-    if ( m_cobj == NULL ) return;
+    if ( m_cobj == nullptr ) return;
     dbus_message_set_auto_start( m_cobj, auto_start );
   }
 
   bool Message::auto_start()
   {
-    if ( m_cobj == NULL ) return false;
+    if ( m_cobj == nullptr ) return false;
     return dbus_message_get_auto_start( m_cobj );
   }
 
   bool Message::set_destination( const std::string& s )
   {
-    if ( m_cobj == NULL ) return false;
+    if ( m_cobj == nullptr ) return false;
     return dbus_message_set_destination( m_cobj, s.c_str() );
   }
 
   const char* Message::destination() const
   {
-    if ( m_cobj == NULL ) return NULL;
+    if ( m_cobj == nullptr ) return NULL;
     return dbus_message_get_destination( m_cobj );
   }
 
   bool Message::set_sender( const std::string& s )
   {
-    if ( m_cobj == NULL ) return false;
+    if ( m_cobj == nullptr ) return false;
     return dbus_message_set_sender( m_cobj, s.c_str() );
   }
 
   const char* Message::sender() const
   {
-    if ( m_cobj == NULL ) return NULL;
+    if ( m_cobj == nullptr ) return NULL;
     return dbus_message_get_sender( m_cobj );
   }
 
   bool Message::is_call( const std::string& interface, const std::string& method ) const
   {
-    if ( m_cobj == NULL ) return false;
+    if ( m_cobj == nullptr ) return false;
     return dbus_message_is_method_call( m_cobj, interface.c_str(), method.c_str() );
   }
 
   bool Message::is_signal( const std::string& interface, const std::string& signal_name ) const
   {
-    if ( m_cobj == NULL ) return false;
+    if ( m_cobj == nullptr ) return false;
     return dbus_message_is_signal( m_cobj, interface.c_str(), signal_name.c_str() );
   }
 
   bool Message::is_error( const std::string& error_name ) const
   {
-    if ( m_cobj == NULL ) return false;
+    if ( m_cobj == nullptr ) return false;
     return dbus_message_is_error( m_cobj, error_name.c_str() );
   }
 
   bool Message::has_destination( const std::string& name ) const
   {
-    if ( m_cobj == NULL ) return false;
+    if ( m_cobj == nullptr ) return false;
     return dbus_message_has_destination( m_cobj, name.c_str() );
   }
 
   bool Message::has_sender( const std::string& name ) const
   {
-    if ( m_cobj == NULL ) return false;
+    if ( m_cobj == nullptr ) return false;
     return dbus_message_has_sender( m_cobj, name.c_str() );
   }
 

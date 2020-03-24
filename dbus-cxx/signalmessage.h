@@ -17,6 +17,12 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/message.h>
+#include <dbus/dbus.h>
+#include <memory>
+#include <string>
+#include <vector>
+#include "enums.h"
+#include "path.h"
 
 #ifndef DBUSCXX_SIGNALMESSAGE_H
 #define DBUSCXX_SIGNALMESSAGE_H
@@ -39,7 +45,7 @@ namespace DBus
   {
     protected:
 
-      SignalMessage( DBusMessage* cobj=NULL, CreateMethod m = CreateMethod::ALIAS );
+      SignalMessage( DBusMessage* cobj=nullptr, CreateMethod m = CreateMethod::ALIAS );
       
       SignalMessage( std::shared_ptr<Message> msg );
 
@@ -50,7 +56,7 @@ namespace DBus
       SignalMessage( const std::string& path, const std::string& interface, const std::string& name );
 
     public:
-      static std::shared_ptr<SignalMessage> create( DBusMessage* cobj=NULL, CreateMethod m = CreateMethod::ALIAS );
+      static std::shared_ptr<SignalMessage> create( DBusMessage* cobj=nullptr, CreateMethod m = CreateMethod::ALIAS );
       
       static std::shared_ptr<SignalMessage> create( std::shared_ptr<Message> msg );
 

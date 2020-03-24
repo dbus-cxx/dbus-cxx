@@ -16,19 +16,20 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <memory>
-
-#include <sigc++/signal.h>
-
 #include <dbus-cxx/enums.h>
-#include <dbus-cxx/accumulators.h>
-#include <dbus-cxx/forward_decls.h>
+#include <dbus/dbus.h>
+#include <sigc++/signal.h>
+#include <memory>
 
 #ifndef DBUSCXX_MESSAGEHANDLER_H
 #define DBUSCXX_MESSAGEHANDLER_H
 
 namespace DBus
 {
+  class Connection;
+  class Message;
+  struct MessageHandlerAccumulator;
+
   /**
    * @ingroup objects
    * @ingroup local

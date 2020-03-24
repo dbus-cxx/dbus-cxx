@@ -19,16 +19,24 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#include <exception>
+#include <stdint.h>
 #include <dbus-cxx/callmessage.h>
-#include <dbus-cxx/errormessage.h>
 #include <dbus-cxx/dbus-cxx-config.h>
+#include <dbus-cxx/errormessage.h>
 #include <dbus-cxx/headerlog.h>
-#include <dbus-cxx/returnmessage.h>
 #include <dbus-cxx/utility.h>
-#include <type_traits>
+#include <stddef.h>
+#include <functional>
+#include <memory>
 #include <mutex>
-#include <tuple>
 #include <sstream>
+#include <string>
+#include <vector>
+#include <dbus/dbus.h>
+#include "enums.h"
+#include "error.h"
+#include <sigc++/sigc++.h>
 
 #ifndef DBUSCXX_METHODBASE_H
 #define DBUSCXX_METHODBASE_H
@@ -37,8 +45,8 @@ namespace DBus
 {
 
   class Connection;
-
-  class Interface;
+  class Message;
+  class ReturnMessage;
 
   /**
    * @ingroup local

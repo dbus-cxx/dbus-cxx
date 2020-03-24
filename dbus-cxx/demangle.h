@@ -21,6 +21,7 @@
 #define DBUSCXX_DEMANGLE_H
 
 #include <cxxabi.h>
+#include <string>
 
 namespace DBus {
   /**

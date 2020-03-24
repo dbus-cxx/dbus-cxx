@@ -21,7 +21,6 @@
 
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/path.h>
-#include <dbus-cxx/filedescriptor.h>
 #include <dbus-cxx/signature.h>
 #include <string>
 #include <any>
@@ -30,6 +29,7 @@
 namespace DBus {
 
 class MessageIterator;
+class FileDescriptor;
 
 class Variant {
   public:

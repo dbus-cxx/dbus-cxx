@@ -16,14 +16,13 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-
 #include "signal_base.h"
-
-#include "signalmessage.h"
 #include "connection.h"
+#include "path.h"
 
 namespace DBus
 {
+  class Message;
 
   signal_base::signal_base(const std::string& path, const std::string& interface, const std::string& name):
       m_path(path),

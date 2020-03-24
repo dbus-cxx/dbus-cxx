@@ -16,21 +16,22 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include "utility.h"
 #include "interface.h"
-#include "dbus-cxx-private.h"
-
-#include <sstream>
-#include <map>
-#include <dbus/dbus.h>
 #include <dbus-cxx/object.h>
-#include <dbus-cxx/connection.h>
+#include <map>
+#include <utility>
+#include "callmessage.h"
+#include "dbus-cxx-private.h"
+#include "methodbase.h"
+#include <sigc++/sigc++.h>
+#include "signal_base.h"
 
 namespace DBus
 {
+  class Connection;
 
   Interface::Interface( const std::string& name ):
-      m_object(NULL),
+      m_object(nullptr),
       m_name(name)
   {
   }
@@ -406,7 +407,7 @@ namespace DBus
   {
     m_object = object;
     
-    if ( object == NULL )
+    if ( object == nullptr )
     {
       for ( Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++ )
       {

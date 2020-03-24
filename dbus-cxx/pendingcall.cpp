@@ -17,8 +17,9 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "pendingcall.h"
-#include "utility.h"
+#include "error.h"
 #include "message.h"
+#include <sigc++/sigc++.h>
 
 namespace DBus
 {

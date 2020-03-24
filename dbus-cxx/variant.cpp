@@ -18,6 +18,13 @@
  ***************************************************************************/
 #include <dbus-cxx/variant.h>
 #include <dbus-cxx/messageiterator.h>
+#include <stdint.h>
+#include <dbus/dbus.h>
+#include "enums.h"
+#include "path.h"
+#include "signature.h"
+
+namespace DBus { class FileDescriptor; }
 
 using DBus::Variant;
 

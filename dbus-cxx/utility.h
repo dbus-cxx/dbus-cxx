@@ -16,17 +16,20 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-
-#include <memory>
-#include <dbus/dbus.h>
-#include <dbus-cxx/simplelogger_defs.h>
-#include <dbus-cxx/returnmessage.h>
 #include <dbus-cxx/callmessage.h>
-#include <dbus-cxx/messageiterator.h>
+#include <dbus-cxx/returnmessage.h>
 #include <dbus-cxx/demangle.h>
+#include <dbus-cxx/messageiterator.h>
 #include <dbus-cxx/signature.h>
+#include <dbus-cxx/simplelogger_defs.h>
 #include <functional>
+#include <memory>
 #include <sstream>
+#include <string>
+#include <tuple>
+#include <typeinfo>
+#include <vector>
+#include <sigc++/sigc++.h>
 
 #ifndef DBUSCXX_UTILITY_H
 #define DBUSCXX_UTILITY_H

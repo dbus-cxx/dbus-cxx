@@ -17,15 +17,24 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/signal_base.h>
-#include <dbus-cxx/accumulators.h>
 #include <dbus-cxx/signalmessage.h>
 #include <dbus-cxx/utility.h>
+#include <functional>
+#include <memory>
+#include <string>
+#include <tuple>
+#include "enums.h"
+#include "error.h"
+#include "headerlog.h"
+#include "messageiterator.h"
+#include <sigc++/sigc++.h>
 
 #ifndef DBUSCXX_SIGNALPROXYBASE_H
 #define DBUSCXX_SIGNALPROXYBASE_H
 
 namespace DBus
 {
+  struct MessageHandlerAccumulator;
 
 /**
  * A builder class to build up a match rule for a signal.  Define

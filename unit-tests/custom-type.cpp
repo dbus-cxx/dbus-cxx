@@ -19,6 +19,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "custom-type.h"
+#include <iostream>
 
 DBus::MessageIterator& operator>>(DBus::MessageIterator& i, struct custom& c)
 {

@@ -16,16 +16,15 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <stdint.h>
-#include <typeinfo>
-#include <string>
-
-#include <sigc++/sigc++.h>
-
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/path.h>
 #include <dbus-cxx/signature.h>
+#include <dbus-cxx/variant.h>
 #include <dbus-cxx/filedescriptor.h>
+#include <stdint.h>
+#include <string>
+#include <tuple>
+#include <vector>
 
 #ifndef DBUSCXX_TYPES_H
 #define DBUSCXX_TYPES_H

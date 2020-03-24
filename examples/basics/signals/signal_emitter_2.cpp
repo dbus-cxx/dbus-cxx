@@ -19,6 +19,7 @@
 #include <dbus-cxx.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <iostream>
 
 /**
  * This example extends the signal-emitter example and demonstrates

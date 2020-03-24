@@ -16,14 +16,9 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <string>
-#include <vector>
-#include <memory>
-
-#include <dbus/dbus.h>
-
 #include <dbus-cxx/enums.h>
-#include <dbus-cxx/error.h>
+#include <dbus/dbus.h>
+#include <string>
 
 #ifndef DBUSCXX_SIGNATUREITERATOR_H
 #define DBUSCXX_SIGNATUREITERATOR_H

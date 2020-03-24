@@ -16,23 +16,25 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <map>
-#include <list>
-#include <set>
-#include <thread>
-#include <mutex>
-
 #include <dbus/dbus.h>
-
+#include <list>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <thread>
+#include <vector>
 #include <poll.h>
-
-#include "forward_decls.h"
+#include "enums.h"
 
 #ifndef DBUSCXX_DISPATCHER_H
 #define DBUSCXX_DISPATCHER_H
 
 namespace DBus
 {
+  class Connection;
+  class Timeout;
+  class Watch;
 
   /**
    * Handles multi-threaded dispatching of one or more connections.
@@ -62,7 +64,7 @@ namespace DBus
       /** @name Managing Connections */
       //@{
 
-      std::shared_ptr<Connection> create_connection( DBusConnection* cobj = NULL, bool is_private=false );
+      std::shared_ptr<Connection> create_connection( DBusConnection* cobj = nullptr, bool is_private=false );
 
       std::shared_ptr<Connection> create_connection( BusType type, bool is_private=false );
 
@@ -91,7 +93,7 @@ namespace DBus
 
       class WatchPair {
       public:
-          WatchPair() : read_watch( NULL ), write_watch( NULL ){}
+          WatchPair() : read_watch( nullptr ), write_watch( nullptr ){}
           WatchPair( std::shared_ptr<Watch> read, std::shared_ptr<Watch> write ) :
               read_watch( read ),
               write_watch( write ) {}
@@ -140,12 +142,12 @@ namespace DBus
       /**
        * Add all read and write watch FDs to the given vector to watch.
        */
-      void add_read_and_write_watches( std::vector<struct pollfd>* fds );
+      void add_read_and_write_watches( std::vector<struct ::pollfd>* fds );
 
       /**
        * Handle all of the read and write watches if the given FD needs to be serviced.
        */
-      void handle_read_and_write_watches( std::vector<struct pollfd>* fds );
+      void handle_read_and_write_watches( std::vector<struct ::pollfd>* fds );
 
       /**
        * Dispatch all of our connections

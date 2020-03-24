@@ -18,14 +18,13 @@
  ***************************************************************************/
 #include "watch.h"
 #include "error.h"
-#include "enums.h"
 
 namespace DBus
 {
 
   Watch::Watch( DBusWatch* cobj ): m_cobj( cobj )
   {
-    if ( m_cobj ) dbus_watch_set_data( cobj, this, NULL );
+    if ( m_cobj ) dbus_watch_set_data( cobj, this, nullptr );
   }
 
   std::shared_ptr<Watch> Watch::create(DBusWatch * cobj)
@@ -39,7 +38,7 @@ namespace DBus
 
   bool Watch::is_valid() const
   {
-    return m_cobj != NULL;
+    return m_cobj != nullptr;
   }
 
   Watch::operator bool() const

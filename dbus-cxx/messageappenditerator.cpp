@@ -16,33 +16,35 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <dbus-cxx/variant.h>
 #include "messageappenditerator.h"
-
+#include <dbus-cxx/variant.h>
+#include <any>
+#include <stdint.h>
 #include <cstring>
-#include <cstdlib>
-
+#include "enums.h"
+#include "filedescriptor.h"
 #include "message.h"
-
+#include "signature.h"
+#include "types.h"
 
 namespace DBus
 {
 
   MessageAppendIterator::MessageAppendIterator():
-      m_message( NULL ), m_subiter( NULL )
+      m_message( nullptr ), m_subiter( nullptr )
   {
     memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
   }
 
   MessageAppendIterator::MessageAppendIterator( Message& message ):
-      m_message( NULL ), m_subiter( NULL )
+      m_message( nullptr ), m_subiter( nullptr )
   {
     memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
     this->init( message );
   }
 
   MessageAppendIterator::MessageAppendIterator( std::shared_ptr<Message> message ):
-      m_message( NULL ), m_subiter( NULL )
+      m_message( nullptr ), m_subiter( nullptr )
   {
     memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
     if ( message ) this->init( *message );
@@ -63,22 +65,22 @@ namespace DBus
     if ( message ) {
       dbus_message_iter_init_append( message.cobj(), &m_cobj );
       m_message = &message;
-      if ( m_subiter ) free( m_subiter );
-      m_subiter = NULL;
+      if ( m_subiter ) delete m_subiter;
+      m_subiter = nullptr;
       return true;
     }
 
-    m_message = NULL;
-    if ( m_subiter ) free( m_subiter );
-    m_subiter = NULL;
+    m_message = nullptr;
+    if ( m_subiter ) delete m_subiter;
+    m_subiter = nullptr;
     return false;
   }
 
   void MessageAppendIterator::invalidate()
   {
     memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
-    m_message = NULL;
-    m_subiter = NULL;
+    m_message = nullptr;
+    m_subiter = nullptr;
   }
 
   bool MessageAppendIterator::is_valid() const
@@ -354,7 +356,7 @@ namespace DBus
       m_subiter = new MessageAppendIterator();
 
     if ( t == ContainerType::STRUCT || t == ContainerType::DICT_ENTRY )
-      success = dbus_message_iter_open_container( &m_cobj, DBus::typeToDBusContainerType( t ), NULL, m_subiter->cobj() );
+      success = dbus_message_iter_open_container( &m_cobj, DBus::typeToDBusContainerType( t ), nullptr, m_subiter->cobj() );
     else
       success = dbus_message_iter_open_container( &m_cobj, DBus::typeToDBusContainerType( t ), sig.c_str(), m_subiter->cobj() );
     
@@ -367,7 +369,7 @@ namespace DBus
     if ( ! m_subiter ) return false;
     success = dbus_message_iter_close_container( &m_cobj, m_subiter->cobj() );
     delete m_subiter;
-    m_subiter = NULL;
+    m_subiter = nullptr;
     if ( ! success ) throw ErrorNoMemory( "MessageAppendIterator::close_container: No memory to close the container" );
     return success;
   }

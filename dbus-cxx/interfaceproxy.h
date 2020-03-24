@@ -16,23 +16,28 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <sigc++/sigc++.h>
-
-#include <string>
-#include <map>
-#include <set>
-#include <any>
-#include <shared_mutex>
-
 #include <dbus-cxx/methodproxybase.h>
 #include <dbus-cxx/signal_proxy_base.h>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <set>
+#include <shared_mutex>
+#include <string>
+#include "path.h"
+#include <sigc++/sigc++.h>
 
 #ifndef DBUSCXX_INTERFACEPROXY_H
 #define DBUSCXX_INTERFACEPROXY_H
 
 namespace DBus {
 
+  class CallMessage;
+  class Connection;
   class ObjectProxy;
+  class PendingCall;
+  class ReturnMessage;
+  template <typename signature> class MethodProxy;
 
   /**
    * @ingroup objects

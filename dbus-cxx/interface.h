@@ -16,22 +16,24 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <sigc++/sigc++.h>
-
-#include <string>
-#include <map>
-#include <set>
-#include <any>
-#include <shared_mutex>
-
-#include <dbus-cxx/forward_decls.h>
+#include "enums.h"
+#include "path.h"
 #include <dbus-cxx/methodbase.h>
 #include <dbus-cxx/dbus_signal.h>
+#include <sigc++/sigc++.h>
+#include <set>
+#include <map>
+#include <mutex>
+#include <shared_mutex>
 
 #ifndef DBUSCXX_INTERFACE_H
 #define DBUSCXX_INTERFACE_H
 
 namespace DBus {
+  class CallMessage;
+  class Connection;
+  class Object;
+  class signal_base;
 
   /**
    * @ingroup objects

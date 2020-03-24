@@ -17,6 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "returnmessage.h"
+#include "message.h"
 
 namespace DBus
 {
@@ -73,7 +74,7 @@ namespace DBus
   ReturnMessage& ReturnMessage::operator=( const Message& other )
   {
     m_cobj = other.cobj();
-    if ( other.cobj() != NULL ) dbus_message_ref( m_cobj );
+    if ( other.cobj() != nullptr ) dbus_message_ref( m_cobj );
     return *this;
   }
 

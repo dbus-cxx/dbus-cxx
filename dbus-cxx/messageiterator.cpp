@@ -17,29 +17,32 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "messageiterator.h"
-
 #include <cstring>
-
+#include <dbus/dbus.h>
+#include "filedescriptor.h"
 #include "message.h"
+#include "types.h"
+#include "variant.h"
+
 
 namespace DBus
 {
 
   MessageIterator::MessageIterator():
-      m_message( NULL )
+      m_message( nullptr )
   {
     memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
   }
 
   MessageIterator::MessageIterator( const Message& message ):
-      m_message( NULL )
+      m_message( nullptr )
   {
     memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
     this->init(message);
   }
 
   MessageIterator::MessageIterator( std::shared_ptr<Message> message ):
-      m_message( NULL )
+      m_message( nullptr )
   {
     memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
     if ( message ) this->init(*message);
@@ -63,14 +66,14 @@ namespace DBus
       return true;
     }
 
-    m_message = NULL;
+    m_message = nullptr;
     return false;
   }
 
   void MessageIterator::invalidate()
   {
     memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
-    m_message = NULL;
+    m_message = nullptr;
   }
 
   bool MessageIterator::is_valid() const

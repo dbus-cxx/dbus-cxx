@@ -17,12 +17,18 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/messagehandler.h>
+#include <memory>
+#include "enums.h"
+#include <sigc++/sigc++.h>
 
 #ifndef DBUSCXX_MESSAGEFILTER_H
 #define DBUSCXX_MESSAGEFILTER_H
 
 namespace DBus
 {
+  class Connection;
+  class Message;
+  struct FilterAccumulator;
   
   /**
    * @ingroup objects

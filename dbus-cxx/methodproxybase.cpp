@@ -16,16 +16,18 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-
 #include "methodproxybase.h"
-
+#include "callmessage.h"
 #include "interfaceproxy.h"
 
 namespace DBus
 {
 
+  class PendingCall;
+  class ReturnMessage;
+
   MethodProxyBase::MethodProxyBase(const std::string& name):
-      m_interface(NULL),
+      m_interface(nullptr),
       m_name(name)
   {
   }

@@ -16,18 +16,20 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include "utility.h"
 #include "dispatcher.h"
-#include "dbus-cxx-private.h"
-#include <iostream>
-#include <dbus/dbus.h>
-#include <dbus-cxx/error.h>
-#include <dbus-cxx/signalmessage.h>
 #include <dbus-cxx/connection.h>
-
-#include <unistd.h>
+#include <dbus-cxx/error.h>
+#include <dbus/dbus.h>
 #include <errno.h>
+#include <poll.h>
 #include <sys/socket.h>
+#include <unistd.h>
+#include <deque>
+#include <utility>
+#include "dbus-cxx-private.h"
+#include <sigc++/sigc++.h>
+#include "timeout.h"
+#include "watch.h"
 
 namespace DBus
 {

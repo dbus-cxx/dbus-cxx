@@ -19,6 +19,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <dbus-cxx.h>
+#include <iostream>
 
 #include "test_macros.h"
 

@@ -16,17 +16,14 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <string>
-#include <vector>
-#include <map>
-#include <tuple>
-#include <memory>
-
-#include <dbus/dbus.h>
-
+#include <stdint.h>
 #include <dbus-cxx/error.h>
-#include <dbus-cxx/messageiterator.h>
 #include <dbus-cxx/messageappenditerator.h>
+#include <dbus-cxx/messageiterator.h>
+#include <dbus/dbus.h>
+#include <memory>
+#include <string>
+#include "enums.h"
 
 #ifndef DBUSCXX_MESSAGE_H
 #define DBUSCXX_MESSAGE_H
@@ -60,7 +57,7 @@ namespace DBus
       
       Message( MessageType type );
 
-      Message( DBusMessage* cobj=NULL, CreateMethod m = CreateMethod::ALIAS );
+      Message( DBusMessage* cobj=nullptr, CreateMethod m = CreateMethod::ALIAS );
 
       Message( std::shared_ptr<Message> other, CreateMethod m = CreateMethod::ALIAS );
 
@@ -69,7 +66,7 @@ namespace DBus
     public:
       static std::shared_ptr<Message> create( MessageType type );
 
-      static std::shared_ptr<Message> create( DBusMessage* cobj=NULL, CreateMethod m = CreateMethod::ALIAS );
+      static std::shared_ptr<Message> create( DBusMessage* cobj=nullptr, CreateMethod m = CreateMethod::ALIAS );
 
       static std::shared_ptr<Message> create( std::shared_ptr<Message> other, CreateMethod m = CreateMethod::ALIAS );
 

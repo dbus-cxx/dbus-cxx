@@ -16,21 +16,26 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include "utility.h"
 #include "object.h"
-#include "interface.h"
+#include <cstring>
+#include <sstream>
+#include <utility>
+#include "callmessage.h"
 #include "connection.h"
 #include "dbus-cxx-private.h"
-
-#include <map>
-#include <sstream>
-#include <cstring>
-#include <shared_mutex>
-#include <mutex>
 #include <dbus/dbus.h>
+#include "interface.h"
+#include "message.h"
+#include "objectpathhandler.h"
+#include "path.h"
+#include <sigc++/sigc++.h>
+#include "utility.h"
+
 
 namespace DBus
 {
+  class ErrorInvalidMessageType;
+  class ReturnMessage;
 
   Object::Object( const std::string& path, PrimaryFallback pf ):
       ObjectPathHandler( path, pf )
@@ -155,7 +160,7 @@ namespace DBus
         {
           i->second.disconnect();
           m_interface_signal_name_connections.erase(i);
-          interface->set_object(NULL);
+          interface->set_object(nullptr);
         }
     
         if ( m_default_interface == interface ) {
@@ -309,8 +314,8 @@ namespace DBus
 
     SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: message is good (it's a call message) for interface '" << callmessage->interface() << "'");
 
-    if ( callmessage->interface() == NULL ){
-        //If for some reason the message that we are getting has a NULL interface, we will segfault.
+    if ( callmessage->interface() == nullptr ){
+        //If for some reason the message that we are getting has a nullptr interface, we will segfault.
         return HandlerResult::NOT_HANDLED;
     }
 

@@ -16,11 +16,13 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include "utility.h"
 #include "objectpathhandler.h"
 #include "connection.h"
 #include "dbus-cxx-config.h"
 #include "dbus-cxx-private.h"
+#include "error.h"
+#include "message.h"
+namespace sigc { template <typename T_return, typename ...T_arg> class signal; }
 
 namespace DBus
 {
@@ -116,7 +118,7 @@ namespace DBus
   DBusHandlerResult ObjectPathHandler::message_handler_callback(DBusConnection * connection, DBusMessage * message, void * user_data)
   {
     DBus::HandlerResult result;
-    if ( user_data == NULL ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    if ( user_data == nullptr ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     ObjectPathHandler* handler = static_cast<ObjectPathHandler*>(user_data);
     result = handler->handle_message(Connection::self(connection), Message::create(message));
     SIMPLELOGGER_DEBUG("dbus.ObjectPathHandler","ObjectPathHandler::message_handler_callback: result = " << static_cast<int>( result ) );
@@ -126,7 +128,7 @@ namespace DBus
 
   void ObjectPathHandler::path_unregister_callback(DBusConnection * connection, void * user_data)
   {
-    if ( user_data == NULL ) return;
+    if ( user_data == nullptr ) return;
     ObjectPathHandler* handler = static_cast<ObjectPathHandler*>(user_data);
     handler->m_signal_unregistered.emit(Connection::self(connection));
   }

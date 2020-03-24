@@ -17,6 +17,10 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "errormessage.h"
+#include <dbus/dbus.h>
+#include "enums.h"
+#include "error.h"
+#include "message.h"
 
 namespace DBus
 {
@@ -28,7 +32,7 @@ namespace DBus
 
   ErrorMessage::ErrorMessage( DBusMessage* msg )
   {
-    if ( msg == NULL )
+    if ( msg == nullptr )
       throw ErrorInvalidCObject();
 
     if ( dbus_message_get_type( msg ) != DBUS_MESSAGE_TYPE_ERROR )
