@@ -3,31 +3,31 @@ Building dbus-cxx from source {#building-from-source}
 
 ## 1. What are the requirements to build from source?
 
-DBus-cxx requires support of at least C++11.
+DBus-cxx requires support of at least C++17.
 
-The requirements are very low.  In order to build, you will need the 
+The requirements are intended to be very low.  In order to build, you will need the 
 following tools to be installed:
 
-* cmake(>=3.1)
+* cmake(>=3.8)
 * make
 * g++
 
-DBus-cxx depends on only two libraries:
+DBus-cxx depends on the following libraries:
 
-* libsigc++
-* dbus-1
+* libsigc++(>=3.0)
+* libdbus
+* expat(not needed if tests and tools are disabled; tests are enabled by default)
 
 (See section 4 for information on optional dependencies)
 
 On Debian-based systems, you should be able to install with the following
 commands(as root/sudo):
 
-    apt-get install libsigc++-1.2-dev libdbus-1-dev cmake
+    apt-get install libdbus-1-dev cmake libexpat1-dev
 
-NOTE: On Debian 8(Jessie) and below, you will have to enable the 
-jessie-backports repository to install cmake:
-
-    apt-get install cmake -t jessie-backports
+Note that as of the writing of this guide(March 2020), libsigc++-3.0 has not yet
+been added to the Debian repositoreis, and you will need to build this dependency
+manually.
 
 When checking out from GIT, the easiest way to build is as such:
 
@@ -42,31 +42,34 @@ When checking out from GIT, the easiest way to build is as such:
 In order to build the tools, you will need the following libraries, in addition
 to the above:
 
-libpopt
-libcppgenerate
+* libpopt
+* libcppgenerate
 
 On Debian-based systems, you should be able to install popt with the following 
 commands(as root/sudo):
 
     apt-get install libpopt-dev
 
-In order to configure the tools, set -DENABLE_TOOLS=ON when calling CMake
+In order to configure the tools, set -DENABLE\_TOOLS=ON when calling CMake
 
 libcppgenerate can be found here: https://github.com/rm5248/libcppgenerate
 
+libcppgenerate is bundled with dbus-cxx; to disable using the bundled version,
+pass -DTOOLS\_BUNDLED\_CPPGENERATE=off when configuring.
+
 ## 3. Smart Pointer information
 
-DBus-cxx requires at least C++11 to work properly.  Because the library makes
-extensive use of smart pointers, it will use C++11 for the implementation.
+DBus-cxx requires at least C++17 to work properly.  Because the library makes
+extensive use of smart pointers, it will use the standard C++ shared\_ptr for 
+the implementation.
 
 ## 4. Documentation Generation
 
 To generate the documentation, you will need:
 
-doxygen
-graphviz
-xsltproc
-
+* doxygen
+* graphviz
+* xsltproc
 
 On Debian-based systems, you should be able to install with the following 
 commands(as root/sudo):
@@ -78,7 +81,7 @@ commands(as root/sudo):
 There are two tools provided with dbus-cxx:
 
 [dbus-cxx-xml2cpp](@ref xml2cpp) - this generates code based off of a DBus introspection file.
-  An adapter is created when you want to implement a server, while a proxy
+  An adapter is created when you want to implement a service, while a proxy
   is created when you want to talk with a remote object
 
 dbus-cxx-introspect - print out the introspection XML for a specified service
