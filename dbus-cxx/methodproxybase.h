@@ -19,9 +19,12 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/callmessage.h>
+#include <dbus-cxx/headerlog.h>
+#include <dbus-cxx/utility.h>
 #include <memory>
 #include <mutex>
 #include <string>
+#include <sstream>
 #include "messageappenditerator.h"
 #include <sigc++/sigc++.h>
 
@@ -70,27 +73,6 @@ namespace DBus
       std::shared_ptr<const ReturnMessage> call( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
       //TODO make a call() function that takes in a builder(for the milliseconds)
-/*
-      T_return call( T_arg... args )
-      {
-        std::shared_ptr<CallMessage> _callmsg = this->create_call_message();
-        (*_callmsg << ... << args);
-        std::shared_ptr<const ReturnMessage> retmsg = this->call( _callmsg, -1 );
-        T_return _retval;
-        retmsg >> _retval;
-        return _retval;
-      }
-*/
-
-/*
-      template<>
-      void call( T_arg... args )
-      {
-        std::shared_ptr<CallMessage> _callmsg = this->create_call_message();
-        (*_callmsg << ... << args);
-        this->call( _callmsg, -1 );
-      }
-*/
 
       std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
@@ -127,8 +109,15 @@ namespace DBus
 
   public:
     void operator()(T_arg... args){
-        //TODO add debug here(see methodbase.h)
-        //DBUSCXX_DEBUG_STDSTR( "dbus.MethodProxy", 
+        std::ostringstream debug_str;
+        DBus::priv::dbus_function_traits<std::function<void(T_arg...)>> method_sig_gen;
+
+        debug_str << "DBus::MethodProxy<";
+        debug_str << method_sig_gen.debug_string();
+        debug_str << "> calling method=";
+        debug_str << name();
+        DBUSCXX_DEBUG_STDSTR( "dbus.MethodProxy", debug_str.str() );
+
         std::shared_ptr<CallMessage> _callmsg = this->create_call_message();
         (*_callmsg << ... << args);
         std::shared_ptr<const ReturnMessage> retmsg = this->call( _callmsg, -1 );
@@ -154,8 +143,15 @@ namespace DBus
 
   public:
     T_return operator()(T_arg... args){
-        //TODO add debug here(see methodbase.h)
-        //DBUSCXX_DEBUG_STDSTR( "dbus.MethodProxy", 
+        std::ostringstream debug_str;
+        DBus::priv::dbus_function_traits<std::function<T_return(T_arg...)>> method_sig_gen;
+
+        debug_str << "DBus::MethodProxy<";
+        debug_str << method_sig_gen.debug_string();
+        debug_str << "> calling method=";
+        debug_str << name();
+        DBUSCXX_DEBUG_STDSTR( "dbus.MethodProxy", debug_str.str() );
+
         std::shared_ptr<CallMessage> _callmsg = this->create_call_message();
         MessageAppendIterator iter = _callmsg->append();
         (iter << ... << args);
