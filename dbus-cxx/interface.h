@@ -36,6 +36,10 @@ namespace DBus {
   class signal_base;
 
   /**
+   * An Interface represents a local copy of a DBus interface.  A DBus interface is
+   * an entry point that allows for object-orinted manipulation of local objects.
+   * Interfaces contain two ore more elements separated by the period ('.') character.
+   *
    * @ingroup objects
    * @ingroup local
    *

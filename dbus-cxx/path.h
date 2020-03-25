@@ -26,8 +26,10 @@ namespace DBus
 {
 
   /**
-   @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-  */
+   * Represents a DBus Path.  Paths have slashes in them(e.g. /com/example/MusicPlayer1)
+   *
+   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+   */
   class Path: public std::string
   {
     public:

@@ -34,6 +34,7 @@ namespace DBus
 
   /**
    * @defgroup message DBus Messages
+   * Messages may be either sent across the DBus or received from the DBus
    */
 
   /**

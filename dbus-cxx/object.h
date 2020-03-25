@@ -40,11 +40,12 @@ namespace DBus
   template <typename T_type> class Method;
 
   /**
+   * An Object represents a local object that is able to be called over the DBus.
+   * Interfaces, methods, and signals can be created from this Object.
+   *
    * @ingroup local
    * @ingroup objects
    *
-   * @todo TODO rethink whether it might be beneficial to have multiple connections for one object
-   * 
    * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
    */
   class Object: public ObjectPathHandler

@@ -30,10 +30,14 @@ namespace DBus
   class Message;
 
   /**
-   * @defgroup signals Signals
+   * @defgroup signals Signals 
+   * Classes for interacting with signals(sending and receiving)
    */
 
   /**
+   * Base class of all signals(proxy and adapter).  This is required to interact with signals
+   * in a generic manner, as the actual signal implementation class is templated.
+   *
    * @ingroup signals
    * @ingroup local
    * 

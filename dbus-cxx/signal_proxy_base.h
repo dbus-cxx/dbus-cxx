@@ -74,6 +74,9 @@ class SignalMatchRule {
 };
 
   /**
+   * Base class for a signal proxy that allows you to listen for signals.  This is required
+   * to use signals in a generic manner, as the subclasses are all templated.
+   *
    * @ingroup proxy
    * @ingroup signals
    * 
@@ -113,6 +116,7 @@ class SignalMatchRule {
 /**
  * Subclass of the sigc::signal templates.
  * A signal_proxy allows you to listen for signals that are emitted by other applications on the DBus.
+ * Note that because DBus signals never have a return type, neither can the handling function.
  *
  * @ingroup signals
  * @ingroup proxy

@@ -49,14 +49,13 @@ namespace DBus
   class ReturnMessage;
 
   /**
+   * Base class for all methods(proxy and local)
+   *
    * @ingroup local
    * @ingroup objects
    * 
    * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
    */
-  
-   // TODO fix signals that expect a return value and partially specialize for void returns
-  
   class MethodBase
   {
     protected:

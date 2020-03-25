@@ -40,6 +40,8 @@ namespace DBus {
   template <typename signature> class MethodProxy;
 
   /**
+   * An InterfaceProxy represents a remote Interface in another application on the DBus.
+   *
    * @ingroup objects
    * @ingroup proxy
    * 

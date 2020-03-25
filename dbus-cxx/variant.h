@@ -31,6 +31,12 @@ namespace DBus {
 class MessageIterator;
 class FileDescriptor;
 
+/**
+ * A Variant is a type-safe union for DBus operations.
+ * Note that due to limitations in how dbus-cxx handles types,
+ * it is not possible to store maps or vectors inside of the
+ * variant.
+ */
 class Variant {
   public:
     Variant();

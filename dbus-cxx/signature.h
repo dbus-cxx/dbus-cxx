@@ -37,8 +37,11 @@ namespace DBus
   class Variant;
 
   /**
-   @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-  */
+   * Represents a DBus signature.  DBus signatures indicate what type of
+   * data the message contains/the method parameters.
+   *
+   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+   */
   class Signature
   {
     public:

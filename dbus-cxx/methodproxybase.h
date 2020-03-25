@@ -37,6 +37,10 @@ namespace DBus
   template <typename signature> class MethodProxy;
 
   /**
+   * Base class for all proxy(remote) methods.  This class allows remote methods
+   * to be used in a generic manner, as the MethodProxy class is templated and
+   * thus cannot be used in a generic manner(e.g. stored in a vector).
+   *
    * @ingroup objects
    * @ingroup proxy
    * 
@@ -108,6 +112,12 @@ namespace DBus
 
   };
 
+
+  /**
+   * MethodProxy specialization for void return type.
+   *
+   * @param T_arg Method arguments
+   */
   template<typename... T_arg>
   class MethodProxy<void(T_arg...)> : public MethodProxyBase
   {
@@ -129,6 +139,12 @@ namespace DBus
     }
   };
 
+  /**
+   * MethodProxy specialization for non-void return type.
+   *
+   * @param T_return Return type(not void)
+   * @param T_arg Method arguments
+   */
   template<typename T_return, typename... T_arg>
   class MethodProxy<T_return(T_arg...)> : public MethodProxyBase
   {
