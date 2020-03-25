@@ -239,6 +239,7 @@ endif( ENABLE_EXAMPLES )
 # Include the directory for the tools
 #
 if( ENABLE_TOOLS )
+    pkg_check_modules( expat REQUIRED expat )
     add_subdirectory( tools )
 endif( ENABLE_TOOLS )
 
@@ -270,6 +271,7 @@ endif( BUILD_SITE )
 # Check if tests are enabled
 #
 if( BUILD_TESTING )
+    pkg_check_modules( expat REQUIRED expat )
     add_subdirectory( unit-tests )
     if( ENABLE_TOOLS )
         add_subdirectory( unit-tests/tools-tests )
