@@ -56,18 +56,24 @@ class Variant {
     explicit Variant( std::shared_ptr<FileDescriptor> fd );
     Variant( const Variant& other );
 
-    std::string signature() const;
+    Signature signature() const;
 
     DataType currentType() const;
 
     std::any value() const;
 
+    const std::vector<uint8_t>* marshaled() const;
+
+    int data_alignment() const;
+
     static Variant createFromMessage( MessageIterator iter );
 
   private:
     DataType m_currentType;
-    std::string m_signature;
+    Signature m_signature;
     std::any m_data;
+    std::vector<uint8_t> m_marshaled;
+    int m_dataAlignment;
 };
 
 } /* namespace DBus */

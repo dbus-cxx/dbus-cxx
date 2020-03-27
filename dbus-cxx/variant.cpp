@@ -18,6 +18,8 @@
  ***************************************************************************/
 #include <dbus-cxx/variant.h>
 #include <dbus-cxx/messageiterator.h>
+#include <dbus-cxx/marshaling.h>
+#include <dbus-cxx/dbus-cxx-private.h>
 #include <stdint.h>
 #include <dbus/dbus.h>
 #include "enums.h"
@@ -35,56 +37,92 @@ Variant::Variant() :
 Variant::Variant( uint8_t byte ) :
     m_currentType( DataType::BYTE ),
     m_signature( DBus::signature( byte ) ),
-    m_data( byte )
-{}
+    m_data( byte ),
+    m_dataAlignment( 1 )
+{
+	Marshaling marshal( &m_marshaled, Endianess::Big );
+	marshal.marshal( byte );
+}
 
 Variant::Variant( bool b ) :
     m_currentType( DataType::BOOLEAN ),
     m_signature( DBus::signature( b ) ),
-    m_data( b )
-{}
+    m_data( b ),
+    m_dataAlignment( 4 )
+{
+	Marshaling marshal( &m_marshaled, Endianess::Big );
+	marshal.marshal( b );
+}
 
 Variant::Variant( int16_t i ) :
     m_currentType( DataType::INT16 ),
     m_signature( DBus::signature( i ) ),
-    m_data( i )
-{}
+    m_data( i ),
+    m_dataAlignment( 2 )
+{
+	Marshaling marshal( &m_marshaled, Endianess::Big );
+	marshal.marshal( i );
+}
 
 Variant::Variant( uint16_t i ) :
     m_currentType( DataType::UINT16 ),
     m_signature( DBus::signature( i ) ),
-    m_data( i )
-{}
+    m_data( i ),
+    m_dataAlignment( 2 )
+{
+	Marshaling marshal( &m_marshaled, Endianess::Big );
+	marshal.marshal( i );
+}
 
 Variant::Variant( int32_t i ) :
     m_currentType( DataType::INT32 ),
     m_signature( DBus::signature( i ) ),
-    m_data( i )
-{}
+    m_data( i ),
+    m_dataAlignment( 4 )
+{
+	Marshaling marshal( &m_marshaled, Endianess::Big );
+	marshal.marshal( i );
+}
 
 Variant::Variant( uint32_t i ) :
     m_currentType( DataType::UINT32 ),
     m_signature( DBus::signature( i ) ),
-    m_data( i )
-{}
+    m_data( i ),
+    m_dataAlignment( 4 )
+{
+	Marshaling marshal( &m_marshaled, Endianess::Big );
+	marshal.marshal( i );
+}
 
 Variant::Variant( int64_t i ) :
     m_currentType( DataType::INT64 ),
     m_signature( DBus::signature( i ) ),
-    m_data( i )
-{}
+    m_data( i ),
+    m_dataAlignment( 8 )
+{
+	Marshaling marshal( &m_marshaled, Endianess::Big );
+	marshal.marshal( i );
+}
 
 Variant::Variant( uint64_t i ) :
     m_currentType( DataType::UINT64 ),
     m_signature( DBus::signature( i ) ),
-    m_data( i )
-{}
+    m_data( i ),
+    m_dataAlignment( 8 )
+{
+	Marshaling marshal( &m_marshaled, Endianess::Big );
+	marshal.marshal( i );
+}
 
 Variant::Variant( double i ) :
     m_currentType( DataType::DOUBLE ),
     m_signature( DBus::signature( i ) ),
-    m_data( i )
-{}
+    m_data( i ),
+    m_dataAlignment( 8 )
+{
+	Marshaling marshal( &m_marshaled, Endianess::Big );
+	marshal.marshal( i );
+}
 
 Variant::Variant( const char* cstr ) :
     Variant( std::string( cstr ) ){}
@@ -92,33 +130,53 @@ Variant::Variant( const char* cstr ) :
 Variant::Variant( std::string str ) :
     m_currentType( DataType::STRING ),
     m_signature( DBus::signature( str ) ),
-    m_data( str )
-{}
+    m_data( str ),
+    m_dataAlignment( 4 )
+{
+	Marshaling marshal( &m_marshaled, Endianess::Big );
+	marshal.marshal( str );
+}
 
 Variant::Variant( DBus::Signature sig ) :
     m_currentType( DataType::SIGNATURE ),
     m_signature( DBus::signature( sig ) ),
-    m_data( sig )
-{}
+    m_data( sig ),
+    m_dataAlignment( 1 )
+{
+	Marshaling marshal( &m_marshaled, Endianess::Big );
+	marshal.marshal( sig );
+}
 
 Variant::Variant( DBus::Path path ) :
     m_currentType( DataType::OBJECT_PATH ),
     m_signature( DBus::signature( path ) ),
-    m_data( path )
-{}
+    m_data( path ),
+    m_dataAlignment( 4 )
+{
+	Marshaling marshal( &m_marshaled, Endianess::Big );
+	marshal.marshal( path );
+
+    std::ostringstream debug_msg;
+    debug_msg << "marshaled path in variant.  size: " << m_marshaled.size();
+    SIMPLELOGGER_DEBUG( "DBus.Variant", debug_msg.str() );
+}
 
 Variant::Variant( std::shared_ptr<FileDescriptor> fd ) :
     m_currentType( DataType::UNIX_FD ),
     m_signature( DBus::signature( fd ) ),
-    m_data( fd )
+    m_data( fd ),
+    m_dataAlignment( 4 )
 {}
 
 Variant::Variant( const Variant& other ) :
     m_signature( other.m_signature ),
     m_currentType( other.m_currentType ),
-    m_data( other.m_data ) {}
+    m_data( other.m_data ),
+    m_marshaled( other.m_marshaled ),
+    m_dataAlignment( other.m_dataAlignment ) {
+}
 
-std::string Variant::signature() const {
+DBus::Signature Variant::signature() const {
     return m_signature;
 }
 
@@ -176,4 +234,12 @@ DBus::Variant Variant::createFromMessage( MessageIterator iter ){
     }
 
     return Variant();
+}
+
+const std::vector<uint8_t>* Variant::marshaled() const {
+    return &m_marshaled;
+}
+
+int Variant::data_alignment() const {
+    return m_dataAlignment;
 }

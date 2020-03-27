@@ -16,11 +16,13 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#include <dbus-cxx/dbus-cxx-private.h>
 #include "callmessage.h"
 #include "enums.h"
 #include "error.h"
 #include "message.h"
 #include "path.h"
+#include "variant.h"
 
 namespace DBus
 {
@@ -70,6 +72,13 @@ namespace DBus
   {
     m_cobj = dbus_message_new_method_call( dest.c_str(), path.c_str(), iface.c_str(), method.c_str() );
     m_valid = true;
+    std::ostringstream debug_msg;
+    debug_msg << "Creating call message to " << dest << " path: " << path << " " << iface << "." << method;
+    SIMPLELOGGER_DEBUG( "DBus.CallMessage", debug_msg.str() );
+m_headerMap[ 1 ] = DBus::Variant( Path( path ) );
+m_headerMap[ 2 ] = DBus::Variant( iface );
+m_headerMap[ 3 ] = DBus::Variant( method );
+m_headerMap[ 6 ] = DBus::Variant( dest );
   }
 
   CallMessage::CallMessage( const std::string& path, const std::string& iface, const std::string& method )

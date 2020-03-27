@@ -62,6 +62,7 @@ namespace DBus {
 
   enum class ContainerType
   {
+      None,
     ARRAY = DBUS_TYPE_ARRAY,
     VARIANT = DBUS_TYPE_VARIANT,
     STRUCT = DBUS_TYPE_STRUCT,

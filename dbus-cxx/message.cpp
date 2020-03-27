@@ -21,6 +21,34 @@
 #include "messageappenditerator.h"
 #include "messageiterator.h"
 #include "returnmessage.h"
+#include "variant.h"
+#include "marshaling.h"
+#include <dbus-cxx/dbus-cxx-private.h>
+#include <dbus-cxx/simplelogger.h>
+
+#include <ctype.h>
+#include <stdio.h>
+
+void hexdump(void *ptr, int buflen) {
+fflush(stdout);
+fflush(stderr);
+  unsigned char *buf = (unsigned char*)ptr;
+  int i, j;
+  for (i=0; i<buflen; i+=16) {
+    printf("%06x: ", i);
+    for (j=0; j<16; j++) 
+      if (i+j < buflen)
+        printf("%02x ", buf[i+j]);
+      else
+        printf("   ");
+    printf(" ");
+    for (j=0; j<16; j++) 
+      if (i+j < buflen)
+        printf("%c", isprint(buf[i+j]) ? buf[i+j] : '.');
+    printf("\n");
+  }
+fflush(stdout);
+}
 
 namespace DBus
 {
@@ -185,6 +213,7 @@ namespace DBus
   bool Message::set_destination( const std::string& s )
   {
     if ( m_cobj == nullptr ) return false;
+m_headerMap[ 6 ] = DBus::Variant( s );
     return dbus_message_set_destination( m_cobj, s.c_str() );
   }
 
@@ -255,6 +284,67 @@ namespace DBus
   {
     return m_cobj;
   }
+
+void Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const {
+    Marshaling marshal( vec, Endianess::Big );
+
+	vec->reserve( m_body.size() + 256 );
+    marshal.marshal( static_cast<uint8_t>( 'B' ) );
+    switch( type() ){
+    case MessageType::INVALID:
+        return;
+    case MessageType::CALL:
+        marshal.marshal( static_cast<uint8_t>( 1 ) );
+		break;
+    case MessageType::RETURN:
+        marshal.marshal( static_cast<uint8_t>( 2 ) );
+		break;
+    case MessageType::ERROR:
+        marshal.marshal( static_cast<uint8_t>( 3 ) );
+		break;
+    case MessageType::SIGNAL:
+        marshal.marshal( static_cast<uint8_t>( 4 ) );
+		break;
+	}
+
+	// Now marshal the flags
+    marshal.marshal( static_cast<uint8_t>( 0 ) );
+
+	// Marshal the protocol version
+    marshal.marshal( static_cast<uint8_t>( 1 ) );
+
+	// Marshal the length
+    marshal.marshal( static_cast<uint32_t>( m_body.size() ) );
+
+	// Marshal the serial
+    marshal.marshal( serial );
+
+    std::ostringstream logmsg;
+    // Marshal our header array
+    marshal.marshal( static_cast<uint32_t>( 0 ) ); // The size of the header array; we update this later
+
+	for( const std::pair<uint8_t,Variant>& entry : m_headerMap ){
+        marshal.align( 8 );
+        marshal.marshal( entry.first );
+        marshal.marshal( entry.second );
+	}
+    // The size of the header array is always at offset 12
+    marshal.marshalAtOffset( 12, static_cast<uint32_t>( vec->size() ) - 16 );
+
+    // Align the message data to an 8-byte boundary and add the data!
+    marshal.align( 8 );
+
+    for( const uint8_t& byte : m_body ){
+        vec->push_back( byte );
+    }
+
+    logmsg.str( "" );
+    logmsg.clear();
+    logmsg << "marshaled size: " << vec->size() << " array size: " << vec->size() - 12;
+        SIMPLELOGGER_DEBUG("dbus.Message", logmsg.str() );
+
+	hexdump( vec->data(), vec->size() );
+}
 
 }
 

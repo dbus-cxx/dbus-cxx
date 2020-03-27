@@ -343,6 +343,10 @@ namespace DBus
       std::string introspect( const std::string& destination, const std::string& path );
 
     protected:
+int m_fd;
+std::vector<uint8_t> m_sendBuffer;
+int m_currentSerial;
+
       DBusConnection* m_cobj;
       
       bool m_private_flag;

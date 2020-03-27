@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/signature.h>
+#include <dbus-cxx/marshaling.h>
 #include <dbus/dbus.h>
 #include <stddef.h>
 #include <map>
@@ -50,11 +51,11 @@ namespace DBus
   {
     public:
 
-      MessageAppendIterator();
+      MessageAppendIterator( ContainerType container = ContainerType::None );
 
-      MessageAppendIterator( Message& message );
+      MessageAppendIterator( Message& message, ContainerType container = ContainerType::None );
 
-      MessageAppendIterator( std::shared_ptr<Message> message );
+      MessageAppendIterator( std::shared_ptr<Message> message, ContainerType container = ContainerType::None );
 
       ~MessageAppendIterator();
 
@@ -63,12 +64,6 @@ namespace DBus
        * if no message is associated.
        */
       const Message* message() const;
-
-      /** Returns a pointer to the underlying DBusMessageIter object */
-      DBusMessageIter* cobj();
-
-      /** Initializes the iterator for the specified message */
-      bool init( Message& message );
 
       /** Invalidates the iterator */
       void invalidate();
@@ -107,6 +102,7 @@ namespace DBus
       MessageAppendIterator& operator<<( const std::vector<T>& v){
         bool success;
         T type;
+
         success = this->open_container( ContainerType::ARRAY, DBus::signature(type).c_str() );
 
         if( not success ){
@@ -136,6 +132,7 @@ namespace DBus
           m_subiter->close_container();
         }
         this->close_container();
+
         return *this;
       }
 
@@ -161,9 +158,12 @@ namespace DBus
       MessageAppendIterator* sub_iterator();
 
     protected:
+      Marshaling m_marshaling;
       Message* m_message;
-      DBusMessageIter m_cobj;
       MessageAppendIterator* m_subiter;
+      std::vector<uint8_t> m_workingBuffer;
+      ContainerType m_currentContainer;
+      uint32_t m_arraySizeLocation;
   };
 
 }

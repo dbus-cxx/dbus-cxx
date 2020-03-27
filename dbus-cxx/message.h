@@ -20,10 +20,13 @@
 #include <dbus-cxx/error.h>
 #include <dbus-cxx/messageappenditerator.h>
 #include <dbus-cxx/messageiterator.h>
+#include <dbus-cxx/messageheader.h>
 #include <dbus/dbus.h>
 #include <memory>
 #include <string>
 #include "enums.h"
+
+#include <dbus-cxx/variant.h>
 
 #ifndef DBUSCXX_MESSAGE_H
 #define DBUSCXX_MESSAGE_H
@@ -139,6 +142,8 @@ namespace DBus
 
       DBusMessage* cobj() const;
 
+void serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const;
+
     protected:
 
       friend void init(bool);
@@ -146,6 +151,12 @@ namespace DBus
       DBusMessage* m_cobj;
 
       bool m_valid;
+
+std::string m_signature;
+std::map<uint8_t,Variant> m_headerMap;
+std::vector<uint8_t> m_body;
+
+friend class MessageAppendIterator;
 
   };
 

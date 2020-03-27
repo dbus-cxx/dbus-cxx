@@ -41,11 +41,37 @@
 #include "timeout.h"
 #include "watch.h"
 
+#include <fcntl.h>
+#include <cstring>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+
 namespace sigc { template <typename T_return, typename ...T_arg> class signal; }
 namespace sigc { template <typename T_return, typename ...T_arg> class slot; }
 
 namespace DBus
 {
+
+/**
+ * There's probably a less stupid way of doing this...
+ */
+std::string numberToHexString( int num ){
+	std::ostringstream out;
+	std::ostringstream numString;
+	std::string finalNumString;
+
+	numString << num;
+
+	finalNumString = numString.str();
+	out << std::hex;
+	for( const char& s : finalNumString ){
+		out << std::hex << (int)s;
+	}
+
+	return out.str();
+}
 
   dbus_int32_t Connection::m_weak_pointer_slot = -1;
   
@@ -60,6 +86,91 @@ namespace DBus
 
   Connection::Connection( BusType type, bool is_private ): m_cobj( nullptr )
   {
+    //std::string dbusAddress = std::string( getenv( "DBUS_SESSION_BUS_ADDRESS" ) );
+    std::string dbusAddress("/run/user/1000/bus");
+    struct sockaddr_un addr = {0};
+    m_currentSerial = 1;
+
+    m_fd = ::socket( AF_UNIX, SOCK_STREAM, 0 );
+    if( m_fd < 0 ){
+        std::string errmsg = strerror( errno );
+        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to create socket: " + errmsg );
+    }
+
+    addr.sun_family = AF_UNIX;
+    memcpy( addr.sun_path, dbusAddress.c_str(), dbusAddress.size() );
+
+    if( ::connect( m_fd, (struct sockaddr*)&addr, sizeof( addr ) ) < 0 ){
+        std::string errmsg = strerror( errno );
+        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to connect: " + errmsg );
+        return;
+    }
+
+    SIMPLELOGGER_DEBUG("dbus.Connection", "Opened dbus connection" );
+
+    int passcred = 1;
+    if( ::setsockopt( m_fd, SOL_SOCKET, SO_PASSCRED, &passcred, sizeof( int ) ) < 0 ){
+        std::string errmsg = strerror( errno );
+        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to set passcred: " + errmsg );
+        return;
+    }
+
+    uint8_t nulbyte = 0;
+    if( ::write( m_fd, &nulbyte, 1 ) < 0 ){
+        std::string errmsg = strerror( errno );
+        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to write nul byte: " + errmsg );
+        return;
+    }
+
+    int uid = getuid();
+    std::ostringstream authCommand;
+    authCommand << "AUTH EXTERNAL ";
+    authCommand << numberToHexString( uid );
+    authCommand << "\r\n";
+    std::string fullCmd = authCommand.str();
+    SIMPLELOGGER_DEBUG("dbus.Connection", "auth command: " + fullCmd );
+    if( ::write( m_fd, fullCmd.c_str(), fullCmd.size() ) < 0 ){
+        std::string errmsg = strerror( errno );
+        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to write: " + errmsg );
+        return;
+    }
+
+    char readData[ 1024 ];
+    int bytesRead = ::read( m_fd, &readData, 1024 );
+    if( bytesRead < 0 ){
+        std::string errmsg = strerror( errno );
+        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to read: " + errmsg );
+        return;
+    }
+
+    readData[ bytesRead ] = 0;
+    SIMPLELOGGER_DEBUG( "dbus.Connection", "Got back data: " + std::string( readData, bytesRead ) );
+
+    std::string beginCmd = "BEGIN\r\n";
+    if( ::write( m_fd, beginCmd.c_str(), beginCmd.size() ) < 0 ){
+        std::string errmsg = strerror( errno );
+        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to write: " + errmsg );
+        return;
+    }
+
+std::shared_ptr<CallMessage> helloMsg = CallMessage::create( "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello" );
+*this << helloMsg;
+
+sleep( 1 );
+int bytesAvail;
+if( ioctl( m_fd, FIONREAD, &bytesAvail ) < 0 ){
+        std::string errmsg = strerror( errno );
+        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to ioctl: " + errmsg );
+        return;
+}
+
+std::ostringstream debugstr;
+debugstr << "bytes avail: " << bytesAvail;
+SIMPLELOGGER_DEBUG("dbus.Connection", debugstr.str() );
+
+sleep( 1 );
+
+/*
     Error error = Error();
 
     if ( type != BusType::NONE ) {
@@ -77,6 +188,7 @@ namespace DBus
         this->initialize(is_private);
       }
     }
+*/
   }
 
   Connection::Connection( std::string address, bool is_private ): m_cobj( nullptr )
@@ -396,6 +508,21 @@ namespace DBus
   uint32_t Connection::send( std::shared_ptr<const Message> msg )
   {
     uint32_t serial;
+
+m_sendBuffer.clear();
+msg->serialize_to_vector( &m_sendBuffer, m_currentSerial++ );
+int bytesWritten = ::write( m_fd, m_sendBuffer.data(), m_sendBuffer.size() );
+if( bytesWritten < 0 ){
+        std::string errmsg = strerror( errno );
+        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to send message: " + errmsg );
+        return 1;
+}
+std::ostringstream debug;
+debug << "wrote " << bytesWritten << " bytes to dbus";
+SIMPLELOGGER_DEBUG("dbus.Connection", debug.str() );
+
+return 1;
+
     if ( not this->is_valid() ) throw ErrorDisconnected();
     if ( not msg or not *msg ) return 0;
     if ( not dbus_connection_send( m_cobj, msg->cobj(), &serial ) ) throw ErrorNoMemory();

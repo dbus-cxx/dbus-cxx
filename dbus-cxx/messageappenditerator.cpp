@@ -18,8 +18,10 @@
  ***************************************************************************/
 #include "messageappenditerator.h"
 #include <dbus-cxx/variant.h>
+#include <dbus-cxx/message.h>
 #include <any>
 #include <stdint.h>
+#include <limits>
 #include <cstring>
 #include "enums.h"
 #include "filedescriptor.h"
@@ -30,24 +32,34 @@
 namespace DBus
 {
 
-  MessageAppendIterator::MessageAppendIterator():
-      m_message( nullptr ), m_subiter( nullptr )
+  MessageAppendIterator::MessageAppendIterator( ContainerType container ):
+      m_message( nullptr ),
+      m_subiter( nullptr ),
+      m_currentContainer( container )
   {
-    memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
   }
 
-  MessageAppendIterator::MessageAppendIterator( Message& message ):
-      m_message( nullptr ), m_subiter( nullptr )
+  MessageAppendIterator::MessageAppendIterator( Message& message, ContainerType container ):
+      m_marshaling( &(message.m_body), Endianess::Big ),
+      m_message( &message ),
+      m_subiter( nullptr ),
+      m_currentContainer( container )
   {
-    memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
-    this->init( message );
+      if( container != ContainerType::None ){
+          m_marshaling = Marshaling( &m_workingBuffer, Endianess::Big );
+      }
   }
 
-  MessageAppendIterator::MessageAppendIterator( std::shared_ptr<Message> message ):
-      m_message( nullptr ), m_subiter( nullptr )
+  MessageAppendIterator::MessageAppendIterator( std::shared_ptr<Message> message, ContainerType container ):
+      m_message( message.get() ),
+      m_subiter( nullptr )
   {
-    memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
-    if ( message ) this->init( *message );
+      if( message ){
+          m_marshaling = Marshaling( &(message->m_body), Endianess::Big );
+      }
+      if( container != ContainerType::None ){
+          m_marshaling = Marshaling( &m_workingBuffer, Endianess::Big );
+      }
   }
 
   MessageAppendIterator::~MessageAppendIterator()
@@ -55,30 +67,8 @@ namespace DBus
 //     if ( m_subiter ) this->close_container();
   }
 
-  DBusMessageIter* MessageAppendIterator::cobj()
-  {
-    return &m_cobj;
-  }
-
-  bool MessageAppendIterator::init( Message & message )
-  {
-    if ( message ) {
-      dbus_message_iter_init_append( message.cobj(), &m_cobj );
-      m_message = &message;
-      if ( m_subiter ) delete m_subiter;
-      m_subiter = nullptr;
-      return true;
-    }
-
-    m_message = nullptr;
-    if ( m_subiter ) delete m_subiter;
-    m_subiter = nullptr;
-    return false;
-  }
-
   void MessageAppendIterator::invalidate()
   {
-    memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
     m_message = nullptr;
     m_subiter = nullptr;
   }
@@ -94,148 +84,132 @@ namespace DBus
     return this->is_valid();
   }
 
-  MessageAppendIterator& MessageAppendIterator::operator<<( const bool& v ){
-    bool result;
-    dbus_bool_t b = v;
 
+  MessageAppendIterator& MessageAppendIterator::operator<<( const bool& v ){
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::BOOLEAN ), &b );
-
-    if ( ! result ) m_message->invalidate();
+    if( m_currentContainer != ContainerType::None ){
+        m_message->m_signature += signature( v );
+    }
+    m_marshaling.marshal( v );
 
     return *this;
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const int8_t& v ){
-    bool result;
-
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::BYTE ), &v );
-
-    if ( ! result ) m_message->invalidate();
+    if( m_currentContainer != ContainerType::None ){
+        m_message->m_signature += signature( v );
+    }
+    m_marshaling.marshal( v );
 
     return *this;
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint8_t& v ){
-    bool result;
+      if ( not this->is_valid() ) return *this;
 
-    if ( not this->is_valid() ) return *this;
+      if( m_currentContainer != ContainerType::None ){
+          m_message->m_signature += signature( v );
+      }
+      m_marshaling.marshal( v );
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::BYTE ), &v );
-
-    if ( ! result ) m_message->invalidate();
-
-    return *this;
+      return *this;
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const int16_t& v ){
-    bool result;
+      if ( not this->is_valid() ) return *this;
 
-    if ( not this->is_valid() ) return *this;
+      if( m_currentContainer != ContainerType::None ){
+          m_message->m_signature += signature( v );
+      }
+      m_marshaling.marshal( v );
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::INT16 ), &v );
-
-    if ( ! result ) m_message->invalidate();
-
-    return *this;
+      return *this;
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint16_t& v ){
-    bool result;
+      if ( not this->is_valid() ) return *this;
 
-    if ( not this->is_valid() ) return *this;
+      if( m_currentContainer != ContainerType::None ){
+          m_message->m_signature += signature( v );
+      }
+      m_marshaling.marshal( v );
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::UINT16 ), &v );
-
-    if ( ! result ) m_message->invalidate();
-
-    return *this;
+      return *this;
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const int32_t& v ){
-    bool result;
+      if ( not this->is_valid() ) return *this;
 
-    if ( not this->is_valid() ) return *this;
+      if( m_currentContainer != ContainerType::None ){
+          m_message->m_signature += signature( v );
+      }
+      m_marshaling.marshal( v );
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::INT32 ), &v );
-
-    if ( ! result ) m_message->invalidate();
-
-    return *this;
+      return *this;
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint32_t& v ){
-    bool result;
+      if ( not this->is_valid() ) return *this;
 
-    if ( not this->is_valid() ) return *this;
+      if( m_currentContainer != ContainerType::None ){
+          m_message->m_signature += signature( v );
+      }
+      m_marshaling.marshal( v );
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::UINT32 ), &v );
-
-    if ( ! result ) m_message->invalidate();
-
-    return *this;
+      return *this;
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const int64_t& v ){
-    bool result;
+      if ( not this->is_valid() ) return *this;
 
-    if ( not this->is_valid() ) return *this;
+      if( m_currentContainer != ContainerType::None ){
+          m_message->m_signature += signature( v );
+      }
+      m_marshaling.marshal( v );
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::INT64 ), &v );
-
-    if ( ! result ) m_message->invalidate();
-
-    return *this;
+      return *this;
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint64_t& v ){
-    bool result;
+      if ( not this->is_valid() ) return *this;
 
-    if ( not this->is_valid() ) return *this;
+      if( m_currentContainer != ContainerType::None ){
+          m_message->m_signature += signature( v );
+      }
+      m_marshaling.marshal( v );
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::UINT64 ), &v );
-
-    if ( ! result ) m_message->invalidate();
-
-    return *this;
+      return *this;
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const double& v ){
-    bool result;
+      if ( not this->is_valid() ) return *this;
 
-    if ( not this->is_valid() ) return *this;
+      if( m_currentContainer != ContainerType::None ){
+          m_message->m_signature += signature( v );
+      }
+      m_marshaling.marshal( v );
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::DOUBLE ), &v );
-
-    if ( ! result ) m_message->invalidate();
-
-    return *this;
+      return *this;
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const float& v ){
-    bool result;
-    double d = v;
-
-    if ( not this->is_valid() ) return *this;
-
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::DOUBLE ), &d );
-
-    if ( ! result ) m_message->invalidate();
-
     return *this;
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const char* v ){
-    bool result;
+    uint32_t len = strlen( v ) & UINT32_MAX;
 
     if ( not this->is_valid() ) return *this;
 
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::STRING ), &v );
+    if( m_currentContainer != ContainerType::None ){
+        m_message->m_signature += signature( v );
+    }
 
-    if ( ! result ) m_message->invalidate();
+    m_marshaling.marshal( len );
+    m_marshaling.marshal( std::string( v, len ) );
 
     return *this;
   }
@@ -245,28 +219,34 @@ namespace DBus
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const Signature& v ){
-    bool result;
 
     if ( not this->is_valid() ) return *this;
 
-    const std::string sig = v.str();
-    const char* sig_val = sig.c_str();
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::SIGNATURE ), &sig_val );
+    std::string realSig = v.str();
+    if( realSig.length() > UINT8_MAX ){
+        m_message->invalidate();
+        return *this;
+    }
 
-    if ( ! result ) m_message->invalidate();
+    if( m_currentContainer != ContainerType::None ){
+        m_message->m_signature += signature( v );
+    }
+    m_marshaling.marshal( static_cast<uint8_t>( realSig.length() & 0xFF ) );
+    for( const char& c : realSig ){
+        m_marshaling.marshal( static_cast<uint8_t>( c ) );
+    }
+    m_marshaling.marshal( static_cast<uint8_t>( 0 ) );
 
     return *this;
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const Path& v ){
-    bool result;
-
     if ( not this->is_valid() ) return *this;
 
-    const char* path_val = v.c_str();
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::OBJECT_PATH ), &path_val );
-
-    if ( ! result ) m_message->invalidate();
+    if( m_currentContainer != ContainerType::None ){
+        m_message->m_signature += signature( v );
+    }
+    m_marshaling.marshal( v );
 
     return *this;
   }
@@ -279,7 +259,7 @@ namespace DBus
     if ( not v ) return *this;
 
     raw_fd = v->getDescriptor();
-    result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::UNIX_FD ), &raw_fd );
+    //result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::UNIX_FD ), &raw_fd );
 
     if ( ! result ) m_message->invalidate();
 
@@ -287,57 +267,13 @@ namespace DBus
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const Variant& v ){
-    bool result;
-
     if ( not this->is_valid() ) return *this;
-    if( v.currentType() == DataType::INVALID ) return *this;
+    if( v.currentType() == DataType::INVALID ){
+        return *this;
+    }
 
     this->open_container( ContainerType::VARIANT, v.signature()  );
-    switch( v.currentType() ){
-    case DataType::BYTE:
-        *m_subiter << std::any_cast<uint8_t>(v.value());
-        break;
-    case DataType::BOOLEAN:
-        *m_subiter << std::any_cast<bool>(v.value());
-        break;
-    case DataType::INT16:
-        *m_subiter << std::any_cast<int16_t>(v.value());
-        break;
-    case DataType::UINT16:
-        *m_subiter << std::any_cast<uint16_t>(v.value());
-        break;
-    case DataType::INT32:
-        *m_subiter << std::any_cast<int32_t>(v.value());
-        break;
-    case DataType::UINT32:
-        *m_subiter << std::any_cast<uint16_t>(v.value());
-        break;
-    case DataType::INT64:
-        *m_subiter << std::any_cast<int64_t>(v.value());
-        break;
-    case DataType::UINT64:
-        *m_subiter << std::any_cast<uint64_t>(v.value());
-        break;
-    case DataType::DOUBLE:
-        *m_subiter << std::any_cast<double>(v.value());
-        break;
-    case DataType::STRING:
-        *m_subiter << std::any_cast<std::string>(v.value());
-        break;
-    case DataType::OBJECT_PATH:
-        *m_subiter << std::any_cast<Path>(v.value());
-        break;
-    case DataType::SIGNATURE:
-        *m_subiter << std::any_cast<Signature>(v.value());
-        break;
-    case DataType::VARIANT:
-        *m_subiter << std::any_cast<Variant>(v.value());
-        break;
-    case DataType::UNIX_FD:
-        *m_subiter << std::any_cast<std::shared_ptr<FileDescriptor>>(v.value());
-        break;
-    default: break;
-    }
+    *m_subiter << v;
     this->close_container();
 
     return *this;
@@ -346,32 +282,73 @@ namespace DBus
 
   bool MessageAppendIterator::open_container( ContainerType t, const std::string& sig )
   {
-    bool success;
+    std::string signature;
+
+    switch( t ){
+    case ContainerType::None:
+        break;
+    case ContainerType::STRUCT:
+        signature.append( "(" );
+        signature.append( sig );
+        signature.append( ")" );
+        break;
+    case ContainerType::ARRAY:
+        signature.append( "a" );
+        signature.append( sig );
+        // Marshal the size first, so that any alignment is taken care of
+        m_marshaling.marshal( static_cast<uint32_t>( 0 ) );
+        m_arraySizeLocation = 0;
+        if( m_message ){
+            m_arraySizeLocation = static_cast<uint32_t>( m_message->m_body.size() - sizeof( uint32_t ) );
+        }
+        break;
+    case ContainerType::VARIANT:
+        signature.append( "v" );
+        break;
+    case ContainerType::DICT_ENTRY:
+        signature.append( "{" );
+        signature.append( sig );
+        signature.append( "}" );
+        break;
+    }
 
     if ( m_subiter ) this->close_container();
 
-    if ( m_message )
-      m_subiter = new MessageAppendIterator( *m_message );
-    else
-      m_subiter = new MessageAppendIterator();
+    if ( m_message ){
+        m_message->m_signature.append( signature );
+      m_subiter = new MessageAppendIterator( *m_message, t );
+    } else
+      m_subiter = new MessageAppendIterator( t );
 
-    if ( t == ContainerType::STRUCT || t == ContainerType::DICT_ENTRY )
-      success = dbus_message_iter_open_container( &m_cobj, DBus::typeToDBusContainerType( t ), nullptr, m_subiter->cobj() );
-    else
-      success = dbus_message_iter_open_container( &m_cobj, DBus::typeToDBusContainerType( t ), sig.c_str(), m_subiter->cobj() );
-    
-    return success;
+    return true;
   }
 
   bool MessageAppendIterator::close_container( )
   {
-    bool success;
     if ( ! m_subiter ) return false;
-    success = dbus_message_iter_close_container( &m_cobj, m_subiter->cobj() );
+
+    switch( m_subiter->m_currentContainer ){
+    case ContainerType::None: return false;
+    case ContainerType::ARRAY:
+    {
+        uint32_t arraySize = static_cast<uint32_t>( m_message->m_body.size() - m_arraySizeLocation );
+        m_marshaling.marshalAtOffset( m_arraySizeLocation, arraySize );
+    }
+        break;
+    case ContainerType::DICT_ENTRY:
+    case ContainerType::STRUCT:
+        m_marshaling.align( 8 );
+        break;
+    case ContainerType::VARIANT:
+        break;
+    }
+
+    for( const uint8_t& dataByte : m_subiter->m_workingBuffer ){
+        m_marshaling.marshal( dataByte );
+    }
     delete m_subiter;
     m_subiter = nullptr;
-    if ( ! success ) throw ErrorNoMemory( "MessageAppendIterator::close_container: No memory to close the container" );
-    return success;
+    return true;
   }
 
   MessageAppendIterator* MessageAppendIterator::sub_iterator()
