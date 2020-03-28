@@ -28,6 +28,7 @@
 #include "error.h"
 #include "message.h"
 #include "simplelogger_defs.h"
+#include <locale>
 
 /* Extern function for logging in headers */
 simplelogger_log_function dbuscxx_log_function = nullptr;
@@ -77,7 +78,7 @@ namespace DBus
   void logStdErr( const char* logger_name, const struct SL_LogLocation* location,
       const enum SL_LogLevel level,
       const char* log_string ){
-    if( level <= log_level ) return;
+    if( level < log_level ) return;
 
     char buffer[ 4096 ];
     const char* stringLevel;
@@ -93,6 +94,35 @@ namespace DBus
 
   void setLogLevel( const enum SL_LogLevel level ){
     log_level = level;
+  }
+
+  void hexdump( const std::vector<uint8_t>* vec, std::ostream* stream ) {
+    // Original C code: https://stackoverflow.com/a/29865/624483
+    char line_buffer[ 12 ];
+
+    for ( uint32_t i = 0; i < vec->size(); i += 16 ) {
+        snprintf( line_buffer, 12, "%06x: ", i);
+        *stream << line_buffer;
+        for (int j = 0; j < 16; j++ ){
+            if( j == 7 ) *stream << "  ";
+            if ( (i + j) < vec->size() ){
+                snprintf( line_buffer, 12, "%02x ", (*vec)[ i + j ] );
+                *stream << line_buffer;
+            } else {
+                *stream << "   ";
+            }
+        }
+
+        *stream << "  ";
+        for (int j = 0; j < 16; j++ ){
+            if( j == 7 ) *stream << "  ";
+            if ( (i + j) < vec->size() ){
+                snprintf( line_buffer, 12, "%c", std::isprint((*vec)[i+j]) ? (*vec)[i+j] : '.');
+                *stream << line_buffer;
+            }
+        }
+        *stream << std::endl;
+    }
   }
 }
 

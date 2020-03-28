@@ -122,6 +122,14 @@ namespace DBus
    */
   void setLogLevel( const enum ::SL_LogLevel level );
 
+  /**
+   * Print the vector as a hexdump output to the given output stream
+   *
+   * @param vec The vector to print
+   * @param stream The stream to print the data to
+   */
+  void hexdump( const std::vector<uint8_t>* vec, std::ostream* stream );
+
 
 namespace priv {
 /*
