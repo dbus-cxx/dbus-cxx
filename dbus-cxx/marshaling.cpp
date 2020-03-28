@@ -185,6 +185,7 @@ void Marshaling::marshal( const Variant& v ){
                      + data->size()
                      + 12 /* Extra alignment bytes, if needed */ );
 
+    marshal( signature );
 
 	for( const uint8_t& byte : *data ){
 		m_data->push_back( byte );
