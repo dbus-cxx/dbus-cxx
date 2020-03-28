@@ -18,7 +18,8 @@
  ***************************************************************************/
 #include "signatureiterator.h"
 #include <cstring>
-#include <dbus/dbus.h>
+#include <algorithm>
+#include <iterator>
 #include "enums.h"
 #include "types.h"
 
@@ -28,42 +29,23 @@ namespace DBus
   SignatureIterator::SignatureIterator():
       m_valid(false)
   {
-    memset( &m_cobj, 0x00, sizeof( DBusSignatureIter ) );
   }
 
   SignatureIterator::SignatureIterator( const std::string& signature ):
-      m_valid( false )
+      m_valid( true ),
+      m_signature( signature ),
+      m_it( m_signature.begin() )
   {
-    memset( &m_cobj, 0x00, sizeof( DBusSignatureIter ) );
-    this->init(signature);
   }
 
-  DBusSignatureIter* SignatureIterator::cobj()
-  {
-    return &m_cobj;
-  }
-
-  bool SignatureIterator::init(const std::string& signature)
-  {
-    bool valid_check = dbus_signature_validate( signature.c_str(), nullptr );
-
-    if ( valid_check )
-    {
-      dbus_signature_iter_init( &m_cobj, signature.c_str() );
-      m_valid = true;
-    }
-    else
-    {
-      memset( &m_cobj, 0x00, sizeof( DBusSignatureIter ) );
-      m_valid = false;
-    }
-
-    return m_valid;
+  SignatureIterator::SignatureIterator( const SignatureIterator& other ) :
+      m_valid( other.m_valid ),
+      m_signature( other.m_signature ){
+      m_it = m_signature.begin() + ( other.m_it - other.m_signature.begin() );
   }
 
   void SignatureIterator::invalidate()
   {
-    memset( &m_cobj, 0x00, sizeof( DBusSignatureIter ) );
     m_valid = false;
   }
 
@@ -81,11 +63,13 @@ namespace DBus
   {
     if ( not this->is_valid() ) return false;
 
-    bool result;
+    if( this->is_container() ){
+        m_it = std::get<2>( recurse_into_container( m_it ) );
+    }
 
-    result = dbus_signature_iter_next( & m_cobj );
+    m_it++;
 
-    if ( not result or this->type() == DataType::INVALID )
+    if ( this->type() == DataType::INVALID )
     {
       this->invalidate();
       return false;
@@ -110,35 +94,38 @@ namespace DBus
 
   bool SignatureIterator::operator==( const SignatureIterator& other )
   {
-    return ( memcmp( &m_cobj, &( other.m_cobj ), sizeof( DBusSignatureIter ) ) == 0 );
+    return other.m_signature == m_signature;
   }
 
   DataType SignatureIterator::type() const
   {
     if ( not m_valid ) return DataType::INVALID;
     
-    return checked_type_cast( dbus_signature_iter_get_current_type(& m_cobj) );
+    return char_to_dbus_type( *m_it );
   }
 
   DataType SignatureIterator::element_type() const
   {
     if ( this->type() != DataType::ARRAY ) return DataType::INVALID;
-    return checked_type_cast( dbus_signature_iter_get_element_type(&m_cobj) );
+    return char_to_dbus_type( *(m_it + 1) );
   }
 
   bool SignatureIterator::is_basic() const
   {
-    return dbus_type_is_basic( static_cast<int>( this->type() ) );
+      TypeInfo t( type() );
+    return t.is_basic();
   }
 
   bool SignatureIterator::is_fixed() const
   {
-    return dbus_type_is_fixed( static_cast<int>( this->element_type() ) );
+      TypeInfo t( type() );
+    return t.is_fixed();
   }
 
   bool SignatureIterator::is_container() const
   {
-    return dbus_type_is_container( static_cast<int>( this->type() ) );
+      TypeInfo t( type() );
+    return t.is_container();
   }
 
   bool SignatureIterator::is_array() const
@@ -153,30 +140,72 @@ namespace DBus
 
   SignatureIterator SignatureIterator::recurse()
   {
-    SignatureIterator subiter;
+    std::string substr;
 
-    if ( not this->is_container() ) return subiter;
-    
-    dbus_signature_iter_recurse( & m_cobj, & ( subiter.m_cobj ) );
+    if ( not this->is_container() ) return SignatureIterator();
 
-    subiter.m_valid = true;
+    std::tuple<std::string,std::string::iterator,std::string::iterator> tupval = recurse_into_container( m_it );
+    SignatureIterator subiter = SignatureIterator( std::get<0>( tupval ) );
     
     return subiter;
   }
 
   std::string SignatureIterator::signature() const
   {
-    char* sig;
-    std::string retsig;
-
-    sig = dbus_signature_iter_get_signature( & m_cobj );
-
-    retsig = sig;
-
-    dbus_free( sig );
-
-    return retsig;
+    return m_signature;
   }
+
+std::tuple<std::string,std::string::iterator,std::string::iterator> SignatureIterator::recurse_into_container( std::string::iterator current_pos ){
+    std::string signature;
+    std::string::iterator start = current_pos + 1;
+    std::string::iterator end = start;
+    DataType type;
+    bool iterateUntilEndOfContainer = false;
+    char containerEnd = '\0';
+
+    if( *start == '{' ){
+        /* Dict entry; must always come after 'a' */
+        containerEnd = '}';
+        iterateUntilEndOfContainer = true;
+        start++;
+    }else if( *current_pos == '(' ){
+        containerEnd = ')';
+        iterateUntilEndOfContainer = true;
+    }
+
+    if( start == m_signature.end() ){
+        return std::make_tuple( signature, start, start );
+    }
+
+    do{
+        signature += *start;
+        type = char_to_dbus_type( *start );
+
+        TypeInfo info(type);
+        if( info.is_container() && type != DataType::VARIANT ){
+            std::tuple<std::string,std::string::iterator,std::string::iterator> value = recurse_into_container( start );
+            signature += std::get<0>( value );
+            end = std::get<2>( value );
+        }
+
+        start++;
+        if( *start == containerEnd ){
+            iterateUntilEndOfContainer = false;
+        }
+    }while( iterateUntilEndOfContainer );
+
+    return std::make_tuple( signature, start, end );
+}
+
+SignatureIterator& SignatureIterator::operator=( const SignatureIterator& other ){
+    if( this != &other ){
+        m_valid = other.m_valid;
+        m_signature = other.m_signature;
+        m_it = m_signature.begin() + ( other.m_it - other.m_signature.begin() );
+    }
+
+    return *this;
+}
 
 }
 

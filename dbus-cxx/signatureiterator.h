@@ -41,11 +41,7 @@ namespace DBus
 
       SignatureIterator( const std::string& signature );
 
-      /** Returns a pointer to the underlying DBusSignatureIter object */
-      DBusSignatureIter* cobj();
-
-      /** Initializes the iterator for the specified signature */
-      bool init( const std::string& signature );
+      SignatureIterator( const SignatureIterator& other );
 
       /** Invalidates the iterator */
       void invalidate();
@@ -66,6 +62,8 @@ namespace DBus
       SignatureIterator& operator ++();
 
       SignatureIterator operator ++( int );
+
+      SignatureIterator& operator=( const SignatureIterator& other );
 
       bool operator==( const SignatureIterator& other );
 
@@ -104,11 +102,21 @@ namespace DBus
       /** Returns the current signature of the iterator */
       std::string signature() const;
 
+    private:
+      /**
+       * Recurse into the current container.
+       *
+       * @return A tuple which contains:
+       * - The substring that contains the container signature
+       * - An iterator to the first character in the contained signature
+       * - An interator to the last character in the contained signature
+       */
+      std::tuple<std::string,std::string::iterator,std::string::iterator> recurse_into_container( std::string::iterator current_pos );
+
     protected:
-      DBusSignatureIter m_cobj;
-
       bool m_valid;
-
+      std::string m_signature;
+      std::string::iterator m_it;
   };
 
 }

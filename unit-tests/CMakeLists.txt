@@ -199,3 +199,17 @@ target_include_directories( customaddress-tests PUBLIC ${CMAKE_CURRENT_BINARY_DI
 set_property( TARGET customaddress-tests PROPERTY CXX_STANDARD 17 )
 
 add_test( NAME custom-address COMMAND dbus-wrapper-customaddress.sh customaddress-tests)
+
+#
+# Signature tests - make sure that given a signature, we can validate it and iterate over it
+#
+add_executable( test-signature signaturetests.cpp )
+target_link_libraries( test-signature ${TEST_LINK} )
+target_include_directories( test-signature PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( test-signature PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+set_property( TARGET test-signature PROPERTY CXX_STANDARD 17 )
+
+add_test( NAME signature-create COMMAND test-signature create)
+add_test( NAME signature-arrayint COMMAND test-signature iterate_arrayint)
+add_test( NAME signature-arrayint2 COMMAND test-signature iterate_arrayint2)
+add_test( NAME signature-nested-array COMMAND test-signature iterate_nested_array)
