@@ -109,7 +109,7 @@ namespace DBus
         snprintf( line_buffer, 12, "%06x: ", i);
         *stream << line_buffer;
         for (int j = 0; j < 16; j++ ){
-            if( j == 7 ) *stream << "  ";
+            if( j == 8 ) *stream << "  ";
             if ( (i + j) < len ){
                 snprintf( line_buffer, 12, "%02x ", vec[ i + j ] );
                 *stream << line_buffer;
@@ -120,7 +120,7 @@ namespace DBus
 
         *stream << "  ";
         for (int j = 0; j < 16; j++ ){
-            if( j == 7 ) *stream << "  ";
+            if( j == 8 ) *stream << "  ";
             if ( (i + j) < len ){
                 snprintf( line_buffer, 12, "%c", std::isprint(vec[i+j]) ? vec[i+j] : '.');
                 *stream << line_buffer;
