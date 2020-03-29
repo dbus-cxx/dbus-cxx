@@ -1,0 +1,172 @@
+/***************************************************************************
+ *   Copyright (C) 2020 by Robert Middleton                                *
+ *   robert.middleton@rm5248.com                                           *
+ *                                                                         *
+ *   This file is part of the dbus-cxx library.                            *
+ *                                                                         *
+ *   The dbus-cxx library is free software; you can redistribute it and/or *
+ *   modify it under the terms of the GNU General Public License           *
+ *   version 3 as published by the Free Software Foundation.               *
+ *                                                                         *
+ *   The dbus-cxx library is distributed in the hope that it will be       *
+ *   useful, but WITHOUT ANY WARRANTY; without even the implied warranty   *
+ *   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU   *
+ *   General Public License for more details.                              *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
+ ***************************************************************************/
+#include "sasl.h"
+
+#include <unistd.h>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <poll.h>
+#include <cstring>
+#include <dbus-cxx/dbus-cxx-private.h>
+#include <regex>
+
+using DBus::priv::SASL;
+
+static const std::regex OK_REGEX( "OK ([a-z0-9]*)" );
+static const std::regex DATA_REGEX( "DATA ([a-z0-9]*)" );
+static const std::regex ERROR_REGEX( "ERROR(.*)" );
+static const std::regex AGREE_UNIX_FD_REGEX( "AGREE_UNIX_FD" );
+static const std::regex REJECTED_REGEX( "REJECTED (.*)");
+
+static int hexchar2int( char c ){
+    if( c >= '0' && c <= '9' ){
+        return c - 48;
+    }
+
+    if( c >= 'a' && c <= 'f' ){
+        return c - 97;
+    }
+
+    return 0;
+}
+
+SASL::SASL( int fd, bool negotiateFDPassing ) :
+    m_fd( fd ),
+    m_negotiateFDpassing( negotiateFDPassing ){
+
+}
+
+std::tuple<bool,bool,std::vector<uint8_t>> SASL::authenticate() {
+    bool success = false;
+    bool negotiatedFD = false;
+    std::vector<uint8_t> serverGUID;
+    __uid_t uid = getuid();
+    std::string line;
+    std::smatch regex_match;
+
+    write_data_with_newline( "AUTH EXTERNAL " + encode_as_hex( uid ) );
+
+    line = read_data();
+    if( std::regex_search( line, regex_match, OK_REGEX ) ){
+        serverGUID = hex_to_vector( regex_match[ 1 ] );
+    }else if( std::regex_search( line, regex_match, ERROR_REGEX ) ){
+        SIMPLELOGGER_DEBUG("DBus.priv.SASL", "Unable to authenticate: "
+                           + regex_match[ 1 ].str() );
+        goto out;
+    }else if( std::regex_search( line, regex_match, REJECTED_REGEX ) ){
+        SIMPLELOGGER_DEBUG("DBus.priv.SASL", "Rejected authentication, available modes: "
+                           + regex_match[ 1 ].str() );
+        goto out;
+    }else{
+        // Unknown command, return an error to the server
+        write_data_with_newline( "ERROR Unrecognized response" );
+        goto out;
+    }
+
+    if( m_negotiateFDpassing ){
+        write_data_with_newline( "NEGOTIATE_UNIX_FD" );
+        line = read_data();
+
+        if( std::regex_search( line, regex_match, AGREE_UNIX_FD_REGEX ) ){
+            negotiatedFD = true;
+        }
+
+        if( std::regex_search( line, regex_match, ERROR_REGEX ) ){
+            SIMPLELOGGER_DEBUG("DBus.priv.SASL", "Unable to negotiate FD passing: "
+                               + regex_match[ 1 ].str() );
+        }
+    }
+
+    write_data_with_newline( "BEGIN" );
+
+    success = true;
+
+out:
+
+    return std::make_tuple( success, negotiatedFD, serverGUID );
+}
+
+int SASL::write_data_with_newline( std::string data ){
+    SIMPLELOGGER_DEBUG("DBus.priv.SASL", "Sending command: " + data );
+    data += "\r\n";
+    return ::write( m_fd, data.c_str(), data.length() );
+}
+
+std::string SASL::read_data(){
+    std::string line_read;
+    char dataBuffer[ 512 ];
+    ssize_t bytesRead;
+
+    pollfd pollfd;
+    pollfd.fd = m_fd;
+    pollfd.events = POLLIN;
+
+    if( poll( &pollfd, 1, -1 ) < 0 ){
+        std::string errmsg = strerror( errno );
+        SIMPLELOGGER_ERROR("DBus.priv.SASL", "Unable to poll for response from daemon: " + errmsg );
+        return line_read;
+    }
+
+    // TODO Note that we are making an assumption here that we don't
+    // have a short read.  This may need to be fixed in the future.
+    bytesRead = ::read( m_fd, &dataBuffer, 512 );
+    line_read = std::string( dataBuffer, bytesRead );
+
+    SIMPLELOGGER_DEBUG("DBus.priv.SASL", "Received response: " + line_read );
+
+    return line_read;
+}
+
+std::string SASL::encode_as_hex(int num){
+    std::ostringstream out;
+    std::ostringstream numString;
+    std::string finalNumString;
+
+    numString << num;
+
+    finalNumString = numString.str();
+    out << std::hex;
+    for( const char& s : finalNumString ){
+        out << std::hex << (int)s;
+    }
+
+    return out.str();
+
+}
+
+std::vector<uint8_t> SASL::hex_to_vector( std::string hexData ){
+    std::vector<uint8_t> retval;
+
+    if( hexData.size() % 2 != 0 ){
+        return retval;
+    }
+
+    for( std::string::const_iterator it = hexData.cbegin();
+         it != hexData.cend(); ){
+        int first = hexchar2int(*it);
+        it++;
+        int second = hexchar2int(*it);
+        it++;
+
+        retval.push_back( first << 4 | second );
+    }
+
+    return retval;
+}

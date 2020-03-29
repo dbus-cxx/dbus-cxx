@@ -28,7 +28,7 @@
 #include "demarshaling.h"
 #include "utility.h"
 
-using DBus::SimpleTransport;
+using DBus::priv::SimpleTransport;
 
 SimpleTransport::SimpleTransport( int fd, bool initialize ) :
     m_fd( fd ),
@@ -44,6 +44,7 @@ SimpleTransport::SimpleTransport( int fd, bool initialize ) :
             std::string errmsg = strerror( errno );
             SIMPLELOGGER_DEBUG("dbus.SimpleTransport", "Unable to write nul byte: " + errmsg );
             m_ok = false;
+            close( m_fd );
             errno = my_errno;
             return;
         }
@@ -59,11 +60,7 @@ SimpleTransport::~SimpleTransport(){
 
 
 std::shared_ptr<SimpleTransport> SimpleTransport::create( int fd, bool initialize ){
-    SimpleTransport* transport = new SimpleTransport( fd, initialize );
-    if( !transport->ok() ){
-        return std::shared_ptr<SimpleTransport>();
-    }
-    return std::shared_ptr<SimpleTransport>( transport );
+    return std::shared_ptr<SimpleTransport>( new SimpleTransport( fd, initialize ) );
 }
 
 ssize_t SimpleTransport::writeMessage( std::shared_ptr<const Message> message, uint32_t serial ){
@@ -200,6 +197,10 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage(){
     return retmsg;
 }
 
-bool SimpleTransport::ok() const {
+bool SimpleTransport::is_valid() const {
     return m_ok;
+}
+
+int SimpleTransport::fd() const {
+    return m_fd;
 }

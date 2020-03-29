@@ -47,8 +47,11 @@ namespace DBus
   class SignalMessage;
   class Timeout;
   class Watch;
-  class Transport;
  struct InterruptablePredicateAccumulatorDefaultFalse;
+
+ namespace priv{
+    class Transport;
+ }
 
   /**
    * Connection point to the DBus
@@ -362,7 +365,7 @@ namespace DBus
         int m_fd;
         std::vector<uint8_t> m_sendBuffer;
         uint32_t m_currentSerial;
-        std::shared_ptr<Transport> m_transport;
+        std::shared_ptr<priv::Transport> m_transport;
 
       DBusConnection* m_cobj;
       

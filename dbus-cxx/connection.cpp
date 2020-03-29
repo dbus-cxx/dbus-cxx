@@ -57,25 +57,6 @@ namespace sigc { template <typename T_return, typename ...T_arg> class slot; }
 namespace DBus
 {
 
-/**
- * There's probably a less stupid way of doing this...
- */
-std::string numberToHexString( int num ){
-	std::ostringstream out;
-	std::ostringstream numString;
-	std::string finalNumString;
-
-	numString << num;
-
-	finalNumString = numString.str();
-	out << std::hex;
-	for( const char& s : finalNumString ){
-		out << std::hex << (int)s;
-	}
-
-	return out.str();
-}
-
   dbus_int32_t Connection::m_weak_pointer_slot = -1;
   
   Connection::Connection( DBusConnection* cobj, bool is_private ):
@@ -89,77 +70,28 @@ std::string numberToHexString( int num ){
 
   Connection::Connection( BusType type, bool is_private ): m_cobj( nullptr )
   {
-    //std::string dbusAddress = std::string( getenv( "DBUS_SESSION_BUS_ADDRESS" ) );
-    std::string dbusAddress("/run/user/1000/bus");
-    struct sockaddr_un addr = {0};
     m_currentSerial = 1;
 
-    m_fd = ::socket( AF_UNIX, SOCK_STREAM, 0 );
-    if( m_fd < 0 ){
-        std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to create socket: " + errmsg );
+    if( type == BusType::SESSION ){
+        m_transport = priv::Transport::open_transport( std::string( getenv( "DBUS_SESSION_BUS_ADDRESS" ) ) );
+    }else if( type == BusType::SYSTEM ){
+        std::string systemBusAddr = std::string( getenv( "DBUS_SYSTEM_BUS_ADDRESS" ) );
+        if( systemBusAddr.empty() ){
+            systemBusAddr = "unix:path=/var/run/dbus/system_bus_socket";
+        }
+        m_transport = priv::Transport::open_transport( systemBusAddr );
+    }else if( type == BusType::STARTER ){
+         std::string starterBusAddr = std::string( getenv( "DBUS_STARTER_ADDRESS" ) );
+         if( starterBusAddr.empty() ){
+             SIMPLELOGGER_ERROR("dbus.Connection", "Attempting to connect "
+                  "to DBUS_STARTER_ADDRESS, but environment variable not defined or empty" );
+         }
+         m_transport = priv::Transport::open_transport( starterBusAddr );
     }
 
-    addr.sun_family = AF_UNIX;
-    memcpy( addr.sun_path, dbusAddress.c_str(), dbusAddress.size() );
-
-    if( ::connect( m_fd, (struct sockaddr*)&addr, sizeof( addr ) ) < 0 ){
-        std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to connect: " + errmsg );
+    if( !m_transport || !m_transport->is_valid() ){
+        SIMPLELOGGER_ERROR("dbus.Connection", "Unable to open transport" );
         return;
-    }
-
-    SIMPLELOGGER_DEBUG("dbus.Connection", "Opened dbus connection" );
-
-    int passcred = 1;
-    if( ::setsockopt( m_fd, SOL_SOCKET, SO_PASSCRED, &passcred, sizeof( int ) ) < 0 ){
-        std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to set passcred: " + errmsg );
-        return;
-    }
-
-    m_transport = SimpleTransport::create( m_fd, true );
-    if( !m_transport ){
-        std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to create transport: " + errmsg );
-        return;
-    }
-
-    int uid = getuid();
-    std::ostringstream authCommand;
-    authCommand << "AUTH EXTERNAL ";
-    authCommand << numberToHexString( uid );
-    authCommand << "\r\n";
-    std::string fullCmd = authCommand.str();
-    SIMPLELOGGER_DEBUG("dbus.Connection", "auth command: " + fullCmd );
-    if( ::write( m_fd, fullCmd.c_str(), fullCmd.size() ) < 0 ){
-        std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to write: " + errmsg );
-        return;
-    }
-
-    char readData[ 1024 ];
-    int bytesRead = ::read( m_fd, &readData, 1024 );
-    if( bytesRead < 0 ){
-        std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to read: " + errmsg );
-        return;
-    }
-
-    readData[ bytesRead ] = 0;
-    SIMPLELOGGER_DEBUG( "dbus.Connection", "Got back data: " + std::string( readData, bytesRead ) );
-
-    std::string beginCmd = "BEGIN\r\n";
-    if( ::write( m_fd, beginCmd.c_str(), beginCmd.size() ) < 0 ){
-        std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to write: " + errmsg );
-        return;
-    }
-
-    // Turn the FD into non-blocking
-    {
-        int flags = fcntl(m_fd, F_GETFL, 0);
-        fcntl(m_fd, F_SETFL, flags | O_NONBLOCK);
     }
 
     std::shared_ptr<CallMessage> helloMsg = CallMessage::create( "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello" );

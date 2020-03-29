@@ -21,14 +21,17 @@
 
 #include <memory>
 #include <stdint.h>
+#include <vector>
 
 namespace DBus {
 
 class Message;
 
+namespace priv {
+
 class Transport {
 public:
-    virtual ~Transport(){}
+    virtual ~Transport();
 
     /**
      * Writes a message to the transport stream.
@@ -48,8 +51,35 @@ public:
      */
     virtual std::shared_ptr<Message> readMessage() = 0;
 
+    /**
+     * Check to see if this transport is valid.
+     * @return
+     */
+    virtual bool is_valid() const = 0;
+
+    /**
+     * Returns the file descriptor that this transport acts on
+     *
+     * @return
+     */
+    virtual int fd() const = 0;
+
+    /**
+     * Open and return a transport based off of the given address.
+     *
+     * @param address The address to connect to, in DBus transport format
+     * (e.g. unix:path=/tmp/dbus-test)
+     * @return An opened file descriptor, or -1 on error(with errno set)
+     */
+    static std::shared_ptr<Transport> open_transport( std::string address );
+
+protected:
+    std::vector<uint8_t> m_serverAddress;
+
 };
 
-}
+} /* namepsace priv */
+
+} /* namespace DBus */
 
 #endif /* DBUSCXX_TRANSPORT_H */
