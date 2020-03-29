@@ -177,13 +177,14 @@ namespace DBus
 
   } /* namespace priv */
 
-}
 
 inline
 std::ostream& operator<<(std::ostream& sout, const DBus::Signature& sig)
 {
-  sout << sig.str();
+  sout << "DBus::Signature[" << sig.str() << "]";
   return sout;
+}
+
 }
 
 #endif
