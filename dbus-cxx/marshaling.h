@@ -1,23 +1,37 @@
+/***************************************************************************
+ *   Copyright (C) 2020 by Robert Middleton                                *
+ *   robert.middleton@rm5248.com                                           *
+ *                                                                         *
+ *   This file is part of the dbus-cxx library.                            *
+ *                                                                         *
+ *   The dbus-cxx library is free software; you can redistribute it and/or *
+ *   modify it under the terms of the GNU General Public License           *
+ *   version 3 as published by the Free Software Foundation.               *
+ *                                                                         *
+ *   The dbus-cxx library is distributed in the hope that it will be       *
+ *   useful, but WITHOUT ANY WARRANTY; without even the implied warranty   *
+ *   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU   *
+ *   General Public License for more details.                              *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
+ ***************************************************************************/
 #ifndef DBUSCXX_MARSHALING_H
 #define DBUSCXX_MARSHALING_H
 
 #include <stdint.h>
 #include <vector>
-#include <string>
-#include <map>
 #include <dbus-cxx/variant.h>
 #include <dbus-cxx/path.h>
 #include <dbus-cxx/signature.h>
+#include <dbus-cxx/enums.h>
 
 namespace DBus{
 
-enum class Endianess {
-	Little,
-	Big,
-};
-
 /**
- * Implements the marshaling/demarshaling algorithms on a given vector of data.
+ * Implements the marshaling algorithms on a given vector of data.
+ *
+ * Note that all marshal() methods will always append to the given buffer.
  */
 class Marshaling {
 public:
@@ -29,8 +43,14 @@ public:
 	 */
 	Marshaling( std::vector<uint8_t>* data, Endianess endian );
 
+    /**
+     * Set the data vector to marshal/demarshal.
+     *
+     * @param data
+     */
 	void setData( std::vector<uint8_t>* data );
-	void setEndianess( Endianess endian );
+
+    void setEndianess( Endianess endian );
 
 	void marshal( bool v );
 	void marshal( uint8_t v );
@@ -48,6 +68,13 @@ public:
 
     void align( int alignment );
 
+    /**
+     * Marshal a uint32_t value at the given offset.  This is
+     * only used to update the length of a marshaled array.
+     *
+     * @param offset The location to set the value
+     * @param value The actual value to set.
+     */
     void marshalAtOffset( uint32_t offset, uint32_t value );
 
 private:
@@ -61,7 +88,6 @@ private:
 private:
 	std::vector<uint8_t>* m_data;
     Endianess m_endian;
-	int m_dataPos;
 };
 
 }
