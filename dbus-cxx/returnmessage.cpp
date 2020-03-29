@@ -61,16 +61,6 @@ namespace DBus
     return std::shared_ptr<ReturnMessage>(new ReturnMessage(callee) );
   }
 
-  const char* ReturnMessage::signature() const
-  {
-    return dbus_message_get_signature( m_cobj );
-  }
-
-  bool ReturnMessage::has_signature( const std::string& signature ) const
-  {
-    return dbus_message_has_signature( m_cobj, signature.c_str() );
-  }
-
   ReturnMessage& ReturnMessage::operator=( const Message& other )
   {
     m_cobj = other.cobj();
@@ -88,6 +78,10 @@ namespace DBus
   {
     if ( m_cobj ) return dbus_message_get_reply_serial( m_cobj );
     return 0;
+  }
+
+  MessageType ReturnMessage::type() const {
+      return MessageType::RETURN;
   }
 
 }

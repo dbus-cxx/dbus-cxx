@@ -17,7 +17,6 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/message.h>
-#include <dbus/dbus.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -45,7 +44,7 @@ namespace DBus
   {
     protected:
 
-      SignalMessage( DBusMessage* cobj=nullptr, CreateMethod m = CreateMethod::ALIAS );
+      SignalMessage( );
       
       SignalMessage( std::shared_ptr<Message> msg );
 
@@ -56,7 +55,7 @@ namespace DBus
       SignalMessage( const std::string& path, const std::string& interface, const std::string& name );
 
     public:
-      static std::shared_ptr<SignalMessage> create( DBusMessage* cobj=nullptr, CreateMethod m = CreateMethod::ALIAS );
+      static std::shared_ptr<SignalMessage> create( );
       
       static std::shared_ptr<SignalMessage> create( std::shared_ptr<Message> msg );
 
@@ -70,23 +69,25 @@ namespace DBus
 
       Path path() const;
 
-      bool has_path( const std::string& p ) const;
+//      bool has_path( const std::string& p ) const;
 
       std::vector<std::string> path_decomposed() const;
 
       bool set_interface( const std::string& i );
 
-      const char* interface() const;
+      std::string interface() const;
 
-      bool has_interface( const std::string& i ) const;
+      //bool has_interface( const std::string& i ) const;
 
       bool set_member( const std::string& m );
 
-      const char* member() const;
+      std::string member() const;
 
-      bool has_member( const std::string& m ) const;
+      //bool has_member( const std::string& m ) const;
 
       bool operator == ( const SignalMessage& ) const;
+
+      virtual MessageType type() const;
   
   };
 

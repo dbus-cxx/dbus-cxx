@@ -24,11 +24,9 @@
 namespace DBus
 {
 
-  SignalMessage::SignalMessage( DBusMessage* cobj, CreateMethod m ):
-      Message(cobj, m)
+  SignalMessage::SignalMessage( ):
+      Message()
   {
-    if ( not cobj or dbus_message_get_type(cobj) != DBUS_MESSAGE_TYPE_SIGNAL )
-      throw ErrorInvalidMessageType();
   }
   
   SignalMessage::SignalMessage( std::shared_ptr<Message> msg ):
@@ -53,14 +51,14 @@ namespace DBus
 
   SignalMessage::SignalMessage( const std::string& path, const std::string& interface, const std::string& name )
   {
-    m_cobj = dbus_message_new_signal( path.c_str(), interface.c_str(), name.c_str() );
-    if ( m_cobj == NULL )
-      throw( ErrorNoMemory( "SignalMessage::SignalMessage: constructor failed because dbus couldn't allocate memory for signal" ) );
+//    m_cobj = dbus_message_new_signal( path.c_str(), interface.c_str(), name.c_str() );
+//    if ( m_cobj == NULL )
+//      throw( ErrorNoMemory( "SignalMessage::SignalMessage: constructor failed because dbus couldn't allocate memory for signal" ) );
   }
 
-  std::shared_ptr<SignalMessage> SignalMessage::create( DBusMessage* cobj, CreateMethod m )
+  std::shared_ptr<SignalMessage> SignalMessage::create( )
   {
-    return std::shared_ptr<SignalMessage>( new SignalMessage(cobj, m) );
+    return std::shared_ptr<SignalMessage>( new SignalMessage() );
   }
 
   std::shared_ptr<SignalMessage> SignalMessage::create(std::shared_ptr<Message> msg)
@@ -85,62 +83,80 @@ namespace DBus
 
   bool SignalMessage::operator == ( const SignalMessage& m ) const
   {
-    return dbus_message_is_signal( m_cobj, m.interface(), m.member() );
+    //return dbus_message_is_signal( m_cobj, m.interface(), m.member() );
   }
 
   bool SignalMessage::set_path( const std::string& p )
   {
-    return dbus_message_set_path( m_cobj, p.c_str() );
+      m_headerMap[ DBUSCXX_HEADER_FIELD_PATH ] = Variant( Path( p ) );
+      return true;
   }
 
   Path SignalMessage::path() const
   {
-    return dbus_message_get_path( m_cobj );
+      DBus::Variant memberName = header_field( DBUSCXX_HEADER_FIELD_PATH );
+      if( memberName.currentType() == DataType::OBJECT_PATH ){
+          return std::any_cast<Path>( memberName.value() );
+      }
+    return std::string( "" );
   }
 
-  bool SignalMessage::has_path( const std::string& p ) const
-  {
-    return dbus_message_has_path( m_cobj, p.c_str() );
-  }
+//  bool SignalMessage::has_path( const std::string& p ) const
+//  {
+//    //return dbus_message_has_path( m_cobj, p.c_str() );
+//  }
 
   std::vector<std::string> SignalMessage::path_decomposed() const
   {
     std::vector<std::string> decomposed;
-    char** p;
-    dbus_message_get_path_decomposed( m_cobj, &p );
-    for ( char** q=p; q != NULL; q++ )
-      decomposed.push_back( *q );
-    dbus_free_string_array( p );
+//    char** p;
+//    dbus_message_get_path_decomposed( m_cobj, &p );
+//    for ( char** q=p; q != NULL; q++ )
+//      decomposed.push_back( *q );
+//    dbus_free_string_array( p );
     return decomposed;
   }
 
   bool SignalMessage::set_interface( const std::string& i )
   {
-    return dbus_message_set_interface( m_cobj, i.c_str() );
+//    return dbus_message_set_interface( m_cobj, i.c_str() );
   }
 
-  const char* SignalMessage::interface() const {
-      return dbus_message_get_interface( m_cobj );
+  std::string SignalMessage::interface() const {
+      DBus::Variant memberName = header_field( DBUSCXX_HEADER_FIELD_INTERFACE );
+      if( memberName.currentType() == DataType::STRING ){
+          return std::any_cast<std::string>( memberName.value() );
+      }
+    return std::string( "" );
     }
 
-  bool SignalMessage::has_interface( const std::string& i ) const
-  {
-    return dbus_message_has_interface( m_cobj, i.c_str() );
-  }
+//  bool SignalMessage::has_interface( const std::string& i ) const
+//  {
+////    return dbus_message_has_interface( m_cobj, i.c_str() );
+//  }
 
   bool SignalMessage::set_member( const std::string& m )
   {
-    return dbus_message_set_member( m_cobj, m.c_str() );
+    m_headerMap[ DBUSCXX_HEADER_FIELD_MEMBER ] = Variant( m );
+    return true;
   }
 
-  const char* SignalMessage::member() const
+  std::string SignalMessage::member() const
   {
-    return dbus_message_get_member( m_cobj );
+      DBus::Variant memberName = header_field( DBUSCXX_HEADER_FIELD_MEMBER );
+      if( memberName.currentType() == DataType::STRING ){
+          return std::any_cast<std::string>( memberName.value() );
+      }
+    return std::string( "" );
   }
 
-  bool SignalMessage::has_member( const std::string& m ) const
-  {
-    return dbus_message_has_member( m_cobj, m.c_str() );
+//  bool SignalMessage::has_member( const std::string& m ) const
+//  {
+////    return dbus_message_has_member( m_cobj, m.c_str() );
+//  }
+
+  MessageType SignalMessage::type() const {
+      return MessageType::SIGNAL;
   }
 
 }

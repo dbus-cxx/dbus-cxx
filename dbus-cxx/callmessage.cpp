@@ -183,16 +183,6 @@ m_headerMap[ 6 ] = DBus::Variant( dest );
     return dbus_message_has_member( m_cobj, m.c_str() );
   }
 
-  const char* CallMessage::signature() const
-  {
-    return dbus_message_get_signature( m_cobj );
-  }
-
-  bool CallMessage::has_signature( const std::string& signature ) const
-  {
-    return dbus_message_has_signature( m_cobj, signature.c_str() );
-  }
-
   bool CallMessage::operator == ( const CallMessage& m ) const
   {
     return dbus_message_is_method_call( m_cobj, m.interface(), m.member() );
@@ -208,6 +198,10 @@ m_headerMap[ 6 ] = DBus::Variant( dest );
   {
     if ( m_cobj == nullptr ) return false;
     return !dbus_message_get_no_reply( m_cobj );
+  }
+
+  MessageType CallMessage::type() const {
+      return MessageType::CALL;
   }
 
 }

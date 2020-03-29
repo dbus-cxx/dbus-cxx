@@ -63,6 +63,8 @@ namespace DBus
       bool set_name( const std::string& n );
 
       bool operator == ( const ErrorMessage& ) const;
+
+      virtual MessageType type() const;
   
   };
 

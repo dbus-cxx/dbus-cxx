@@ -95,5 +95,9 @@ namespace DBus
     return dbus_message_set_error_name( m_cobj, n.c_str() );
   }
 
+  MessageType ErrorMessage::type() const {
+      return MessageType::ERROR;
+  }
+
 }
 

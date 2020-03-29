@@ -20,7 +20,6 @@
 #include <dbus-cxx/error.h>
 #include <dbus-cxx/messageappenditerator.h>
 #include <dbus-cxx/messageiterator.h>
-#include <dbus-cxx/messageheader.h>
 #include <dbus/dbus.h>
 #include <memory>
 #include <string>
@@ -94,7 +93,7 @@ namespace DBus
 
 //       Message copy();
 
-      MessageType type() const;
+      virtual MessageType type() const;
 
       void set_auto_start( bool auto_start);
 
@@ -117,6 +116,10 @@ namespace DBus
       bool has_destination( const std::string& name ) const;
 
       bool has_sender( const std::string& name ) const;
+
+      Signature signature() const;
+
+      bool has_signature( const std::string& signature ) const;
 
       template <typename T>
       MessageIterator operator>>( T& value ) const
@@ -144,7 +147,20 @@ namespace DBus
 
 void serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const;
 
+/**
+ * Returns the given header field(if it exists), otherwise returns a default
+ * constructed variant.
+ *
+ * @param field The field number to get
+ * @return The data, otherwise a default-constructed variant.
+ */
+Variant header_field( uint8_t field ) const;
+
+static std::shared_ptr<Message> create_from_data( uint8_t* data, uint32_t data_len );
+
     protected:
+
+void append_signature( std::string toappend );
 
       friend void init(bool);
 
@@ -152,15 +168,16 @@ void serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const;
 
       bool m_valid;
 
-std::string m_signature;
 std::map<uint8_t,Variant> m_headerMap;
 std::vector<uint8_t> m_body;
+Endianess m_endianess;
 
 friend class MessageAppendIterator;
+friend class MessageIterator;
+friend std::ostream& operator<<( std::ostream& os, const DBus::Message* msg );
 
   };
 
-}
 
 template <typename T>
 inline
@@ -176,6 +193,8 @@ DBus::MessageAppendIterator operator<<( std::shared_ptr<DBus::Message> ptr, cons
 {
   if ( not ptr ) throw DBus::ErrorInvalidSharedPtr();
   return (*ptr) << value;
+}
+
 }
 
 #endif

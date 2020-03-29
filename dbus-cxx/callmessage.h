@@ -93,15 +93,13 @@ namespace DBus
 
       bool has_member( const std::string& m ) const;
 
-      const char* signature() const;
-
-      bool has_signature( const std::string& signature ) const;
-
       bool operator == ( const CallMessage& ) const;
 
       void set_no_reply( bool no_reply=true );
 
       bool expects_reply() const;
+
+      virtual MessageType type() const;
 
   };
 

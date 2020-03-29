@@ -60,15 +60,13 @@ namespace DBus
 
       static std::shared_ptr<ReturnMessage> create( std::shared_ptr<const Message> callee );
 
-      const char* signature() const;
-
-      bool has_signature( const std::string& signature ) const;
-
       ReturnMessage& operator=( const Message& other );
 
       bool set_reply_serial( uint32_t );
 
       uint32_t reply_serial() const;
+
+      virtual MessageType type() const;
   
   };
 

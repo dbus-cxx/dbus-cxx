@@ -21,34 +21,14 @@
 #include "messageappenditerator.h"
 #include "messageiterator.h"
 #include "returnmessage.h"
+#include "callmessage.h"
+#include "errormessage.h"
+#include "signalmessage.h"
 #include "variant.h"
 #include "marshaling.h"
+#include "demarshaling.h"
 #include <dbus-cxx/dbus-cxx-private.h>
 #include <dbus-cxx/simplelogger.h>
-
-#include <ctype.h>
-#include <stdio.h>
-
-void hexdump(void *ptr, int buflen) {
-fflush(stdout);
-fflush(stderr);
-  unsigned char *buf = (unsigned char*)ptr;
-  int i, j;
-  for (i=0; i<buflen; i+=16) {
-    printf("%06x: ", i);
-    for (j=0; j<16; j++) 
-      if (i+j < buflen)
-        printf("%02x ", buf[i+j]);
-      else
-        printf("   ");
-    printf(" ");
-    for (j=0; j<16; j++) 
-      if (i+j < buflen)
-        printf("%c", isprint(buf[i+j]) ? buf[i+j] : '.');
-    printf("\n");
-  }
-fflush(stdout);
-}
 
 namespace DBus
 {
@@ -107,6 +87,10 @@ namespace DBus
         m_cobj = dbus_message_copy(other->m_cobj);
       }
     }
+  }
+
+  MessageType Message::type() const {
+      return MessageType::INVALID;
   }
 
   std::shared_ptr<Message> Message::create(MessageType type)
@@ -182,7 +166,10 @@ namespace DBus
 
   uint32_t Message::serial() const
   {
-    if ( m_cobj ) return dbus_message_get_serial( m_cobj );
+      Variant value = header_field( DBUSCXX_HEADER_FIELD_REPLY_SERIAL );
+      if( value.currentType() != DataType::INVALID ){
+          return std::any_cast<uint32_t>( value.value() );
+      }
     return 0;
   }
 
@@ -191,12 +178,6 @@ namespace DBus
     // TODO fix
 //     return Message( *this, CreateMethod::COPY );
 //   }
-
-  MessageType Message::type() const
-  {
-    if ( m_cobj ) return static_cast<MessageType>( dbus_message_get_type( m_cobj ) );
-    return MessageType::INVALID;
-  }
 
   void Message::set_auto_start( bool auto_start)
   {
@@ -285,6 +266,21 @@ m_headerMap[ 6 ] = DBus::Variant( s );
     return m_cobj;
   }
 
+  Signature Message::signature() const
+  {
+      Variant v = m_headerMap.at( 8 );
+      if( v.currentType() == DataType::SIGNATURE ){
+          return std::any_cast<Signature>( v.value() );
+      }
+    return Signature();
+  }
+
+  bool Message::has_signature( const std::string& signature ) const
+  {
+    //return dbus_message_has_signature( m_cobj, signature.c_str() );
+      return false;
+  }
+
 void Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const {
     Marshaling marshal( vec, Endianess::Big );
 
@@ -319,11 +315,10 @@ void Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
 	// Marshal the serial
     marshal.marshal( serial );
 
-    std::ostringstream logmsg;
     // Marshal our header array
     marshal.marshal( static_cast<uint32_t>( 0 ) ); // The size of the header array; we update this later
 
-	for( const std::pair<uint8_t,Variant>& entry : m_headerMap ){
+    for( const std::pair<const uint8_t,Variant>& entry : m_headerMap ){
         marshal.align( 8 );
         marshal.marshal( entry.first );
         marshal.marshal( entry.second );
@@ -337,14 +332,159 @@ void Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
     for( const uint8_t& byte : m_body ){
         vec->push_back( byte );
     }
+}
 
-    logmsg.str( "" );
-    logmsg.clear();
-    logmsg << "marshaled size: " << vec->size() << " array size: " << vec->size() - 12;
-        SIMPLELOGGER_DEBUG("dbus.Message", logmsg.str() );
+std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data_len ){
+    Demarshaling demarshal( data, data_len, Endianess::Big );
+    uint8_t method_type;
+    uint8_t flags;
+    uint8_t protoVersion;
+    uint32_t bodyLen;
+    uint32_t serial;
+    uint32_t arrayLen;
+    std::shared_ptr<Message> retmsg;
+    std::map<uint8_t,Variant> headerMap;
+    Endianess msgEndian = Endianess::Big;
 
-	hexdump( vec->data(), vec->size() );
+    if( demarshal.demarshal_uint8_t() == 'l' ){
+        demarshal.setEndianess( Endianess::Little );
+        msgEndian = Endianess::Little;
+    }
+
+    method_type = demarshal.demarshal_uint8_t();
+    flags = demarshal.demarshal_uint8_t();
+    protoVersion = demarshal.demarshal_uint8_t();
+    bodyLen = demarshal.demarshal_uint32_t();
+    serial = demarshal.demarshal_uint32_t();
+    arrayLen = demarshal.demarshal_uint32_t();
+
+    while( demarshal.current_offset() < ( 12 + arrayLen ) ){
+        uint8_t key;
+        Variant value;
+        demarshal.align( 8 );
+        key = demarshal.demarshal_uint8_t();
+        value = demarshal.demarshal_variant();
+
+        headerMap[ key ] = value;
+    }
+
+    // Make sure we're aligned to an 8-byte boundary
+    demarshal.align( 8 );
+
+    switch( method_type ){
+    case 1:
+        retmsg = CallMessage::create();
+        break;
+    case 2:
+        retmsg = ReturnMessage::create();
+        break;
+    case 3:
+        retmsg = ErrorMessage::create();
+        break;
+    case 4:
+        retmsg = SignalMessage::create();
+        break;
+    }
+
+    retmsg->m_valid = true;
+    retmsg->m_headerMap = headerMap;
+    retmsg->m_endianess = msgEndian;
+    retmsg->m_body.reserve( bodyLen );
+    for( uint32_t x = 0; x < bodyLen; x++ ){
+        retmsg->m_body.push_back( demarshal.demarshal_uint8_t() );
+    }
+
+    return retmsg;
+}
+
+void Message::append_signature(std::string toappend){
+    DBus::Variant val = m_headerMap[ DBUSCXX_HEADER_FIELD_SIGNATURE ];
+    std::string newval;
+
+    if( val.currentType() != DataType::INVALID ){
+        Signature sig = std::any_cast<Signature>( val.value() );
+        newval += sig.str();
+    }
+
+    newval += toappend;
+    m_headerMap[ DBUSCXX_HEADER_FIELD_SIGNATURE ] = DBus::Variant( Signature( newval ) );
+}
+
+Variant Message::header_field(  uint8_t field ) const {
+    std::map<uint8_t,Variant>::const_iterator location =
+            m_headerMap.find( field );
+    if( location != m_headerMap.end() ){
+        return location->second;
+    }
+
+    return DBus::Variant();
+}
+
+std::ostream& operator <<( std::ostream& os, const DBus::Message* msg ){
+    os << "DBus::Message = [";
+
+    switch( msg->type() ){
+    case DBus::MessageType::INVALID:
+        os << "Invalid";
+        break;
+    case DBus::MessageType::CALL:
+        os << "CallMessage";
+        break;
+    case DBus::MessageType::ERROR:
+        os << "ErrorMessage";
+        break;
+    case DBus::MessageType::RETURN:
+        os << "ReturnMessage";
+        break;
+    case DBus::MessageType::SIGNAL:
+        os << "SignalMessage";
+        break;
+    }
+
+    os << std::endl;
+    os << "  Message length: " << msg->m_body.size() << std::endl;
+    os << "  Endianess: " << msg->m_endianess << std::endl;
+    os << "  Headers:" << std::endl;
+    for( const std::pair<const uint8_t,DBus::Variant>& set : msg->m_headerMap ){
+        std::any value = set.second.value();
+        os << "    ";
+        switch( set.first ){
+        default:
+            os << "!!INVALID KEY " << set.first << "!!!";
+            break;
+        case 1:
+            os << "Path: " << std::any_cast<Path>( value );
+            break;
+        case 2:
+            os << "Interface: " << std::any_cast<std::string>( value );
+            break;
+        case 3:
+            os << "Member: " << std::any_cast<std::string>( value );
+            break;
+        case 4:
+            os << "Error Name: " << std::any_cast<std::string>( value );
+            break;
+        case 5:
+            os << "Reply Serial: " << std::any_cast<uint32_t>( value );
+            break;
+        case 6:
+            os << "Destination: " << std::any_cast<std::string>( value );
+            break;
+        case 7:
+            os << "Sender: " << std::any_cast<std::string>( value );
+            break;
+        case 8:
+            os << "Signature: " << std::any_cast<Signature>( value );
+            break;
+        case 9:
+            os << "# Unix FDs: " << std::any_cast<uint32_t>( value );
+            break;
+        }
+        os << std::endl;
+    }
+    os << "]";
+
+    return os;
 }
 
 }
-
