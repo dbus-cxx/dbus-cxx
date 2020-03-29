@@ -40,6 +40,9 @@
 #include "signal_proxy_base.h"
 #include "timeout.h"
 #include "watch.h"
+#include "transport.h"
+#include "simpletransport.h"
+#include <poll.h>
 
 #include <fcntl.h>
 #include <cstring>
@@ -115,10 +118,10 @@ std::string numberToHexString( int num ){
         return;
     }
 
-    uint8_t nulbyte = 0;
-    if( ::write( m_fd, &nulbyte, 1 ) < 0 ){
+    m_transport = SimpleTransport::create( m_fd, true );
+    if( !m_transport ){
         std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to write nul byte: " + errmsg );
+        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to create transport: " + errmsg );
         return;
     }
 
@@ -153,20 +156,91 @@ std::string numberToHexString( int num ){
         return;
     }
 
-std::shared_ptr<CallMessage> helloMsg = CallMessage::create( "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello" );
-*this << helloMsg;
+    // Turn the FD into non-blocking
+    {
+        int flags = fcntl(m_fd, F_GETFL, 0);
+        fcntl(m_fd, F_SETFL, flags | O_NONBLOCK);
+    }
 
-sleep( 1 );
-int bytesAvail;
-if( ioctl( m_fd, FIONREAD, &bytesAvail ) < 0 ){
+    std::shared_ptr<CallMessage> helloMsg = CallMessage::create( "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello" );
+    // Can't use normal methods here before the constructor is done,
+    // so we need to do some bootstrapping here!
+    if( m_transport->writeMessage( helloMsg, m_currentSerial++ ) <= 0 ){
         std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to ioctl: " + errmsg );
+        SIMPLELOGGER_ERROR("dbus.Connection", "Unable say hello: " + errmsg );
         return;
-}
+    }
 
-std::ostringstream debugstr;
-debugstr << "bytes avail: " << bytesAvail;
-SIMPLELOGGER_DEBUG("dbus.Connection", debugstr.str() );
+    // Wait for the bus to respond
+    pollfd pollfd;
+    pollfd.fd = m_fd;
+    pollfd.events = POLLIN;
+
+    std::shared_ptr<Message> retmsg;
+    do{
+        if( poll( &pollfd, 1, -1 ) < 0 ){
+            std::string errmsg = strerror( errno );
+            SIMPLELOGGER_ERROR("dbus.Connection", "Unable to poll for response from daemon: " + errmsg );
+            return;
+        }
+        retmsg = m_transport->readMessage();
+    }while( !retmsg );
+
+    std::ostringstream logmsg;
+    logmsg << "Have retmsg!  serial: " << retmsg->serial();
+    SIMPLELOGGER_DEBUG("dbus.Connection", logmsg.str() );
+
+    if( retmsg->type() != MessageType::RETURN ){
+        SIMPLELOGGER_ERROR("dbus.Connection", "Did not get a return message for some reason" );
+        return;
+    }
+
+    std::shared_ptr<ReturnMessage> realRetmsg = std::static_pointer_cast<ReturnMessage>( retmsg );
+    std::string value;
+    realRetmsg >> value;
+
+    logmsg.str("");
+    logmsg << "Return message, our ID on the bus is " << value;
+    SIMPLELOGGER_DEBUG("dbus.Connection", logmsg.str() );
+
+    logmsg.str("");
+    logmsg << "Real rtmsg : " << realRetmsg.get();
+    SIMPLELOGGER_DEBUG("dbus.Connection", logmsg.str() );
+
+
+do{
+    if( poll( &pollfd, 1, -1 ) < 0 ){
+        std::string errmsg = strerror( errno );
+        SIMPLELOGGER_ERROR("dbus.Connection", "Unable to poll for response from daemon: " + errmsg );
+        return;
+    }
+
+    int bytesAvail;
+    if( ioctl( m_fd, FIONREAD, &bytesAvail ) < 0 ){
+            std::string errmsg = strerror( errno );
+            SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to ioctl: " + errmsg );
+            return;
+    }
+
+    std::ostringstream debugstr;
+    debugstr << "bytes avail before attempting to read: " << bytesAvail;
+    SIMPLELOGGER_DEBUG("dbus.Connection", debugstr.str() );
+
+    retmsg = m_transport->readMessage();
+
+    if( ioctl( m_fd, FIONREAD, &bytesAvail ) < 0 ){
+            std::string errmsg = strerror( errno );
+            SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to ioctl: " + errmsg );
+            return;
+    }
+    debugstr.str("");
+    debugstr << "bytes avail after attempting to read: " << bytesAvail;
+    SIMPLELOGGER_DEBUG("dbus.Connection", debugstr.str() );
+    SIMPLELOGGER_DEBUG("dbus.Connection", "Did not get valid message back" );
+}while( !retmsg );
+    logmsg.str("");
+    logmsg << "Next message: " << retmsg;
+    SIMPLELOGGER_DEBUG("dbus.Connection", logmsg.str() );
 
 sleep( 1 );
 
@@ -505,33 +579,27 @@ sleep( 1 );
     return dbus_connection_get_server_id( m_cobj );
   }
 
-  uint32_t Connection::send( std::shared_ptr<const Message> msg )
+  ssize_t Connection::send( std::shared_ptr<const Message> msg )
   {
-    uint32_t serial;
-
-m_sendBuffer.clear();
-msg->serialize_to_vector( &m_sendBuffer, m_currentSerial++ );
-int bytesWritten = ::write( m_fd, m_sendBuffer.data(), m_sendBuffer.size() );
-if( bytesWritten < 0 ){
-        std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to send message: " + errmsg );
-        return 1;
-}
-std::ostringstream debug;
-debug << "wrote " << bytesWritten << " bytes to dbus";
-SIMPLELOGGER_DEBUG("dbus.Connection", debug.str() );
-
-return 1;
-
     if ( not this->is_valid() ) throw ErrorDisconnected();
-    if ( not msg or not *msg ) return 0;
-    if ( not dbus_connection_send( m_cobj, msg->cobj(), &serial ) ) throw ErrorNoMemory();
-    return serial;
+    if ( !msg || !m_transport) return 0;
+    if( m_currentSerial == 0 ) m_currentSerial = 1;
+
+    return m_transport->writeMessage( msg, m_currentSerial++ );
+
+
+//    errno = EINVAL;
+//    return -1;
+
+//    if ( not this->is_valid() ) throw ErrorDisconnected();
+//    if ( not msg or not *msg ) return 0;
+//    if ( not dbus_connection_send( m_cobj, msg->cobj(), &serial ) ) throw ErrorNoMemory();
+//    return serial;
   }
 
   Connection & Connection::operator <<(std::shared_ptr<const Message> msg)
   {
-    if ( msg and *msg ) this->send(msg);
+    if ( msg ) this->send(msg);
     return *this;
   }
 
@@ -575,7 +643,7 @@ return 1;
 
     dbus_message_unref(reply);
 
-    SIMPLELOGGER_DEBUG("dbus.Connection", "Return Signature: " << retmsg->signature() );
+    //SIMPLELOGGER_DEBUG("dbus.Connection", "Return Signature: " << retmsg->signature() );
 
     return retmsg;
   }

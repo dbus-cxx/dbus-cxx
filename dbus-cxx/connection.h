@@ -31,6 +31,7 @@
 #include <dbus/dbus.h>
 #include "enums.h"
 #include <sigc++/sigc++.h>
+#include <future>
 
 #ifndef DBUSCXX_CONNECTION_H
 #define DBUSCXX_CONNECTION_H
@@ -46,6 +47,7 @@ namespace DBus
   class SignalMessage;
   class Timeout;
   class Watch;
+  class Transport;
  struct InterruptablePredicateAccumulatorDefaultFalse;
 
   /**
@@ -154,16 +156,30 @@ namespace DBus
       // TODO dbus_connection_free_preallocated_send
       // TODO dbus_connection_send_preallocated
 
-      uint32_t send( const std::shared_ptr<const Message> );
+      /**
+       * Sends the message to the bus.
+       * @return The number of bytes written
+       */
+      ssize_t send( const std::shared_ptr<const Message> );
 
       /**
-       * Sends the message on the connection
+       * Blindly sends the message on the connection.  Since you don't get any kind of handle
+       * back from this, you should really only use it for sending method returns and signals.
        */
       Connection& operator<<( std::shared_ptr<const Message> msg );
 
       std::shared_ptr<PendingCall> send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds=-1 ) const;
 
       std::shared_ptr<const ReturnMessage> send_with_reply_blocking( std::shared_ptr<const Message> msg, int timeout_milliseconds=-1 ) const;
+
+      /**
+       * Send a message, and get a future to the response.
+       *
+       * @param message
+       * @param timeout_milliseconds
+       * @return
+       */
+      std::future<const ReturnMessage> new_send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds=-1 ) const;
 
       void flush();
 
@@ -343,9 +359,10 @@ namespace DBus
       std::string introspect( const std::string& destination, const std::string& path );
 
     protected:
-int m_fd;
-std::vector<uint8_t> m_sendBuffer;
-int m_currentSerial;
+        int m_fd;
+        std::vector<uint8_t> m_sendBuffer;
+        uint32_t m_currentSerial;
+        std::shared_ptr<Transport> m_transport;
 
       DBusConnection* m_cobj;
       
@@ -417,7 +434,7 @@ int m_currentSerial;
 
   };
   
-}
+
 
 inline
 std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<DBus::Message> msg)
@@ -465,6 +482,8 @@ std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> p
   if (not ptr) return ptr;
   *ptr << msg;
   return ptr;
+}
+
 }
 
 #endif

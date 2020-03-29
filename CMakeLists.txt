@@ -89,7 +89,11 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/types.cpp
     dbus-cxx/variant.cpp
     dbus-cxx/watch.cpp
-    dbus-cxx/marshaling.cpp )
+    dbus-cxx/marshaling.cpp
+    dbus-cxx/demarshaling.cpp
+    dbus-cxx/simpletransport.cpp
+    dbus-cxx/sendmsgtransport.cpp
+)
 
 # headers that need to go in the include/ directory
 set( DBUS_CXX_HEADERS1
@@ -138,6 +142,11 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/connection.h
     dbus-cxx/object.h
     dbus-cxx/variant.h
+    dbus-cxx/transport.h
+    dbus-cxx/simpletransport.h
+    dbus-cxx/sendmsgtransport.h
+    dbus-cxx/marshaling.h
+    dbus-cxx/demarshaling.h
     ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
 )
 
