@@ -31,21 +31,21 @@ namespace DBus
   MessageIterator::MessageIterator():
       m_message( nullptr )
   {
-    memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
   }
 
   MessageIterator::MessageIterator( const Message& message ):
-      m_message( nullptr )
+      m_message( &message ),
+      m_demarshal( new Demarshaling( m_message->m_body.data(), m_message->m_body.size(), m_message->m_endianess ) ),
+      m_signatureIterator( m_message->signature() )
   {
-    memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
-    this->init(message);
+
   }
 
   MessageIterator::MessageIterator( std::shared_ptr<Message> message ):
-      m_message( nullptr )
+      m_message( message.get() ),
+      m_demarshal( new Demarshaling( m_message->m_body.data(), m_message->m_body.size(), m_message->m_endianess ) ),
+      m_signatureIterator( m_message->signature() )
   {
-    memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
-    if ( message ) this->init(*message);
   }
 
   const Message* MessageIterator::message() const
@@ -53,26 +53,8 @@ namespace DBus
     return m_message;
   }
 
-  DBusMessageIter* MessageIterator::cobj()
-  {
-    return &m_cobj;
-  }
-
-  bool MessageIterator::init(const Message & message)
-  {
-    if ( message and dbus_message_iter_init(message.cobj(), &m_cobj) )
-    {
-      m_message = &message;
-      return true;
-    }
-
-    m_message = nullptr;
-    return false;
-  }
-
   void MessageIterator::invalidate()
   {
-    memset( &m_cobj, 0x00, sizeof( DBusMessageIter ) );
     m_message = nullptr;
   }
 
@@ -85,7 +67,7 @@ namespace DBus
 
   bool MessageIterator::has_next() const
   {
-    if ( this->is_valid() ) return dbus_message_iter_has_next( const_cast<DBusMessageIter*>(& m_cobj) );
+    if ( this->is_valid() ) return m_signatureIterator.has_next();
     return false;
   }
 
@@ -93,9 +75,7 @@ namespace DBus
   {
     if ( not this->is_valid() ) return false;
 
-    bool result;
-
-    result = dbus_message_iter_next( & m_cobj );
+    bool result = m_signatureIterator.next();
 
     if ( not result or this->arg_type() == DataType::INVALID )
     {
@@ -122,29 +102,32 @@ namespace DBus
 
   bool MessageIterator::operator==( const MessageIterator& other )
   {
-    return ( m_message == other.m_message && memcmp( &m_cobj, &( other.m_cobj ), sizeof( DBusMessageIter ) ) == 0 );
+      //TODO finish this method
+    return ( m_message == other.m_message );
   }
 
   DataType MessageIterator::arg_type() const
   {
-    return checked_type_cast(dbus_message_iter_get_arg_type( const_cast<DBusMessageIter*>( & m_cobj ) ));
+    return m_signatureIterator.type();
   }
 
   DataType MessageIterator::element_type() const
   {
     if ( this->arg_type() != DataType::ARRAY )
       return DataType::INVALID;
-    return checked_type_cast(dbus_message_iter_get_element_type( const_cast<DBusMessageIter*>( & m_cobj ) ));
+    return m_signatureIterator.element_type();
   }
 
   bool MessageIterator::is_fixed() const
   {
-    return dbus_type_is_fixed( static_cast<int>( this->element_type() ) );
+      TypeInfo t( arg_type() );
+    return t.is_fixed();
   }
 
   bool MessageIterator::is_container() const
   {
-    return dbus_type_is_container( static_cast<int>( this->arg_type() ) );
+      TypeInfo t( arg_type() );
+    return t.is_container();
   }
 
   bool MessageIterator::is_array() const
@@ -164,22 +147,15 @@ namespace DBus
     if ( not this->is_container() ) return iter;
     
     iter.m_message = m_message;
-    dbus_message_iter_recurse( & m_cobj, & ( iter.m_cobj ) );
+    iter.m_demarshal = m_demarshal;
+    iter.m_signatureIterator = m_signatureIterator.recurse();
+
     return iter;
   }
 
   std::string MessageIterator::signature() const
   {
-    char* sig;
-    std::string retsig;
-
-    sig = dbus_message_iter_get_signature( const_cast<DBusMessageIter*>( & m_cobj ) );
-
-    retsig = sig;
-
-    dbus_free( sig );
-
-    return retsig;
+    return m_signatureIterator.signature();
   }
 
   MessageIterator::operator bool()
@@ -353,7 +329,7 @@ namespace DBus
     }
   }
 
-  MessageIterator::operator const char*()
+  MessageIterator::operator std::string()
   {
     switch ( this->arg_type() )
     {
@@ -362,7 +338,7 @@ namespace DBus
       case DataType::SIGNATURE:
         return get_string();
       default:
-        throw ErrorInvalidTypecast("MessageIterator:: extracting non-string type to char*");
+        throw ErrorInvalidTypecast("MessageIterator:: extracting non-string type to std::string");
     }
   }
 
@@ -484,116 +460,87 @@ namespace DBus
 
   bool MessageIterator::get_bool()
   {
-    // TODO check for invalid
-    dbus_bool_t ptr;
     if ( this->arg_type() != DataType::BOOLEAN )
       throw ErrorInvalidTypecast("MessageIterator: getting bool and type is not DataType::BOOLEAN");
-    dbus_message_iter_get_basic( &m_cobj, &ptr );
-    return ptr;
+    return m_demarshal->demarshal_boolean();
   }
 
   uint8_t MessageIterator::get_uint8()
   {
-    // TODO check for invalid
-    uint8_t ptr;
     if ( this->arg_type() != DataType::BYTE )
       throw ErrorInvalidTypecast("MessageIterator: getting uint8_t and type is not DataType::BYTE");
-    dbus_message_iter_get_basic( &m_cobj, &ptr );
-    return ptr;
+    return m_demarshal->demarshal_uint8_t();
   }
 
   int16_t MessageIterator::get_int16()
   {
-    // TODO check for invalid
-    dbus_int16_t ptr;
     if ( this->arg_type() != DataType::INT16 )
       throw ErrorInvalidTypecast("MessageIterator: getting int16_t and type is not DataType::INT16");
-    dbus_message_iter_get_basic( &m_cobj, &ptr );
-    return ptr;
+    return m_demarshal->demarshal_int16_t();
   }
 
   uint16_t MessageIterator::get_uint16()
   {
-    // TODO check for invalid
-    dbus_uint16_t ptr;
     if ( this->arg_type() != DataType::UINT16 )
       throw ErrorInvalidTypecast("MessageIterator: getting uint16_t and type is not DataType::UINT16");
-    dbus_message_iter_get_basic( &m_cobj, &ptr );
-    return ptr;
+    return m_demarshal->demarshal_uint16_t();
   }
 
   int32_t MessageIterator::get_int32()
   {
-    // TODO check for invalid
-    dbus_int32_t ptr;
     if ( this->arg_type() != DataType::INT32 )
       throw ErrorInvalidTypecast("MessageIterator: getting int32_t and type is not DataType::INT32");
-    dbus_message_iter_get_basic( &m_cobj, &ptr );
-    return ptr;
+    return m_demarshal->demarshal_int32_t();
   }
 
   uint32_t MessageIterator::get_uint32()
   {
-    // TODO check for invalid
-    dbus_uint32_t ptr;
     if ( this->arg_type() != DataType::UINT32 )
       throw ErrorInvalidTypecast("MessageIterator: getting uint32_t and type is not DataType::UINT32");
-    dbus_message_iter_get_basic( &m_cobj, &ptr );
-    return ptr;
+    return m_demarshal->demarshal_uint32_t();
   }
 
   int64_t MessageIterator::get_int64()
   {
-    // TODO check for invalid
-    dbus_int64_t ptr;
     if ( this->arg_type() != DataType::INT64 )
       throw ErrorInvalidTypecast("MessageIterator: getting int64_t and type is not DataType::INT64");
-    dbus_message_iter_get_basic( &m_cobj, &ptr );
-    return ptr;
+    return m_demarshal->demarshal_int64_t();
   }
 
   uint64_t MessageIterator::get_uint64()
   {
-    // TODO check for invalid
-    dbus_uint64_t ptr;
     if ( this->arg_type() != DataType::UINT64 )
       throw ErrorInvalidTypecast("MessageIterator: getting uint64_t and type is not DataType::UINT64");
-    dbus_message_iter_get_basic( &m_cobj, &ptr );
-    return ptr;
+    return m_demarshal->demarshal_uint64_t();
   }
 
   double MessageIterator::get_double()
   {
-    // TODO check for invalid
-    double ptr;
     if ( this->arg_type() != DataType::DOUBLE )
       throw ErrorInvalidTypecast("MessageIterator: getting double and type is not DataType::DOUBLE");
-    dbus_message_iter_get_basic( &m_cobj, &ptr );
-    return ptr;
+    return m_demarshal->demarshal_double();
   }
 
-  const char* MessageIterator::get_string()
+  std::string MessageIterator::get_string()
   {
-    char* ptr;
     if ( not ( this->arg_type() == DataType::STRING or this->arg_type() == DataType::OBJECT_PATH or this->arg_type() == DataType::SIGNATURE ) )
       throw ErrorInvalidTypecast("MessageIterator: getting char* and type is not one of DataType::STRING, DataType::OBJECT_PATH or DataType::SIGNATURE");
-    dbus_message_iter_get_basic( &m_cobj, &ptr );
-    return ptr;
+    return m_demarshal->demarshal_string();
   }
 
   std::shared_ptr<FileDescriptor> MessageIterator::get_filedescriptor(){
     std::shared_ptr<FileDescriptor> fd;
-    int raw_fd;
-    if( this->arg_type() != DataType::UNIX_FD )
-      throw ErrorInvalidTypecast("MessageIterator: getting FileDescriptor and type is not DataType::UNIX_FD");
-    dbus_message_iter_get_basic( &m_cobj, &raw_fd );
-    fd = FileDescriptor::create( raw_fd );
+//    int raw_fd;
+//    if( this->arg_type() != DataType::UNIX_FD )
+//      throw ErrorInvalidTypecast("MessageIterator: getting FileDescriptor and type is not DataType::UNIX_FD");
+//    dbus_message_iter_get_basic( &m_cobj, &raw_fd );
+//    fd = FileDescriptor::create( raw_fd );
     return fd;
   }
 
   Variant MessageIterator::get_variant(){
     MessageIterator subiter = this->recurse();
-    return Variant::createFromMessage( subiter );
+    //return Variant::createFromMessage( subiter );
   }
 
 }

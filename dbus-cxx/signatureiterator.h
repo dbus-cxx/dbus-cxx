@@ -59,6 +59,13 @@ namespace DBus
        */
       bool next();
 
+      /**
+       * See if this iterator can advance.
+       *
+       * @return
+       */
+      bool has_next() const;
+
       SignatureIterator& operator ++();
 
       SignatureIterator operator ++( int );

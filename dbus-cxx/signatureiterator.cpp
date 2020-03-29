@@ -207,5 +207,16 @@ SignatureIterator& SignatureIterator::operator=( const SignatureIterator& other 
     return *this;
 }
 
+bool SignatureIterator::has_next() const {
+    if( m_it != m_signature.end() ){
+        std::string::iterator newit = m_it + 1;
+        if( newit != m_signature.end() ){
+            return true;
+        }
+    }
+
+    return false;
+}
+
 }
 

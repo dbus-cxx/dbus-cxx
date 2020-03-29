@@ -20,7 +20,8 @@
 #include <dbus-cxx/demangle.h>
 #include <dbus-cxx/types.h>
 #include <dbus-cxx/variant.h>
-#include <dbus/dbus.h>
+#include <dbus-cxx/demarshaling.h>
+#include <dbus-cxx/signatureiterator.h>
 #include <map>
 #include <memory>
 #include <string>
@@ -73,12 +74,6 @@ namespace DBus
        */
       const Message* message() const;
 
-      /** Returns a pointer to the underlying DBusMessageIter object */
-      DBusMessageIter* cobj();
-
-      /** Initializes the iterator for the specified message */
-      bool init( const Message& message );
-
       /** Invalidates the iterator */
       void invalidate();
 
@@ -89,7 +84,10 @@ namespace DBus
       bool has_next() const;
 
       /**
-       * Moves the iterator to the next field and invalidates it if it moves beyond the last field
+       * Moves the iterator to the next field and invalidates it if it moves beyond the last field.
+       * It is an error to call this function more than once in a row without a corresponding call
+       * to get_XXX/operator XXX.
+       *
        * @return true if the iterator moves forward, false if there is no next field and the iterator
        *         has been invalidated
        */
@@ -150,7 +148,7 @@ namespace DBus
       operator uint64_t();
       operator int64_t();
       operator double();
-      operator const char*();
+      operator std::string();
       
       operator char();
       operator int8_t();
@@ -195,7 +193,7 @@ namespace DBus
       uint64_t    get_uint64();
       int64_t     get_int64();
       double      get_double();
-      const char* get_string();
+      std::string get_string();
       std::shared_ptr<FileDescriptor> get_filedescriptor();
       Variant get_variant();
 
@@ -227,7 +225,7 @@ namespace DBus
         array.clear();
         
         // Get the underlying array
-        dbus_message_iter_get_fixed_array( subiter.cobj(), &values, &elements );
+        //dbus_message_iter_get_fixed_array( subiter.cobj(), &values, &elements );
         
         // Iteratively add the elements to the array
         for ( int i=0; i < elements; i++ )
@@ -364,13 +362,13 @@ namespace DBus
           s += demangle<T>();
           throw ErrorInvalidTypecast( s.c_str() );
         }
-        dbus_message_iter_get_basic( &m_cobj, &temp );
+        //dbus_message_iter_get_basic( &m_cobj, &temp );
       }
 
     protected:
       const Message* m_message;
-      DBusMessageIter m_cobj;
-
+      std::shared_ptr<Demarshaling> m_demarshal;
+      SignatureIterator m_signatureIterator;
   };
 }
 
