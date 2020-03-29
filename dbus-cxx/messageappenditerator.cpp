@@ -89,7 +89,7 @@ namespace DBus
     if ( not this->is_valid() ) return *this;
 
     if( m_currentContainer != ContainerType::None ){
-        m_message->m_signature += signature( v );
+        m_message->append_signature( signature( v ) );
     }
     m_marshaling.marshal( v );
 
@@ -100,7 +100,7 @@ namespace DBus
     if ( not this->is_valid() ) return *this;
 
     if( m_currentContainer != ContainerType::None ){
-        m_message->m_signature += signature( v );
+        m_message->append_signature( signature( v ) );
     }
     m_marshaling.marshal( v );
 
@@ -111,7 +111,7 @@ namespace DBus
       if ( not this->is_valid() ) return *this;
 
       if( m_currentContainer != ContainerType::None ){
-          m_message->m_signature += signature( v );
+          m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
 
@@ -122,7 +122,7 @@ namespace DBus
       if ( not this->is_valid() ) return *this;
 
       if( m_currentContainer != ContainerType::None ){
-          m_message->m_signature += signature( v );
+          m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
 
@@ -133,7 +133,7 @@ namespace DBus
       if ( not this->is_valid() ) return *this;
 
       if( m_currentContainer != ContainerType::None ){
-          m_message->m_signature += signature( v );
+          m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
 
@@ -144,7 +144,7 @@ namespace DBus
       if ( not this->is_valid() ) return *this;
 
       if( m_currentContainer != ContainerType::None ){
-          m_message->m_signature += signature( v );
+          m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
 
@@ -155,7 +155,7 @@ namespace DBus
       if ( not this->is_valid() ) return *this;
 
       if( m_currentContainer != ContainerType::None ){
-          m_message->m_signature += signature( v );
+          m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
 
@@ -166,7 +166,7 @@ namespace DBus
       if ( not this->is_valid() ) return *this;
 
       if( m_currentContainer != ContainerType::None ){
-          m_message->m_signature += signature( v );
+          m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
 
@@ -177,7 +177,7 @@ namespace DBus
       if ( not this->is_valid() ) return *this;
 
       if( m_currentContainer != ContainerType::None ){
-          m_message->m_signature += signature( v );
+          m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
 
@@ -188,7 +188,7 @@ namespace DBus
       if ( not this->is_valid() ) return *this;
 
       if( m_currentContainer != ContainerType::None ){
-          m_message->m_signature += signature( v );
+          m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
 
@@ -205,7 +205,7 @@ namespace DBus
     if ( not this->is_valid() ) return *this;
 
     if( m_currentContainer != ContainerType::None ){
-        m_message->m_signature += signature( v );
+        m_message->append_signature( signature( v ) );
     }
 
     m_marshaling.marshal( len );
@@ -229,7 +229,7 @@ namespace DBus
     }
 
     if( m_currentContainer != ContainerType::None ){
-        m_message->m_signature += signature( v );
+        m_message->append_signature( signature( v ) );
     }
     m_marshaling.marshal( static_cast<uint8_t>( realSig.length() & 0xFF ) );
     for( const char& c : realSig ){
@@ -244,7 +244,7 @@ namespace DBus
     if ( not this->is_valid() ) return *this;
 
     if( m_currentContainer != ContainerType::None ){
-        m_message->m_signature += signature( v );
+        m_message->append_signature( signature( v ) );
     }
     m_marshaling.marshal( v );
 
@@ -315,7 +315,7 @@ namespace DBus
     if ( m_subiter ) this->close_container();
 
     if ( m_message ){
-        m_message->m_signature.append( signature );
+        m_message->append_signature( signature );
       m_subiter = new MessageAppendIterator( *m_message, t );
     } else
       m_subiter = new MessageAppendIterator( t );
