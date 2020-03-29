@@ -17,9 +17,20 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus/dbus.h>
+#include <ostream>
 
 #ifndef DBUSCXX_ENUMS_H
 #define DBUSCXX_ENUMS_H
+
+#define DBUSCXX_HEADER_FIELD_PATH           1
+#define DBUSCXX_HEADER_FIELD_INTERFACE      2
+#define DBUSCXX_HEADER_FIELD_MEMBER         3
+#define DBUSCXX_HEADER_FIELD_ERROR_NAME     4
+#define DBUSCXX_HEADER_FIELD_REPLY_SERIAL   5
+#define DBUSCXX_HEADER_FIELD_DESTINATION    6
+#define DBUSCXX_HEADER_FIELD_SENDER         7
+#define DBUSCXX_HEADER_FIELD_SIGNATURE      8
+#define DBUSCXX_HEADER_FIELD_UNIX_FDS       9
 
 namespace DBus {
 
@@ -119,6 +130,20 @@ namespace DBus {
     PRIMARY,
     FALLBACK
   };
+
+  enum class Endianess {
+      Little,
+      Big,
+  };
+
+  inline std::ostream& operator<<( std::ostream& os, Endianess endian ){
+      if( endian == Endianess::Little ){
+          os << "Little";
+      }else{
+          os << "Big";
+      }
+      return os;
+  }
 
 }
 
