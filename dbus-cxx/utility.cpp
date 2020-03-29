@@ -98,15 +98,20 @@ namespace DBus
 
   void hexdump( const std::vector<uint8_t>* vec, std::ostream* stream ) {
     // Original C code: https://stackoverflow.com/a/29865/624483
+        hexdump( vec->data(), vec->size(), stream );
+  }
+
+  void hexdump( const uint8_t* vec, uint32_t len, std::ostream* stream ) {
+    // Original C code: https://stackoverflow.com/a/29865/624483
     char line_buffer[ 12 ];
 
-    for ( uint32_t i = 0; i < vec->size(); i += 16 ) {
+    for ( uint32_t i = 0; i < len; i += 16 ) {
         snprintf( line_buffer, 12, "%06x: ", i);
         *stream << line_buffer;
         for (int j = 0; j < 16; j++ ){
             if( j == 7 ) *stream << "  ";
-            if ( (i + j) < vec->size() ){
-                snprintf( line_buffer, 12, "%02x ", (*vec)[ i + j ] );
+            if ( (i + j) < len ){
+                snprintf( line_buffer, 12, "%02x ", vec[ i + j ] );
                 *stream << line_buffer;
             } else {
                 *stream << "   ";
@@ -116,8 +121,8 @@ namespace DBus
         *stream << "  ";
         for (int j = 0; j < 16; j++ ){
             if( j == 7 ) *stream << "  ";
-            if ( (i + j) < vec->size() ){
-                snprintf( line_buffer, 12, "%c", std::isprint((*vec)[i+j]) ? (*vec)[i+j] : '.');
+            if ( (i + j) < len ){
+                snprintf( line_buffer, 12, "%c", std::isprint(vec[i+j]) ? vec[i+j] : '.');
                 *stream << line_buffer;
             }
         }

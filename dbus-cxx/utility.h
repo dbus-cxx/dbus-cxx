@@ -130,6 +130,15 @@ namespace DBus
    */
   void hexdump( const std::vector<uint8_t>* vec, std::ostream* stream );
 
+  /**
+   * Print the C array as a hexdump output to the given output stream
+   *
+   * @param vec The C array to print
+   * @param len The length of the array
+   * @param stream The stream to print the data to
+   */
+  void hexdump( const uint8_t* vec, const uint32_t len, std::ostream* stream );
+
 
 namespace priv {
 /*
