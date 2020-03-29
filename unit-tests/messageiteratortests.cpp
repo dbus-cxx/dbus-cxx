@@ -95,16 +95,16 @@ bool call_message_append_extract_iterator_double()
 bool call_message_append_extract_iterator_cstring()
 {
   const char* v = "Hello World";
-  const char* v2 = NULL;
+  std::string v2;
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1 << v;
 
   DBus::MessageIterator iter2(msg);
-  v2 = (const char*)iter2;
+  v2 = (std::string)iter2;
 
-  return TEST_EQUALS( 0, strcmp(v, v2) );
+  return TEST_EQUALS( 0, strcmp(v, v2.c_str()) );
 }
 
 bool call_message_append_extract_iterator_string()
@@ -117,7 +117,7 @@ bool call_message_append_extract_iterator_string()
   iter1 << v;
 
   DBus::MessageIterator iter2(msg);
-  v2 = (const char*)iter2;
+  v2 = (std::string)iter2;
 
   return TEST_EQUALS( v, v2 );
 }
@@ -469,7 +469,7 @@ bool call_message_iterator_insertion_extraction_operator_double()
 bool call_message_iterator_insertion_extraction_operator_cstring()
 {
   const char* v = "Hello World";
-  const char* v2;
+  std::string v2;
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
@@ -478,7 +478,7 @@ bool call_message_iterator_insertion_extraction_operator_cstring()
   DBus::MessageIterator iter2(msg);
   iter2 >> v2;
 
-  return TEST_EQUALS( 0, strcmp(v, v2) );
+  return TEST_EQUALS( 0, strcmp(v, v2.c_str()) );
 }
 
 bool call_message_iterator_insertion_extraction_operator_string()
@@ -614,7 +614,7 @@ bool call_message_append_extract_iterator_multiple( )
   int64_t         i64_1  = -378983     , i64_2  = 0;
   uint64_t        ui64_1 = 4924953     , ui64_2 = 0;
   double          d_1    = 3.141592654 , d_2    = 0.00;
-  const char      *cs_1 = "Hello World", *cs_2 = NULL;
+  const char      *cs_1 = "Hello World"; std::string cs_2;
   std::string     s_1("Hello World")   , s_2("");
   DBus::Signature sig_1("a{iq}") , sig_2;
   char            c_1    = 'a'         , c_2    = '\0';
@@ -659,7 +659,7 @@ bool call_message_append_extract_iterator_multiple( )
   i64_2  = (int64_t)iter2;           iter2.next();
   ui64_2 = (uint64_t)iter2;          iter2.next();
   d_2    = (double)iter2;            iter2.next();
-  cs_2   = (const char*)iter2;       iter2.next();
+  cs_2   = (std::string)iter2;       iter2.next();
   s_2    = (std::string)iter2;       iter2.next();
   sig_2  = (DBus::Signature)iter2;   iter2.next();
   c_2    = (char)iter2;              iter2.next();
@@ -679,7 +679,7 @@ bool call_message_append_extract_iterator_multiple( )
   TEST_EQUALS_RET_FAIL( i64_1, i64_2 );
   TEST_EQUALS_RET_FAIL( ui64_1, ui64_2 );
   TEST_EQUALS_RET_FAIL( d_1, d_2 );
-  TEST_EQUALS_RET_FAIL( 0, strcmp( cs_1, cs_2 ) );
+  TEST_EQUALS_RET_FAIL( 0, strcmp( cs_1, cs_2.c_str() ) );
   TEST_EQUALS_RET_FAIL( s_1, s_2 );
   TEST_EQUALS_RET_FAIL( sig_1, sig_2 );
   TEST_EQUALS_RET_FAIL( c_1, c_2 );
@@ -706,7 +706,7 @@ bool call_message_iterator_insertion_extraction_operator_multiple( )
   int64_t         i64_1  = -378983     , i64_2  = 0;
   uint64_t        ui64_1 = 4924953     , ui64_2 = 0;
   double          d_1    = 3.141592654 , d_2    = 0.00;
-  const char      *cs_1 = "Hello World", *cs_2 = NULL;
+  const char      *cs_1 = "Hello World"; std::string cs_2;
   std::string     s_1("Hello World")   , s_2("");
   DBus::Signature sig_1("a{iq}") , sig_2;
   char            c_1    = 'a'         , c_2    = '\0';
@@ -735,7 +735,7 @@ bool call_message_iterator_insertion_extraction_operator_multiple( )
   TEST_EQUALS_RET_FAIL( i64_1, i64_2 );
   TEST_EQUALS_RET_FAIL( ui64_1, ui64_2 );
   TEST_EQUALS_RET_FAIL( d_1, d_2 );
-  TEST_EQUALS_RET_FAIL( 0, strcmp( cs_1, cs_2 ) );
+  TEST_EQUALS_RET_FAIL( 0, strcmp( cs_1, cs_2.c_str() ) );
   TEST_EQUALS_RET_FAIL( s_1, s_2 );
   TEST_EQUALS_RET_FAIL( sig_1, sig_2 );
   TEST_EQUALS_RET_FAIL( c_1, c_2 );

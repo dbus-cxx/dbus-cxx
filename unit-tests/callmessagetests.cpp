@@ -93,7 +93,7 @@ bool call_message_insertion_extraction_operator_double()
 bool call_message_insertion_extraction_operator_cstring()
 {
   const char* v = "Hello World";
-  const char* v2;
+  std::string v2;
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
 
@@ -101,7 +101,7 @@ bool call_message_insertion_extraction_operator_cstring()
 
   msg >> v2;
 
-  return TEST_EQUALS( 0, strcmp(v, v2) );
+  return TEST_EQUALS( 0, strcmp(v, v2.c_str()) );
 }
 
 bool call_message_insertion_extraction_operator_string()
@@ -154,7 +154,7 @@ bool call_message_insertion_extraction_operator_multiple( )
   int64_t     i64_1  = -378983     , i64_2  = 0;
   uint64_t    ui64_1 = 4924953     , ui64_2 = 0;
   double      d_1    = 3.141592654 , d_2    = 0.00;
-  const char  *cs_1 = "Hello World", *cs_2 = NULL;
+  const char  *cs_1 = "Hello World"; std::string cs_2;
   std::string s_1("Hello World")   , s_2("");
   std::vector<double> ad_1         , ad_2;
   
