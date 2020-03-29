@@ -40,6 +40,50 @@ namespace DBus
       return static_cast<int>( t );
   }
 
+  inline DataType char_to_dbus_type( char c ){
+      switch ( c ){
+      case 'y':
+          return DataType::BYTE;
+      case 'b':
+          return DataType::BOOLEAN;
+      case 'n':
+          return DataType::INT16;
+      case 'q':
+          return DataType::UINT16;
+      case 'i':
+          return DataType::INT32;
+      case 'u':
+          return DataType::UINT32;
+      case 'x':
+          return DataType::INT64;
+      case 't':
+          return DataType::UINT64;
+      case 'd':
+          return DataType::DOUBLE;
+      case 's':
+          return DataType::STRING;
+      case 'o':
+          return DataType::OBJECT_PATH;
+      case 'g':
+          return DataType::SIGNATURE;
+      case 'a':
+          return DataType::ARRAY;
+      case 'r':
+      case '(':
+          return DataType::STRUCT;
+      case 'v':
+          return DataType::VARIANT;
+      case 'e':
+      case '{':
+        return DataType::DICT_ENTRY;
+      case 'h':
+          return DataType::UNIX_FD;
+
+      }
+
+      return DataType::INVALID;
+  }
+
   inline DataType type( const uint8_t& )            { return DataType::BYTE; }
   inline DataType type( const bool& )               { return DataType::BOOLEAN; }
   inline DataType type( const int16_t& )            { return DataType::INT16; }
@@ -105,9 +149,20 @@ namespace DBus
      */
     std::string cppType() const;
 
+    /** True if the element type is a basic type */
+    bool is_basic() const;
+
+    /** True if the element type is a fixed type */
+    bool is_fixed() const;
+
+    /** True if the element type is a container */
+    bool is_container() const;
+
   private:
     DataType m_type;
   };
+
+  std::ostream& operator<<(std::ostream& os, DataType d);
 
 }
 

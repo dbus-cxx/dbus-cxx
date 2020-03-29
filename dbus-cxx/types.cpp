@@ -31,6 +31,8 @@ namespace DBus {
       case DataType::DICT_ENTRY:
       case DataType::STRUCT:
         return true;
+    default:
+        break;
     }
     return false;
   }
@@ -60,6 +62,8 @@ namespace DBus {
         break;
       case DataType::STRUCT:
         ret.push_back( "tuple" );
+        break;
+    default:
         break;
     }
 
@@ -103,8 +107,121 @@ namespace DBus {
         return "std::map";
       case DataType::UNIX_FD:
         return "DBus::FileDescriptor";
+    case DataType::INVALID:
+        break;
     }
     return std::string("Invalid");
   }
+
+  bool TypeInfo::is_basic() const {
+      switch ( m_type )
+      {
+        case DataType::BYTE:
+        case DataType::INT16:
+        case DataType::UINT16:
+        case DataType::INT32:
+        case DataType::UINT32:
+        case DataType::INT64:
+        case DataType::UINT64:
+      case DataType::STRING:
+      case DataType::OBJECT_PATH:
+      case DataType::SIGNATURE:
+      case DataType::UNIX_FD:
+          return true;
+      default:
+          return false;
+      }
+  }
+
+  bool TypeInfo::is_fixed() const {
+      switch ( m_type )
+      {
+        case DataType::BYTE:
+        case DataType::INT16:
+        case DataType::UINT16:
+        case DataType::INT32:
+        case DataType::UINT32:
+        case DataType::INT64:
+        case DataType::UINT64:
+          return true;
+      default:
+          return false;
+      }
+  }
+
+  bool TypeInfo::is_container() const {
+      switch( m_type ){
+      case DataType::ARRAY:
+      case DataType::STRUCT:
+      case DataType::VARIANT:
+      case DataType::DICT_ENTRY:
+          return true;
+      default:
+          return false;
+      }
+  }
+
+  std::ostream& operator<<(std::ostream& os, DataType d){
+      switch ( d )
+      {
+        case DataType::BYTE:
+          os << "DataType::BYTE";
+          break;
+        case DataType::BOOLEAN:
+          os << "DataType::BOOLEAN";
+          break;
+        case DataType::INT16:
+          os << "DataType::INT16";
+          break;
+        case DataType::UINT16:
+          os << "DataType::UINT16";
+          break;
+        case DataType::INT32:
+          os << "DataType::INT32";
+          break;
+        case DataType::UINT32:
+          os << "DataType::UINT32";
+          break;
+        case DataType::INT64:
+          os << "DataType::INT64";
+          break;
+        case DataType::UINT64:
+          os << "DataType::UINT64";
+          break;
+        case DataType::DOUBLE:
+          os << "DataType::DOUBLE";
+          break;
+        case DataType::STRING:
+          os << "DataType::STRING";
+          break;
+        case DataType::OBJECT_PATH:
+          os << "DataType::OBJECT_PATH";
+          break;
+        case DataType::SIGNATURE:
+          os << "DataType::SIGNATURE";
+          break;
+        case DataType::ARRAY:
+          os << "DataType::ARRAY";
+          break;
+        case DataType::VARIANT:
+          os << "DataType::VARIANT";
+          break;
+        case DataType::STRUCT:
+          os << "DataType::STRUCT";
+          break;
+        case DataType::DICT_ENTRY:
+          os << "DataType::DICT_ENTRY";
+          break;
+        case DataType::UNIX_FD:
+          os << "DataType::UNIX_FD";
+          break;
+      case DataType::INVALID:
+          os << "DataType::INVALID";
+          break;
+      }
+
+      return os;
+  }
+
 
 }
