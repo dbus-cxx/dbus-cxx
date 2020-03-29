@@ -155,10 +155,6 @@ Variant::Variant( DBus::Path path ) :
 {
 	Marshaling marshal( &m_marshaled, Endianess::Big );
 	marshal.marshal( path );
-
-    std::ostringstream debug_msg;
-    debug_msg << "marshaled path in variant.  size: " << m_marshaled.size();
-    SIMPLELOGGER_DEBUG( "DBus.Variant", debug_msg.str() );
 }
 
 Variant::Variant( std::shared_ptr<FileDescriptor> fd ) :
@@ -242,4 +238,69 @@ const std::vector<uint8_t>* Variant::marshaled() const {
 
 int Variant::data_alignment() const {
     return m_dataAlignment;
+}
+
+namespace DBus {
+
+std::ostream& operator<<( std::ostream& os, const Variant& var ){
+    os << "DBus::Variant[" << var.currentType() << "=";
+    switch( var.currentType() ){
+    case DataType::BYTE:
+      os << std::any_cast<uint8_t>( var.value() );
+      break;
+    case DataType::BOOLEAN:
+      os << std::any_cast<bool>( var.value() );
+      break;
+    case DataType::INT16:
+      os << std::any_cast<int16_t>( var.value() );
+      break;
+    case DataType::UINT16:
+      os << std::any_cast<uint16_t>( var.value() );
+      break;
+    case DataType::INT32:
+      os << std::any_cast<int32_t>( var.value() );
+      break;
+    case DataType::UINT32:
+      os << std::any_cast<uint32_t>( var.value() );
+      break;
+    case DataType::INT64:
+      os << std::any_cast<int64_t>( var.value() );
+      break;
+    case DataType::UINT64:
+      os << std::any_cast<uint64_t>( var.value() );
+      break;
+    case DataType::DOUBLE:
+      os << std::any_cast<double>( var.value() );
+      break;
+    case DataType::STRING:
+      os << std::any_cast<std::string>( var.value() );
+      break;
+    case DataType::OBJECT_PATH:
+      os << std::any_cast<Path>( var.value() );
+      break;
+    case DataType::SIGNATURE:
+      os << std::any_cast<Signature>( var.value() );
+      break;
+    case DataType::ARRAY:
+      os << "array TODO";
+      break;
+    case DataType::VARIANT:
+      os << std::any_cast<Variant>( var.value() );
+      break;
+    case DataType::STRUCT:
+      os << "struct TODO";
+      break;
+    case DataType::DICT_ENTRY:
+      os << "dict_entry TODO";
+      break;
+    case DataType::UNIX_FD:
+      os << "unix_fd TODO";
+      break;
+  case DataType::INVALID:
+        break;
+    }
+    os << "]";
+    return os;
+}
+
 }

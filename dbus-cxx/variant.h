@@ -25,6 +25,7 @@
 #include <string>
 #include <any>
 #include <stdint.h>
+#include <ostream>
 
 namespace DBus {
 
@@ -74,6 +75,8 @@ class Variant {
     std::any m_data;
     std::vector<uint8_t> m_marshaled;
     int m_dataAlignment;
+
+    friend std::ostream& operator<<( std::ostream& os, const Variant& var );
 };
 
 } /* namespace DBus */
