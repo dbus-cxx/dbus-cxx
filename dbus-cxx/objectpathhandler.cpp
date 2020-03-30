@@ -77,11 +77,11 @@ namespace DBus
     }
     
 #ifdef DBUS_CXX_HAVE_DBUS_12
-    if ( m_primary_fallback == PrimaryFallback::PRIMARY )
-      result = dbus_connection_try_register_object_path( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this, error.cobj() );
-    else
-      result = dbus_connection_try_register_fallback( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this, error.cobj() );
-    if ( error.is_set() ) return false;
+//    if ( m_primary_fallback == PrimaryFallback::PRIMARY )
+//      result = dbus_connection_try_register_object_path( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this, error.cobj() );
+//    else
+//      result = dbus_connection_try_register_fallback( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this, error.cobj() );
+//    if ( error.is_set() ) return false;
 #else
     if ( m_primary_fallback == PrimaryFallback::PRIMARY )
       result = dbus_connection_register_object_path( conn->cobj(), m_path.c_str(), &m_dbus_vtable, this );
@@ -99,9 +99,9 @@ namespace DBus
   bool ObjectPathHandler::unregister(std::shared_ptr<Connection> conn)
   {
     dbus_bool_t result;
-    if ( not conn or not conn->is_valid() ) return false;
-    result = dbus_connection_unregister_object_path( conn->cobj(), m_path.c_str() );
-    if ( result ) m_connection.reset();
+//    if ( not conn or not conn->is_valid() ) return false;
+//    result = dbus_connection_unregister_object_path( conn->cobj(), m_path.c_str() );
+//    if ( result ) m_connection.reset();
     return result;
   }
 
@@ -120,7 +120,7 @@ namespace DBus
     DBus::HandlerResult result;
     if ( user_data == nullptr ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     ObjectPathHandler* handler = static_cast<ObjectPathHandler*>(user_data);
-    result = handler->handle_message(Connection::self(connection), Message::create(message));
+    //result = handler->handle_message(Connection::self(connection), Message::create(message));
     SIMPLELOGGER_DEBUG("dbus.ObjectPathHandler","ObjectPathHandler::message_handler_callback: result = " << static_cast<int>( result ) );
     if ( result == HandlerResult::HANDLED ) return DBUS_HANDLER_RESULT_HANDLED;
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -129,8 +129,8 @@ namespace DBus
   void ObjectPathHandler::path_unregister_callback(DBusConnection * connection, void * user_data)
   {
     if ( user_data == nullptr ) return;
-    ObjectPathHandler* handler = static_cast<ObjectPathHandler*>(user_data);
-    handler->m_signal_unregistered.emit(Connection::self(connection));
+//    ObjectPathHandler* handler = static_cast<ObjectPathHandler*>(user_data);
+//    handler->m_signal_unregistered.emit(Connection::self(connection));
   }
 
 }

@@ -43,6 +43,7 @@
 #include "transport.h"
 #include "simpletransport.h"
 #include <poll.h>
+#include "utility.h"
 
 #include <fcntl.h>
 #include <cstring>
@@ -57,18 +58,15 @@ namespace sigc { template <typename T_return, typename ...T_arg> class slot; }
 namespace DBus
 {
 
-  dbus_int32_t Connection::m_weak_pointer_slot = -1;
-  
-  Connection::Connection( DBusConnection* cobj, bool is_private ):
-      m_cobj( cobj )
-  {
-    if ( m_cobj ) {
-      dbus_connection_ref( m_cobj );
-      this->initialize(is_private);
-    }
-  }
+struct Connection::ExpectingResponse {
+    std::mutex cv_lock;
+    std::condition_variable cv;
+    std::shared_ptr<ReturnMessage> reply;
+};
 
-  Connection::Connection( BusType type, bool is_private ): m_cobj( nullptr )
+  Connection::Connection( BusType type ) :
+      m_notifyDispatcherFD( -1 ),
+      m_dispatchingThread( std::this_thread::get_id() )
   {
     m_currentSerial = 1;
 
@@ -93,440 +91,224 @@ namespace DBus
         SIMPLELOGGER_ERROR("dbus.Connection", "Unable to open transport" );
         return;
     }
-
-    std::shared_ptr<CallMessage> helloMsg = CallMessage::create( "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "Hello" );
-    // Can't use normal methods here before the constructor is done,
-    // so we need to do some bootstrapping here!
-    if( m_transport->writeMessage( helloMsg, m_currentSerial++ ) <= 0 ){
-        std::string errmsg = strerror( errno );
-        SIMPLELOGGER_ERROR("dbus.Connection", "Unable say hello: " + errmsg );
-        return;
-    }
-
-    // Wait for the bus to respond
-    pollfd pollfd;
-    pollfd.fd = m_fd;
-    pollfd.events = POLLIN;
-
-    std::shared_ptr<Message> retmsg;
-    do{
-        if( poll( &pollfd, 1, -1 ) < 0 ){
-            std::string errmsg = strerror( errno );
-            SIMPLELOGGER_ERROR("dbus.Connection", "Unable to poll for response from daemon: " + errmsg );
-            return;
-        }
-        retmsg = m_transport->readMessage();
-    }while( !retmsg );
-
-    std::ostringstream logmsg;
-    logmsg << "Have retmsg!  serial: " << retmsg->serial();
-    SIMPLELOGGER_DEBUG("dbus.Connection", logmsg.str() );
-
-    if( retmsg->type() != MessageType::RETURN ){
-        SIMPLELOGGER_ERROR("dbus.Connection", "Did not get a return message for some reason" );
-        return;
-    }
-
-    std::shared_ptr<ReturnMessage> realRetmsg = std::static_pointer_cast<ReturnMessage>( retmsg );
-    std::string value;
-    realRetmsg >> value;
-
-    logmsg.str("");
-    logmsg << "Return message, our ID on the bus is " << value;
-    SIMPLELOGGER_DEBUG("dbus.Connection", logmsg.str() );
-
-    logmsg.str("");
-    logmsg << "Real rtmsg : " << realRetmsg.get();
-    SIMPLELOGGER_DEBUG("dbus.Connection", logmsg.str() );
-
-
-do{
-    if( poll( &pollfd, 1, -1 ) < 0 ){
-        std::string errmsg = strerror( errno );
-        SIMPLELOGGER_ERROR("dbus.Connection", "Unable to poll for response from daemon: " + errmsg );
-        return;
-    }
-
-    int bytesAvail;
-    if( ioctl( m_fd, FIONREAD, &bytesAvail ) < 0 ){
-            std::string errmsg = strerror( errno );
-            SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to ioctl: " + errmsg );
-            return;
-    }
-
-    std::ostringstream debugstr;
-    debugstr << "bytes avail before attempting to read: " << bytesAvail;
-    SIMPLELOGGER_DEBUG("dbus.Connection", debugstr.str() );
-
-    retmsg = m_transport->readMessage();
-
-    if( ioctl( m_fd, FIONREAD, &bytesAvail ) < 0 ){
-            std::string errmsg = strerror( errno );
-            SIMPLELOGGER_DEBUG("dbus.Connection", "Unable to ioctl: " + errmsg );
-            return;
-    }
-    debugstr.str("");
-    debugstr << "bytes avail after attempting to read: " << bytesAvail;
-    SIMPLELOGGER_DEBUG("dbus.Connection", debugstr.str() );
-    SIMPLELOGGER_DEBUG("dbus.Connection", "Did not get valid message back" );
-}while( !retmsg );
-    logmsg.str("");
-    logmsg << "Next message: " << retmsg;
-    SIMPLELOGGER_DEBUG("dbus.Connection", logmsg.str() );
-
-sleep( 1 );
-
-/*
-    Error error = Error();
-
-    if ( type != BusType::NONE ) {
-
-      if ( is_private ) {
-        m_cobj = dbus_bus_get_private(( DBusBusType )type, error.cobj() );
-        if ( error.is_set() ) throw error;
-        if ( m_cobj == nullptr ) throw ErrorFailed();
-        this->initialize(is_private);
-      }
-      else {
-        m_cobj = dbus_bus_get(( DBusBusType )type, error.cobj() );
-	if ( error.is_set() ) throw error;
-        if ( m_cobj == nullptr ) throw ErrorFailed();
-        this->initialize(is_private);
-      }
-    }
-*/
   }
 
-  Connection::Connection( std::string address, bool is_private ): m_cobj( nullptr )
+  Connection::Connection( std::string address ) :
+      m_notifyDispatcherFD( -1 ),
+      m_dispatchingThread( std::this_thread::get_id() )
   {
-    Error error = Error();
+      m_transport = priv::Transport::open_transport( address );
 
-    if ( is_private ) {
-      m_cobj = dbus_connection_open_private(address.c_str(), error.cobj() );
-      if ( error.is_set() ) throw error;
-      if ( m_cobj == nullptr ) throw ErrorFailed();
-    }
-    else {
-      m_cobj = dbus_connection_open(address.c_str(), error.cobj() );
-      if ( error.is_set() ) throw error;
-      if ( m_cobj == nullptr ) throw ErrorFailed();
-    }
-
-    //Make sure the DBus doesn't kick us for not sending the org.freedesktop.DBus.Hello
-    if(!is_registered()) {
-      if(!bus_register()) {
-        throw ErrorFailed(); 
-      }
-    }
-
-    this->initialize(is_private);    
+     if( !m_transport || !m_transport->is_valid() ){
+         SIMPLELOGGER_ERROR("dbus.Connection", "Unable to open transport" );
+         return;
+     }
   }
 
-  Connection::Connection( const Connection& other )
+  std::shared_ptr<Connection> Connection::create( BusType type  )
   {
-    m_cobj = other.m_cobj;
-    if ( m_cobj ) dbus_connection_ref( m_cobj );
-  }
-
-  static void conn_wp_deleter( void* v )
-  {
-    std::weak_ptr<Connection>* wp = static_cast<std::weak_ptr<Connection>*>(v);
-    delete wp;
-  }
-
-  std::shared_ptr<Connection> Connection::create( DBusConnection* cobj, bool is_private )
-  {
-    std::shared_ptr<Connection> p( new Connection(cobj, is_private) );
-
-    if ( m_weak_pointer_slot == -1 ) throw ErrorNotInitialized();
-    if ( p and p->is_valid() )
-    {
-      dbus_bool_t result;
-      std::weak_ptr<Connection>* wp = new std::weak_ptr<Connection>;
-      *wp = p;
-      result = dbus_connection_set_data( p->cobj(), m_weak_pointer_slot, wp, conn_wp_deleter );
-      if ( not result ) throw -1; // TODO throw something better
-    }
+    std::shared_ptr<Connection> p( new Connection(type) );
     
     return p;
   }
 
-  std::shared_ptr<Connection> Connection::create( BusType type, bool is_private )
+  std::shared_ptr<Connection> Connection::create( std::string address )
   {
-    std::shared_ptr<Connection> p( new Connection(type, is_private) );
+    std::shared_ptr<Connection> p( new Connection(address) );
 
-    if ( m_weak_pointer_slot == -1 ) throw ErrorNotInitialized();
-    if ( p and p->is_valid() )
-    {
-      dbus_bool_t result;
-      //TODO WTF is this doing?  Creating a weak pointer with new??
-      std::weak_ptr<Connection>* wp = new std::weak_ptr<Connection>;
-      *wp = p;
-      result = dbus_connection_set_data( p->cobj(), m_weak_pointer_slot, wp, conn_wp_deleter );
-      if ( not result ) throw -1; // TODO throw something better
-    }
-    
-    return p;
-  }
-
-  std::shared_ptr<Connection> Connection::create( std::string address, bool is_private )
-  {
-    std::shared_ptr<Connection> p( new Connection(address, is_private) );
-
-    if ( m_weak_pointer_slot == -1 ) throw ErrorNotInitialized();
-    if ( p and p->is_valid() )
-    {
-      dbus_bool_t result;
-      std::weak_ptr<Connection>* wp = new std::weak_ptr<Connection>;
-      *wp = p;
-      result = dbus_connection_set_data( p->cobj(), m_weak_pointer_slot, wp, conn_wp_deleter );
-      if ( not result ) throw -1; // TODO throw something better
-    }
-    
     return p;
 
-  }
-
-  std::shared_ptr<Connection> Connection::create( const Connection& other )
-  {
-    std::shared_ptr<Connection> p( new Connection(other) );
-    
-    if ( m_weak_pointer_slot == -1 ) throw  ErrorNotInitialized();
-    if ( p and p->is_valid() )
-    {
-      dbus_bool_t result;
-      std::weak_ptr<Connection>* wp = new std::weak_ptr<Connection>;
-      *wp = p;
-      result = dbus_connection_set_data( p->cobj(), m_weak_pointer_slot, wp, conn_wp_deleter );
-      if ( not result ) throw -1; // TODO throw something better
-    }
-    
-    return p;
   }
 
   Connection::~Connection()
   {
-    if ( this->is_valid() and this->is_private() )
-      dbus_connection_close( m_cobj );
-    if ( m_cobj ) dbus_connection_unref( m_cobj );
-  }
-
-  std::shared_ptr<Connection> Connection::self()
-  {
-    if ( not this->is_valid() or m_weak_pointer_slot == -1 ) return std::shared_ptr<Connection>();
-    
-    void* v = dbus_connection_get_data(this->cobj(), m_weak_pointer_slot);
-
-    if ( v == nullptr ) return std::shared_ptr<Connection>();
-
-    std::weak_ptr<Connection>* wp = static_cast<std::weak_ptr<Connection>*>(v);
-
-    std::shared_ptr<Connection> p = wp->lock();
-
-    return p;
-  }
-
-  std::shared_ptr<Connection> Connection::self(DBusConnection * c)
-  {
-    if ( c == nullptr or m_weak_pointer_slot == -1 ) return std::shared_ptr<Connection>();
-    
-    void* v = dbus_connection_get_data(c, m_weak_pointer_slot);
-
-    if ( v == nullptr ) return std::shared_ptr<Connection>();
-
-    std::weak_ptr<Connection>* wp = static_cast<std::weak_ptr<Connection>*>(v);
-
-    std::shared_ptr<Connection> p = wp->lock();
-
-    return p;
-  }
-
-
-
-  DBusConnection* Connection::cobj()
-  {
-    return m_cobj;
   }
 
   Connection::operator bool() const
   {
-    return m_cobj;
+    return is_valid();
   }
 
   bool Connection::is_valid() const
   {
-    return m_cobj;
-  }
-
-  bool Connection::is_private() const
-  {
-    return m_private_flag;
+    return m_transport.operator bool() && m_transport->is_valid();
   }
 
   bool Connection::bus_register()
   {
-    dbus_bool_t result;
-    Error error = Error();
-    if ( not this->is_valid() ) return false;
-    result = dbus_bus_register( m_cobj, error.cobj() );
-    if ( error.is_set() ) throw error;
-    return result;
+      if( is_registered() ){
+          return true;
+      }
+
+      std::shared_ptr<CallMessage> helloMsg = CallMessage::create( "org.freedesktop.DBus",
+                                                                   "/org/freedesktop/DBus",
+                                                                   "org.freedesktop.DBus",
+                                                                   "Hello" );
+      std::shared_ptr<ReturnMessage> retmsg =
+              send_with_reply_blocking( helloMsg, 1000 );
+
+      retmsg >> m_uniqueName;
+
+      return true;
   }
 
   bool Connection::is_registered() const
   {
-    return this->unique_name() != nullptr;
+    return !m_uniqueName.empty();
   }
 
-  const char * Connection::unique_name() const
+  std::string Connection::unique_name() const
   {
-    if ( not this->is_valid() ) return nullptr;
-    return dbus_bus_get_unique_name(m_cobj);
+    if ( not this->is_valid() ) return std::string("");
+    return m_uniqueName;
   }
 
-  unsigned long Connection::unix_user( const std::string & name ) const
+  unsigned long Connection::unix_user( ) const
   {
-    Error error = Error();
-    if ( not this->is_valid() ) return -1;
-    return dbus_bus_get_unix_user( m_cobj, name.c_str(), error.cobj() );
+//    Error error = Error();
+//    if ( not this->is_valid() ) return -1;
+//    return dbus_bus_get_unix_user( m_cobj, name.c_str(), error.cobj() );
+      return 0;
   }
 
   const char* Connection::bus_id() const
   {
-    Error error = Error();
-    if ( not this->is_valid() ) return nullptr;
-    return dbus_bus_get_id( m_cobj, error.cobj() );
+//    Error error = Error();
+//    if ( not this->is_valid() ) return nullptr;
+//    return dbus_bus_get_id( m_cobj, error.cobj() );
+      return nullptr;
   }
 
   int Connection::request_name( const std::string& name, unsigned int flags )
   {
-    int result;
-    Error error = Error();
+//    int result;
+//    Error error = Error();
 
-    if ( not this->is_valid() ) return -1;
-    result = dbus_bus_request_name( m_cobj, name.c_str(), flags, error.cobj() );
-    if ( error.is_set() ) throw error;
-    return result;
+//    if ( not this->is_valid() ) return -1;
+//    result = dbus_bus_request_name( m_cobj, name.c_str(), flags, error.cobj() );
+//    if ( error.is_set() ) throw error;
+//    return result;
   }
 
   int Connection::release_name( const std::string& name )
   {
-    int result;
-    Error error = Error();
+//    int result;
+//    Error error = Error();
 
-    if ( not this->is_valid() ) return -1;
-    result = dbus_bus_release_name( m_cobj, name.c_str(), error.cobj() );
-    if ( error.is_set() ) throw error;
-    return result;
+//    if ( not this->is_valid() ) return -1;
+//    result = dbus_bus_release_name( m_cobj, name.c_str(), error.cobj() );
+//    if ( error.is_set() ) throw error;
+//    return result;
   }
 
   bool Connection::name_has_owner( const std::string& name ) const
   {
-    dbus_bool_t result;
-    Error error = Error();
+//    dbus_bool_t result;
+//    Error error = Error();
 
-    if ( not this->is_valid() ) return false;
-    result = dbus_bus_name_has_owner( m_cobj, name.c_str(), error.cobj() );
-    if ( error.is_set() ) throw error;
-    return result;
+//    if ( not this->is_valid() ) return false;
+//    result = dbus_bus_name_has_owner( m_cobj, name.c_str(), error.cobj() );
+//    if ( error.is_set() ) throw error;
+//    return result;
   }
 
   StartReply Connection::start_service( const std::string& name, uint32_t flags ) const
   {
-    dbus_bool_t succeeded;
-    dbus_uint32_t result_code;
-    Error error = Error();
+//    dbus_bool_t succeeded;
+//    dbus_uint32_t result_code;
+//    Error error = Error();
 
-    if ( not this->is_valid() ) return StartReply::FAILED;
+//    if ( not this->is_valid() ) return StartReply::FAILED;
 
-    succeeded = dbus_bus_start_service_by_name( m_cobj, name.c_str(), flags, &result_code, error.cobj() );
+//    succeeded = dbus_bus_start_service_by_name( m_cobj, name.c_str(), flags, &result_code, error.cobj() );
 
-    if ( error.is_set() ) throw error;
+//    if ( error.is_set() ) throw error;
 
-    if ( succeeded )
-      switch ( result_code ) {
-        case DBUS_START_REPLY_SUCCESS: return StartReply::SUCCESS;
-        case DBUS_START_REPLY_ALREADY_RUNNING: return StartReply::ALREADY_RUNNING;
-      }
+//    if ( succeeded )
+//      switch ( result_code ) {
+//        case DBUS_START_REPLY_SUCCESS: return StartReply::SUCCESS;
+//        case DBUS_START_REPLY_ALREADY_RUNNING: return StartReply::ALREADY_RUNNING;
+//      }
 
     return StartReply::FAILED;
   }
 
   bool Connection::add_match( const std::string& rule )
   {
-    Error error = Error();
+//    Error error = Error();
 
-    if ( not this->is_valid() ) return false;
-    SIMPLELOGGER_DEBUG("dbus.Connection", "Adding the following match: " << rule );
-    dbus_bus_add_match( m_cobj, rule.c_str(), error.cobj() );
+//    if ( not this->is_valid() ) return false;
+//    SIMPLELOGGER_DEBUG("dbus.Connection", "Adding the following match: " << rule );
+//    dbus_bus_add_match( m_cobj, rule.c_str(), error.cobj() );
 
-    if ( error.is_set() ) return false;
-    return true;
+//    if ( error.is_set() ) return false;
+//    return true;
   }
 
   void Connection::add_match_nonblocking( const std::string& rule )
   {
-    if ( not this->is_valid() ) return;
-    dbus_bus_add_match( m_cobj, rule.c_str(), nullptr );
+//    if ( not this->is_valid() ) return;
+//    dbus_bus_add_match( m_cobj, rule.c_str(), nullptr );
   }
 
   bool Connection::remove_match( const std::string& rule )
   {
-    Error error = Error();
+//    Error error = Error();
 
-    if ( not this->is_valid() ) return false;
-    dbus_bus_remove_match( m_cobj, rule.c_str(), error.cobj() );
+//    if ( not this->is_valid() ) return false;
+//    dbus_bus_remove_match( m_cobj, rule.c_str(), error.cobj() );
 
-    if ( error.is_set() ) return false;
-    return true;
+//    if ( error.is_set() ) return false;
+//    return true;
   }
 
   void Connection::remove_match_nonblocking( const std::string& rule )
   {
-    if ( not this->is_valid() ) return;
-    dbus_bus_remove_match( m_cobj, rule.c_str(), nullptr );
+//    if ( not this->is_valid() ) return;
+//    dbus_bus_remove_match( m_cobj, rule.c_str(), nullptr );
   }
 
   bool Connection::is_connected() const
   {
-    if ( not this->is_valid() ) return false;
-    return dbus_connection_get_is_connected( m_cobj );
+//    if ( not this->is_valid() ) return false;
+//    return dbus_connection_get_is_connected( m_cobj );
   }
 
   bool Connection::is_authenticated() const
   {
-    if ( not this->is_valid() ) return false;
-    return dbus_connection_get_is_authenticated( m_cobj );
+//    if ( not this->is_valid() ) return false;
+//    return dbus_connection_get_is_authenticated( m_cobj );
   }
 
   bool Connection::is_anonymous() const
   {
-    if ( not this->is_valid() ) return false;
-    return dbus_connection_get_is_anonymous( m_cobj );
+//    if ( not this->is_valid() ) return false;
+//    return dbus_connection_get_is_anonymous( m_cobj );
   }
 
   const char* Connection::server_id() const
   {
-    if ( not this->is_valid() ) return nullptr;
-    return dbus_connection_get_server_id( m_cobj );
+//    if ( not this->is_valid() ) return nullptr;
+//    return dbus_connection_get_server_id( m_cobj );
   }
 
-  ssize_t Connection::send( std::shared_ptr<const Message> msg )
+  uint32_t Connection::send( std::shared_ptr<const Message> msg )
   {
     if ( not this->is_valid() ) throw ErrorDisconnected();
-    if ( !msg || !m_transport) return 0;
+    if ( !msg ) return 0;
     if( m_currentSerial == 0 ) m_currentSerial = 1;
 
-    return m_transport->writeMessage( msg, m_currentSerial++ );
+    OutgoingMessage outgoing;
+    {
+        std::unique_lock<std::mutex> lock( m_outgoingLock );
+        outgoing.msg = msg;
+        outgoing.serial = m_currentSerial++;
+        m_outgoingMessages.push( outgoing );
+    }
 
+    notify_dispatcher_or_dispatch();
 
-//    errno = EINVAL;
-//    return -1;
-
-//    if ( not this->is_valid() ) throw ErrorDisconnected();
-//    if ( not msg or not *msg ) return 0;
-//    if ( not dbus_connection_send( m_cobj, msg->cobj(), &serial ) ) throw ErrorNoMemory();
-//    return serial;
+    return outgoing.serial;
   }
 
   Connection & Connection::operator <<(std::shared_ptr<const Message> msg)
@@ -540,42 +322,112 @@ sleep( 1 );
     DBusPendingCall* reply;
     if ( not this->is_valid() ) throw ErrorDisconnected();
     if ( not message or not *message ) return std::shared_ptr<PendingCall>();
-    if ( not dbus_connection_send_with_reply( m_cobj, message->cobj(), &reply, timeout_milliseconds ) )
+    //if ( not dbus_connection_send_with_reply( m_cobj, message->cobj(), &reply, timeout_milliseconds ) )
       throw ErrorNoMemory( "Unable to start asynchronous call" );
     return PendingCall::create( reply );
   }
 
-  std::shared_ptr<const ReturnMessage> Connection::send_with_reply_blocking( std::shared_ptr<const Message> message, int timeout_milliseconds ) const
+  std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking( std::shared_ptr<const CallMessage> message, int timeout_milliseconds )
   {
-    DBusMessage* reply;
-    Error error = Error();
 
     if ( not this->is_valid() ) throw ErrorDisconnected();
 
-    if ( not message or not *message ) return std::shared_ptr<const ReturnMessage>();
+    if ( not message or not *message ) return std::shared_ptr<ReturnMessage>();
 
-    dbus_message_set_no_reply(message->cobj(),FALSE);
+    std::shared_ptr<ReturnMessage> retmsg;
 
-    reply = dbus_connection_send_with_reply_and_block( m_cobj, message->cobj(), timeout_milliseconds, error.cobj() );
+    if( m_dispatchingThread == std::this_thread::get_id() ){
+        uint32_t replySerialExpceted;
+        bool gotReply = false;
 
-    if ( error.is_set() ){ 
-/*
-      SIMPLELOGGER_ERROR( "dbus.Connection", "Message: [" 
-        << error->message() 
-        << "] Name: ["
-        << error->name()
-        << "]" ); 
-*/
-      throw error; 
+        /*
+         * We are trying to do a blocking method call in the dispatching thread.
+         * Don't queue up this message, just send it.
+         */
+        {
+            std::unique_lock<std::mutex> lock( m_outgoingLock );
+            replySerialExpceted = write_single_message( message );
+        }
+
+        /*
+         * Read messages until we find the one with the serial that we are expecting
+         */
+        std::vector<int> fds;
+        fds.push_back( m_transport->fd() );
+        int msToWait = timeout_milliseconds;
+
+        do {
+            std::tuple<bool,int,std::vector<int>,std::chrono::milliseconds> fdResponse =
+                    DBus::priv::wait_for_fd_activity( fds, msToWait );
+
+            msToWait -= std::get<3>( fdResponse ).count();
+
+            if( msToWait <= 0 ){
+                throw ErrorNoReply( "Did not receive a response in the alotted time" );
+            }
+
+            std::shared_ptr<Message> incoming = m_transport->readMessage();
+            if( incoming ){
+                if( incoming->type() != MessageType::RETURN ){
+                    m_incomingMessages.push( incoming );
+                    continue;
+                }
+
+                // At this point, we definitely have a return message.
+                // Check to see if it is the one that we want.
+                std::shared_ptr<ReturnMessage> msg_cast = std::static_pointer_cast<ReturnMessage>( incoming );
+                if( msg_cast->reply_serial() == replySerialExpceted ){
+                    retmsg = msg_cast;
+                    gotReply = true;
+                }else{
+                    m_incomingMessages.push( incoming );
+                }
+            }
+        } while( !gotReply );
+
+    }else{
+        /*
+         * We are trying to do a blocking method call in a thread that is not the dispatcher thread.
+         * Queue up the message, which will notify the dispatcher thread.
+         */
+        uint32_t serial = send( message );
+        std::shared_ptr<ExpectingResponse> ex;
+
+        {
+            // Add this to our expecting responses
+            std::unique_lock<std::mutex> lock( m_expectingResponsesLock );
+
+            ex = std::make_shared<ExpectingResponse>();
+            m_expectingResponses[ serial ] = ex;
+        }
+
+        {
+            /*
+             * Lock on the expecting response; when the response comes in, we will notify from
+             * the dispatching thread
+             */
+            std::unique_lock<std::mutex> lock( ex->cv_lock );
+            std::cv_status status = ex->cv.wait_for( lock, std::chrono::milliseconds( timeout_milliseconds ) );
+            if( status == std::cv_status::no_timeout ){
+                retmsg = m_expectingResponses[ serial ]->reply;
+            }else{
+                std::unique_lock<std::mutex> lock( m_expectingResponsesLock );
+                m_expectingResponses.erase( m_expectingResponses.find( serial ) );
+                throw ErrorNoReply( "Did not receive a response in the alotted time" );
+            }
+        }
+
+        {
+            /*
+             * Now remove our expecting response to free up memory
+             */
+            std::unique_lock<std::mutex> lock( m_expectingResponsesLock );
+            m_expectingResponses.erase( m_expectingResponses.find( serial ) );
+        }
     }
 
-    SIMPLELOGGER_DEBUG("dbus.Connection", "Reply signature: " << dbus_message_get_signature(reply) );
-    
-    std::shared_ptr<ReturnMessage> retmsg = ReturnMessage::create(reply);
-
-    dbus_message_unref(reply);
-
-    //SIMPLELOGGER_DEBUG("dbus.Connection", "Return Signature: " << retmsg->signature() );
+    // We probably really don't need to do this, but let's do it anyway
+    notify_dispatcher_or_dispatch();
 
     return retmsg;
   }
@@ -583,146 +435,172 @@ sleep( 1 );
   void Connection::flush()
   {
     if ( not this->is_valid() ) return;
-    dbus_connection_flush( m_cobj );
+    {
+        std::unique_lock lock( m_outgoingLock );
+        while( !m_outgoingMessages.empty() ){
+            OutgoingMessage outgoing = m_outgoingMessages.front();
+            m_outgoingMessages.pop();
+
+            m_transport->writeMessage( outgoing.msg, outgoing.serial );
+        }
+    }
+  }
+
+  uint32_t Connection::write_single_message( std::shared_ptr<const Message> msg ){
+      uint32_t retval = m_currentSerial;
+      m_transport->writeMessage( msg, m_currentSerial++ );
+      return retval;
   }
 
   bool Connection::read_write_dispatch( int timeout_milliseconds )
   {
     if ( not this->is_valid() ) return false;
-    return dbus_connection_read_write_dispatch( m_cobj, timeout_milliseconds );
+    //return dbus_connection_read_write_dispatch( m_cobj, timeout_milliseconds );
   }
 
   bool Connection::read_write( int timeout_milliseconds )
   {
     if ( not this->is_valid() ) return false;
-    return dbus_connection_read_write( m_cobj, timeout_milliseconds );
+    //return dbus_connection_read_write( m_cobj, timeout_milliseconds );
   }
 
   std::shared_ptr<Message> Connection::borrow_message()
   {
     if ( not this->is_valid() ) return std::shared_ptr<Message>();
-    return Message::create( dbus_connection_borrow_message( m_cobj ) );
+    //return Message::create( dbus_connection_borrow_message( m_cobj ) );
   }
 
   void Connection::return_message( std::shared_ptr<Message> message )
   {
     if ( not this->is_valid() or not message or not *message ) return;
-    dbus_connection_return_message( m_cobj, message->cobj() );
+    //dbus_connection_return_message( m_cobj, message->cobj() );
   }
 
   void Connection::steal_borrowed_message( std::shared_ptr<Message> message )
   {
     if ( not this->is_valid() or not message or not *message ) return;
-    dbus_connection_steal_borrowed_message( m_cobj, message->cobj() );
+    //dbus_connection_steal_borrowed_message( m_cobj, message->cobj() );
   }
 
   std::shared_ptr<Message> Connection::pop_message( )
   {
     DBusMessage* message;
     if ( not this->is_valid() ) return std::shared_ptr<Message>();
-    message = dbus_connection_pop_message( m_cobj );
+    //message = dbus_connection_pop_message( m_cobj );
     return Message::create( message );
   }
 
   DispatchStatus Connection::dispatch_status( ) const
   {
     if ( not this->is_valid() ) return DispatchStatus::COMPLETE;
-    return static_cast<DispatchStatus>( dbus_connection_get_dispatch_status( m_cobj ) );
+    return m_dispatchStatus;
   }
 
   DispatchStatus Connection::dispatch( )
   {
+      if( std::this_thread::get_id() != m_dispatchingThread ){
+          throw ErrorIncorrectDispatchThread( "Calling Connection::dispatch from non-dispatching thread" );
+      }
     if ( not this->is_valid() ) return DispatchStatus::COMPLETE;
-    dbus_connection_dispatch( m_cobj );
-    return static_cast<DispatchStatus>( dbus_connection_get_dispatch_status( m_cobj ) );
+
+    // Write out any messages we have waiting to be written
+    flush();
+
+    // Try to read a message
+    {
+        std::shared_ptr<Message> incoming = m_transport->readMessage();
+        if( incoming ){
+            m_incomingMessages.push( incoming );
+        }
+    }
+
+    // Process any messages that we need to on this thread
+    {
+        std::shared_ptr<Message> msgToProcess;
+        if( !m_incomingMessages.empty() ){
+            msgToProcess = m_incomingMessages.front();
+            m_incomingMessages.pop();
+        }
+    }
+
+    if( m_outgoingMessages.empty() &&
+            m_incomingMessages.empty() ){
+        m_dispatchStatus = DispatchStatus::COMPLETE;
+    }else{
+        m_dispatchStatus = DispatchStatus::DATA_REMAINS;
+    }
+
+    return m_dispatchStatus;
   }
 
   int Connection::unix_fd() const
   {
-    dbus_bool_t result;
-    int fd;
     if ( not this->is_valid() ) return -1;
-    result = dbus_connection_get_unix_fd( m_cobj, &fd );
-    if ( not result ) return -1;
-    return fd;
+    return m_transport->fd();
   }
 
   int Connection::socket() const
   {
-    dbus_bool_t result;
-    int s;
-    if ( not this->is_valid() ) return -1;
-    result = dbus_connection_get_socket( m_cobj, &s );
-    if ( not result ) return -1;
-    return s;
-  }
-
-  unsigned long Connection::unix_user() const
-  {
-    dbus_bool_t result;
-    unsigned long uid;
-    if ( not this->is_valid() ) return -1;
-    result = dbus_connection_get_unix_user( m_cobj, &uid );
-    if ( not result ) return -1;
-    return uid;
+      if ( not this->is_valid() ) return -1;
+      return m_transport->fd();
   }
 
   unsigned long Connection::unix_process_id() const
   {
-    dbus_bool_t result;
-    unsigned long pid;
-    if ( not this->is_valid() ) return -1;
-    result = dbus_connection_get_unix_process_id( m_cobj, &pid );
-    if ( not result ) return -1;
-    return pid;
+//    dbus_bool_t result;
+//    unsigned long pid;
+//    if ( not this->is_valid() ) return -1;
+//    result = dbus_connection_get_unix_process_id( m_cobj, &pid );
+//    if ( not result ) return -1;
+//    return pid;
   }
 
   void Connection::set_allow_anonymous(bool allow)
   {
-    if ( not this->is_valid() ) return;
-    dbus_connection_set_allow_anonymous( m_cobj, allow );
+//    if ( not this->is_valid() ) return;
+//    dbus_connection_set_allow_anonymous( m_cobj, allow );
   }
 
   void Connection::set_route_peer_messages(bool route)
   {
-    if ( not this->is_valid() ) return;
-    dbus_connection_set_route_peer_messages( m_cobj, route );
+//    if ( not this->is_valid() ) return;
+//    dbus_connection_set_route_peer_messages( m_cobj, route );
   }
 
   void Connection::set_max_message_size(long size)
   {
-    if ( not this->is_valid() ) return;
-    dbus_connection_set_max_message_size( m_cobj, size );
+//    if ( not this->is_valid() ) return;
+//    dbus_connection_set_max_message_size( m_cobj, size );
   }
 
   long Connection::max_message_size()
   {
-    if ( not this->is_valid() ) return -1;
-    return dbus_connection_get_max_message_size(m_cobj);
+//    if ( not this->is_valid() ) return -1;
+//    return dbus_connection_get_max_message_size(m_cobj);
   }
 
   void Connection::set_max_received_size(long size)
   {
-    if ( not this->is_valid() ) return;
-    dbus_connection_set_max_received_size( m_cobj, size );
+//    if ( not this->is_valid() ) return;
+//    dbus_connection_set_max_received_size( m_cobj, size );
   }
 
   long Connection::max_received_size()
   {
-    if ( not this->is_valid() ) return -1;
-    return dbus_connection_get_max_received_size(m_cobj);
+//    if ( not this->is_valid() ) return -1;
+//    return dbus_connection_get_max_received_size(m_cobj);
   }
 
   long Connection::outgoing_size()
   {
-    if ( not this->is_valid() ) return -1;
-    return dbus_connection_get_outgoing_size(m_cobj);
+//    if ( not this->is_valid() ) return -1;
+//    return dbus_connection_get_outgoing_size(m_cobj);
   }
 
   bool Connection::has_messages_to_send()
   {
-    if ( not this->is_valid() ) return false;
-    return dbus_connection_has_messages_to_send(m_cobj);
+//    if ( not this->is_valid() ) return false;
+//    return dbus_connection_has_messages_to_send(m_cobj);
   }
 
   Connection::AddWatchSignal& Connection::signal_add_watch()
@@ -800,7 +678,7 @@ sleep( 1 );
   {
     std::shared_ptr<Object> object = Object::create( path, pf );
     if (not object) return object;
-    object->register_with_connection( this->self() );
+    object->register_with_connection( shared_from_this() );
     m_created_objects[path] = object;
     return object;
   }
@@ -809,7 +687,7 @@ sleep( 1 );
   {
     SIMPLELOGGER_DEBUG("dbus.Connection", "Connection::register_object");
     if ( not object ) return false;
-    object->register_with_connection( this->self() );
+    object->register_with_connection( shared_from_this() );
     return true;
   }
 
@@ -817,7 +695,7 @@ sleep( 1 );
   {
     std::shared_ptr<ObjectPathHandler> handler = ObjectPathHandler::create(path, pf);
     if ( not handler ) return handler;
-    handler->register_with_connection( this->self() );
+    handler->register_with_connection( shared_from_this() );
     m_created_objects[path] = handler;
     if ( handler ) handler->signal_message().connect( slot );
     return handler;
@@ -827,7 +705,7 @@ sleep( 1 );
   {
     std::shared_ptr<ObjectPathHandler> handler = ObjectPathHandler::create(path, pf);
     if ( not handler ) return handler;
-    handler->register_with_connection( this->self() );
+    handler->register_with_connection( shared_from_this() );
     m_created_objects[path] = handler;
     if ( handler ) handler->signal_message().connect( sigc::ptr_fun(MessageFunction) );
     return handler;
@@ -835,13 +713,13 @@ sleep( 1 );
 
   std::shared_ptr<ObjectProxy> Connection::create_object_proxy(const std::string & path)
   {
-    std::shared_ptr<ObjectProxy> object = ObjectProxy::create(this->self(), path);
+    std::shared_ptr<ObjectProxy> object = ObjectProxy::create(shared_from_this(), path);
     return object;
   }
 
   std::shared_ptr<ObjectProxy> Connection::create_object_proxy(const std::string & destination, const std::string & path)
   {
-    std::shared_ptr<ObjectProxy> object = ObjectProxy::create(this->self(), destination, path);
+    std::shared_ptr<ObjectProxy> object = ObjectProxy::create(shared_from_this(), destination, path);
     return object;
   }
 
@@ -862,7 +740,7 @@ sleep( 1 );
     m_proxy_signals.push_back( signal );
 
     this->add_match( signal->match_rule() );
-    signal->set_connection(this->self());
+    signal->set_connection( shared_from_this() );
 
     return signal;
   }
@@ -990,46 +868,6 @@ sleep( 1 );
 //   }
 //
 
-  template<typename T>
-  void deleter(void * p)
-  {
-    T* p2 = static_cast<T*>(p);
-    delete p2;
-  }
-
-  void Connection::initialize(bool is_private)
-  {
-    dbus_bool_t result;
-    
-    m_private_flag = is_private;
-
-    // Install callbacks
-    result = dbus_connection_set_watch_functions( m_cobj,
-                                                  Connection::on_add_watch_callback,
-                                                  Connection::on_remove_watch_callback,
-                                                  Connection::on_watch_toggled_callback,
-                                                  this,
-                                                  nullptr
-                                                );
-    if ( not result ) throw ErrorNoMemory();
-  
-    result = dbus_connection_set_timeout_functions( m_cobj,
-                                                  Connection::on_add_timeout_callback,
-                                                  Connection::on_remove_timeout_callback,
-                                                  Connection::on_timeout_toggled_callback,
-                                                  this,
-                                                  nullptr
-                                                );
-    if ( not result ) throw ErrorNoMemory();
-  
-    dbus_connection_set_wakeup_main_function( m_cobj, Connection::on_wakeup_main_callback, this, nullptr );
-  
-    dbus_connection_set_dispatch_status_function( m_cobj, Connection::on_dispatch_status_callback, this, nullptr );
-
-    result = dbus_connection_add_filter( m_cobj, Connection::on_filter_callback, this, nullptr );
-    if ( not result ) throw ErrorNoMemory();
-  
-  }
 
   dbus_bool_t Connection::on_add_watch_callback(DBusWatch * cwatch, void * data)
   {
@@ -1134,7 +972,7 @@ sleep( 1 );
   {
     if ( message == nullptr ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     
-    std::shared_ptr<Connection> conn = static_cast<Connection*>(data)->self();
+    std::shared_ptr<Connection> conn;// = static_cast<Connection*>(data)->self();
     FilterResult filter_result = FilterResult::DONT_FILTER;
     HandlerResult signal_result = HandlerResult::NOT_HANDLED;
     std::shared_ptr<Message> msg = Message::create(message);
@@ -1201,6 +1039,30 @@ sleep( 1 );
     std::string retval;
     retmsg >> retval;
     return retval;
+  }
+
+  void Connection::set_dispatching_thread( std::thread::id tid ){
+      m_dispatchingThread = tid;
+  }
+
+  void Connection::set_dispatching_thread_fd(int fd){
+      m_notifyDispatcherFD = fd;
+  }
+
+  void Connection::notify_dispatcher_or_dispatch(){
+      if( std::this_thread::get_id() == m_dispatchingThread ){
+          dispatch();
+      }
+
+      if( m_notifyDispatcherFD >= 0 ){
+          char c = '\0';
+          if( ::write( m_notifyDispatcherFD, &c, 1 ) < 0 ){
+              std::string errmsg = std::string( strerror( errno ) );
+              SIMPLELOGGER_ERROR( "dbus.Connection", "Unable to notify dispatcher: " + errmsg );
+          }
+      }else{
+          SIMPLELOGGER_ERROR( "dbus.Connection", "Unable to notify dispatcher; the dispatcher FD has not been set" );
+      }
   }
 
 }

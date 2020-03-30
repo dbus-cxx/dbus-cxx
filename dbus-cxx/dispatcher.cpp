@@ -44,7 +44,6 @@ namespace DBus
 
   Dispatcher::Dispatcher(bool is_running):
       m_running(false),
-      m_dispatch_thread(0),
       m_dispatch_loop_limit(0)
   {
     if( socketpair( AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, process_fd ) < 0 ){
@@ -65,30 +64,16 @@ namespace DBus
     this->stop();
   }
 
-  std::shared_ptr<Connection> Dispatcher::create_connection(DBusConnection * cobj, bool is_private)
+  std::shared_ptr<Connection> Dispatcher::create_connection(std::string address )
   {
-    std::shared_ptr<Connection> conn = Connection::create(cobj, is_private);
+    std::shared_ptr<Connection> conn = Connection::create(address);
     if ( this->add_connection(conn) ) return conn;
     return std::shared_ptr<Connection>();
   }
 
-  std::shared_ptr<Connection> Dispatcher::create_connection(std::string address, bool is_private)
+  std::shared_ptr<Connection> Dispatcher::create_connection(BusType type)
   {
-    std::shared_ptr<Connection> conn = Connection::create(address, is_private);
-    if ( this->add_connection(conn) ) return conn;
-    return std::shared_ptr<Connection>();
-  }
-
-  std::shared_ptr<Connection> Dispatcher::create_connection(BusType type, bool is_private)
-  {
-    std::shared_ptr<Connection> conn = Connection::create(type, is_private);
-    if ( this->add_connection(conn) ) return conn;
-    return std::shared_ptr<Connection>();
-  }
-
-  std::shared_ptr<Connection> Dispatcher::create_connection(const Connection & other)
-  {
-    std::shared_ptr<Connection> conn = Connection::create(other);
+    std::shared_ptr<Connection> conn = Connection::create(type);
     if ( this->add_connection(conn) ) return conn;
     return std::shared_ptr<Connection>();
   }
@@ -97,7 +82,10 @@ namespace DBus
   {
     if ( not connection or not connection->is_valid() ) return false;
     
+    connection->set_dispatching_thread( m_dispatch_thread.get_id() );
+    connection->set_dispatching_thread_fd( process_fd[ 0 ] );
     m_connections.push_back(connection);
+    wakeup_thread();
     
     connection->signal_add_watch().connect(sigc::mem_fun(*this, &Dispatcher::on_add_watch));
     connection->signal_remove_watch().connect(sigc::mem_fun(*this, &Dispatcher::on_remove_watch));
@@ -133,7 +121,7 @@ namespace DBus
     
     m_running = true;
     
-    m_dispatch_thread = new std::thread( &Dispatcher::dispatch_thread_main, this );
+    m_dispatch_thread = std::thread( &Dispatcher::dispatch_thread_main, this );
     
     return true;
   }
@@ -146,12 +134,9 @@ namespace DBus
     
     wakeup_thread();
 
-    if( m_dispatch_thread->joinable() ){
-      m_dispatch_thread->join();
+    if( m_dispatch_thread.joinable() ){
+      m_dispatch_thread.join();
     }
-    
-    delete m_dispatch_thread;
-    m_dispatch_thread = nullptr;
     
     return true;
   }
@@ -164,37 +149,33 @@ namespace DBus
   void Dispatcher::dispatch_thread_main()
   {
     int selresult;
-    std::vector<struct pollfd> fds;
-    struct pollfd thread_wakeup;
+    std::vector<int> fds;
 
-    thread_wakeup.fd = process_fd[ 1 ];
-    thread_wakeup.events = POLLIN;
+    for( std::shared_ptr<Connection> conn : m_connections ){
+        conn->set_dispatching_thread( std::this_thread::get_id() );
+    }
     
     while ( m_running ) {
       fds.clear();
-      fds.push_back( thread_wakeup );
+      fds.push_back( process_fd[ 1 ] );
 
-      add_read_and_write_watches( &fds );
+      for( std::shared_ptr<Connection> conn : m_connections ){
+          if( !conn->is_registered() ){
+              SIMPLELOGGER_ERROR( "dbus.Dispatcher", "going to register bus" );
+              conn->bus_register();
+          }
 
-      // wait forever until some file descriptor has events
-      selresult = poll( fds.data(), fds.size(), -1 );
-
-      // Oops, poll had a serious error
-      if ( selresult == -1 && errno == EINTR ){
-        //if we were interrupted, continue on
-        continue;
-      } else if( selresult == -1 ){
-        SIMPLELOGGER_ERROR( "dbus.Dispatcher", "poll() got errno " << errno );
-        throw ErrorPollFailed();
+          fds.push_back( conn->unix_fd() );
       }
 
-      // Discard data from process_fd if we were woken up by that
-      if( fds[ 0 ].revents & POLLIN ){
-        char discard;
-        read( process_fd[ 1 ], &discard, sizeof(char) );
-      }
+      std::tuple<bool,int,std::vector<int>,std::chrono::milliseconds> fdResponse =
+              DBus::priv::wait_for_fd_activity( fds, -1 );
+      std::vector<int> fdsToRead = std::get<2>( fdResponse );
 
-      handle_read_and_write_watches( &fds );
+      if( fdsToRead[ 0 ] == process_fd[ 1 ] ){
+          char discard;
+          read( process_fd[ 1 ], &discard, sizeof(char) );
+      }
 
       dispatch_connections();
     }

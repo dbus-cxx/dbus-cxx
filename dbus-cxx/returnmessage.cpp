@@ -76,7 +76,10 @@ namespace DBus
 
   uint32_t ReturnMessage::reply_serial() const
   {
-    if ( m_cobj ) return dbus_message_get_reply_serial( m_cobj );
+    Variant field = header_field( DBUSCXX_HEADER_FIELD_REPLY_SERIAL );
+    if( field.currentType() == DataType::UINT32 ){
+        return std::any_cast<uint32_t>( field.value() );
+    }
     return 0;
   }
 

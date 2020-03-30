@@ -46,7 +46,7 @@ namespace DBus
 
     MessageHandler* handler = static_cast<MessageHandler*>(user_data);
 
-    return static_cast<DBusHandlerResult>(handler->handle_message( Connection::self(conn), Message::create(message) ));
+    //return static_cast<DBusHandlerResult>(handler->handle_message( Connection::self(conn), Message::create(message) ));
   }
 
 }

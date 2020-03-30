@@ -63,14 +63,9 @@ namespace DBus
       
       /** @name Managing Connections */
       //@{
+      std::shared_ptr<Connection> create_connection( BusType type );
 
-      std::shared_ptr<Connection> create_connection( DBusConnection* cobj = nullptr, bool is_private=false );
-
-      std::shared_ptr<Connection> create_connection( BusType type, bool is_private=false );
-
-      std::shared_ptr<Connection> create_connection( const Connection& other );
-
-      std::shared_ptr<Connection> create_connection( std::string address, bool is_private = false );
+      std::shared_ptr<Connection> create_connection( std::string address );
 
       bool add_connection( std::shared_ptr<Connection> connection );
 
@@ -84,12 +79,12 @@ namespace DBus
 
     protected:
       
-      typedef std::list<std::shared_ptr<Connection>> Connections;
+      typedef std::vector<std::shared_ptr<Connection>> Connections;
       Connections m_connections;
       
       volatile bool m_running;
       
-      std::thread* m_dispatch_thread;
+      std::thread m_dispatch_thread;
 
       class WatchPair {
       public:

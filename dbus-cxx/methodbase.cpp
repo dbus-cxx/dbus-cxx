@@ -73,7 +73,8 @@ namespace DBus
   }
 
   uint32_t MethodBase::sendMessage( std::shared_ptr<Connection> connection, const std::shared_ptr<const Message> message ){
-      return connection->send( message );
+      connection << message;
+      return 0;
   }
 
 }

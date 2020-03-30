@@ -390,6 +390,13 @@ namespace DBus
    */
   DBUSCXX_ERROR( ErrorPollFailed, "poll() syscall failed" );
 
+  class ErrorIncorrectDispatchThread : public Error {
+    public:
+    ErrorIncorrectDispatchThread( const char* message = nullptr )
+        : Error( DBUS_ERROR_IO_ERROR, message ) {}
+  };
+  //DBUSCXX_ERROR( ErrorIncorrectDispatchThread, "Connection::dispatch called from non-dispatcher thread" );
+
 }
 
 #endif

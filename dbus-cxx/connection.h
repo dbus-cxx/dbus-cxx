@@ -22,7 +22,6 @@
 #include <dbus-cxx/dbus_signal.h>
 #include <dbus-cxx/messagefilter.h>
 #include <dbus-cxx/signal_proxy_base.h>
-#include <dbus/dbus.h>
 #include <deque>
 #include <map>
 #include <memory>
@@ -32,6 +31,7 @@
 #include "enums.h"
 #include <sigc++/sigc++.h>
 #include <future>
+#include <queue>
 
 #ifndef DBUSCXX_CONNECTION_H
 #define DBUSCXX_CONNECTION_H
@@ -62,41 +62,35 @@ namespace DBus
    *
    * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
    */
-  class Connection
+  class Connection : public std::enable_shared_from_this<Connection>
   {
     
     protected:
-    
-      // TODO dbus_connection_open
+      Connection( BusType type );
 
-      Connection( DBusConnection* cobj = NULL, bool is_private=false );
-
-      /**
-       * Connects to a bus daemon and registers the client with it.
-       *
-       * @param is_private if true a private connection will be created. Otherwise a shared connection is created.
-       */
-      Connection( BusType type, bool is_private=false );
-
-      Connection( std::string address, bool is_private=false );
-
-      Connection( const Connection& other );
+      Connection( std::string address );
 
     public:
-      // TODO dbus_connection_open
-
-      static std::shared_ptr<Connection> create( DBusConnection* cobj = NULL, bool is_private=false );
-
       /**
-       * Connects to a bus daemon and registers the client with it.
+       * Connects to a bus daemon.  The returned Connection will have authenticated
+       * with the bus at this point, but it will not be registered.  bus_register()
+       * must be called - the Dispatcher should do this automatically.
        *
        * @param is_private if true a private connection will be created. Otherwise a shared connection is created.
        */
-      static std::shared_ptr<Connection> create( BusType type, bool is_private=false );
+      static std::shared_ptr<Connection> create( BusType type );
 
-      static std::shared_ptr<Connection> create( const Connection& other );
-
-      static std::shared_ptr<Connection> create( std::string address, bool is_private=false );
+      /**
+       * Create a new connection, connecting to the specified address.  This address
+       * needs to be in the in DBus transport format (e.g. unix:path=/tmp/dbus-test).
+       * The returned connection will have authenticated with the bus at this point,
+       * but it will not be registered.  bus_register() must be called - the Dispatcher
+       * should do this automatically.
+       *
+       * @param address
+       * @return
+       */
+      static std::shared_ptr<Connection> create( std::string address );
 
       virtual ~Connection();
 
@@ -106,17 +100,17 @@ namespace DBus
       /** True if this is a valid connection; false otherwise */
       bool is_valid() const;
 
-      /** True if this is a valid connection @e and is private; false otherwise */
-      bool is_private() const;
-
-      /** Registers this connection with the bus */
-      bool bus_register();
-
       /** True if this connection is already registered */
       bool is_registered() const;
 
+      /**
+       * Registers this connection with the bus.  It is safe to call this
+       * method multiple times.
+       */
+      bool bus_register();
+
       /** Gets the unique name of the connection as assigned by the message bus. */
-      const char* unique_name() const;
+      std::string unique_name() const;
 
       // TODO set_unique_name() 
 
@@ -124,7 +118,7 @@ namespace DBus
        * The unix user id associated with the name connection or -1 if an
        * error occurred
        */
-      unsigned long unix_user( const std::string& name ) const;
+      unsigned long unix_user() const;
 
       /** The bus' globally unique ID, as described in the D-Bus specification */
       const char* bus_id() const;
@@ -160,10 +154,12 @@ namespace DBus
       // TODO dbus_connection_send_preallocated
 
       /**
-       * Sends the message to the bus.
-       * @return The number of bytes written
+       * Queues up the message to be sent on the bus.
+       *
+       * @param message The message to send
+       * @return The serial of the message
        */
-      ssize_t send( const std::shared_ptr<const Message> );
+      uint32_t send( const std::shared_ptr<const Message> message );
 
       /**
        * Blindly sends the message on the connection.  Since you don't get any kind of handle
@@ -173,7 +169,16 @@ namespace DBus
 
       std::shared_ptr<PendingCall> send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds=-1 ) const;
 
-      std::shared_ptr<const ReturnMessage> send_with_reply_blocking( std::shared_ptr<const Message> msg, int timeout_milliseconds=-1 ) const;
+      /**
+       * Send a CallMessage, and wait for the reply.
+       *
+       * If a timeout is processed, this will throw ErrorNoReply
+       *
+       * @param msg The message to send
+       * @param timeout_milliseconds How long to wait for.  If -1, will wait the maximum time
+       * @return The return message
+       */
+      std::shared_ptr<ReturnMessage> send_with_reply_blocking( std::shared_ptr<const CallMessage> msg, int timeout_milliseconds=-1 );
 
       /**
        * Send a message, and get a future to the response.
@@ -184,6 +189,11 @@ namespace DBus
        */
       std::future<const ReturnMessage> new_send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds=-1 ) const;
 
+      /**
+       * Flushes all data out to the bus.  This should generally
+       * be called from the dispatching thread, but it should be
+       * able to be called from any thread.
+       */
       void flush();
 
       bool read_write_dispatch( int timeout_milliseconds=-1 );
@@ -200,13 +210,21 @@ namespace DBus
 
       DispatchStatus dispatch_status( ) const;
 
+      /**
+       * Dispatch the connection.  Dispatching involves writing messages
+       * to the bus, reading messages from the bus, and acting on those
+       * messages, if available.  This method can only be called from
+       * the dispatching thread, and will throw an exception if it is
+       * called from the wrong thread.
+       *
+       * @return The status of dispatching.  This method should be called
+       * util the status is DispatchStatus::COMPLETE
+       */
       DispatchStatus dispatch( );
 
       int unix_fd() const;
 
       int socket() const;
-
-      unsigned long unix_user() const;
 
       unsigned long unix_process_id() const;
 
@@ -328,7 +346,7 @@ namespace DBus
       {
         std::shared_ptr<signal<T_arg...> > sig;
         sig = signal<T_arg...>::create(path, interface, member);
-        sig->set_connection(this->self());
+        sig->set_connection( shared_from_this() );
         return sig;
       }
 
@@ -336,40 +354,64 @@ namespace DBus
 //
 //       bool register_signal( signal_base& );
 
-      /** Returns a smart pointer to itself */
-      std::shared_ptr<Connection> self();
-
-      /**
-       * Given a dbus connection, if it was established through a call to
-       * Connection::create() this method will return a copy of the smart
-       * pointer returned by the create method.
-       *
-       * This is accomplished safely because the create() methods store a weak
-       * pointer in a dbus data slot associated with the DBusConnection C
-       * object, and this method creates the smart pointer from the weak pointer
-       * if the weak pointer is still valid.
-       *
-       * If the DBusConnection was created outside a Connection::create() method
-       * or the underlying object has already been deleted this method will
-       * return an empty pointer.
-       */
-      static std::shared_ptr<Connection> self(DBusConnection* c);
-      
-      DBusConnection* cobj();
-
       static void set_global_change_sigpipe(bool will_modify_sigpipe=true);
 
       std::string introspect( const std::string& destination, const std::string& path );
 
+      /**
+       * Set the ID of the thread that all of the dispatching hapens from.
+       * If a blocking call is attempted on the non-dispatching thread,
+       * that thread will block until the dispatching thread handles the data.
+       *
+       * By default, the dispatching thread is the thread that this Connection
+       * was created in.  If using the default Dispatcher, this will be set automatically.
+       *
+       * @param tid
+       */
+      void set_dispatching_thread( std::thread::id tid );
+
+      /**
+       * Set the FD to write to that will wake up the dispatching thread.
+       *
+       * @param fd
+       */
+      void set_dispatching_thread_fd( int fd );
+
+  private:
+      /**
+       * Depending on what thread this is called from,
+       * will either notify the dispatcher that we need to be
+       * dispatched, or will do the dispatching needed.
+       */
+      void notify_dispatcher_or_dispatch();
+
+      /**
+       * Write a single message, return the serial of this message.
+       * This should me called with a lock on m_outgoingLock
+       *
+       * @param msg
+       * @return
+       */
+      uint32_t write_single_message( std::shared_ptr<const Message> msg );
+
     protected:
-        int m_fd;
+      struct ExpectingResponse;
+      struct OutgoingMessage{
+          std::shared_ptr<const Message> msg;
+          uint32_t serial;
+      };
+        int m_notifyDispatcherFD;
         std::vector<uint8_t> m_sendBuffer;
         uint32_t m_currentSerial;
         std::shared_ptr<priv::Transport> m_transport;
-
-      DBusConnection* m_cobj;
-      
-      bool m_private_flag;
+        std::string m_uniqueName;
+        std::thread::id m_dispatchingThread;
+        std::queue<std::shared_ptr<Message>> m_incomingMessages;
+        std::mutex m_outgoingLock;
+        std::queue<OutgoingMessage> m_outgoingMessages;
+        std::mutex m_expectingResponsesLock;
+        std::map<uint32_t,std::shared_ptr<ExpectingResponse>> m_expectingResponses;
+        DispatchStatus m_dispatchStatus;
       
       AddWatchSignal m_add_watch_signal;
       
@@ -397,9 +439,6 @@ namespace DBus
 
       friend void init(bool);
 
-      static dbus_int32_t m_weak_pointer_slot;
-
-      void initialize( bool is_private );
 
       std::map<std::string,std::shared_ptr<ObjectPathHandler>> m_created_objects;
 

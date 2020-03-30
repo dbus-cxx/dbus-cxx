@@ -30,6 +30,7 @@
 #include <typeinfo>
 #include <vector>
 #include <sigc++/sigc++.h>
+#include <chrono>
 
 #ifndef DBUSCXX_UTILITY_H
 #define DBUSCXX_UTILITY_H
@@ -275,6 +276,20 @@ struct dbus_function_traits<std::function<T_ret(Args...)>>
     retmsg << retval;
   }
 };
+
+/**
+ * Wait for activity on any of the given FDs.
+ * If the system call is interrupted, it will be restarted automatically.
+ *
+ * @param fds The FDs to monitor
+ * @param timeout The timeout, in milliseconds to wait.  -1 means infite.
+ * @return Tuple containing:
+ * - bool true if we timedout, false otherwise
+ * - int # of FDs to read
+ * - vector of FDs to read
+ * - milliseconds # of MS we waited
+ */
+std::tuple<bool,int,std::vector<int>,std::chrono::milliseconds> wait_for_fd_activity( std::vector<int> fds, int timeout_ms );
 
 } /* namespace priv */
 

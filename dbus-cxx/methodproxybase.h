@@ -27,6 +27,7 @@
 #include <sstream>
 #include "messageappenditerator.h"
 #include <sigc++/sigc++.h>
+#include <future>
 
 #ifndef DBUSCXX_METHODPROXYBASE_H
 #define DBUSCXX_METHODPROXYBASE_H
@@ -116,11 +117,24 @@ namespace DBus
         debug_str << method_sig_gen.debug_string();
         debug_str << "> calling method=";
         debug_str << name();
-        DBUSCXX_DEBUG_STDSTR( "dbus.MethodProxy", debug_str.str() );
+        DBUSCXX_DEBUG_STDSTR( "DBus.MethodProxy", debug_str.str() );
 
         std::shared_ptr<CallMessage> _callmsg = this->create_call_message();
         (*_callmsg << ... << args);
         std::shared_ptr<const ReturnMessage> retmsg = this->call( _callmsg, -1 );
+    }
+
+    std::future<void> call_async(T_arg... args ){
+         std::ostringstream debug_str;
+         DBus::priv::dbus_function_traits<std::function<void(T_arg...)>> method_sig_gen;
+
+         debug_str << "DBus::MethodProxy<";
+         debug_str << method_sig_gen.debug_string();
+         debug_str << "> calling async method=";
+         debug_str << name();
+         DBUSCXX_DEBUG_STDSTR( "DBus.MethodProxy", debug_str.str() );
+
+         return std::async( std::launch::async, this->operator(), this, args... );
     }
 
     static std::shared_ptr<MethodProxy> create(const std::string& name){
@@ -150,7 +164,7 @@ namespace DBus
         debug_str << method_sig_gen.debug_string();
         debug_str << "> calling method=";
         debug_str << name();
-        DBUSCXX_DEBUG_STDSTR( "dbus.MethodProxy", debug_str.str() );
+        DBUSCXX_DEBUG_STDSTR( "DBus.MethodProxy", debug_str.str() );
 
         std::shared_ptr<CallMessage> _callmsg = this->create_call_message();
         MessageAppendIterator iter = _callmsg->append();

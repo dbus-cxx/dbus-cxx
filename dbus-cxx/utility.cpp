@@ -29,6 +29,9 @@
 #include "message.h"
 #include "simplelogger_defs.h"
 #include <locale>
+#include <chrono>
+
+#include <poll.h>
 
 /* Extern function for logging in headers */
 simplelogger_log_function dbuscxx_log_function = nullptr;
@@ -49,19 +52,7 @@ namespace DBus
       return;
     }
 
-    SIMPLELOGGER_DEBUG( "dbus", "Initializing dbus-cxx, threadsafe:" << threadsafe );
-
-    if ( threadsafe ){
-        std::unique_lock<std::mutex> lock( init_mutex );
-        result = dbus_threads_init_default();
-	if (!result) throw std::bad_alloc();
-
-        result = dbus_connection_allocate_data_slot( & Connection::m_weak_pointer_slot );
-        if ( not result ) throw ErrorFailed(); 
-    }else{
-        result = dbus_connection_allocate_data_slot( & Connection::m_weak_pointer_slot );
-        if ( not result ) throw ErrorFailed(); 
-    }
+    SIMPLELOGGER_DEBUG( "dbus", "Initializing dbus-cxx, REMOVE THIS SOON" );
 
     initialized_var = true;
   }
@@ -128,6 +119,47 @@ namespace DBus
         }
         *stream << std::endl;
     }
+  }
+
+  std::tuple<bool,int,std::vector<int>,std::chrono::milliseconds> priv::wait_for_fd_activity( std::vector<int> fds, int timeout_ms ){
+      std::vector<pollfd> toListen;
+      bool timeout;
+      int poll_ret;
+      std::chrono::milliseconds ms_waited;
+      std::vector<int> fdsToRead;
+
+      toListen.reserve( fds.size() );
+      for( int fd : fds ){
+          struct pollfd pollfd;
+          pollfd.fd = fd;
+          pollfd.events = POLLIN;
+          pollfd.revents = 0;
+          toListen.push_back( pollfd );
+      }
+
+      std::chrono::time_point start = std::chrono::high_resolution_clock::now();
+      do {
+          poll_ret = ::poll( toListen.data(), toListen.size(), timeout_ms );
+          if( poll_ret >= 0 ){
+              timeout = poll_ret == 0 ? true : false;
+              ms_waited = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          std::chrono::high_resolution_clock::now() - start
+                          );
+
+              for( pollfd pollentry : toListen ){
+                  if( pollentry.revents & POLLIN ){
+                      fdsToRead.push_back( pollentry.fd );
+                  }
+              }
+
+            break;
+          }
+          if( poll_ret < 0 && errno == EINTR ){
+              continue;
+          }
+      } while( true );
+
+      return std::make_tuple( timeout, poll_ret, fdsToRead, ms_waited );
   }
 }
 
