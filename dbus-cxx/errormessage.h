@@ -62,6 +62,14 @@ namespace DBus
       bool operator == ( const ErrorMessage& ) const;
 
       virtual MessageType type() const;
+
+      /**
+       * Throw the error associated with this ErrorMessage.
+       * If this error is of a well-known type, the well-known
+       * type will be thrown.  Otherwise, a generic DBus::Error
+       * will be thrown.
+       */
+      [[ noreturn ]] void throw_error();
   
   };
 

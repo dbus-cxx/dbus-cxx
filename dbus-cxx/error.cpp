@@ -24,70 +24,43 @@ namespace DBus
 
   Error::Error()
   {
-    dbus_error_init( &m_cobj );
-  }
-
-  Error::Error( DBusError * cobj )
-  {
-    dbus_error_init( &m_cobj );
-    dbus_move_error( cobj, &m_cobj );
   }
 
   Error::Error( const char* name, const char* message )
   {
-    dbus_error_init( &m_cobj );
-    this->set( name, message );
+    m_name = std::string( name );
+    m_message = std::string( message );
   }
 
-  Error::Error( Message& m )
+  Error::Error( const char* name, std::string message )
   {
-    dbus_set_error_from_message( &m_cobj, m.cobj() );
+      m_name = std::string( name );
+      m_message = std::string( message );
   }
 
-  Error::~Error( ) throw()
+  Error::Error( std::string name, std::string message )
   {
-    dbus_error_free( &m_cobj );
+      m_name = std::string( name );
+      m_message = std::string( message );
   }
 
-  const char* Error::name() const
+  Error::~Error( ) noexcept
   {
-    return m_cobj.name;
   }
 
-  const char* Error::message() const
+  std::string Error::name() const
   {
-    return m_cobj.message;
+    return m_name;
   }
 
-  bool Error::is_set() const
+  std::string Error::message() const
   {
-    return dbus_error_is_set( &m_cobj );
+    return m_message;
   }
 
-  Error::operator bool() const
+  const char* Error::what() const noexcept
   {
-    return this->is_set();
-  }
-
-//   Error& Error::operator=( Error& other )
-//   {
-//     dbus_move_error( &m_cobj, &( other.m_cobj ) );
-//     return *this;
-//   }
-
-  void Error::set( const char* name, const char* message )
-  {
-    dbus_set_error_const( &m_cobj, name, message );
-  }
-
-  const char* Error::what() const throw()
-  {
-    return m_cobj.message;
-  }
-
-  DBusError* Error::cobj( )
-  {
-    return & m_cobj;
+    return m_message.c_str();
   }
 
 }

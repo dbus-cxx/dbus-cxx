@@ -368,19 +368,19 @@ struct Connection::ExpectingResponse {
 
             std::shared_ptr<Message> incoming = m_transport->readMessage();
             if( incoming ){
-                if( incoming->type() != MessageType::RETURN ){
+                if( incoming->serial() != replySerialExpceted ){
                     m_incomingMessages.push( incoming );
                     continue;
                 }
 
-                // At this point, we definitely have a return message.
-                // Check to see if it is the one that we want.
-                std::shared_ptr<ReturnMessage> msg_cast = std::static_pointer_cast<ReturnMessage>( incoming );
-                if( msg_cast->reply_serial() == replySerialExpceted ){
-                    retmsg = msg_cast;
+                // At this point, we definitely have a return to our call.
+                // See if it's a returnmessage or an errormessage
+                if( incoming->type() == MessageType::ERROR ){
+                    std::shared_ptr<ErrorMessage> errmsg = std::static_pointer_cast<ErrorMessage>( incoming );
+                    errmsg->throw_error();
+                }else if( incoming->type() == MessageType::RETURN ){
+                    retmsg = std::static_pointer_cast<ReturnMessage>( incoming );
                     gotReply = true;
-                }else{
-                    m_incomingMessages.push( incoming );
                 }
             }
         } while( !gotReply );
@@ -422,7 +422,8 @@ struct Connection::ExpectingResponse {
                 if( gotMessage->type() == MessageType::RETURN ){
                     retmsg = std::static_pointer_cast<ReturnMessage>( gotMessage );
                 }else if( gotMessage->type() == MessageType::ERROR ){
-                    throw ErrorRemoteException();
+                    std::shared_ptr<ErrorMessage> errmsg = std::static_pointer_cast<ErrorMessage>( gotMessage );
+                    errmsg->throw_error();
                 }else{
                     throw ErrorUnknown( "Why are we here" );
                 }
@@ -430,12 +431,7 @@ struct Connection::ExpectingResponse {
                 throw ErrorNoReply( "Did not receive a response in the alotted time" );
             }
         }
-
-
     }
-
-    // We probably really don't need to do this, but let's do it anyway
-    notify_dispatcher_or_dispatch();
 
     return retmsg;
   }
@@ -522,12 +518,22 @@ struct Connection::ExpectingResponse {
         }
     }
 
-    // Process any messages that we need to on this thread
+    // Process any messages that we need to
     {
         std::shared_ptr<Message> msgToProcess;
         if( !m_incomingMessages.empty() ){
             msgToProcess = m_incomingMessages.front();
-            m_incomingMessages.pop();
+
+            uint32_t serial = msgToProcess->serial();
+            if( m_expectingResponses.find( serial ) != m_expectingResponses.end() ) {
+                // This is a response to something that a different thread is waiting for.
+                // Update the data and notify the thread!
+                m_expectingResponses[ serial ]->reply = msgToProcess;
+                m_incomingMessages.pop();
+                m_expectingResponses[ serial ]->cv.notify_one();
+            }else{
+                m_incomingMessages.pop();
+            }
         }
     }
 
@@ -1058,6 +1064,8 @@ struct Connection::ExpectingResponse {
   }
 
   void Connection::notify_dispatcher_or_dispatch(){
+      m_dispatchStatus = DispatchStatus::DATA_REMAINS;
+
       if( std::this_thread::get_id() == m_dispatchingThread ){
           dispatch();
       }

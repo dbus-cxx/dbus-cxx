@@ -150,6 +150,7 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/marshaling.h
     dbus-cxx/demarshaling.h
     dbus-cxx/sasl.h
+    dbus-cxx/dbus-error.h
     ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
 )
 
