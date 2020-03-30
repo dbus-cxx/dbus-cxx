@@ -47,7 +47,7 @@ namespace DBus
       m_dispatch_loop_limit(0)
   {
     if( socketpair( AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, process_fd ) < 0 ){
-        SIMPLELOGGER_ERROR( "dbus.Dispatcher", "error creating socket pair" );
+        SIMPLELOGGER_ERROR( "DBus.Dispatcher", "error creating socket pair" );
         throw ErrorDispatcherInitFailed();
     }
 
@@ -67,6 +67,7 @@ namespace DBus
   std::shared_ptr<Connection> Dispatcher::create_connection(std::string address )
   {
     std::shared_ptr<Connection> conn = Connection::create(address);
+    conn->bus_register();
     if ( this->add_connection(conn) ) return conn;
     return std::shared_ptr<Connection>();
   }
@@ -74,6 +75,7 @@ namespace DBus
   std::shared_ptr<Connection> Dispatcher::create_connection(BusType type)
   {
     std::shared_ptr<Connection> conn = Connection::create(type);
+    conn->bus_register();
     if ( this->add_connection(conn) ) return conn;
     return std::shared_ptr<Connection>();
   }
@@ -148,7 +150,6 @@ namespace DBus
 
   void Dispatcher::dispatch_thread_main()
   {
-    int selresult;
     std::vector<int> fds;
 
     for( std::shared_ptr<Connection> conn : m_connections ){

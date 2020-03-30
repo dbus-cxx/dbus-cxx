@@ -420,6 +420,15 @@ Variant Message::header_field(  uint8_t field ) const {
     return DBus::Variant();
 }
 
+void Message::clear_sig_and_data(){
+    std::map<uint8_t,Variant>::const_iterator location =
+            m_headerMap.find( DBUSCXX_HEADER_FIELD_SIGNATURE );
+    if( location != m_headerMap.end() ){
+        m_headerMap.erase( location );
+    }
+    m_body.clear();
+}
+
 std::ostream& operator <<( std::ostream& os, const DBus::Message* msg ){
     os << "DBus::Message = [";
 

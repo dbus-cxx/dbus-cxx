@@ -395,7 +395,18 @@ namespace DBus
     ErrorIncorrectDispatchThread( const char* message = nullptr )
         : Error( DBUS_ERROR_IO_ERROR, message ) {}
   };
-  //DBUSCXX_ERROR( ErrorIncorrectDispatchThread, "Connection::dispatch called from non-dispatcher thread" );
+
+  class ErrorRemoteException : public Error {
+    public:
+    ErrorRemoteException( const char* message = nullptr )
+        : Error( DBUS_ERROR_IO_ERROR, message ) {}
+  };
+
+  class ErrorUnknown : public Error {
+  public:
+  ErrorUnknown( const char* message = nullptr )
+      : Error( DBUS_ERROR_IO_ERROR, message ) {}
+  };
 
 }
 

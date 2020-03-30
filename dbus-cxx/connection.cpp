@@ -61,7 +61,7 @@ namespace DBus
 struct Connection::ExpectingResponse {
     std::mutex cv_lock;
     std::condition_variable cv;
-    std::shared_ptr<ReturnMessage> reply;
+    std::shared_ptr<Message> reply;
 };
 
   Connection::Connection( BusType type ) :
@@ -408,22 +408,30 @@ struct Connection::ExpectingResponse {
              */
             std::unique_lock<std::mutex> lock( ex->cv_lock );
             std::cv_status status = ex->cv.wait_for( lock, std::chrono::milliseconds( timeout_milliseconds ) );
-            if( status == std::cv_status::no_timeout ){
-                retmsg = m_expectingResponses[ serial ]->reply;
-            }else{
+
+            {
+                /*
+                 * Now remove our expecting response to free up memory
+                 */
                 std::unique_lock<std::mutex> lock( m_expectingResponsesLock );
                 m_expectingResponses.erase( m_expectingResponses.find( serial ) );
+            }
+
+            if( status == std::cv_status::no_timeout ){
+                std::shared_ptr<Message> gotMessage = m_expectingResponses[ serial ]->reply;
+                if( gotMessage->type() == MessageType::RETURN ){
+                    retmsg = std::static_pointer_cast<ReturnMessage>( gotMessage );
+                }else if( gotMessage->type() == MessageType::ERROR ){
+                    throw ErrorRemoteException();
+                }else{
+                    throw ErrorUnknown( "Why are we here" );
+                }
+            }else{
                 throw ErrorNoReply( "Did not receive a response in the alotted time" );
             }
         }
 
-        {
-            /*
-             * Now remove our expecting response to free up memory
-             */
-            std::unique_lock<std::mutex> lock( m_expectingResponsesLock );
-            m_expectingResponses.erase( m_expectingResponses.find( serial ) );
-        }
+
     }
 
     // We probably really don't need to do this, but let's do it anyway

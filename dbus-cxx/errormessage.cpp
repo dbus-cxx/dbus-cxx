@@ -17,47 +17,25 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "errormessage.h"
-#include <dbus/dbus.h>
 #include "enums.h"
 #include "error.h"
 #include "message.h"
+#include "types.h"
 
 namespace DBus
 {
 
   ErrorMessage::ErrorMessage()
   {
-    m_cobj = dbus_message_new( DBUS_MESSAGE_TYPE_ERROR );
   }
 
-  ErrorMessage::ErrorMessage( DBusMessage* msg )
+  ErrorMessage::ErrorMessage( std::shared_ptr<const CallMessage> to_reply, const std::string& name, const std::string& message )
   {
-    if ( msg == nullptr )
-      throw ErrorInvalidCObject();
-
-    if ( dbus_message_get_type( msg ) != DBUS_MESSAGE_TYPE_ERROR )
-      throw ErrorInvalidMessageType();
-
-    m_cobj = msg;
-    dbus_message_ref( m_cobj );
-  }
-
-  ErrorMessage::ErrorMessage(std::shared_ptr<Message> msg )
-  {
-    if ( msg->type() != MessageType::ERROR )
-      throw ErrorInvalidMessageType();
-
-    if ( msg and *msg )
-    {
-      m_cobj = msg->cobj();
-      dbus_message_ref( m_cobj );
+    if ( to_reply ){
+        m_headerMap[ DBUSCXX_HEADER_FIELD_REPLY_SERIAL ] = Variant( to_reply->serial() );
     }
-  }
-
-  ErrorMessage::ErrorMessage( std::shared_ptr<const Message> to_reply, const std::string& name, const std::string& message )
-  {
-    if ( to_reply and *to_reply )
-      m_cobj = dbus_message_new_error( to_reply->cobj(), name.c_str(), message.c_str() );
+    m_headerMap[ DBUSCXX_HEADER_FIELD_ERROR_NAME ] = Variant( name );
+    append() << message;
   }
 
   std::shared_ptr<ErrorMessage> ErrorMessage::create()
@@ -65,38 +43,50 @@ namespace DBus
     return std::shared_ptr<ErrorMessage>(new ErrorMessage() );
   }
 
-  std::shared_ptr<ErrorMessage> ErrorMessage::create(DBusMessage * cobj)
-  {
-    return std::shared_ptr<ErrorMessage>(new ErrorMessage(cobj) );
-  }
-
-  std::shared_ptr<ErrorMessage> ErrorMessage::create(std::shared_ptr<Message> msg)
-  {
-    return std::shared_ptr<ErrorMessage>(new ErrorMessage(msg) );
-  }
-
-  std::shared_ptr<ErrorMessage> ErrorMessage::create(std::shared_ptr<const Message> msg, const std::string & name, const std::string & message)
+  std::shared_ptr<ErrorMessage> ErrorMessage::create(std::shared_ptr<const CallMessage> msg, const std::string & name, const std::string & message)
   {
     return std::shared_ptr<ErrorMessage>(new ErrorMessage(msg, name, message) );
   }
 
   bool ErrorMessage::operator == ( const ErrorMessage& m ) const
   {
-    return dbus_message_is_error( m_cobj, m.name() );
+    return name() == m.name() && message() == m.message();
   }
 
-  const char* ErrorMessage::name() const
+  std::string ErrorMessage::name() const
   {
-    return dbus_message_get_error_name( m_cobj );
+      Variant msgName = header_field( DBUSCXX_HEADER_FIELD_ERROR_NAME );
+      if( msgName.currentType() == DataType::STRING ){
+          return std::any_cast<std::string>( msgName.value() );
+      }
+    return "";
   }
 
-  bool ErrorMessage::set_name( const std::string& n )
+  void ErrorMessage::set_name( const std::string& n )
   {
-    return dbus_message_set_error_name( m_cobj, n.c_str() );
+    m_headerMap[ DBUSCXX_HEADER_FIELD_ERROR_NAME ] = Variant( n );
   }
 
   MessageType ErrorMessage::type() const {
       return MessageType::ERROR;
+  }
+
+  std::string ErrorMessage::message() const {
+      Variant signature = header_field( DBUSCXX_HEADER_FIELD_SIGNATURE );
+      std::string retval;
+
+      if( signature.currentType() == DataType::SIGNATURE ){
+        Signature value = std::any_cast<Signature>( signature.value() );
+        if( value.begin().type() == DataType::STRING ){
+            begin() >> retval;
+        }
+      }
+    return retval;
+  }
+
+  void ErrorMessage::set_message( const std::string& message ) {
+      clear_sig_and_data();
+      append() << message;
   }
 
 }

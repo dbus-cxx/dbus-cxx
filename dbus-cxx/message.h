@@ -162,6 +162,11 @@ static std::shared_ptr<Message> create_from_data( uint8_t* data, uint32_t data_l
 
 void append_signature( std::string toappend );
 
+/**
+ * Clears the signature and the data, so you can re-append data
+ */
+void clear_sig_and_data();
+
       friend void init(bool);
 
       DBusMessage* m_cobj;

@@ -17,6 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/message.h>
+#include <dbus-cxx/callmessage.h>
 #include <dbus/dbus.h>
 #include <memory>
 #include <string>
@@ -43,24 +44,20 @@ namespace DBus
       
       ErrorMessage();
 
-      ErrorMessage( DBusMessage* cobj );
-
-      ErrorMessage( std::shared_ptr<Message> msg );
-
-      ErrorMessage( std::shared_ptr<const Message> msg, const std::string& name, const std::string& message );
+      ErrorMessage( std::shared_ptr<const CallMessage> callMessage, const std::string& name, const std::string& message );
 
     public:
       static std::shared_ptr<ErrorMessage> create();
 
-      static std::shared_ptr<ErrorMessage> create( DBusMessage* cobj );
+      static std::shared_ptr<ErrorMessage> create( std::shared_ptr<const CallMessage> callMessage, const std::string& name, const std::string& message );
 
-      static std::shared_ptr<ErrorMessage> create( std::shared_ptr<Message> msg );
+      std::string name() const;
 
-      static std::shared_ptr<ErrorMessage> create( std::shared_ptr<const Message> msg, const std::string& name, const std::string& message );
+      void set_name( const std::string& n );
 
-      const char* name() const;
+      std::string message() const;
 
-      bool set_name( const std::string& n );
+      void set_message( const std::string& message );
 
       bool operator == ( const ErrorMessage& ) const;
 
