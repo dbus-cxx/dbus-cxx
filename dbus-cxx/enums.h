@@ -22,16 +22,6 @@
 #ifndef DBUSCXX_ENUMS_H
 #define DBUSCXX_ENUMS_H
 
-#define DBUSCXX_HEADER_FIELD_PATH           1
-#define DBUSCXX_HEADER_FIELD_INTERFACE      2
-#define DBUSCXX_HEADER_FIELD_MEMBER         3
-#define DBUSCXX_HEADER_FIELD_ERROR_NAME     4
-#define DBUSCXX_HEADER_FIELD_REPLY_SERIAL   5
-#define DBUSCXX_HEADER_FIELD_DESTINATION    6
-#define DBUSCXX_HEADER_FIELD_SENDER         7
-#define DBUSCXX_HEADER_FIELD_SIGNATURE      8
-#define DBUSCXX_HEADER_FIELD_UNIX_FDS       9
-
 namespace DBus {
 
   enum class BusType
@@ -80,13 +70,13 @@ namespace DBus {
     DICT_ENTRY = DBUS_TYPE_DICT_ENTRY,
   };
 
-  enum class MessageType
+  enum class MessageType : int32_t
   {
-    INVALID = DBUS_MESSAGE_TYPE_INVALID,
-    CALL    = DBUS_MESSAGE_TYPE_METHOD_CALL,
-    RETURN  = DBUS_MESSAGE_TYPE_METHOD_RETURN,
-    ERROR   = DBUS_MESSAGE_TYPE_ERROR,
-    SIGNAL  = DBUS_MESSAGE_TYPE_SIGNAL,
+    INVALID = 0,
+    CALL    = 1,
+    RETURN  = 2,
+    ERROR   = 3,
+    SIGNAL  = 4,
   };
 
   enum class DispatchStatus
@@ -136,12 +126,119 @@ namespace DBus {
       Big,
   };
 
+  enum class RegistrationStatus {
+      Success,
+      /** Unable to register object: There is already an object exported on this path */
+      Failed_Path_in_Use,
+      /** Unable to register object: invalid object */
+      Failed_Invalid_Object,
+      /** Unable to register object: No thread dispatcher for the given thread found */
+      Failed_No_Thread_Dispatcher,
+  };
+
+  /**
+   * Gives hints to the connection as to which thread should be
+   * the one to call the methods on the given object.
+   */
+  enum class ThreadForCalling {
+      /** Always call methods for this object from the dispatcher thread */
+      DispatcherThread,
+      /** Always call methods for this object from the current thread */
+      CurrentThread,
+  };
+
+  enum class MessageHeaderFields {
+      Invalid       = 0,
+      Path          = 1,
+      Interface     = 2,
+      Member        = 3,
+      Error_Name    = 4,
+      Reply_Serial  = 5,
+      Destination   = 6,
+      Sender        = 7,
+      Signature     = 8,
+      Unix_FDs      = 9,
+  };
+
+  inline uint8_t header_field_to_int( MessageHeaderFields header ){
+      switch ( header ){
+      case MessageHeaderFields::Path:
+          return 1;
+      case MessageHeaderFields::Interface:
+          return 2;
+      case MessageHeaderFields::Member:
+          return 3;
+      case MessageHeaderFields::Error_Name:
+          return 4;
+      case MessageHeaderFields::Reply_Serial:
+          return 5;
+      case MessageHeaderFields::Destination:
+          return 6;
+      case MessageHeaderFields::Sender:
+          return 7;
+      case MessageHeaderFields::Signature:
+          return 8;
+      case MessageHeaderFields::Unix_FDs:
+          return 9;
+      default:
+          return 0;
+      }
+  }
+
+  inline MessageHeaderFields int_to_header_field( uint8_t val ){
+      switch( val ){
+      case 1:
+          return MessageHeaderFields::Path;
+      case 2:
+          return MessageHeaderFields::Interface;
+      case 3:
+          return MessageHeaderFields::Member;
+      case 4:
+          return MessageHeaderFields::Error_Name;
+      case 5:
+          return MessageHeaderFields::Reply_Serial;
+      case 6:
+          return MessageHeaderFields::Destination;
+      case 7:
+          return MessageHeaderFields::Sender;
+      case 8:
+          return MessageHeaderFields::Signature;
+      case 9:
+          return MessageHeaderFields::Unix_FDs;
+      }
+
+      return MessageHeaderFields::Invalid;
+  }
+
   inline std::ostream& operator<<( std::ostream& os, Endianess endian ){
       if( endian == Endianess::Little ){
           os << "Little";
       }else{
           os << "Big";
       }
+      return os;
+  }
+
+  inline std::ostream& operator<<( std::ostream& os, MessageType type ){
+      os << "MessageType::";
+      switch ( type ) {
+      case MessageType::INVALID:
+          os << "INVALID";
+          break;
+      case MessageType::CALL:
+          os << "CALL";
+          break;
+      case MessageType::RETURN:
+          os << "RETURN";
+          break;
+      case MessageType::ERROR:
+          os << "ERROR";
+          break;
+      case MessageType::SIGNAL:
+          os << "SIGNAL";
+          break;
+      }
+
       return os;
   }
 
