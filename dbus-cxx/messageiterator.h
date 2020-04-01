@@ -60,6 +60,21 @@ namespace DBus
    */
   class MessageIterator
   {
+
+    private:
+      /**
+       * Create a new sub-iterator
+       *
+       * @param d The data type we are iterating over
+       * @param sig The signature within the data type
+       * @param message Our parent message
+       * @param demarshal The demarshaller
+       */
+      MessageIterator( DataType d,
+                       SignatureIterator sig,
+                       const Message* message,
+                       std::shared_ptr<Demarshaling> demarshal );
+
     public:
 
       MessageIterator();
@@ -201,39 +216,39 @@ namespace DBus
        * get_array for simple types - arithmetic types where the array is fixed and thus
        * we can use dbus_message_iter_get_fixed_array.
        */
-      template <typename T,
-          typename std::enable_if<std::is_arithmetic<T>::value>::type>
-      void get_array( std::vector<T>& array ) {
-        if ( not this->is_fixed() ) /* This should never happen */
-          throw ErrorInvalidTypecast( "MessageIterator: Extracting non fixed array into std::vector" );
+//      template <typename T,
+//          typename std::enable_if<std::is_arithmetic<T>::value>::type>
+//      void get_array( std::vector<T>& array ) {
+//        if ( not this->is_fixed() ) /* This should never happen */
+//          throw ErrorInvalidTypecast( "MessageIterator: Extracting non fixed array into std::vector" );
         
-        T type;
-        if ( this->element_type() != DBus::type( type ) ) {
-          TypeInfo t( DBus::type( type ) );
-          std::string s = "MessageIterator: Extracting DBus array type ";
-          s += t.cppType();
-          s += " into C++ vector with type ";
-          s += demangle<T>();
-	  throw ErrorInvalidTypecast( s.c_str() );
-        }
+//        T type;
+//        if ( this->element_type() != DBus::type( type ) ) {
+//          TypeInfo t( DBus::type( type ) );
+//          std::string s = "MessageIterator: Extracting DBus array type ";
+//          s += t.cppType();
+//          s += " into C++ vector with type ";
+//          s += demangle<T>();
+//	  throw ErrorInvalidTypecast( s.c_str() );
+//        }
         
-        int elements;
-        T* values;
+//        int elements;
+//        T* values;
         
-        MessageIterator subiter = this->recurse();
+//        MessageIterator subiter = this->recurse();
 
-        array.clear();
+//        array.clear();
         
-        // Get the underlying array
-        //dbus_message_iter_get_fixed_array( subiter.cobj(), &values, &elements );
+//        // Get the underlying array
+//        //dbus_message_iter_get_fixed_array( subiter.cobj(), &values, &elements );
         
-        // Iteratively add the elements to the array
-        for ( int i=0; i < elements; i++ )
-          array.push_back( values[i] );
-      }
+//        // Iteratively add the elements to the array
+//        for ( int i=0; i < elements; i++ )
+//          array.push_back( values[i] );
+//      }
       
       /**
-       * get_array for complex types - types that you can't use dbus_message_iter_get_fixed_array for.
+       * Get values in an array, pushing them back one at a time
        */
       template <typename T>
       void get_array(std::vector<T> &array) {
@@ -366,9 +381,19 @@ namespace DBus
       }
 
     protected:
+      struct SubiterInformation {
+          SubiterInformation() :
+              m_subiterDataType( DataType::INVALID ),
+              m_arrayLastPosition( 0 ) {}
+
+          DataType m_subiterDataType;
+        uint32_t m_arrayLastPosition;
+      };
+
       const Message* m_message;
       std::shared_ptr<Demarshaling> m_demarshal;
       SignatureIterator m_signatureIterator;
+      SubiterInformation m_subiterInfo;
   };
 }
 

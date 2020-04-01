@@ -189,10 +189,11 @@ DBus::Variant Demarshaling::demarshal_variant(){
 
 int16_t Demarshaling::demarshalShortBig(){
     int16_t ret = 0;
+    align( 2 );
     is_valid( 2 );
 
-    ret = (m_data[ m_dataPos ] & 0xFF << 8 ) |
-            (m_data[ m_dataPos + 1 ] & 0xFF << 0 );
+    ret = ((m_data[ m_dataPos ] & 0xFF) << 8 ) |
+            ((m_data[ m_dataPos + 1 ] & 0xFF) << 0 );
 
 
     m_dataPos += 2;
@@ -202,10 +203,11 @@ int16_t Demarshaling::demarshalShortBig(){
 
 int16_t Demarshaling::demarshalShortLittle(){
     int16_t ret = 0;
+    align( 2 );
     is_valid( 2 );
 
-    ret = (m_data[ m_dataPos ] & 0xFF << 0 ) |
-            (m_data[ m_dataPos + 1 ] & 0xFF << 8 );
+    ret = ((m_data[ m_dataPos ] & 0xFF) << 0 ) |
+            ((m_data[ m_dataPos + 1 ] & 0xFF) << 8 );
 
     m_dataPos += 2;
 
@@ -214,6 +216,7 @@ int16_t Demarshaling::demarshalShortLittle(){
 
 int32_t Demarshaling::demarshalIntBig(){
     int32_t ret = 0;
+    align( 4 );
     is_valid( 4 );
 
     ret = static_cast<int32_t>(m_data[ m_dataPos ]) << 24  |
@@ -228,6 +231,7 @@ int32_t Demarshaling::demarshalIntBig(){
 
 int32_t Demarshaling::demarshalIntLittle(){
     int32_t ret = 0;
+    align( 4 );
     is_valid( 4 );
 
     ret = static_cast<int32_t>(m_data[ m_dataPos ]) << 0  |
@@ -242,6 +246,7 @@ int32_t Demarshaling::demarshalIntLittle(){
 
 int64_t Demarshaling::demarshalLongBig(){
     int64_t ret = 0;
+    align( 8 );
     is_valid( 8 );
 
     ret = static_cast<int64_t>(m_data[ m_dataPos ]) << 56 |
@@ -260,6 +265,7 @@ int64_t Demarshaling::demarshalLongBig(){
 
 int64_t Demarshaling::demarshalLongLittle(){
     int64_t ret = 0;
+    align( 8 );
     is_valid( 8 );
 
     ret = static_cast<int64_t>(m_data[ m_dataPos ]) << 0 |

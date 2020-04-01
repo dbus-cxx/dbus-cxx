@@ -95,7 +95,7 @@ static double add(double a, double b){
 bool connection_test_method_2arg(){
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
 
-    std::shared_ptr<DBus::Object> object = conn->create_object("/dbuscxx/example/Calculator");
+    std::shared_ptr<DBus::Object> object = conn->create_object("/dbuscxx/example/Calculator", DBus::ThreadForCalling::DispatcherThread );
 
     object->create_method<double(double,double)>("Calculator.Basic", "add", sigc::ptr_fun(add) );
 
@@ -114,7 +114,8 @@ int main(int argc, char** argv){
   std::string test_name = argv[1];
   bool ret = false;
 
-  DBus::init();
+  DBus::setLoggingFunction( DBus::logStdErr );
+  DBus::setLogLevel( SL_TRACE );
   dispatch = DBus::Dispatcher::create();
 
   ADD_TEST(create_signal_proxy);

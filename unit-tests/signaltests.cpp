@@ -196,7 +196,6 @@ int main(int argc, char** argv){
   std::string test_name = argv[1];
   bool ret = false;
 
-  DBus::init();
   dispatch = DBus::Dispatcher::create();
 
   ADD_TEST(create);

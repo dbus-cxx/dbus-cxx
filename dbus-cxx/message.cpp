@@ -38,6 +38,7 @@ namespace DBus
 
   Message::Message():
       m_valid( true ),
+      m_endianess( Endianess::Big ),
       m_flags( 0 )
   {
   }

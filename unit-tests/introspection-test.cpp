@@ -219,7 +219,7 @@ void server_setup(){
     int ret = conn->request_name( "dbuscxx.test", DBUS_NAME_FLAG_REPLACE_EXISTING );
     if( ret != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER ) exit(1);
 
-    object = conn->create_object("/test");
+    object = conn->create_object( "/test", DBus::ThreadForCalling::DispatcherThread );
     int_method = object->create_method<int(int,int)>("foo.what", "add", sigc::ptr_fun( add ) );
     int_method->set_arg_name( 1, "first" );
     int_method->set_arg_name( 2, "second" );
@@ -242,7 +242,6 @@ int main(int argc, char** argv){
   bool ret = false;
   bool is_client = std::string( argv[1] ) == "client";
 
-  DBus::init();
   dispatch = DBus::Dispatcher::create();
   conn = dispatch->create_connection(DBus::BusType::SESSION);
 

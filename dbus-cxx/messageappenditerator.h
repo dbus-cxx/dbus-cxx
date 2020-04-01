@@ -103,7 +103,7 @@ namespace DBus
         bool success;
         T type;
 
-        success = this->open_container( ContainerType::ARRAY, DBus::signature(type).c_str() );
+        success = this->open_container( ContainerType::ARRAY, DBus::signature(type) );
 
         if( not success ){
           throw ErrorNoMemory();
@@ -163,7 +163,7 @@ namespace DBus
       MessageAppendIterator* m_subiter;
       std::vector<uint8_t> m_workingBuffer;
       ContainerType m_currentContainer;
-      uint32_t m_arraySizeLocation;
+      int32_t m_arrayAlignment;
   };
 
 }

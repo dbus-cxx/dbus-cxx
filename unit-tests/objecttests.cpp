@@ -47,7 +47,7 @@ bool object_proxy_create_method1(){
 bool object_export_method(){
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
 
-    std::shared_ptr<DBus::Object> object = conn->create_object( "/another/path" );
+    std::shared_ptr<DBus::Object> object = conn->create_object( "/another/path", DBus::ThreadForCalling::DispatcherThread );
     std::shared_ptr<DBus::Method<double(double,double)>> method = object->create_method<double(double,double)>( "method_name", sigc::ptr_fun( example_method ) );
     TEST_ASSERT_RET_FAIL( method );
     return true;
@@ -65,7 +65,6 @@ int main(int argc, char** argv){
   std::string test_name = argv[1];
   bool ret = false;
 
-  DBus::init();
   dispatch = DBus::Dispatcher::create();
 
   ADD_TEST(proxy_create);

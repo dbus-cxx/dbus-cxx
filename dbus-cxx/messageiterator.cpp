@@ -28,9 +28,24 @@
 namespace DBus
 {
 
+  MessageIterator::MessageIterator( DataType d,
+                                    SignatureIterator sig,
+                                    const Message* message,
+                                    std::shared_ptr<Demarshaling> demarshal ) :
+      m_message( message ),
+      m_demarshal( demarshal ),
+      m_signatureIterator( sig ){
+      if( d == DataType::ARRAY ){
+          m_subiterInfo.m_subiterDataType = d;
+          m_subiterInfo.m_arrayLastPosition = m_demarshal->current_offset() + m_demarshal->demarshal_uint32_t();
+      }
+
+  }
+
   MessageIterator::MessageIterator():
       m_message( nullptr )
   {
+      m_subiterInfo.m_subiterDataType = DataType::INVALID;
   }
 
   MessageIterator::MessageIterator( const Message& message ):
@@ -38,7 +53,7 @@ namespace DBus
       m_demarshal( new Demarshaling( m_message->m_body.data(), m_message->m_body.size(), m_message->m_endianess ) ),
       m_signatureIterator( m_message->signature() )
   {
-
+    m_subiterInfo.m_subiterDataType = DataType::INVALID;
   }
 
   MessageIterator::MessageIterator( std::shared_ptr<Message> message ):
@@ -46,6 +61,7 @@ namespace DBus
       m_demarshal( new Demarshaling( m_message->m_body.data(), m_message->m_body.size(), m_message->m_endianess ) ),
       m_signatureIterator( m_message->signature() )
   {
+      m_subiterInfo.m_subiterDataType = DataType::INVALID;
   }
 
   const Message* MessageIterator::message() const
@@ -62,6 +78,13 @@ namespace DBus
   {
     if ( not (m_message and m_message->is_valid() ) ) return false;
     if ( this->arg_type() == DataType::INVALID ) return false;
+    if ( m_subiterInfo.m_subiterDataType == DataType::ARRAY ){
+        // We are in a subiter here, figure out if we're at the end of the array yet
+        if( m_demarshal->current_offset() > m_subiterInfo.m_arrayLastPosition ){
+            return false;
+        }
+        return true;
+    }
     return true;
   }
 
@@ -74,6 +97,16 @@ namespace DBus
   bool MessageIterator::next()
   {
     if ( not this->is_valid() ) return false;
+
+    // Check to see if we are a subiterator.  If we are, it depends on the type we are.
+    // Arrays are valid until they can read no more data,
+    // structs iterate over their types like normal,
+    // and variants do ..  ?
+    if( m_subiterInfo.m_subiterDataType == DataType::ARRAY ){
+        // Question: should this try to advance the iterator by reading a value
+        // and then just discarding it?
+        return true;
+    }
 
     bool result = m_signatureIterator.next();
 
@@ -142,13 +175,12 @@ namespace DBus
 
   MessageIterator MessageIterator::recurse()
   {
-    MessageIterator iter;
+    if ( not this->is_container() ) return MessageIterator();
 
-    if ( not this->is_container() ) return iter;
-    
-    iter.m_message = m_message;
-    iter.m_demarshal = m_demarshal;
-    iter.m_signatureIterator = m_signatureIterator.recurse();
+    MessageIterator iter( m_signatureIterator.type(),
+                          m_signatureIterator.recurse(),
+                          m_message,
+                          m_demarshal );
 
     return iter;
   }

@@ -158,6 +158,12 @@ namespace DBus
     /** True if the element type is a container */
     bool is_container() const;
 
+    /**
+     * Return the alignment of the type
+     * @return
+     */
+    int32_t alignment() const;
+
   private:
     DataType m_type;
   };

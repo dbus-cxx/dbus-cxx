@@ -89,7 +89,7 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const bool& v ){
     if ( not this->is_valid() ) return *this;
 
-    if( m_currentContainer != ContainerType::None ){
+    if( m_currentContainer == ContainerType::None ){
         m_message->append_signature( signature( v ) );
     }
     m_marshaling.marshal( v );
@@ -100,7 +100,7 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const int8_t& v ){
     if ( not this->is_valid() ) return *this;
 
-    if( m_currentContainer != ContainerType::None ){
+    if( m_currentContainer == ContainerType::None ){
         m_message->append_signature( signature( v ) );
     }
     m_marshaling.marshal( v );
@@ -111,7 +111,7 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint8_t& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer != ContainerType::None ){
+      if( m_currentContainer == ContainerType::None ){
           m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
@@ -122,7 +122,7 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const int16_t& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer != ContainerType::None ){
+      if( m_currentContainer == ContainerType::None ){
           m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
@@ -133,7 +133,7 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint16_t& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer != ContainerType::None ){
+      if( m_currentContainer == ContainerType::None ){
           m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
@@ -144,7 +144,7 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const int32_t& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer != ContainerType::None ){
+      if( m_currentContainer == ContainerType::None ){
           m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
@@ -155,7 +155,7 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint32_t& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer != ContainerType::None ){
+      if( m_currentContainer == ContainerType::None ){
           m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
@@ -166,7 +166,7 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const int64_t& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer != ContainerType::None ){
+      if( m_currentContainer == ContainerType::None ){
           m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
@@ -177,7 +177,7 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint64_t& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer != ContainerType::None ){
+      if( m_currentContainer == ContainerType::None ){
           m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
@@ -188,7 +188,7 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const double& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer != ContainerType::None ){
+      if( m_currentContainer == ContainerType::None ){
           m_message->append_signature( signature( v ) );
       }
       m_marshaling.marshal( v );
@@ -205,18 +205,24 @@ namespace DBus
 
     if ( not this->is_valid() ) return *this;
 
-    if( m_currentContainer != ContainerType::None ){
-        m_message->append_signature( signature( v ) );
+    if( m_currentContainer == ContainerType::None ){
+        m_message->append_signature( signature( std::string() ) );
     }
 
-    m_marshaling.marshal( len );
     m_marshaling.marshal( std::string( v, len ) );
 
     return *this;
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const std::string& v ){
-    return this->operator<<( v.c_str() );
+      if ( not this->is_valid() ) return *this;
+
+      if( m_currentContainer == ContainerType::None ){
+          m_message->append_signature( signature( std::string() ) );
+      }
+
+      m_marshaling.marshal( v );
+      return *this;
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const Signature& v ){
@@ -229,7 +235,7 @@ namespace DBus
         return *this;
     }
 
-    if( m_currentContainer != ContainerType::None ){
+    if( m_currentContainer == ContainerType::None ){
         m_message->append_signature( signature( v ) );
     }
     m_marshaling.marshal( static_cast<uint8_t>( realSig.length() & 0xFF ) );
@@ -284,6 +290,7 @@ namespace DBus
   bool MessageAppendIterator::open_container( ContainerType t, const std::string& sig )
   {
     std::string signature;
+    int32_t array_align = 0;
 
     switch( t ){
     case ContainerType::None:
@@ -296,12 +303,12 @@ namespace DBus
     case ContainerType::ARRAY:
         signature.append( "a" );
         signature.append( sig );
-        // Marshal the size first, so that any alignment is taken care of
-        m_marshaling.marshal( static_cast<uint32_t>( 0 ) );
-        m_arraySizeLocation = 0;
-        if( m_message ){
-            m_arraySizeLocation = static_cast<uint32_t>( m_message->m_body.size() - sizeof( uint32_t ) );
-        }
+        // The size will get marshalled once we close the container
+    {
+        SignatureIterator tmpSigIter( sig );
+        TypeInfo ti( tmpSigIter.type() );
+        array_align = ti.alignment();
+    }
         break;
     case ContainerType::VARIANT:
         signature.append( "v" );
@@ -318,6 +325,7 @@ namespace DBus
     if ( m_message ){
         m_message->append_signature( signature );
       m_subiter = new MessageAppendIterator( *m_message, t );
+      m_subiter->m_arrayAlignment = array_align;
     } else
       m_subiter = new MessageAppendIterator( t );
 
@@ -332,11 +340,13 @@ namespace DBus
     case ContainerType::None: return false;
     case ContainerType::ARRAY:
     {
-        uint32_t arraySize = static_cast<uint32_t>( m_message->m_body.size() - m_arraySizeLocation );
+        uint32_t arraySize = static_cast<uint32_t>( m_subiter->m_workingBuffer.size() );
         if( arraySize > Validator::maximum_array_size() ){
             m_message->invalidate();
+            return true;
         }
-        m_marshaling.marshalAtOffset( m_arraySizeLocation, arraySize );
+        m_marshaling.marshal( arraySize );
+        m_marshaling.align( m_subiter->m_arrayAlignment );
     }
         break;
     case ContainerType::DICT_ENTRY:
