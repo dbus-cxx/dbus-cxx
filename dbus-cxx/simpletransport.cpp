@@ -66,7 +66,9 @@ std::shared_ptr<SimpleTransport> SimpleTransport::create( int fd, bool initializ
 ssize_t SimpleTransport::writeMessage( std::shared_ptr<const Message> message, uint32_t serial ){
     std::ostringstream debug_str;
     m_sendBuffer.clear();
-    message->serialize_to_vector( &m_sendBuffer, serial );
+    if( !message->serialize_to_vector( &m_sendBuffer, serial ) ){
+        return 0;
+    }
 
     debug_str << "Going to send the following bytes: " << std::endl;
     DBus::hexdump( &m_sendBuffer, &debug_str );
