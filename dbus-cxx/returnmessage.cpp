@@ -70,13 +70,14 @@ namespace DBus
 
   bool ReturnMessage::set_reply_serial( uint32_t s )
   {
-    if ( m_cobj ) return dbus_message_set_reply_serial( m_cobj, s );
+    Variant serialField = Variant( s );
+    m_headerMap[ MessageHeaderFields::Reply_Serial ] = serialField;
     return false;
   }
 
   uint32_t ReturnMessage::reply_serial() const
   {
-    Variant field = header_field( DBUSCXX_HEADER_FIELD_REPLY_SERIAL );
+    Variant field = header_field( MessageHeaderFields::Reply_Serial );
     if( field.currentType() == DataType::UINT32 ){
         return std::any_cast<uint32_t>( field.value() );
     }

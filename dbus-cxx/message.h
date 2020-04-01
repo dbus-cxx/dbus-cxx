@@ -30,6 +30,9 @@
 #ifndef DBUSCXX_MESSAGE_H
 #define DBUSCXX_MESSAGE_H
 
+#define DBUSCXX_MESSAGE_NO_REPLY_EXPECTED   0x01
+#define DBUSCXX_MESSAGE_NO_AUTO_START_FLAG  0x02
+
 namespace DBus
 {
   class ReturnMessage;
@@ -74,8 +77,6 @@ namespace DBus
       static std::shared_ptr<Message> create( std::shared_ptr<Message> other, CreateMethod m = CreateMethod::ALIAS );
 
       static std::shared_ptr<Message> create( std::shared_ptr<const Message> other, CreateMethod m = CreateMethod::ALIAS );
-
-      std::shared_ptr<ReturnMessage> create_reply() const;
 
       virtual ~Message();
 
@@ -145,7 +146,17 @@ namespace DBus
 
       DBusMessage* cobj() const;
 
-void serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const;
+      /**
+       * Serialize this message to the given vector.  The vector will be resized
+       * but not cleared.  Can fail with an error under the following circumstances:
+       * - Invalid message type passed in
+       * - Method return or method call does not have serial set
+       *
+       * @param vec The location to serialize the message to.
+       * @param serial The serial of the message.
+       * @return True if the message was able to be serialized, false otherwise.
+       */
+      bool serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const;
 
 /**
  * Returns the given header field(if it exists), otherwise returns a default
@@ -154,7 +165,7 @@ void serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const;
  * @param field The field number to get
  * @return The data, otherwise a default-constructed variant.
  */
-Variant header_field( uint8_t field ) const;
+Variant header_field( MessageHeaderFields field ) const;
 
 static std::shared_ptr<Message> create_from_data( uint8_t* data, uint32_t data_len );
 
@@ -173,9 +184,10 @@ void clear_sig_and_data();
 
       bool m_valid;
 
-std::map<uint8_t,Variant> m_headerMap;
+std::map<MessageHeaderFields,Variant> m_headerMap;
 std::vector<uint8_t> m_body;
 Endianess m_endianess;
+uint8_t m_flags;
 
 friend class MessageAppendIterator;
 friend class MessageIterator;

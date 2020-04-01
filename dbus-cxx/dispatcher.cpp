@@ -85,7 +85,7 @@ namespace DBus
     if ( not connection or not connection->is_valid() ) return false;
     
     connection->set_dispatching_thread( m_dispatch_thread.get_id() );
-    connection->set_dispatching_thread_fd( process_fd[ 0 ] );
+    connection->set_dispatching_thread_wakeup_func( sigc::mem_fun(*this, &Dispatcher::wakeup_thread) );
     m_connections.push_back(connection);
     wakeup_thread();
     

@@ -22,6 +22,8 @@
 #include <dbus-cxx/dbus_signal.h>
 #include <dbus-cxx/messagefilter.h>
 #include <dbus-cxx/signal_proxy_base.h>
+#include <dbus-cxx/threaddispatcher.h>
+#include <dbus-cxx/errormessage.h>
 #include <deque>
 #include <map>
 #include <memory>
@@ -48,6 +50,8 @@ namespace DBus
   class Timeout;
   class Watch;
  struct InterruptablePredicateAccumulatorDefaultFalse;
+ class ThreadDispatcher;
+ class ErrorMessage;
 
  namespace priv{
     class Transport;
@@ -293,17 +297,27 @@ namespace DBus
       
       void remove_unhandled_watch(const std::shared_ptr<Watch> w);
 
-      std::shared_ptr<Object> create_object( const std::string& path, PrimaryFallback pf=PrimaryFallback::PRIMARY );
+      /**
+       * Create and return a new object, registering the object automatically.  If the registering
+       * fails, an invalid pointer will be returned.
+       *
+       * @param path The path of a new object, e.g. /opt/freedesktop/DBus
+       * @param calling How to call this object(what thread)
+       * @return An invalid shared_ptr if registration was not successful, else a valid shared_ptr
+       */
+      std::shared_ptr<Object> create_object( const std::string& path, ThreadForCalling calling );
 
-      bool register_object( std::shared_ptr<Object> object );
-
-      std::shared_ptr<ObjectPathHandler> create_object( const std::string& path, 
-                      sigc::slot<HandlerResult(std::shared_ptr<Connection>, std::shared_ptr<const Message>)>& slot, 
-                      PrimaryFallback pf=PrimaryFallback::PRIMARY );
-
-      std::shared_ptr<ObjectPathHandler> create_object( const std::string& path, 
-                      HandlerResult (*MessageFunction)(std::shared_ptr<Connection>, std::shared_ptr<const Message>), 
-                      PrimaryFallback pf=PrimaryFallback::PRIMARY );
+      /**
+       * Register an object with this connection.  The path that this object is accessible at
+       * is part of the object.  You may also select which thread the object's methods should
+       * be called on.
+       *
+       * @param object The object to export
+       * @param calling Select how to call methods on this object.
+       * @return The status of registering an object to be exported.
+       */
+      RegistrationStatus register_object( std::shared_ptr<ObjectPathHandler> object,
+                                          ThreadForCalling calling );
 
       std::shared_ptr<ObjectProxy> create_object_proxy( const std::string& path );
 
@@ -371,11 +385,28 @@ namespace DBus
       void set_dispatching_thread( std::thread::id tid );
 
       /**
-       * Set the FD to write to that will wake up the dispatching thread.
+       * Set the function to call that will wake up the dispatcher thread.
+       * It is very likely that this function needs to be safe to be called from different
+       * threads.
        *
-       * @param fd
+       * @param func The function to call to wakeup the dispatcher
        */
-      void set_dispatching_thread_fd( int fd );
+      void set_dispatching_thread_wakeup_func( sigc::slot<void()> func );
+
+      /**
+       * Add a thread dispatcher that will handle messages for a given thread.
+       * This method must be called from the thread that this ThreadDispatcher
+       * is being called from.
+       *
+       * This is a weak_ptr, as the intention is to simply declare a local
+       * ThreadDispatcher object inside of the thread.  When the thread exits,
+       * the ThreadDispatcher will be deconstructed.  The next time a message
+       * for this thread comes in, anything that is associated with this thread
+       * will become unexported.
+       *
+       * @param disp The thread dispatcher to associate with this connection.
+       */
+      void add_thread_dispatcher( std::weak_ptr<ThreadDispatcher> disp );
 
   private:
       /**
@@ -394,13 +425,21 @@ namespace DBus
        */
       uint32_t write_single_message( std::shared_ptr<const Message> msg );
 
+      void process_single_message();
+
+      void remove_invalid_threaddispatchers_and_associated_objects();
+
     protected:
       struct ExpectingResponse;
       struct OutgoingMessage{
           std::shared_ptr<const Message> msg;
           uint32_t serial;
       };
-        int m_notifyDispatcherFD;
+      struct PathHandlingEntry{
+          std::shared_ptr<ObjectPathHandler> handler;
+          std::thread::id handlingThread;
+      };
+        sigc::slot<void()> m_notifyDispatcherFunc;
         std::vector<uint8_t> m_sendBuffer;
         uint32_t m_currentSerial;
         std::shared_ptr<priv::Transport> m_transport;
@@ -412,6 +451,11 @@ namespace DBus
         std::mutex m_expectingResponsesLock;
         std::map<uint32_t,std::shared_ptr<ExpectingResponse>> m_expectingResponses;
         DispatchStatus m_dispatchStatus;
+        std::mutex m_pathHandlerLock;
+        std::map<std::string,PathHandlingEntry> m_path_handler;
+        std::map<std::string,std::shared_ptr<ObjectPathHandler>> m_path_handler_fallback;
+        std::mutex m_threadDispatcherLock;
+        std::map<std::thread::id,std::weak_ptr<ThreadDispatcher>> m_threadDispatchers;
       
       AddWatchSignal m_add_watch_signal;
       
@@ -440,7 +484,7 @@ namespace DBus
       friend void init(bool);
 
 
-      std::map<std::string,std::shared_ptr<ObjectPathHandler>> m_created_objects;
+
 
       ProxySignals m_proxy_signals;
 
@@ -520,6 +564,22 @@ std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> p
 
 inline
 std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<const DBus::SignalMessage> msg)
+{
+  if (not ptr) return ptr;
+  *ptr << msg;
+  return ptr;
+}
+
+inline
+std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<DBus::ErrorMessage> msg)
+{
+  if (not ptr) return ptr;
+  *ptr << msg;
+  return ptr;
+}
+
+inline
+std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<const DBus::ErrorMessage> msg)
 {
   if (not ptr) return ptr;
   *ptr << msg;

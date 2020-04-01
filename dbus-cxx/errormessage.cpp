@@ -35,9 +35,9 @@ namespace DBus
   ErrorMessage::ErrorMessage( std::shared_ptr<const CallMessage> to_reply, const std::string& name, const std::string& message )
   {
     if ( to_reply ){
-        m_headerMap[ DBUSCXX_HEADER_FIELD_REPLY_SERIAL ] = Variant( to_reply->serial() );
+        m_headerMap[ MessageHeaderFields::Reply_Serial ] = Variant( to_reply->serial() );
     }
-    m_headerMap[ DBUSCXX_HEADER_FIELD_ERROR_NAME ] = Variant( name );
+    m_headerMap[ MessageHeaderFields::Error_Name ] = Variant( name );
     append() << message;
   }
 
@@ -58,7 +58,7 @@ namespace DBus
 
   std::string ErrorMessage::name() const
   {
-      Variant msgName = header_field( DBUSCXX_HEADER_FIELD_ERROR_NAME );
+      Variant msgName = header_field( MessageHeaderFields::Error_Name );
       if( msgName.currentType() == DataType::STRING ){
           return std::any_cast<std::string>( msgName.value() );
       }
@@ -67,7 +67,7 @@ namespace DBus
 
   void ErrorMessage::set_name( const std::string& n )
   {
-    m_headerMap[ DBUSCXX_HEADER_FIELD_ERROR_NAME ] = Variant( n );
+    m_headerMap[ MessageHeaderFields::Error_Name ] = Variant( n );
   }
 
   MessageType ErrorMessage::type() const {
@@ -75,7 +75,7 @@ namespace DBus
   }
 
   std::string ErrorMessage::message() const {
-      Variant signature = header_field( DBUSCXX_HEADER_FIELD_SIGNATURE );
+      Variant signature = header_field( MessageHeaderFields::Signature );
       std::string retval;
 
       if( signature.currentType() == DataType::SIGNATURE ){
@@ -90,6 +90,22 @@ namespace DBus
   void ErrorMessage::set_message( const std::string& message ) {
       clear_sig_and_data();
       append() << message;
+  }
+
+  bool ErrorMessage::set_reply_serial( uint32_t s )
+  {
+    Variant serialField = Variant( s );
+    m_headerMap[ MessageHeaderFields::Reply_Serial ] = serialField;
+    return false;
+  }
+
+  uint32_t ErrorMessage::reply_serial() const
+  {
+    Variant field = header_field( MessageHeaderFields::Reply_Serial );
+    if( field.currentType() == DataType::UINT32 ){
+        return std::any_cast<uint32_t>( field.value() );
+    }
+    return 0;
   }
 
   void ErrorMessage::throw_error() {

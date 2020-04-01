@@ -41,12 +41,6 @@ namespace DBus
   {
   }
 
-  std::shared_ptr<ObjectPathHandler> ObjectPathHandler::create(const std::string& path, PrimaryFallback pf)
-  {
-    if ( path.empty() ) return std::shared_ptr<ObjectPathHandler>();
-    return std::shared_ptr<ObjectPathHandler>( new ObjectPathHandler(path, pf) );
-  }
-
   const Path& ObjectPathHandler::path() const
   {
     return m_path;
@@ -57,7 +51,7 @@ namespace DBus
     return m_primary_fallback;
   }
 
-  std::shared_ptr< Connection > ObjectPathHandler::connection() const
+  std::weak_ptr< Connection > ObjectPathHandler::connection() const
   {
     return m_connection;
   }
@@ -71,10 +65,10 @@ namespace DBus
 
     if ( not conn or not conn->is_valid() ) return false;
 
-    if ( m_connection )
-    {
-      this->unregister( conn );
-    }
+//    if ( m_connection )
+//    {
+//      //this->unregister( conn );
+//    }
     
 #ifdef DBUS_CXX_HAVE_DBUS_12
 //    if ( m_primary_fallback == PrimaryFallback::PRIMARY )
@@ -96,13 +90,11 @@ namespace DBus
     return true;
   }
 
-  bool ObjectPathHandler::unregister(std::shared_ptr<Connection> conn)
+  bool ObjectPathHandler::unregister()
   {
-    dbus_bool_t result;
-//    if ( not conn or not conn->is_valid() ) return false;
-//    result = dbus_connection_unregister_object_path( conn->cobj(), m_path.c_str() );
-//    if ( result ) m_connection.reset();
-    return result;
+      std::shared_ptr connection = m_connection.lock();
+    if( !connection ) return true;
+    return connection->unregister_object( m_path );
   }
 
   sigc::signal< void(std::shared_ptr<Connection>)> & ObjectPathHandler::signal_registered()
@@ -131,6 +123,11 @@ namespace DBus
     if ( user_data == nullptr ) return;
 //    ObjectPathHandler* handler = static_cast<ObjectPathHandler*>(user_data);
 //    handler->m_signal_unregistered.emit(Connection::self(connection));
+  }
+
+  void ObjectPathHandler::set_connection(std::shared_ptr<Connection> conn){
+      unregister();
+      m_connection = conn;
   }
 
 }

@@ -63,6 +63,10 @@ namespace DBus
 
       virtual MessageType type() const;
 
+      bool set_reply_serial( uint32_t );
+
+      uint32_t reply_serial() const;
+
       /**
        * Throw the error associated with this ErrorMessage.
        * If this error is of a well-known type, the well-known

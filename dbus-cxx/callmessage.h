@@ -29,11 +29,16 @@
 namespace DBus
 {
 
+  class ReplyMessage;
+  class ErrorMessage;
+
   /**
    * Represents a DBus call message
    *
-   * This class inherits from Message and uses the dbus_message_* methods to
-   * create an interface for a call message.
+   * When this message is received, a matching exported method is called if found.
+   * Depending on the result, either the response or an error must be sent back to the sender.
+   * The reply should be created with either create_reply() or create_error_reply() depending
+   * on the type of error that should be returned.
    *
    * @ingroup message
    *
@@ -73,25 +78,39 @@ namespace DBus
 
       static std::shared_ptr<CallMessage> create( const std::string& path, const std::string& method );
 
-      bool set_path( const std::string& p );
+      /**
+       * Create a reply to this call message.
+       *
+       * If no reply is expected, this will return a valid pointer, but an invalid
+       * ReturnMessage so that the reply can be built but will be dropped before it
+       * gets sent out.
+       *
+       * @return
+       */
+      std::shared_ptr<ReturnMessage> create_reply() const;
+
+      /**
+       * Create an error reply to this message.
+       *
+       * If no reply is expected, this will return a valid pointer, but an invalid
+       * ErrorMessage so that the reply can be built but will be dropped before it
+       * gets sent out.
+       *
+       * @return
+       */
+      std::shared_ptr<ErrorMessage> create_error_reply() const;
+
+      void set_path( const std::string& p );
 
       Path path() const;
 
-      bool has_path( const std::string& p ) const;
+      void set_interface( const std::string& i );
 
-      std::vector<std::string> path_decomposed() const;
+      std::string interface() const;
 
-      bool set_interface( const std::string& i );
+      void set_member( const std::string& m );
 
-      const char* interface() const;
-
-      bool has_interface( const std::string& i ) const;
-
-      bool set_member( const std::string& m );
-
-      const char* member() const;
-
-      bool has_member( const std::string& m ) const;
+      std::string member() const;
 
       bool operator == ( const CallMessage& ) const;
 

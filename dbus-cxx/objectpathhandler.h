@@ -30,6 +30,7 @@
 namespace DBus
 {
   class Connection;
+  class CallMessage;
 
   /**
    * Provides an object that handles messages for a given object path on a connection.
@@ -48,8 +49,6 @@ namespace DBus
       ObjectPathHandler(const std::string& path, PrimaryFallback pf);
 
     public:
-      static std::shared_ptr<ObjectPathHandler> create(const std::string& path, PrimaryFallback pf=PrimaryFallback::PRIMARY);
-      
       virtual ~ObjectPathHandler();
 
       /** Returns the path this handler is associated with */
@@ -59,13 +58,27 @@ namespace DBus
       PrimaryFallback is_primary_or_fallback();
 
       /** Returns the connection this handler is registered with */
-      std::shared_ptr<Connection> connection() const;
+      std::weak_ptr<Connection> connection() const;
+
+      /**
+       * Sets the connection that this ObjectPathHandler is on.
+       * Generally, you should not call this, as calling Connection::register_object
+       * will do this for you automatically.
+       */
+      virtual void set_connection( std::shared_ptr<Connection> conn );
 
       /** Tries to register the handler using the provided connection and with the currently set path and primary/fallback setting */
       virtual bool register_with_connection(std::shared_ptr<Connection> conn);
 
+      /**
+       * Handle a call message to this object path
+       *
+       * @param msg
+       */
+      virtual void handle_call_message( std::shared_ptr<const CallMessage> msg ) = 0;
+
       /** Unregisters the handler */
-      bool unregister(std::shared_ptr<Connection> conn);
+      bool unregister();
 
       /** Emitted when this object is registered with a connection */
       sigc::signal<void(std::shared_ptr<Connection>) >& signal_registered();
@@ -77,7 +90,7 @@ namespace DBus
 
     protected:
 
-      std::shared_ptr<Connection> m_connection;
+      std::weak_ptr<Connection> m_connection;
 
       Path m_path;
 

@@ -31,6 +31,7 @@
 #include <sigc++/sigc++.h>
 #include "utility.h"
 
+static const char* LOGGER_NAME = "DBus.Object";
 
 namespace DBus
 {
@@ -51,18 +52,13 @@ namespace DBus
   {
   }
 
-  bool Object::register_with_connection(std::shared_ptr<Connection> conn)
+  void Object::set_connection(std::shared_ptr<Connection> conn)
   {
-    SIMPLELOGGER_DEBUG("dbus.Object","Object::register_with_connection");
-    if ( not ObjectPathHandler::register_with_connection(conn) ) return false;
-
-    for (Interfaces::iterator i = m_interfaces.begin(); i != m_interfaces.end(); i++)
-      i->second->set_connection(conn);
+    SIMPLELOGGER_DEBUG(LOGGER_NAME,"Object::set_connection");
+    ObjectPathHandler::set_connection(conn);
 
     for (Children::iterator c = m_children.begin(); c != m_children.end(); c++)
-      c->second->register_with_connection(conn);
-
-    return true;
+      c->second->set_connection(conn);
   }
 
   const Object::Interfaces & Object::interfaces() const
@@ -91,7 +87,7 @@ namespace DBus
 
     if ( not interface ) return false;
     
-    SIMPLELOGGER_DEBUG("dbus.Object","Object::add_interface " << interface->name() );
+    SIMPLELOGGER_DEBUG(LOGGER_NAME,"Object::add_interface " << interface->name() );
 
     {
       std::unique_lock lock( m_interfaces_rwlock );
@@ -102,11 +98,9 @@ namespace DBus
 
       if ( i == m_interface_signal_name_connections.end() )
       {
-        m_interface_signal_name_connections[interface] = interface->signal_name_changed().connect( sigc::bind(sigc::mem_fun(*this, &Object::on_interface_name_changed), interface));
-
         m_interfaces.insert(std::make_pair(interface->name(), interface));
 
-        interface->set_object(this);
+        interface->set_path(m_path);
       }
       else
       {
@@ -116,10 +110,7 @@ namespace DBus
 
     m_signal_interface_added.emit( interface );
 
-    // TODO allow control over this
-    if ( not m_default_interface ) this->set_default_interface( interface->name() );
-
-    SIMPLELOGGER_DEBUG("dbus.Object","Object::add_interface " << interface->name() << " successful: " << result);
+    SIMPLELOGGER_DEBUG(LOGGER_NAME,"Object::add_interface " << interface->name() << " successful: " << result);
 
     return result;
   }
@@ -130,18 +121,17 @@ namespace DBus
 
     interface = Interface::create(name);
 
-    if ( this->add_interface(interface) ) return interface;
+    if ( this->add_interface(interface) ) return std::shared_ptr<Interface>();
 
-    return std::shared_ptr<Interface>();
+    if ( not m_default_interface && name.empty() ) this->set_default_interface( interface->name() );
+    return interface;
   }
 
   void Object::remove_interface( const std::string & name )
   {
     Interfaces::iterator iter;
-    std::shared_ptr<Interface> interface, old_default;
+    std::shared_ptr<Interface> interface;
     InterfaceSignalNameConnections::iterator i;
-    
-    bool need_emit_default_changed = false;
 
     {
       std::unique_lock lock( m_interfaces_rwlock );
@@ -160,21 +150,11 @@ namespace DBus
         {
           i->second.disconnect();
           m_interface_signal_name_connections.erase(i);
-          interface->set_object(nullptr);
         }
-    
-        if ( m_default_interface == interface ) {
-          old_default = m_default_interface;
-          m_default_interface = std::shared_ptr<Interface>();
-          need_emit_default_changed = true;
-        }
-
       }
     }
 
     if ( interface ) m_signal_interface_removed.emit( interface );
-
-    if ( need_emit_default_changed ) m_signal_default_interface_changed.emit( old_default, m_default_interface );
   }
 
   bool Object::has_interface( const std::string & name )
@@ -216,6 +196,12 @@ namespace DBus
     return result;
   }
 
+  bool Object::set_default_interface( std::shared_ptr<Interface> interface ){
+    if( !interface ) return false;
+    m_default_interface = interface;
+    return true;
+  }
+
   void Object::remove_default_interface()
   {
     if ( not m_default_interface ) return;
@@ -241,9 +227,14 @@ namespace DBus
   {
     if ( not child ) return false;
     if ( not force and this->has_child(name) ) return false;
-    m_children[name] = child;
-    if ( m_connection ) child->register_with_connection(m_connection);
-    return true;
+    std::shared_ptr<Connection> conn = m_connection.lock();
+    if ( conn ){
+        m_children[name] = child;
+        child->register_with_connection(conn);
+        return true;
+    }
+
+    return false;
   }
 
   bool Object::remove_child(const std::string& name)
@@ -297,114 +288,81 @@ namespace DBus
 
   HandlerResult Object::handle_message( std::shared_ptr<Connection> connection , std::shared_ptr<const Message> message )
   {
-    Interfaces::iterator current, upper;
-    std::shared_ptr<Interface> interface;
-    HandlerResult result = HandlerResult::NOT_HANDLED;
 
-    SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: before call message test");
-
-    std::shared_ptr<const CallMessage> callmessage;
-    try{
-      callmessage = CallMessage::create( message );
-    }catch(std::shared_ptr<DBus::ErrorInvalidMessageType> err){
-      return HandlerResult::NOT_HANDLED;
-    }
-
-    if ( not callmessage ) return HandlerResult::NOT_HANDLED;
-
-    SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: message is good (it's a call message) for interface '" << callmessage->interface() << "'");
-
-    if ( callmessage->interface() == nullptr ){
-        //If for some reason the message that we are getting has a nullptr interface, we will segfault.
-        return HandlerResult::NOT_HANDLED;
-    }
-
-    // Handle the introspection interface
-    if ( strcmp(callmessage->interface(), DBUS_CXX_INTROSPECTABLE_INTERFACE) == 0 )
-    {
-      SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: introspection interface called");
-      std::shared_ptr<ReturnMessage> return_message = callmessage->create_reply();
-      std::string introspection = DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE;
-      introspection += this->introspect();
-      *return_message << introspection;
-      connection << return_message;
-      return HandlerResult::HANDLED;
-    }
-
-    std::shared_lock lock( m_interfaces_rwlock );
-
-    current = m_interfaces.lower_bound( callmessage->interface() );
-
-    // Do we have an interface or do we need to use the default???
-    if ( current == m_interfaces.end() )
-    {
-      SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: trying to handle with the default interface");
-      // Do we have have a default to use, if so use it to try and handle the message
-      if ( m_default_interface )
-        result = m_default_interface->handle_call_message(connection, callmessage);
-    }
-    else
-    {
-      // Set up the upper limit of interfaces
-      upper = m_interfaces.upper_bound( callmessage->interface() );
-
-
-    SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: before handling lower bound interface is " << current->second->name() );
-    SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: before handling upper bound interface is " << (upper->second ? upper->second->name() : ""));
-
-      // Iterate through each interface with a matching name
-      for ( ; current != upper; current++ )
-      {
-        SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: trying to handle with interface " << current->second->name() );
-        // If an interface handled the message unlock and return
-        if ( current->second->handle_call_message(connection, callmessage) == HandlerResult::HANDLED )
-        {
-          result = HandlerResult::HANDLED;
-          break;
-        }
-      }
-    }
-
-    if (result == HandlerResult::NOT_HANDLED and m_default_interface)
-      result = m_default_interface->handle_call_message(connection, callmessage);
-
-    SIMPLELOGGER_DEBUG("dbus.Object","Object::handle_message: message was " << ((result==HandlerResult::HANDLED)?"handled":"not handled"));
-
-    return result;
   }
 
-  void Object::on_interface_name_changed(const std::string & oldname, const std::string & newname, std::shared_ptr<Interface> interface)
-  {
-  
-    std::unique_lock lock( m_interfaces_rwlock );
+  void Object::handle_call_message(std::shared_ptr<const CallMessage> msg) {
+      std::shared_ptr<Connection> connection = m_connection.lock();
 
-    Interfaces::iterator current, upper;
-    current = m_interfaces.lower_bound(oldname);
-
-    if ( current != m_interfaces.end() )
-    {
-      upper = m_interfaces.upper_bound(oldname);
-
-      for ( ; current != upper; current++ )
-      {
-        if ( current->second == interface )
-        {
-          m_interfaces.erase(current);
-          break;
-        }
+      if( !connection ){
+          SIMPLELOGGER_ERROR(LOGGER_NAME,"Object::handle_call_message: unable to handle call message: invalid connection");
+          return;
       }
-    }
 
-    m_interfaces.insert( std::make_pair(newname, interface) );
+      if ( msg->interface() == DBUS_CXX_INTROSPECTABLE_INTERFACE )
+      {
+        SIMPLELOGGER_DEBUG(LOGGER_NAME,"Object::handle_call_message: introspection interface called");
+        std::shared_ptr<ReturnMessage> return_message = msg->create_reply();
+        std::string introspection = DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE;
+        introspection += this->introspect();
+        *return_message << introspection;
+        connection << return_message;
+        return;
+      }
 
-    InterfaceSignalNameConnections::iterator i;
-    i = m_interface_signal_name_connections.find(interface);
-    if ( i == m_interface_signal_name_connections.end() )
-    {
-      m_interface_signal_name_connections[interface] =
-          interface->signal_name_changed().connect(sigc::bind(sigc::mem_fun(*this,&Object::on_interface_name_changed),interface));
-    }
-    
+      std::shared_lock lock( m_interfaces_rwlock );
+      Interfaces::iterator iface_iter;
+      std::shared_ptr<Interface> interface;
+
+      SIMPLELOGGER_DEBUG(LOGGER_NAME,"Object::handle_message: message is good (it's a call message) for interface '" << msg->interface() << "'");
+
+      iface_iter = m_interfaces.find( msg->interface() );
+
+      /*
+       * DBus Specification:
+       *
+       * In the absence of an INTERFACE field, if two or more interfaces on the same object
+       * have a method with the same name, it is undefined which of those methods will be
+       * invoked. Implementations may choose to either return an error, or deliver the message
+       * as though it had an arbitrary one of those interfaces.
+       */
+      if( iface_iter == m_interfaces.end() ){
+        // Unable to find an interface to use
+          if( m_default_interface ){
+              //m_default_interface->handle_call_message();
+              return;
+          }
+
+          std::shared_ptr<ErrorMessage> errmsg = msg->create_error_reply();
+
+
+          std::ostringstream strErrMsg;
+          strErrMsg << "dbus-cxx: unable to find interface named "
+                    << msg->interface()
+                    << " and no default interface set";
+
+          SIMPLELOGGER_ERROR(LOGGER_NAME, "Object::handle_call_message: unable to handle, returning error: " + strErrMsg.str() );
+
+          errmsg->set_name( DBUSCXX_ERROR_UNKNOWN_INTERFACE );
+          errmsg->set_message( strErrMsg.str() );
+          connection << errmsg;
+      }else{
+          interface = iface_iter->second;
+          if( interface->handle_call_message( connection, msg ) == HandlerResult::NOT_HANDLED ){
+              std::shared_ptr<ErrorMessage> errmsg = msg->create_error_reply();
+
+              std::ostringstream strErrMsg;
+              strErrMsg << "dbus-cxx: unable to find method named "
+                        << msg->member()
+                        << " on interface "
+                        << msg->interface();
+              SIMPLELOGGER_ERROR(LOGGER_NAME, "Object::handle_call_message: unable to handle, returning error: " + strErrMsg.str() );
+
+              errmsg->set_name( DBUSCXX_ERROR_UNKNOWN_METHOD );
+              errmsg->set_message( strErrMsg.str() );
+              connection << errmsg;
+          }
+      }
   }
 
 

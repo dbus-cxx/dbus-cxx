@@ -30,6 +30,8 @@
 #include <dbus-cxx/dbus-cxx-private.h>
 #include <dbus-cxx/simplelogger.h>
 
+static const char* LOGGER_NAME = "DBus.Message";
+
 namespace DBus
 {
 
@@ -113,19 +115,6 @@ namespace DBus
     return std::shared_ptr<Message>(new Message(other, m) );
   }
 
-  std::shared_ptr<ReturnMessage> Message::create_reply() const
-  {
-    if ( not this->is_valid() ) return std::shared_ptr<ReturnMessage>();
-    if ( this->type() != MessageType::CALL ) return std::shared_ptr<ReturnMessage>();
-    DBusMessage* rmcobj = dbus_message_new_method_return( this->cobj() );
-    if ( not rmcobj ) return std::shared_ptr<ReturnMessage>();
-    //when we create a new return message, this will increment the ref count.
-    //make sure to decrement our ref count, as we don't need it anymore in this object
-    std::shared_ptr<ReturnMessage> rmPtr = ReturnMessage::create(rmcobj);
-    dbus_message_unref( rmcobj );
-    return rmPtr;
-  }
-
   Message::~Message()
   {
     if ( m_cobj ) dbus_message_unref( m_cobj );
@@ -151,7 +140,7 @@ namespace DBus
   {
     // TODO fix this
 //     return ( m_cobj != nullptr and m_valid );
-    return m_cobj != nullptr;
+    return m_valid;
   }
 
   void Message::invalidate()
@@ -166,7 +155,7 @@ namespace DBus
 
   uint32_t Message::serial() const
   {
-      Variant value = header_field( DBUSCXX_HEADER_FIELD_REPLY_SERIAL );
+      Variant value = header_field( MessageHeaderFields::Reply_Serial );
       if( value.currentType() != DataType::INVALID ){
           return std::any_cast<uint32_t>( value.value() );
       }
@@ -194,7 +183,7 @@ namespace DBus
   bool Message::set_destination( const std::string& s )
   {
     if ( m_cobj == nullptr ) return false;
-m_headerMap[ 6 ] = DBus::Variant( s );
+    m_headerMap[ MessageHeaderFields::Destination ] = DBus::Variant( s );
     return dbus_message_set_destination( m_cobj, s.c_str() );
   }
 
@@ -268,7 +257,7 @@ m_headerMap[ 6 ] = DBus::Variant( s );
 
   Signature Message::signature() const
   {
-      Variant v = m_headerMap.at( 8 );
+      Variant v = header_field( MessageHeaderFields::Signature );
       if( v.currentType() == DataType::SIGNATURE ){
           return std::any_cast<Signature>( v.value() );
       }
@@ -281,22 +270,26 @@ m_headerMap[ 6 ] = DBus::Variant( s );
       return false;
   }
 
-void Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const {
+bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const {
     Marshaling marshal( vec, Endianess::Big );
+    Variant serialHeader = header_field( MessageHeaderFields::Reply_Serial );
+    bool mustHaveSerial = false;
 
 	vec->reserve( m_body.size() + 256 );
     marshal.marshal( static_cast<uint8_t>( 'B' ) );
     switch( type() ){
     case MessageType::INVALID:
-        return;
+        return false;
     case MessageType::CALL:
         marshal.marshal( static_cast<uint8_t>( 1 ) );
 		break;
     case MessageType::RETURN:
         marshal.marshal( static_cast<uint8_t>( 2 ) );
+        mustHaveSerial = true;
 		break;
     case MessageType::ERROR:
         marshal.marshal( static_cast<uint8_t>( 3 ) );
+        mustHaveSerial = true;
 		break;
     case MessageType::SIGNAL:
         marshal.marshal( static_cast<uint8_t>( 4 ) );
@@ -304,7 +297,7 @@ void Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
 	}
 
 	// Now marshal the flags
-    marshal.marshal( static_cast<uint8_t>( 0 ) );
+    marshal.marshal( m_flags );
 
 	// Marshal the protocol version
     marshal.marshal( static_cast<uint8_t>( 1 ) );
@@ -312,15 +305,28 @@ void Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
 	// Marshal the length
     marshal.marshal( static_cast<uint32_t>( m_body.size() ) );
 
-	// Marshal the serial
-    marshal.marshal( serial );
+    // Marshal the serial.  If the header field 'serial' exists,
+    // use that instead of the passed-in serial.  This means that we may skip serial numbers,
+    // but that shouldn't cause an issue
+    if( mustHaveSerial ){
+        if( serialHeader.currentType() == DataType::UINT32 ){
+            serial = std::any_cast<uint32_t>( serialHeader );
+        }else{
+            SIMPLELOGGER_ERROR( LOGGER_NAME, "Unable to serialize message: reply serial required but not found!" );
+            return false;
+        }
+    }else{
+        marshal.marshal( serial );
+    }
 
     // Marshal our header array
     marshal.marshal( static_cast<uint32_t>( 0 ) ); // The size of the header array; we update this later
 
-    for( const std::pair<const uint8_t,Variant>& entry : m_headerMap ){
+    for( const std::pair<const MessageHeaderFields,Variant>& entry : m_headerMap ){
+        if( entry.second.currentType() == DataType::INVALID ) continue;
+
         marshal.align( 8 );
-        marshal.marshal( entry.first );
+        marshal.marshal( header_field_to_int( entry.first ) );
         marshal.marshal( entry.second );
 	}
     // The size of the header array is always at offset 12
@@ -332,6 +338,8 @@ void Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
     for( const uint8_t& byte : m_body ){
         vec->push_back( byte );
     }
+
+    return true;
 }
 
 std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data_len ){
@@ -343,7 +351,7 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
     uint32_t serial;
     uint32_t arrayLen;
     std::shared_ptr<Message> retmsg;
-    std::map<uint8_t,Variant> headerMap;
+    std::map<MessageHeaderFields,Variant> headerMap;
     Endianess msgEndian = Endianess::Big;
 
     if( demarshal.demarshal_uint8_t() == 'l' ){
@@ -359,11 +367,23 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
     arrayLen = demarshal.demarshal_uint32_t();
 
     while( demarshal.current_offset() < ( 12 + arrayLen ) ){
-        uint8_t key;
+        uint8_t key_demarshal;
+        MessageHeaderFields key;
         Variant value;
         demarshal.align( 8 );
-        key = demarshal.demarshal_uint8_t();
+        key_demarshal = demarshal.demarshal_uint8_t();
         value = demarshal.demarshal_variant();
+
+        key = int_to_header_field( key_demarshal );
+        if( key == MessageHeaderFields::Invalid ){
+            std::ostringstream logmsg;
+            logmsg << "Found invalid header field "
+                   << static_cast<int>( key )
+                   << " when parsing; ignoring.  Value: "
+                   << value;
+            SIMPLELOGGER_WARN( LOGGER_NAME, logmsg.str() );
+            continue;
+        }
 
         headerMap[ key ] = value;
     }
@@ -386,6 +406,7 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
         break;
     }
 
+    retmsg->m_flags = flags;
     retmsg->m_valid = true;
     retmsg->m_headerMap = headerMap;
     retmsg->m_endianess = msgEndian;
@@ -398,7 +419,7 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
 }
 
 void Message::append_signature(std::string toappend){
-    DBus::Variant val = m_headerMap[ DBUSCXX_HEADER_FIELD_SIGNATURE ];
+    DBus::Variant val = m_headerMap[ MessageHeaderFields::Signature ];
     std::string newval;
 
     if( val.currentType() != DataType::INVALID ){
@@ -407,11 +428,11 @@ void Message::append_signature(std::string toappend){
     }
 
     newval += toappend;
-    m_headerMap[ DBUSCXX_HEADER_FIELD_SIGNATURE ] = DBus::Variant( Signature( newval ) );
+    m_headerMap[ MessageHeaderFields::Signature ] = DBus::Variant( Signature( newval ) );
 }
 
-Variant Message::header_field(  uint8_t field ) const {
-    std::map<uint8_t,Variant>::const_iterator location =
+Variant Message::header_field( MessageHeaderFields field ) const {
+    std::map<MessageHeaderFields,Variant>::const_iterator location =
             m_headerMap.find( field );
     if( location != m_headerMap.end() ){
         return location->second;
@@ -421,8 +442,8 @@ Variant Message::header_field(  uint8_t field ) const {
 }
 
 void Message::clear_sig_and_data(){
-    std::map<uint8_t,Variant>::const_iterator location =
-            m_headerMap.find( DBUSCXX_HEADER_FIELD_SIGNATURE );
+    std::map<MessageHeaderFields,Variant>::const_iterator location =
+            m_headerMap.find( MessageHeaderFields::Signature );
     if( location != m_headerMap.end() ){
         m_headerMap.erase( location );
     }
@@ -454,38 +475,38 @@ std::ostream& operator <<( std::ostream& os, const DBus::Message* msg ){
     os << "  Message length: " << msg->m_body.size() << std::endl;
     os << "  Endianess: " << msg->m_endianess << std::endl;
     os << "  Headers:" << std::endl;
-    for( const std::pair<const uint8_t,DBus::Variant>& set : msg->m_headerMap ){
+    for( const std::pair<const MessageHeaderFields,DBus::Variant>& set : msg->m_headerMap ){
         std::any value = set.second.value();
         os << "    ";
         switch( set.first ){
-        default:
-            os << "!!INVALID KEY " << set.first << "!!!";
+        case MessageHeaderFields::Invalid:
+            os << "!! Invalid message header has been stored !!";
             break;
-        case 1:
+        case MessageHeaderFields::Path:
             os << "Path: " << std::any_cast<Path>( value );
             break;
-        case 2:
+        case MessageHeaderFields::Interface:
             os << "Interface: " << std::any_cast<std::string>( value );
             break;
-        case 3:
+        case MessageHeaderFields::Member:
             os << "Member: " << std::any_cast<std::string>( value );
             break;
-        case 4:
+        case MessageHeaderFields::Error_Name:
             os << "Error Name: " << std::any_cast<std::string>( value );
             break;
-        case 5:
+        case MessageHeaderFields::Reply_Serial:
             os << "Reply Serial: " << std::any_cast<uint32_t>( value );
             break;
-        case 6:
+        case MessageHeaderFields::Destination:
             os << "Destination: " << std::any_cast<std::string>( value );
             break;
-        case 7:
+        case MessageHeaderFields::Sender:
             os << "Sender: " << std::any_cast<std::string>( value );
             break;
-        case 8:
+        case MessageHeaderFields::Signature:
             os << "Signature: " << std::any_cast<Signature>( value );
             break;
-        case 9:
+        case MessageHeaderFields::Unix_FDs:
             os << "# Unix FDs: " << std::any_cast<uint32_t>( value );
             break;
         }

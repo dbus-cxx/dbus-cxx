@@ -43,6 +43,16 @@ namespace DBus
    * An Object represents a local object that is able to be called over the DBus.
    * Interfaces, methods, and signals can be created from this Object.
    *
+   * Note: Because the header 'INTERFACE' is <b>not required</b> for method calls,
+   * use the method \c set_default_interface to set an interface that will handle
+   * method calls without 'INTERFACE' set.  If a message is received without the
+   * 'INTERFACE' set, the following is used to determine how to handle the message:
+   * - If the default interface is not set, return an error
+   *  \c org.freedesktop.DBus.Error.UnknownInterface
+   * - If the default interface is set, use that interface to try and handle the message.
+   *  The normal message handling rules apply at this point, e.g. if the method does not
+   *  exist an error \c org.freedesktop.DBus.Error.UnknownMethod will be returned.
+   *
    * @ingroup local
    * @ingroup objects
    *
@@ -63,13 +73,12 @@ namespace DBus
        * Typedef to the storage structure for an \c Object instance's
        * interfaces.
        *
-       * \b Data \b Structure - Multimap: There is no restriction that interfaces must be uniquely named
        * \b Key - interface name
        * \b Value -smart pointer to an interface.
        *
        * Can access \e type as \c Object::Interfaces
        */
-      typedef std::multimap<std::string, std::shared_ptr<Interface> > Interfaces;
+      typedef std::map<std::string, std::shared_ptr<Interface> > Interfaces;
 
       /**
        * Typedef to storage structure for an \c Object instance's
@@ -93,19 +102,21 @@ namespace DBus
       virtual ~Object();
 
       /** Extends base version to include registering signals */
-      virtual bool register_with_connection(std::shared_ptr<Connection> conn);
+      virtual void set_connection(std::shared_ptr<Connection> conn);
 
       /** Get all the interfaces associated with this Object instance */
       const Interfaces& interfaces() const;
 
-      /** Returns the first interface with the given name */
+      /** Returns the interface with the given name */
       std::shared_ptr<Interface> interface( const std::string& name ) const;
 
       /** Adds the interface to this object */
       bool add_interface( std::shared_ptr<Interface> interface );
 
       /**
-       * Creates and adds the named interface to this object
+       * Creates and adds the named interface to this object.
+       *
+       * If the string is empty, and there is no default interface set, this will set the default interface.
        *
        * @return the newly created interface
        */
@@ -161,7 +172,11 @@ namespace DBus
         return method;
       }
 
-      /** Removes the first interface found with the given name */
+      /**
+       * Removes the interface found with the given name.
+       *
+       * This will not remove the default interface if the name matches - use remove_default_interface instead
+       */
       void remove_interface( const std::string& name );
 
       /**
@@ -180,13 +195,22 @@ namespace DBus
       /**
        * Set the default interface to a specific name
        *
-       * The first interface found with a matching name is used. If there is
-       * already a default interface set it will be replaced.
+       * The currently-existing interface with the given name is used.  If an
+       * interface with the given name is not found, the default interface
+       * will not be set.
        * 
-       * @return \c True if an interface with the specified name was found, \c false otherwise.
        * @param new_default_name The name of the interface to use as the default.
+       * @return \c True if an interface with the specified name was found, \c false otherwise.
        */
       bool set_default_interface( const std::string& new_default_name );
+
+      /**
+       * Set the default interface for handling calls to no interface.  If the shared
+       * pointer is invalid, this function returns false and does nothing
+       *
+       * @param interface True if the default interface was updated, false otherwise.
+       */
+      bool set_default_interface( std::shared_ptr<Interface> interface );
 
       /**
        * Removes the currently set (if any) default interface. There wil not
@@ -195,11 +219,15 @@ namespace DBus
       void remove_default_interface();
 
       /**
-       * Creates a signal with a return value (possibly \c void ) and $1 parameters and adds it to the default interface
-       * @return A smart pointer to the newly created signal
+       * Creates a signal with a return value (possibly \c void ) and a variable number of
+       * parameters and adds it to the default interface.
+       *
+       * <b>Note</b>: This will create a default interface if it does not already exist.
        *
        * Template parameters for the \c create_signal() call will determine the
        * signature of the signal created.
+       *
+       * @return A smart pointer to the newly created signal
        */
       template <class... T_type>
       std::shared_ptr<signal<T_type...> >
@@ -213,11 +241,13 @@ namespace DBus
       }
 
       /**
-       * Creates a signal with a return value (possibly \c void ) and $1 parameters and adds it to the named interface
-       * @return A smart pointer to the newly created signal
+       * Creates a signal with a return value (possibly \c void ) and a variable number of
+       * parameters and adds it to the named interface
        *
        * Template parameters for the \c create_signal() call will determine the
        * signature of the signal created.
+       *
+       * @return A smart pointer to the newly created signal
        */
       template <class... T_type>
       std::shared_ptr<signal<T_type...> >
@@ -313,6 +343,8 @@ namespace DBus
        */
       virtual HandlerResult handle_message( std::shared_ptr<Connection> conn, std::shared_ptr<const Message> msg);
 
+      void handle_call_message( std::shared_ptr<const CallMessage> msg );
+
     protected:
 
       Children m_children;
@@ -334,12 +366,6 @@ namespace DBus
       typedef std::map<std::shared_ptr<Interface> ,sigc::connection> InterfaceSignalNameConnections;
 
       InterfaceSignalNameConnections m_interface_signal_name_connections;
-
-      /**
-       * Callback point that updates the interface name map when an interface
-       * changes its name.
-       */
-      void on_interface_name_changed(const std::string& oldname, const std::string& newname, std::shared_ptr<Interface>  interface);
 
   };
 

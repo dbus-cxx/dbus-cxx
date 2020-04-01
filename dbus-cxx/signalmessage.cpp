@@ -88,13 +88,13 @@ namespace DBus
 
   bool SignalMessage::set_path( const std::string& p )
   {
-      m_headerMap[ DBUSCXX_HEADER_FIELD_PATH ] = Variant( Path( p ) );
+      m_headerMap[ MessageHeaderFields::Path ] = Variant( Path( p ) );
       return true;
   }
 
   Path SignalMessage::path() const
   {
-      DBus::Variant memberName = header_field( DBUSCXX_HEADER_FIELD_PATH );
+      DBus::Variant memberName = header_field( MessageHeaderFields::Path );
       if( memberName.currentType() == DataType::OBJECT_PATH ){
           return std::any_cast<Path>( memberName.value() );
       }
@@ -123,7 +123,7 @@ namespace DBus
   }
 
   std::string SignalMessage::interface() const {
-      DBus::Variant memberName = header_field( DBUSCXX_HEADER_FIELD_INTERFACE );
+      DBus::Variant memberName = header_field( MessageHeaderFields::Interface );
       if( memberName.currentType() == DataType::STRING ){
           return std::any_cast<std::string>( memberName.value() );
       }
@@ -137,13 +137,13 @@ namespace DBus
 
   bool SignalMessage::set_member( const std::string& m )
   {
-    m_headerMap[ DBUSCXX_HEADER_FIELD_MEMBER ] = Variant( m );
+    m_headerMap[ MessageHeaderFields::Member ] = Variant( m );
     return true;
   }
 
   std::string SignalMessage::member() const
   {
-      DBus::Variant memberName = header_field( DBUSCXX_HEADER_FIELD_MEMBER );
+      DBus::Variant memberName = header_field( MessageHeaderFields::Member );
       if( memberName.currentType() == DataType::STRING ){
           return std::any_cast<std::string>( memberName.value() );
       }

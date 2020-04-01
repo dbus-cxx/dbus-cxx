@@ -19,6 +19,7 @@
 #include "connection.h"
 #include <dbus-cxx/interfaceproxy.h>
 #include <dbus-cxx/signalmessage.h>
+#include <dbus-cxx/errormessage.h>
 #include <dbus-cxx/accumulators.h>
 #include <algorithm>
 #include <cassert>
@@ -65,7 +66,6 @@ struct Connection::ExpectingResponse {
 };
 
   Connection::Connection( BusType type ) :
-      m_notifyDispatcherFD( -1 ),
       m_dispatchingThread( std::this_thread::get_id() )
   {
     m_currentSerial = 1;
@@ -94,7 +94,6 @@ struct Connection::ExpectingResponse {
   }
 
   Connection::Connection( std::string address ) :
-      m_notifyDispatcherFD( -1 ),
       m_dispatchingThread( std::this_thread::get_id() )
   {
       m_transport = priv::Transport::open_transport( address );
@@ -505,7 +504,10 @@ struct Connection::ExpectingResponse {
       if( std::this_thread::get_id() != m_dispatchingThread ){
           throw ErrorIncorrectDispatchThread( "Calling Connection::dispatch from non-dispatching thread" );
       }
-    if ( not this->is_valid() ) return DispatchStatus::COMPLETE;
+    if ( not this->is_valid() ){
+        m_dispatchStatus = DispatchStatus::COMPLETE;
+        return DispatchStatus::COMPLETE;
+    }
 
     // Write out any messages we have waiting to be written
     flush();
@@ -519,23 +521,7 @@ struct Connection::ExpectingResponse {
     }
 
     // Process any messages that we need to
-    {
-        std::shared_ptr<Message> msgToProcess;
-        if( !m_incomingMessages.empty() ){
-            msgToProcess = m_incomingMessages.front();
-
-            uint32_t serial = msgToProcess->serial();
-            if( m_expectingResponses.find( serial ) != m_expectingResponses.end() ) {
-                // This is a response to something that a different thread is waiting for.
-                // Update the data and notify the thread!
-                m_expectingResponses[ serial ]->reply = msgToProcess;
-                m_incomingMessages.pop();
-                m_expectingResponses[ serial ]->cv.notify_one();
-            }else{
-                m_incomingMessages.pop();
-            }
-        }
-    }
+    process_single_message();
 
     if( m_outgoingMessages.empty() &&
             m_incomingMessages.empty() ){
@@ -545,6 +531,82 @@ struct Connection::ExpectingResponse {
     }
 
     return m_dispatchStatus;
+  }
+
+  void Connection::process_single_message(){
+      std::shared_ptr<Message> msgToProcess;
+
+      if( m_incomingMessages.empty() ) return;
+
+      msgToProcess = m_incomingMessages.front();
+      m_incomingMessages.pop();
+
+      uint32_t serial = msgToProcess->serial();
+      if( m_expectingResponses.find( serial ) != m_expectingResponses.end() ) {
+          // This is a response to something that a different thread is waiting for.
+          // Update the data and notify the thread!
+          m_expectingResponses[ serial ]->reply = msgToProcess;
+          m_expectingResponses[ serial ]->cv.notify_one();
+          return;
+      }
+
+      std::shared_ptr<CallMessage> callmsg;
+      std::string path;
+      PathHandlingEntry entry;
+      bool error = false;
+
+      if( msgToProcess->type() == MessageType::CALL ) {
+          callmsg = std::static_pointer_cast<CallMessage>( msgToProcess );
+          path = callmsg->path();
+      }else if( msgToProcess->type() == MessageType::SIGNAL ){
+          std::shared_ptr<SignalMessage> signalmsg = std::static_pointer_cast<SignalMessage>( msgToProcess );
+          path = signalmsg->path();
+      }else{
+        SIMPLELOGGER_ERROR("DBus.Connection", "Unable to process message: invalid type " << msgToProcess->type() );
+        return;
+      }
+
+      {
+          std::unique_lock<std::mutex> lock( m_pathHandlerLock );
+          std::map<std::string,PathHandlingEntry>::iterator it;
+          it = m_path_handler.find( path );
+          if( it != m_path_handler.end() ){
+              entry = it->second;
+          }else{
+              error = true;
+          }
+      }
+
+      if( error && callmsg ){
+          std::shared_ptr<ErrorMessage> errMsg =
+                  ErrorMessage::create( callmsg, DBUSCXX_ERROR_FAILED, "Could not find given path" );
+          send( errMsg );
+          return;
+      }
+
+      // TODO need to figure out how to manage the signals
+
+      if( entry.handlingThread == m_dispatchingThread ){
+          // We are in the dispatching thread here, so we can simply call the handle method
+          //entry.handler->handle_message();
+      }else{
+          // A different thread needs to handle this.
+          std::shared_ptr<ThreadDispatcher> disp = m_threadDispatchers[ entry.handlingThread ].lock();
+
+          if( !disp ){
+              // Remove all invalid thread dispatchers, return an error
+              remove_invalid_threaddispatchers_and_associated_objects();
+
+              if( callmsg ){
+                  std::shared_ptr<ErrorMessage> errMsg =
+                          ErrorMessage::create( callmsg, DBUSCXX_ERROR_FAILED, "Could not find given path" );
+                  send( errMsg );
+                  return;
+              }
+          }
+
+          disp->add_message( entry.handler, msgToProcess );
+      }
   }
 
   int Connection::unix_fd() const
@@ -688,41 +750,39 @@ struct Connection::ExpectingResponse {
     }
   }
 
-  std::shared_ptr<Object> Connection::create_object(const std::string & path, PrimaryFallback pf)
+  std::shared_ptr<Object> Connection::create_object(const std::string & path, ThreadForCalling calling)
   {
-    std::shared_ptr<Object> object = Object::create( path, pf );
+    std::shared_ptr<Object> object = Object::create( path );
     if (not object) return object;
-    object->register_with_connection( shared_from_this() );
-    m_created_objects[path] = object;
+    if( register_object( object, calling ) != RegistrationStatus::Success ){
+        return std::shared_ptr<Object>();
+    }
     return object;
   }
 
-  bool Connection::register_object(std::shared_ptr<Object> object)
+  RegistrationStatus Connection::register_object(std::shared_ptr<ObjectPathHandler> object, ThreadForCalling calling)
   {
-    SIMPLELOGGER_DEBUG("dbus.Connection", "Connection::register_object");
-    if ( not object ) return false;
-    object->register_with_connection( shared_from_this() );
-    return true;
-  }
+    if ( not object ) return RegistrationStatus::Failed_Invalid_Object;
 
-  std::shared_ptr<ObjectPathHandler> Connection::create_object(const std::string & path, sigc::slot< HandlerResult(std::shared_ptr<Connection>, std::shared_ptr<const Message>) >& slot, PrimaryFallback pf)
-  {
-    std::shared_ptr<ObjectPathHandler> handler = ObjectPathHandler::create(path, pf);
-    if ( not handler ) return handler;
-    handler->register_with_connection( shared_from_this() );
-    m_created_objects[path] = handler;
-    if ( handler ) handler->signal_message().connect( slot );
-    return handler;
-  }
+    SIMPLELOGGER_DEBUG("dbus.Connection", "Connection::register_object at path " << object->path() );
 
-  std::shared_ptr<ObjectPathHandler> Connection::create_object( const std::string& path, HandlerResult (*MessageFunction)(std::shared_ptr<Connection>,std::shared_ptr<const Message>), PrimaryFallback pf )
-  {
-    std::shared_ptr<ObjectPathHandler> handler = ObjectPathHandler::create(path, pf);
-    if ( not handler ) return handler;
-    handler->register_with_connection( shared_from_this() );
-    m_created_objects[path] = handler;
-    if ( handler ) handler->signal_message().connect( sigc::ptr_fun(MessageFunction) );
-    return handler;
+    std::unique_lock<std::mutex> lock( m_pathHandlerLock );
+    if( m_path_handler.find( object->path() ) != m_path_handler.end() ){
+        return RegistrationStatus::Failed_Path_in_Use;
+    }
+
+    PathHandlingEntry entry;
+    entry.handler = object;
+    if( calling == ThreadForCalling::DispatcherThread ){
+        entry.handlingThread = m_dispatchingThread;
+    }else{
+        entry.handlingThread = std::this_thread::get_id();
+    }
+    m_path_handler[ object->path() ] = entry;
+
+    object->set_connection( shared_from_this() );
+
+    return RegistrationStatus::Success;
   }
 
   std::shared_ptr<ObjectProxy> Connection::create_object_proxy(const std::string & path)
@@ -739,7 +799,14 @@ struct Connection::ExpectingResponse {
 
   bool Connection::unregister_object(const std::string & path)
   {
-    // TODO implement this
+    std::unique_lock<std::mutex> lock( m_pathHandlerLock );
+    std::map<std::string,PathHandlingEntry>::iterator it;
+    it = m_path_handler.find( path );
+    if( it != m_path_handler.end() ){
+        m_path_handler.erase( it );
+        return true;
+    }
+
     return false;
   }
 
@@ -1059,8 +1126,8 @@ struct Connection::ExpectingResponse {
       m_dispatchingThread = tid;
   }
 
-  void Connection::set_dispatching_thread_fd(int fd){
-      m_notifyDispatcherFD = fd;
+  void Connection::set_dispatching_thread_wakeup_func( sigc::slot<void()> func ){
+      m_notifyDispatcherFunc = func;
   }
 
   void Connection::notify_dispatcher_or_dispatch(){
@@ -1068,16 +1135,43 @@ struct Connection::ExpectingResponse {
 
       if( std::this_thread::get_id() == m_dispatchingThread ){
           dispatch();
+      }else{
+          m_notifyDispatcherFunc();
+      }
+  }
+
+  void Connection::add_thread_dispatcher( std::weak_ptr<ThreadDispatcher> disp ){
+    std::unique_lock<std::mutex> lock( m_threadDispatcherLock );
+    m_threadDispatchers[ std::this_thread::get_id() ] = disp;
+  }
+
+  void Connection::remove_invalid_threaddispatchers_and_associated_objects(){
+      std::vector<std::thread::id> invalidThreadIds;
+
+      {
+          std::unique_lock<std::mutex> lock( m_threadDispatcherLock );
+          for( auto it = m_threadDispatchers.begin();
+               it != m_threadDispatchers.end(); ){
+              if( it->second.expired() ){
+                  invalidThreadIds.push_back( it->first );
+                  it = m_threadDispatchers.erase( it );
+              }else{
+                  it++;
+              }
+          }
       }
 
-      if( m_notifyDispatcherFD >= 0 ){
-          char c = '\0';
-          if( ::write( m_notifyDispatcherFD, &c, 1 ) < 0 ){
-              std::string errmsg = std::string( strerror( errno ) );
-              SIMPLELOGGER_ERROR( "dbus.Connection", "Unable to notify dispatcher: " + errmsg );
+      if( invalidThreadIds.empty() ) return;
+
+      {
+          std::unique_lock<std::mutex> lock( m_pathHandlerLock );
+          for( auto it = m_path_handler.begin(); it != m_path_handler.end(); ){
+              if( std::find( invalidThreadIds.begin(), invalidThreadIds.end(), it->second.handlingThread ) != invalidThreadIds.end() ){
+                  it = m_path_handler.erase( it );
+              }else{
+                  it++;
+              }
           }
-      }else{
-          SIMPLELOGGER_ERROR( "dbus.Connection", "Unable to notify dispatcher; the dispatcher FD has not been set" );
       }
   }
 

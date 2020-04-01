@@ -23,6 +23,8 @@
 #include "message.h"
 #include "path.h"
 #include "variant.h"
+#include "returnmessage.h"
+#include "errormessage.h"
 
 namespace DBus
 {
@@ -70,15 +72,14 @@ namespace DBus
 
   CallMessage::CallMessage( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method )
   {
-    m_cobj = dbus_message_new_method_call( dest.c_str(), path.c_str(), iface.c_str(), method.c_str() );
     m_valid = true;
     std::ostringstream debug_msg;
     debug_msg << "Creating call message to " << dest << " path: " << path << " " << iface << "." << method;
     SIMPLELOGGER_DEBUG( "DBus.CallMessage", debug_msg.str() );
-m_headerMap[ 1 ] = DBus::Variant( Path( path ) );
-m_headerMap[ 2 ] = DBus::Variant( iface );
-m_headerMap[ 3 ] = DBus::Variant( method );
-m_headerMap[ 6 ] = DBus::Variant( dest );
+    set_path( path );
+    set_interface( iface );
+    set_member( method );
+    set_destination( dest );
   }
 
   CallMessage::CallMessage( const std::string& path, const std::string& iface, const std::string& method )
@@ -128,76 +129,88 @@ m_headerMap[ 6 ] = DBus::Variant( dest );
     return std::shared_ptr<CallMessage>( new CallMessage(path, method) );
   }
 
-  bool CallMessage::set_path( const std::string& p )
+  std::shared_ptr<ReturnMessage> CallMessage::create_reply() const
   {
-    return dbus_message_set_path( m_cobj, p.c_str() );
+    if ( not this->is_valid() ) return std::shared_ptr<ReturnMessage>();
+    std::shared_ptr<ReturnMessage> retmsg = ReturnMessage::create();
+    retmsg->set_reply_serial( serial() );
+    if( m_flags & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED ){
+        retmsg->invalidate();
+    }
+    return retmsg;
+  }
+
+  std::shared_ptr<ErrorMessage> CallMessage::create_error_reply() const
+  {
+    if ( not this->is_valid() ) return std::shared_ptr<ErrorMessage>();
+    std::shared_ptr<ErrorMessage> retmsg = ErrorMessage::create();
+    retmsg->set_reply_serial( serial() );
+    if( m_flags & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED ){
+        retmsg->invalidate();
+    }
+    return retmsg;
+  }
+
+  void CallMessage::set_path( const std::string& p )
+  {
+    m_headerMap[ MessageHeaderFields::Interface ] = Variant( Path( p ) );
   }
 
   Path CallMessage::path() const
   {
-    return dbus_message_get_path( m_cobj );
-  }
-
-  bool CallMessage::has_path( const std::string& p ) const
-  {
-    return dbus_message_has_path( m_cobj, p.c_str() );
-  }
-
-  std::vector<std::string> CallMessage::path_decomposed() const
-  {
-    std::vector<std::string> decomposed;
-    char** p;
-    dbus_message_get_path_decomposed( m_cobj, &p );
-    for ( char** q=p; q != nullptr; q++ )
-      decomposed.push_back( *q );
-    dbus_free_string_array( p );
-    return decomposed;
-  }
-
-  bool CallMessage::set_interface( const std::string& i )
-  {
-    return dbus_message_set_interface( m_cobj, i.c_str() );
-  }
-
-  const char* CallMessage::interface() const {
-      return dbus_message_get_interface( m_cobj );
+    Variant field = header_field( MessageHeaderFields::Path );
+    if( field.currentType() == DataType::OBJECT_PATH ){
+        return std::any_cast<Path>( field.value() );
     }
 
-  bool CallMessage::has_interface( const std::string& i ) const
-  {
-    return dbus_message_has_interface( m_cobj, i.c_str() );
+    return Path();
   }
 
-  bool CallMessage::set_member( const std::string& m )
+  void CallMessage::set_interface( const std::string& i )
   {
-    return dbus_message_set_member( m_cobj, m.c_str() );
+    m_headerMap[ MessageHeaderFields::Interface ] = Variant( i );
   }
 
-  const char* CallMessage::member() const
+  std::string CallMessage::interface() const {
+      Variant iface = header_field( MessageHeaderFields::Interface );
+      if( iface.currentType() == DataType::STRING ){
+          return std::any_cast<std::string>( iface.value() );
+      }
+    return "";
+    }
+
+  void CallMessage::set_member( const std::string& m )
   {
-    return dbus_message_get_member( m_cobj );
+    m_headerMap[ MessageHeaderFields::Member ] = Variant( m );
   }
 
-  bool CallMessage::has_member( const std::string& m ) const
+  std::string CallMessage::member() const
   {
-    return dbus_message_has_member( m_cobj, m.c_str() );
+      Variant member = header_field( MessageHeaderFields::Member );
+      if( member.currentType() == DataType::STRING ){
+          return std::any_cast<std::string>( member.value() );
+      }
+    return "";
   }
 
   bool CallMessage::operator == ( const CallMessage& m ) const
   {
-    return dbus_message_is_method_call( m_cobj, m.interface(), m.member() );
+    //return
+      return false;
   }
 
   void CallMessage::set_no_reply( bool no_reply )
   {
-    if ( m_cobj == nullptr ) return;
-    dbus_message_set_no_reply( m_cobj, no_reply );
+      if( no_reply ){
+        m_flags |= DBUSCXX_MESSAGE_NO_REPLY_EXPECTED;
+      }else{
+          m_flags &= (~DBUSCXX_MESSAGE_NO_REPLY_EXPECTED);
+      }
   }
 
   bool CallMessage::expects_reply() const
   {
-    if ( m_cobj == nullptr ) return false;
-    return !dbus_message_get_no_reply( m_cobj );
+    return m_flags & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED;
   }
 
   MessageType CallMessage::type() const {

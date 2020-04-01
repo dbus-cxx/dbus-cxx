@@ -26,12 +26,13 @@
 #include <sigc++/sigc++.h>
 #include "signal_base.h"
 
+static const char* LOGGER_NAME = "DBus.Interface";
+
 namespace DBus
 {
   class Connection;
 
   Interface::Interface( const std::string& name ):
-      m_object(nullptr),
       m_name(name)
   {
   }
@@ -45,41 +46,15 @@ namespace DBus
   {
   }
 
-  Object* Interface::object() const
-  {
-    return m_object;
-  }
 
   Path Interface::path() const
   {
-    if ( m_object ) return m_object->path();
-    return Path();
-  }
-
-  std::shared_ptr<Connection> Interface::connection() const
-  {
-    if ( m_object ) return m_object->connection();
-    return std::shared_ptr<Connection>();
+    return Path( m_path );
   }
 
   const std::string & Interface::name() const
   {
     return m_name;
-  }
-
-  void DBus::Interface::set_name(const std::string & new_name)
-  {
-    std::string old_name;
-    {
-      std::lock_guard<std::mutex> lock( m_name_mutex );
-      old_name = m_name;
-      m_name = new_name;
-
-      for ( Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++ )
-        (*i)->set_interface( new_name );
-    }
-
-    m_signal_name_changed.emit(old_name, new_name);
   }
 
   const Interface::Methods & Interface::methods() const
@@ -133,7 +108,7 @@ namespace DBus
     return result;
   }
 
-  void Interface::remove_method( const std::string & name )
+  bool Interface::remove_method( const std::string & name )
   {
     Methods::iterator iter;
     std::shared_ptr<MethodBase> method;
@@ -159,7 +134,46 @@ namespace DBus
       }
     }
 
-    if ( method ) m_signal_method_removed.emit( method );
+    if ( method ){
+        m_signal_method_removed.emit( method );
+        return true;
+    }
+
+    return false;
+  }
+
+  bool Interface::remove_method( std::shared_ptr<MethodBase> torem )
+  {
+    Methods::iterator iter;
+    MethodSignalNameConnections::iterator i;
+    std::shared_ptr<MethodBase> method;
+
+    {
+      std::unique_lock lock( m_methods_rwlock );
+
+      iter = m_methods.find( torem->name() );
+      if ( iter != m_methods.end() ) {
+        method = iter->second;
+      }
+
+      if ( method == torem )
+      {
+        m_methods.erase( iter );
+        i = m_method_signal_name_connections.find(method);
+        if ( i != m_method_signal_name_connections.end() )
+        {
+          i->second.disconnect();
+          m_method_signal_name_connections.erase(i);
+        }
+      }
+    }
+
+    if ( method ){
+        m_signal_method_removed.emit( method );
+        return true;
+    }
+
+    return false;
   }
 
   bool Interface::has_method( const std::string & name ) const
@@ -193,7 +207,6 @@ namespace DBus
     {
       SIMPLELOGGER_DEBUG("dbus.Interface", "Interface(" << this->name() << ")::add_signal (" << sig->name() << ") succeeded");
       m_signals.insert(sig);
-      sig->set_connection( this->connection() );
       sig->set_path( this->path() );
       sig->set_interface( m_name );
       result = true;
@@ -289,11 +302,6 @@ namespace DBus
     return sig;
   }
 
-  sigc::signal< void( const std::string &, const std::string &) > Interface::signal_name_changed()
-  {
-    return m_signal_name_changed;
-  }
-
   sigc::signal< void( std::shared_ptr<MethodBase>)> Interface::signal_method_added()
   {
     return m_signal_method_added;
@@ -320,42 +328,21 @@ namespace DBus
     return sout.str();
   }
 
-  HandlerResult Interface::handle_call_message( std::shared_ptr<Connection> connection, std::shared_ptr<const CallMessage> message )
+  HandlerResult Interface::handle_call_message( std::shared_ptr<Connection> conn, std::shared_ptr<const CallMessage> message )
   {
-    SIMPLELOGGER_DEBUG( "dbus.Interface", "handle_call_message  interface=" << m_name );
+    SIMPLELOGGER_DEBUG( LOGGER_NAME, "handle_call_message  interface=" << m_name );
     
-    Methods::iterator current, upper;
+    Methods::iterator method_it;
     std::shared_ptr<MethodBase> method;
-    HandlerResult result = HandlerResult::NOT_HANDLED;
 
-    // ========== READ LOCK ==========
-//     pthread_rwlock_rdlock( &m_methods_rwlock );
+    method_it = m_methods.find( message->member() );
 
-    current = m_methods.lower_bound( message->member() );
-
-    if ( current == m_methods.end() )
+    if ( method_it == m_methods.end() )
     {
-      // ========== UNLOCK ==========
-//       pthread_rwlock_unlock( &m_methods_rwlock );
-
       return HandlerResult::NOT_HANDLED;
     }
-    
-    upper = m_methods.upper_bound( message->member() );
 
-    for ( ; current != upper; current++ )
-    {
-      if ( current->second and current->second->handle_call_message( connection, message ) == HandlerResult::HANDLED )
-      {
-        result = HandlerResult::HANDLED;
-        break;
-      }
-    }
-    
-    // ========== UNLOCK ==========
-//     pthread_rwlock_unlock( &m_methods_rwlock );
-
-    return result;
+    return method_it->second->handle_call_message( conn, message );
   }
 
   void Interface::on_method_name_changed(const std::string & oldname, const std::string & newname, std::shared_ptr<MethodBase> method)
@@ -390,39 +377,11 @@ namespace DBus
     }
   }
 
-  void Interface::set_connection(std::shared_ptr<Connection> conn)
-  {
-    SIMPLELOGGER_DEBUG("dbus.Interface", "Interface(" << this->name() << ")::set_connection for " << m_signals.size() << " sub signals");
-    for (Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++)
-      (*i)->set_connection(conn);
-  }
-
   void Interface::set_path(const std::string& new_path)
   {
+      m_path = new_path;
     for (Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++)
       (*i)->set_path(new_path);
-  }
-
-  void Interface::set_object( Object* object )
-  {
-    m_object = object;
-    
-    if ( object == nullptr )
-    {
-      for ( Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++ )
-      {
-        (*i)->set_connection( std::shared_ptr<Connection>() );
-        (*i)->set_path(std::string());
-      }
-    }
-    else
-    {
-      for ( Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++ )
-      {
-        (*i)->set_connection( m_object->connection() );
-        (*i)->set_path( m_object->path() );
-      }
-    }
   }
 
 }
