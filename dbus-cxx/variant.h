@@ -67,6 +67,8 @@ class Variant {
 
     int data_alignment() const;
 
+    bool operator==( const Variant& other ) const;
+
     static Variant createFromMessage( MessageIterator iter );
 
   private:

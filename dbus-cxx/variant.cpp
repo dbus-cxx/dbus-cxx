@@ -240,6 +240,17 @@ int Variant::data_alignment() const {
     return m_dataAlignment;
 }
 
+bool Variant::operator==( const Variant& other ) const {
+    bool sameType = other.currentType() == currentType();
+    bool vectorsEqual = false;
+
+    if( sameType ){
+        vectorsEqual = other.m_marshaled == m_marshaled;
+    }
+
+    return sameType && vectorsEqual;
+}
+
 namespace DBus {
 
 std::ostream& operator<<( std::ostream& os, const Variant& var ){
