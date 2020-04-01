@@ -28,6 +28,7 @@
 #include "message.h"
 #include "signature.h"
 #include "types.h"
+#include "validator.h"
 
 namespace DBus
 {
@@ -332,6 +333,9 @@ namespace DBus
     case ContainerType::ARRAY:
     {
         uint32_t arraySize = static_cast<uint32_t>( m_message->m_body.size() - m_arraySizeLocation );
+        if( arraySize > Validator::maximum_array_size() ){
+            m_message->invalidate();
+        }
         m_marshaling.marshalAtOffset( m_arraySizeLocation, arraySize );
     }
         break;

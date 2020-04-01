@@ -18,26 +18,13 @@
  ***************************************************************************/
 #include "returnmessage.h"
 #include "message.h"
+#include "callmessage.h"
 
 namespace DBus
 {
 
-  ReturnMessage::ReturnMessage( )
-  {
-  }
-
-  ReturnMessage::ReturnMessage( DBusMessage* callee ):
-      Message(callee)
-  {
-  }
-
-  ReturnMessage::ReturnMessage( std::shared_ptr<Message> callee ):
-      Message(callee)
-  {
-  }
-
-  ReturnMessage::ReturnMessage( std::shared_ptr<const Message> callee ):
-      Message(callee)
+  ReturnMessage::ReturnMessage( ) :
+      Message()
   {
   }
 
@@ -46,26 +33,11 @@ namespace DBus
     return std::shared_ptr<ReturnMessage>(new ReturnMessage() );
   }
 
-  std::shared_ptr<ReturnMessage> ReturnMessage::create(DBusMessage * callee)
+  std::shared_ptr<ReturnMessage> ReturnMessage::create(std::shared_ptr<const CallMessage> callee)
   {
-    return std::shared_ptr<ReturnMessage>(new ReturnMessage(callee) );
-  }
-
-  std::shared_ptr<ReturnMessage> ReturnMessage::create(std::shared_ptr<Message> callee)
-  {
-    return std::shared_ptr<ReturnMessage>(new ReturnMessage(callee) );
-  }
-
-  std::shared_ptr<ReturnMessage> ReturnMessage::create(std::shared_ptr<const Message> callee)
-  {
-    return std::shared_ptr<ReturnMessage>(new ReturnMessage(callee) );
-  }
-
-  ReturnMessage& ReturnMessage::operator=( const Message& other )
-  {
-    m_cobj = other.cobj();
-    if ( other.cobj() != nullptr ) dbus_message_ref( m_cobj );
-    return *this;
+   std::shared_ptr<ReturnMessage> ret = std::shared_ptr<ReturnMessage>(new ReturnMessage() );
+   ret->set_reply_serial( callee->serial() );
+   return ret;
   }
 
   bool ReturnMessage::set_reply_serial( uint32_t s )

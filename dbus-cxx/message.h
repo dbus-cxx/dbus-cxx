@@ -45,42 +45,23 @@ namespace DBus
   /**
    * This class represents a basic DBus message and also serves as a base
    * class for the specialized message types (call, return, signal, error).
+   *
+   * This class cannot be initialized on its own; create a new Message from
+   * one of the subclasses
    * 
    * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
    *
    * @ingroup message
    */
-
-  // TODO support
-  //  - dbus_message_type_from_string
-  //  - dbus_message_type_to_string
-  //  - dbus_message_marshal
-  //  - dbus_message_demarshal
-  
   class Message
   {
     protected:
       
-      Message( MessageType type );
-
-      Message( DBusMessage* cobj=nullptr, CreateMethod m = CreateMethod::ALIAS );
-
-      Message( std::shared_ptr<Message> other, CreateMethod m = CreateMethod::ALIAS );
-
-      Message( std::shared_ptr<const Message> other, CreateMethod m = CreateMethod::ALIAS );
+      Message();
 
     public:
-      static std::shared_ptr<Message> create( MessageType type );
-
-      static std::shared_ptr<Message> create( DBusMessage* cobj=nullptr, CreateMethod m = CreateMethod::ALIAS );
-
-      static std::shared_ptr<Message> create( std::shared_ptr<Message> other, CreateMethod m = CreateMethod::ALIAS );
-
-      static std::shared_ptr<Message> create( std::shared_ptr<const Message> other, CreateMethod m = CreateMethod::ALIAS );
 
       virtual ~Message();
-
-      Message& operator = ( const Message& m );
 
       bool operator == ( const Message& other );
 
@@ -92,35 +73,32 @@ namespace DBus
 
       uint32_t serial() const;
 
-//       Message copy();
-
-      virtual MessageType type() const;
+      virtual MessageType type() const = 0;
 
       void set_auto_start( bool auto_start);
 
+      /**
+       * Returns true if the bus is allowed to start an owner for this
+       * message's destination if it is not running
+       *
+       * @return
+       */
       bool auto_start();
 
+      /**
+       * Set the destination of this message
+       *
+       * @param s
+       * @return true if the destination was able to be set, false if the
+       * destination was unable to be validated
+       */
       bool set_destination( const std::string& s );
 
-      const char* destination() const;
+      std::string destination() const;
 
-      bool set_sender( const std::string& s );
-
-      const char* sender() const;
-
-      bool is_call( const std::string& interface, const std::string& method ) const;
-
-      bool is_signal( const std::string& interface, const std::string& signal_name ) const;
-
-      bool is_error( const std::string& error_name ) const;
-
-      bool has_destination( const std::string& name ) const;
-
-      bool has_sender( const std::string& name ) const;
+      std::string sender() const;
 
       Signature signature() const;
-
-      bool has_signature( const std::string& signature ) const;
 
       template <typename T>
       MessageIterator operator>>( T& value ) const
@@ -144,8 +122,6 @@ namespace DBus
 
       MessageAppendIterator append();
 
-      DBusMessage* cobj() const;
-
       /**
        * Serialize this message to the given vector.  The vector will be resized
        * but not cleared.  Can fail with an error under the following circumstances:
@@ -158,40 +134,35 @@ namespace DBus
        */
       bool serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const;
 
-/**
- * Returns the given header field(if it exists), otherwise returns a default
- * constructed variant.
- *
- * @param field The field number to get
- * @return The data, otherwise a default-constructed variant.
- */
-Variant header_field( MessageHeaderFields field ) const;
+    /**
+     * Returns the given header field(if it exists), otherwise returns a default
+     * constructed variant.
+     *
+     * @param field The field number to get
+     * @return The data, otherwise a default-constructed variant.
+     */
+    Variant header_field( MessageHeaderFields field ) const;
 
-static std::shared_ptr<Message> create_from_data( uint8_t* data, uint32_t data_len );
+    static std::shared_ptr<Message> create_from_data( uint8_t* data, uint32_t data_len );
 
     protected:
 
-void append_signature( std::string toappend );
+    void append_signature( std::string toappend );
 
-/**
- * Clears the signature and the data, so you can re-append data
- */
-void clear_sig_and_data();
-
-      friend void init(bool);
-
-      DBusMessage* m_cobj;
+    /**
+     * Clears the signature and the data, so you can re-append data
+     */
+    void clear_sig_and_data();
 
       bool m_valid;
+    std::map<MessageHeaderFields,Variant> m_headerMap;
+    std::vector<uint8_t> m_body;
+    Endianess m_endianess;
+    uint8_t m_flags;
 
-std::map<MessageHeaderFields,Variant> m_headerMap;
-std::vector<uint8_t> m_body;
-Endianess m_endianess;
-uint8_t m_flags;
-
-friend class MessageAppendIterator;
-friend class MessageIterator;
-friend std::ostream& operator<<( std::ostream& os, const DBus::Message* msg );
+    friend class MessageAppendIterator;
+    friend class MessageIterator;
+    friend std::ostream& operator<<( std::ostream& os, const DBus::Message* msg );
 
   };
 

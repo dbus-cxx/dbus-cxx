@@ -455,44 +455,6 @@ struct Connection::ExpectingResponse {
       return retval;
   }
 
-  bool Connection::read_write_dispatch( int timeout_milliseconds )
-  {
-    if ( not this->is_valid() ) return false;
-    //return dbus_connection_read_write_dispatch( m_cobj, timeout_milliseconds );
-  }
-
-  bool Connection::read_write( int timeout_milliseconds )
-  {
-    if ( not this->is_valid() ) return false;
-    //return dbus_connection_read_write( m_cobj, timeout_milliseconds );
-  }
-
-  std::shared_ptr<Message> Connection::borrow_message()
-  {
-    if ( not this->is_valid() ) return std::shared_ptr<Message>();
-    //return Message::create( dbus_connection_borrow_message( m_cobj ) );
-  }
-
-  void Connection::return_message( std::shared_ptr<Message> message )
-  {
-    if ( not this->is_valid() or not message or not *message ) return;
-    //dbus_connection_return_message( m_cobj, message->cobj() );
-  }
-
-  void Connection::steal_borrowed_message( std::shared_ptr<Message> message )
-  {
-    if ( not this->is_valid() or not message or not *message ) return;
-    //dbus_connection_steal_borrowed_message( m_cobj, message->cobj() );
-  }
-
-  std::shared_ptr<Message> Connection::pop_message( )
-  {
-    DBusMessage* message;
-    if ( not this->is_valid() ) return std::shared_ptr<Message>();
-    //message = dbus_connection_pop_message( m_cobj );
-    return Message::create( message );
-  }
-
   DispatchStatus Connection::dispatch_status( ) const
   {
     if ( not this->is_valid() ) return DispatchStatus::COMPLETE;
@@ -1056,7 +1018,7 @@ struct Connection::ExpectingResponse {
     std::shared_ptr<Connection> conn;// = static_cast<Connection*>(data)->self();
     FilterResult filter_result = FilterResult::DONT_FILTER;
     HandlerResult signal_result = HandlerResult::NOT_HANDLED;
-    std::shared_ptr<Message> msg = Message::create(message);
+    std::shared_ptr<Message> msg;// = Message::create(message);
 
     filter_result = conn->signal_filter().emit(conn, msg);
 
@@ -1065,7 +1027,7 @@ struct Connection::ExpectingResponse {
     // Deliver signals to signal proxies
     if ( filter_result != FilterResult::FILTER and msg->type() == MessageType::SIGNAL )
     {
-      std::shared_ptr<SignalMessage> smsg = SignalMessage::create(msg);
+      std::shared_ptr<SignalMessage> smsg;// = SignalMessage::create(msg);
       HandlerResult result = HandlerResult::NOT_HANDLED;
 
       SIMPLELOGGER_DEBUG( "dbus.Connection", "Handling signal " 

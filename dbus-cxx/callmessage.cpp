@@ -29,50 +29,14 @@
 namespace DBus
 {
 
-  CallMessage::CallMessage()
+  CallMessage::CallMessage() : Message()
   {
-    m_cobj = dbus_message_new( static_cast<int>( MessageType::CALL ) );
+
   }
 
-  CallMessage::CallMessage( DBusMessage* cobj )
+  CallMessage::CallMessage( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method ) :
+      Message ()
   {
-    if ( cobj == nullptr )
-      throw ErrorInvalidCObject();
-
-    if ( dbus_message_get_type( cobj ) != DBUS_MESSAGE_TYPE_METHOD_CALL )
-      throw ErrorInvalidMessageType();
-
-    m_cobj = cobj;
-    dbus_message_ref( m_cobj );
-  }
-
-  CallMessage::CallMessage( std::shared_ptr<Message> msg )
-  {
-    if ( msg->type() != MessageType::CALL )
-      throw ErrorInvalidMessageType();
-
-    if ( msg and *msg )
-    {
-      m_cobj = msg->cobj();
-      dbus_message_ref( m_cobj );
-    }
-  }
-
-  CallMessage::CallMessage( std::shared_ptr<const Message> msg )
-  {
-    if ( msg->type() != MessageType::CALL )
-      throw ErrorInvalidMessageType();
-
-    if ( msg and *msg )
-    {
-      m_cobj = msg->cobj();
-      dbus_message_ref( m_cobj );
-    }
-  }
-
-  CallMessage::CallMessage( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method )
-  {
-    m_valid = true;
     std::ostringstream debug_msg;
     debug_msg << "Creating call message to " << dest << " path: " << path << " " << iface << "." << method;
     SIMPLELOGGER_DEBUG( "DBus.CallMessage", debug_msg.str() );
@@ -82,36 +46,23 @@ namespace DBus
     set_destination( dest );
   }
 
-  CallMessage::CallMessage( const std::string& path, const std::string& iface, const std::string& method )
+  CallMessage::CallMessage( const std::string& path, const std::string& iface, const std::string& method ) :
+      Message()
   {
-    m_cobj = dbus_message_new_method_call( nullptr, path.c_str(), iface.c_str(), method.c_str() );
-    m_valid = true;
+      set_path( path );
+      set_interface( iface );
+      set_member( method );
   }
 
   CallMessage::CallMessage( const std::string& path, const std::string& method )
   {
-    m_cobj = dbus_message_new_method_call( nullptr, path.c_str(), nullptr, method.c_str() );
-    m_valid = true;
+      set_path( path );
+      set_member( method );
   }
 
   std::shared_ptr<CallMessage> CallMessage::create()
   {
     return std::shared_ptr<CallMessage>( new CallMessage() );
-  }
-
-  std::shared_ptr<CallMessage> CallMessage::create(DBusMessage * cobj)
-  {
-    return std::shared_ptr<CallMessage>( new CallMessage(cobj) );
-  }
-
-  std::shared_ptr<CallMessage> CallMessage::create(std::shared_ptr<Message> msg)
-  {
-    return std::shared_ptr<CallMessage>( new CallMessage(msg) );
-  }
-
-  std::shared_ptr<const CallMessage> CallMessage::create(std::shared_ptr<const Message> msg)
-  {
-    return std::shared_ptr<const CallMessage>( new CallMessage(msg) );
   }
 
   std::shared_ptr<CallMessage> CallMessage::create(const std::string & dest, const std::string & path, const std::string & iface, const std::string & method)
@@ -191,12 +142,6 @@ namespace DBus
           return std::any_cast<std::string>( member.value() );
       }
     return "";
-  }
-
-  bool CallMessage::operator == ( const CallMessage& m ) const
-  {
-    //return
-      return false;
   }
 
   void CallMessage::set_no_reply( bool no_reply )

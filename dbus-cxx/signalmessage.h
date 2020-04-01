@@ -45,10 +45,6 @@ namespace DBus
     protected:
 
       SignalMessage( );
-      
-      SignalMessage( std::shared_ptr<Message> msg );
-
-      SignalMessage( std::shared_ptr<const Message> msg );
 
       SignalMessage( const std::string& name );
 
@@ -56,10 +52,6 @@ namespace DBus
 
     public:
       static std::shared_ptr<SignalMessage> create( );
-      
-      static std::shared_ptr<SignalMessage> create( std::shared_ptr<Message> msg );
-
-      static std::shared_ptr<const SignalMessage> create( std::shared_ptr<const Message> msg );
 
       static std::shared_ptr<SignalMessage> create( const std::string& name );
 
@@ -84,8 +76,6 @@ namespace DBus
       std::string member() const;
 
       //bool has_member( const std::string& m ) const;
-
-      bool operator == ( const SignalMessage& ) const;
 
       virtual MessageType type() const;
   

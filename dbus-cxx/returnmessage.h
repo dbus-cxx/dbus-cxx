@@ -28,6 +28,8 @@
 namespace DBus
 {
 
+class CallMessage;
+
   /**
    * Represents a DBus call return message
    *
@@ -45,22 +47,10 @@ namespace DBus
       
       ReturnMessage( );
 
-      ReturnMessage( DBusMessage* callee );
-
-      ReturnMessage( std::shared_ptr<Message> callee );
-
-      ReturnMessage( std::shared_ptr<const Message> callee );
-
     public:
-      static std::shared_ptr<ReturnMessage> create( );
+      static std::shared_ptr<ReturnMessage> create();
 
-      static std::shared_ptr<ReturnMessage> create( DBusMessage* callee );
-
-      static std::shared_ptr<ReturnMessage> create( std::shared_ptr<Message> callee );
-
-      static std::shared_ptr<ReturnMessage> create( std::shared_ptr<const Message> callee );
-
-      ReturnMessage& operator=( const Message& other );
+      static std::shared_ptr<ReturnMessage> create( std::shared_ptr<const CallMessage> callee );
 
       bool set_reply_serial( uint32_t );
 

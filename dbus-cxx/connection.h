@@ -200,18 +200,6 @@ namespace DBus
        */
       void flush();
 
-      bool read_write_dispatch( int timeout_milliseconds=-1 );
-
-      bool read_write( int timeout_milliseconds=-1 );
-
-      std::shared_ptr<Message> borrow_message();
-
-      void return_message( std::shared_ptr<Message> message );
-
-      void steal_borrowed_message( std::shared_ptr<Message> message );
-
-      std::shared_ptr<Message> pop_message( );
-
       DispatchStatus dispatch_status( ) const;
 
       /**

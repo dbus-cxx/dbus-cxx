@@ -95,6 +95,7 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/sendmsgtransport.cpp
     dbus-cxx/transport.cpp
     dbus-cxx/sasl.cpp
+    dbus-cxx/validator.cpp
 )
 
 # headers that need to go in the include/ directory
@@ -152,6 +153,7 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/sasl.h
     dbus-cxx/dbus-error.h
     dbus-cxx/threaddispatcher.h
+    dbus-cxx/validator.h
     ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
 )
 

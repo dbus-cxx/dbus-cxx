@@ -50,12 +50,6 @@ namespace DBus
       
       CallMessage();
 
-      CallMessage( DBusMessage* cobj );
-
-      CallMessage( std::shared_ptr<Message> msg );
-
-      CallMessage( std::shared_ptr<const Message> msg );
-
       CallMessage( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method );
 
       CallMessage( const std::string& path, const std::string& iface, const std::string& method );
@@ -65,12 +59,6 @@ namespace DBus
     public:
 
       static std::shared_ptr<CallMessage> create();
-
-      static std::shared_ptr<CallMessage> create( DBusMessage* cobj );
-
-      static std::shared_ptr<CallMessage> create( std::shared_ptr<Message> msg );
-
-      static std::shared_ptr<const CallMessage> create( std::shared_ptr<const Message> msg);
 
       static std::shared_ptr<CallMessage> create( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method );
 
@@ -111,8 +99,6 @@ namespace DBus
       void set_member( const std::string& m );
 
       std::string member() const;
-
-      bool operator == ( const CallMessage& ) const;
 
       void set_no_reply( bool no_reply=true );
 

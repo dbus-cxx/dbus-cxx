@@ -29,111 +29,51 @@
 #include "demarshaling.h"
 #include <dbus-cxx/dbus-cxx-private.h>
 #include <dbus-cxx/simplelogger.h>
+#include "validator.h"
 
 static const char* LOGGER_NAME = "DBus.Message";
 
 namespace DBus
 {
 
-  Message::Message( MessageType type ): m_valid(false)
+  Message::Message():
+      m_valid( true ),
+      m_flags( 0 )
   {
-    m_cobj = dbus_message_new( static_cast<int>( type ) );
-  }
-
-  Message::Message( DBusMessage* cobj, CreateMethod m ): m_valid(false)
-  {
-    if ( cobj == nullptr )
-    {
-      m_cobj = cobj;
-    }
-    else if ( m == CreateMethod::ALIAS )
-    {
-      m_cobj = cobj;
-      m_valid = true;
-      dbus_message_ref(m_cobj);
-    }
-    else
-    {
-      m_cobj = dbus_message_copy(cobj);
-      m_valid = true;
-    }
-  }
-
-  Message::Message( std::shared_ptr<Message> other, CreateMethod m ): m_cobj(nullptr), m_valid(false)
-  {
-    if ( other and other->m_cobj != nullptr )
-    {
-      if ( m == CreateMethod::ALIAS )
-      {
-        m_cobj = other->m_cobj;
-        dbus_message_ref(m_cobj);
-      }
-      else
-      {
-        m_cobj = dbus_message_copy(other->m_cobj);
-      }
-    }
-  }
-
-  Message::Message( std::shared_ptr<const Message> other, CreateMethod m ): m_cobj(nullptr), m_valid(false)
-  {
-    if ( other and other->m_cobj != nullptr )
-    {
-      if ( m == CreateMethod::ALIAS )
-      {
-        m_cobj = other->m_cobj;
-        dbus_message_ref(m_cobj);
-      }
-      else
-      {
-        m_cobj = dbus_message_copy(other->m_cobj);
-      }
-    }
-  }
-
-  MessageType Message::type() const {
-      return MessageType::INVALID;
-  }
-
-  std::shared_ptr<Message> Message::create(MessageType type)
-  {
-    return std::shared_ptr<Message>(new Message(type) );
-  }
-
-  std::shared_ptr<Message> Message::create(DBusMessage * cobj, CreateMethod m)
-  {
-    return std::shared_ptr<Message>(new Message(cobj, m) );
-  }
-
-  std::shared_ptr<Message> Message::create(std::shared_ptr<Message> other, CreateMethod m)
-  {
-    return std::shared_ptr<Message>(new Message(other, m) );
-  }
-
-  std::shared_ptr<Message> Message::create(std::shared_ptr<const Message> other, CreateMethod m)
-  {
-    return std::shared_ptr<Message>(new Message(other, m) );
   }
 
   Message::~Message()
   {
-    if ( m_cobj ) dbus_message_unref( m_cobj );
   }
 
-  Message& Message::operator = ( const Message& m )
-  {
-    if ( m_cobj != nullptr )
-      dbus_message_unref( m_cobj );
-    m_cobj = m.m_cobj;
-    if ( m_cobj != nullptr ) {
-      dbus_message_ref( m_cobj );
-    }
-    return *this;
-  }
 
   bool Message::operator == ( const Message& other )
   {
-    return m_cobj == other.m_cobj;
+      // First, really simple: let's just check the type
+      if( other.type() != type() ){
+          return false;
+      }
+
+      // Next, let's check the headers, since those will likely not be the same if the messages are different
+      bool headersEqual =
+              header_field( MessageHeaderFields::Path ) == other.header_field( MessageHeaderFields::Path ) &&
+              header_field( MessageHeaderFields::Member ) == other.header_field( MessageHeaderFields::Member ) &&
+              header_field( MessageHeaderFields::Sender ) == other.header_field( MessageHeaderFields::Sender ) &&
+              header_field( MessageHeaderFields::Unix_FDs ) == other.header_field( MessageHeaderFields::Unix_FDs ) &&
+              header_field( MessageHeaderFields::Interface ) == other.header_field( MessageHeaderFields::Interface ) &&
+              header_field( MessageHeaderFields::Signature ) == other.header_field( MessageHeaderFields::Signature ) &&
+              header_field( MessageHeaderFields::Error_Name ) == other.header_field( MessageHeaderFields::Error_Name ) &&
+              header_field( MessageHeaderFields::Destination ) == other.header_field( MessageHeaderFields::Destination ) &&
+              header_field( MessageHeaderFields::Reply_Serial ) == other.header_field( MessageHeaderFields::Reply_Serial );
+
+      bool dataEqual = false;
+
+      if( headersEqual ){
+          // Okay, all of the headers are equal at this point, now we can check the raw data
+          dataEqual = m_body == other.m_body;
+      }
+
+      return  headersEqual && dataEqual;
   }
 
   bool Message::is_valid() const
@@ -170,69 +110,41 @@ namespace DBus
 
   void Message::set_auto_start( bool auto_start)
   {
-    if ( m_cobj == nullptr ) return;
-    dbus_message_set_auto_start( m_cobj, auto_start );
+      if( auto_start ){
+          m_flags &= ~DBUSCXX_MESSAGE_NO_AUTO_START_FLAG;
+      }else{
+          m_flags |= DBUSCXX_MESSAGE_NO_AUTO_START_FLAG;
+      }
   }
 
   bool Message::auto_start()
   {
-    if ( m_cobj == nullptr ) return false;
-    return dbus_message_get_auto_start( m_cobj );
+    return m_flags & DBUSCXX_MESSAGE_NO_AUTO_START_FLAG;
   }
 
   bool Message::set_destination( const std::string& s )
   {
-    if ( m_cobj == nullptr ) return false;
+      if( Validator::validate_bus_name( s ) == false ) return false;
     m_headerMap[ MessageHeaderFields::Destination ] = DBus::Variant( s );
-    return dbus_message_set_destination( m_cobj, s.c_str() );
+    return true;
   }
 
-  const char* Message::destination() const
+  std::string Message::destination() const
   {
-    if ( m_cobj == nullptr ) return NULL;
-    return dbus_message_get_destination( m_cobj );
+    Variant destination = header_field( MessageHeaderFields::Destination );
+    if( destination.currentType() == DataType::STRING ){
+        return std::any_cast<std::string>( destination );
+    }
+    return "";
   }
 
-  bool Message::set_sender( const std::string& s )
+  std::string Message::sender() const
   {
-    if ( m_cobj == nullptr ) return false;
-    return dbus_message_set_sender( m_cobj, s.c_str() );
-  }
-
-  const char* Message::sender() const
-  {
-    if ( m_cobj == nullptr ) return NULL;
-    return dbus_message_get_sender( m_cobj );
-  }
-
-  bool Message::is_call( const std::string& interface, const std::string& method ) const
-  {
-    if ( m_cobj == nullptr ) return false;
-    return dbus_message_is_method_call( m_cobj, interface.c_str(), method.c_str() );
-  }
-
-  bool Message::is_signal( const std::string& interface, const std::string& signal_name ) const
-  {
-    if ( m_cobj == nullptr ) return false;
-    return dbus_message_is_signal( m_cobj, interface.c_str(), signal_name.c_str() );
-  }
-
-  bool Message::is_error( const std::string& error_name ) const
-  {
-    if ( m_cobj == nullptr ) return false;
-    return dbus_message_is_error( m_cobj, error_name.c_str() );
-  }
-
-  bool Message::has_destination( const std::string& name ) const
-  {
-    if ( m_cobj == nullptr ) return false;
-    return dbus_message_has_destination( m_cobj, name.c_str() );
-  }
-
-  bool Message::has_sender( const std::string& name ) const
-  {
-    if ( m_cobj == nullptr ) return false;
-    return dbus_message_has_sender( m_cobj, name.c_str() );
+      Variant destination = header_field( MessageHeaderFields::Sender );
+      if( destination.currentType() == DataType::STRING ){
+          return std::any_cast<std::string>( destination );
+      }
+      return "";
   }
 
   MessageIterator Message::begin() const
@@ -250,11 +162,6 @@ namespace DBus
     return MessageAppendIterator( *this );
   }
 
-  DBusMessage* Message::cobj( ) const
-  {
-    return m_cobj;
-  }
-
   Signature Message::signature() const
   {
       Variant v = header_field( MessageHeaderFields::Signature );
@@ -264,18 +171,12 @@ namespace DBus
     return Signature();
   }
 
-  bool Message::has_signature( const std::string& signature ) const
-  {
-    //return dbus_message_has_signature( m_cobj, signature.c_str() );
-      return false;
-  }
-
 bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const {
     Marshaling marshal( vec, Endianess::Big );
     Variant serialHeader = header_field( MessageHeaderFields::Reply_Serial );
     bool mustHaveSerial = false;
 
-	vec->reserve( m_body.size() + 256 );
+    vec->reserve( vec->size() + m_body.size() + 256 );
     marshal.marshal( static_cast<uint8_t>( 'B' ) );
     switch( type() ){
     case MessageType::INVALID:
@@ -337,6 +238,10 @@ bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
 
     for( const uint8_t& byte : m_body ){
         vec->push_back( byte );
+    }
+
+    if( !Validator::message_is_small_enough( vec ) ){
+        return false;
     }
 
     return true;
