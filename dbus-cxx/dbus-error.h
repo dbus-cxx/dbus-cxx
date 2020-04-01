@@ -21,7 +21,7 @@
 
 /*****************************
  * This file contains copy/pasted macros from the DBus reference implementation,
- * but renamed to be DBUSCXX_ERROR to avoid any potential #defiene problems.
+ * but renamed to be DBUSCXX_ERROR to avoid any potential #define problems.
  */
 
 /** A generic error; "something went wrong" - see the error message for more. */
