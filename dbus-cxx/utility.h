@@ -89,20 +89,6 @@ namespace DBus
 {
 
   /**
-   * Initializes the dbus-cxx library
-   *
-   * @param threadsafe If \c true the library's threadsafe structures, along with the underlying dbus library will be initialized to support threadsafe operations. This makes the library threadsafe at the cost of efficiency.
-   */
-  void init(bool threadsafe=true);
-
-  /**
-   * Get the initialization state of the dbus-cxx library
-   *
-   * @return \c true if the library is initialized, \c false otherwise
-   */
-  bool initialized();
-
-  /**
    * Set the callback function that is used for printing log messages.
    * Set this to either your provided function, or use the built-in function DBus::logStdErr.
    */

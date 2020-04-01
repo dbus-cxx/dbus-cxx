@@ -38,29 +38,8 @@ simplelogger_log_function dbuscxx_log_function = nullptr;
 
 namespace DBus
 {
-  
-  /** mutex to lock when initializing */
-  static std::mutex init_mutex;
-  static bool initialized_var = false;
+
   static enum SL_LogLevel log_level = SL_INFO;
-
-  void init(bool threadsafe)
-  {
-    dbus_bool_t result;
-
-    if( initialized_var ){
-      return;
-    }
-
-    SIMPLELOGGER_DEBUG( "dbus", "Initializing dbus-cxx, REMOVE THIS SOON" );
-
-    initialized_var = true;
-  }
-  
-  bool initialized()
-  {
-    return initialized_var;
-  }
 
   void setLoggingFunction( simplelogger_log_function function ){
     dbuscxx_log_function = function;
