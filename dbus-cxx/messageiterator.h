@@ -41,8 +41,10 @@
  * the iterator.  This macro works around this bug
  */
 #define DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter) iter.operator DBus::Variant()
+#define DBUSCXX_MESSAGEITERATOR_OPERATOR_SIGNATURE(iter) iter.operator DBus::Signature()
 #else
 #define DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(x) (DBus::Variant)iter
+#define DBUSCXX_MESSAGEITERATOR_OPERATOR_SIGNATURE(x) (DBus::Signature)iter
 #endif
 
 namespace DBus
@@ -208,6 +210,7 @@ namespace DBus
       std::string get_string();
       std::shared_ptr<FileDescriptor> get_filedescriptor();
       Variant get_variant();
+      Signature get_signature();
 
       /**
        * get_array for simple types - arithmetic types where the array is fixed and thus
@@ -385,6 +388,7 @@ namespace DBus
 
           DataType m_subiterDataType;
         uint32_t m_arrayLastPosition;
+        Signature m_variantSignature;
       };
 
       const Message* m_message;

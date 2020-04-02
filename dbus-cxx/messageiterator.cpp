@@ -40,6 +40,10 @@ namespace DBus
       if( d == DataType::ARRAY ){
           m_subiterInfo.m_subiterDataType = d;
           m_subiterInfo.m_arrayLastPosition = m_demarshal->current_offset() + m_demarshal->demarshal_uint32_t();
+      }else if( d == DataType::VARIANT ){
+          Signature demarshaled_sig = demarshal->demarshal_signature();
+          m_subiterInfo.m_variantSignature = demarshaled_sig;
+          m_signatureIterator = demarshaled_sig.begin();
       }
 
   }
@@ -369,8 +373,9 @@ namespace DBus
     {
       case DataType::STRING:
       case DataType::OBJECT_PATH:
-      case DataType::SIGNATURE:
         return get_string();
+      case DataType::SIGNATURE:
+        return get_signature();
       default:
         throw ErrorInvalidTypecast("MessageIterator:: extracting non-string type to std::string");
     }
@@ -393,6 +398,15 @@ namespace DBus
         throw ErrorInvalidTypecast("MessageIterator:: casting invalid type to variant");
     }
   }
+
+//  MessageIterator::operator Signature(){
+//    switch ( this->arg_type() )
+//    {
+//      case DataType::SIGNATURE: return get_signature();
+//      default:
+//        throw ErrorInvalidTypecast("MessageIterator:: casting invalid type to signature");
+//    }
+//  }
   
 #if DBUS_CXX_SIZEOF_LONG_INT == 4
   MessageIterator::operator unsigned long int()
@@ -531,7 +545,12 @@ namespace DBus
 
   Variant MessageIterator::get_variant(){
     MessageIterator subiter = this->recurse();
-    //return Variant::createFromMessage( subiter );
+
+    return Variant::createFromMessage( subiter );
+  }
+
+  Signature MessageIterator::get_signature(){
+      return m_demarshal->demarshal_signature();
   }
 
 }

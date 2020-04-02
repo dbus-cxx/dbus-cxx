@@ -280,7 +280,11 @@ namespace DBus
     }
 
     this->open_container( ContainerType::VARIANT, v.signature()  );
-    *m_subiter << v;
+    *this << v.signature();
+    m_marshaling.align( v.data_alignment() );
+    for( const uint8_t& data : *(v.marshaled()) ){
+        m_subiter->m_workingBuffer.push_back( data );
+    }
     this->close_container();
 
     return *this;
