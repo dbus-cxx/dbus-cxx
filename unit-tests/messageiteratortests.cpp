@@ -137,18 +137,6 @@ bool call_message_append_extract_iterator_signature()
   return TEST_EQUALS( v, v2 );
 }
 
-bool call_message_append_extract_iterator_char()
-{
-  char v = 'a';
-  return test_numeric_call_message_append_extract_iterator(v);
-}
-
-bool call_message_append_extract_iterator_int8()
-{
-  int8_t v = -120;
-  return test_numeric_call_message_append_extract_iterator(v);
-}
-
 bool call_message_append_extract_iterator_long_int()
 {
   long int v = -48321;
@@ -316,18 +304,18 @@ bool call_message_append_extract_iterator_filedescriptor(){
 }
 
 bool call_message_append_extract_iterator_struct(){
-  std::tuple<int,char> struct1 = std::make_tuple( 68, 'o' );
-  std::tuple<int,char> struct2;
+  std::tuple<int,uint8_t> struct1 = std::make_tuple( 68, 'o' );
+  std::tuple<int,uint8_t> struct2;
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1 << struct1;
 
   DBus::MessageIterator iter2(msg);
-  struct2 = (std::tuple<int,char>)iter2;
+  struct2 = (std::tuple<int,uint8_t>)iter2;
 
   TEST_EQUALS_RET_FAIL( std::get<int>(struct2), 68 );
-  TEST_EQUALS_RET_FAIL( std::get<char>(struct2), 'o' );
+  TEST_EQUALS_RET_FAIL( std::get<uint8_t>(struct2), 'o' );
 
   return true;
 }
@@ -505,18 +493,6 @@ bool call_message_iterator_insertion_extraction_operator_signature()
   return TEST_EQUALS( v, v2 );
 }
 
-bool call_message_iterator_insertion_extraction_operator_char()
-{
-  char v = 'a';
-  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
-}
-
-bool call_message_iterator_insertion_extraction_operator_int8()
-{
-  int8_t v = -112;
-  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
-}
-
 bool call_message_iterator_insertion_extraction_operator_long_int()
 {
   long int v = -67445;
@@ -605,7 +581,7 @@ bool call_message_append_extract_iterator_multiple( )
   const char      *cs_1 = "Hello World"; std::string cs_2;
   std::string     s_1("Hello World")   , s_2("");
   DBus::Signature sig_1("a{iq}") , sig_2;
-  char            c_1    = 'a'         , c_2    = '\0';
+  uint8_t            c_1    = 'a'         , c_2    = '\0';
   uint8_t          i8_1   = 119         , i8_2   = 0;
   double           f_1    = -222.43212  , f_2    = 0.00;
   long int        li_1   = -344223     , li_2   = 0;
@@ -650,8 +626,8 @@ bool call_message_append_extract_iterator_multiple( )
   cs_2   = (std::string)iter2;       iter2.next();
   s_2    = (std::string)iter2;       iter2.next();
   sig_2  = (DBus::Signature)iter2;   iter2.next();
-  c_2    = (char)iter2;              iter2.next();
-  i8_2   = (int8_t)iter2;            iter2.next();
+  c_2    = (uint8_t)iter2;              iter2.next();
+  i8_2   = (uint8_t)iter2;            iter2.next();
   f_2    = (double)iter2;             iter2.next();
   li_2   = (long int)iter2;          iter2.next();
   uli_2  = (unsigned long int)iter2; iter2.next();
@@ -697,8 +673,8 @@ bool call_message_iterator_insertion_extraction_operator_multiple( )
   const char      *cs_1 = "Hello World"; std::string cs_2;
   std::string     s_1("Hello World")   , s_2("");
   DBus::Signature sig_1("a{iq}") , sig_2;
-  char            c_1    = 'a'         , c_2    = '\0';
-  int8_t          i8_1   = 119         , i8_2   = 0;
+  uint8_t            c_1    = 'a'         , c_2    = '\0';
+  uint8_t          i8_1   = 119         , i8_2   = 0;
   double           f_1    = -222.43212  , f_2    = 0.00;
   long int        li_1   = -344223     , li_2   = 0;
   unsigned long int uli_1= 94321       , uli_2  = 0;
@@ -740,18 +716,18 @@ bool call_message_iterator_insertion_extraction_operator_multiple( )
 }
 
 bool call_message_iterator_insertion_extraction_operator_struct(){
-  std::tuple<int,char> struct1 = std::make_tuple( 68, 'o' );
-  std::tuple<int,char> struct2;
+  std::tuple<int,uint8_t> struct1 = std::make_tuple( 68, 'o' );
+  std::tuple<int,uint8_t> struct2;
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
   iter1 << struct1;
 
   DBus::MessageIterator iter2(msg);
-  struct2 = (std::tuple<int,char>)iter2;
+  struct2 = (std::tuple<int,uint8_t>)iter2;
 
   TEST_EQUALS_RET_FAIL( std::get<int>(struct2), 68 );
-  TEST_EQUALS_RET_FAIL( std::get<char>(struct2), 'o' );
+  TEST_EQUALS_RET_FAIL( std::get<uint8_t>(struct2), 'o' );
 
   return true;
 }
@@ -785,8 +761,6 @@ int main(int argc, char** argv){
   ADD_TEST(cstring);
   ADD_TEST(string);
   ADD_TEST(signature);
-  ADD_TEST(char);
-  ADD_TEST(int8);
   ADD_TEST(long_int);
   ADD_TEST(unsigned_long_int);
   ADD_TEST(array_int);
@@ -811,8 +785,6 @@ int main(int argc, char** argv){
   ADD_TEST2(cstring);
   ADD_TEST2(string);
   ADD_TEST2(signature);
-  ADD_TEST2(char);
-  ADD_TEST2(int8);
   ADD_TEST2(long_int);
   ADD_TEST2(unsigned_long_int);
   ADD_TEST2(array_int);

@@ -75,7 +75,6 @@ namespace DBus
       operator bool() const;
 
       MessageAppendIterator& operator<<( const bool& v );
-      MessageAppendIterator& operator<<( const int8_t& v );
       MessageAppendIterator& operator<<( const uint8_t& v );
       MessageAppendIterator& operator<<( const int16_t& v );
       MessageAppendIterator& operator<<( const uint16_t& v );

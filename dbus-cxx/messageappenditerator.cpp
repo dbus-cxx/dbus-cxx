@@ -100,17 +100,6 @@ namespace DBus
     return *this;
   }
 
-  MessageAppendIterator& MessageAppendIterator::operator<<( const int8_t& v ){
-    if ( not this->is_valid() ) return *this;
-
-    if( m_currentContainer == ContainerType::None ){
-        m_message->append_signature( signature( v ) );
-    }
-    m_marshaling.marshal( v );
-
-    return *this;
-  }
-
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint8_t& v ){
       if ( not this->is_valid() ) return *this;
 

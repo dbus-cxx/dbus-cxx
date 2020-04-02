@@ -164,9 +164,7 @@ namespace DBus
       operator int64_t();
       operator double();
       operator std::string();
-      
-      operator char();
-      operator int8_t();
+
       #if DBUS_CXX_SIZEOF_LONG_INT == 4
         operator long int();
         operator unsigned long int();

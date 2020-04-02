@@ -219,7 +219,7 @@ namespace DBus
       case DataType::BYTE:    return get_uint8();
       case DataType::BOOLEAN: return (bool)(*this);
       case DataType::INT16:   return (int16_t)(*this);
-      case DataType::UINT16:  return (uint16_t)(*this);
+      case DataType::UINT16:  return (int16_t)(*this);
       case DataType::INT32:   return (int32_t)(*this);
       case DataType::UINT32:  return (uint32_t)(*this);
       case DataType::INT64:   return (int64_t)(*this);
@@ -373,44 +373,6 @@ namespace DBus
         return get_string();
       default:
         throw ErrorInvalidTypecast("MessageIterator:: extracting non-string type to std::string");
-    }
-  }
-
-  MessageIterator::operator char()
-  {
-    // TODO check for invalid
-    switch ( this->arg_type() )
-    {
-      case DataType::BYTE:    return static_cast<char>(get_uint8());
-      case DataType::BOOLEAN: return (bool)(*this);
-      case DataType::INT16:   return (int16_t)(*this);
-      case DataType::UINT16:  return (uint16_t)(*this);
-      case DataType::INT32:   return (int32_t)(*this);
-      case DataType::UINT32:  return (uint32_t)(*this);
-      case DataType::INT64:   return (int64_t)(*this);
-      case DataType::UINT64:  return (uint64_t)(*this);
-      case DataType::DOUBLE:  return (double)(*this);
-      default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
-    }
-  }
-
-  MessageIterator::operator int8_t()
-  {
-    // TODO check for invalid
-    switch ( this->arg_type() )
-    {
-      case DataType::BYTE:    return static_cast<int8_t>(get_uint8());
-      case DataType::BOOLEAN: return (bool)(*this);
-      case DataType::INT16:   return (int16_t)(*this);
-      case DataType::UINT16:  return (uint16_t)(*this);
-      case DataType::INT32:   return (int32_t)(*this);
-      case DataType::UINT32:  return (uint32_t)(*this);
-      case DataType::INT64:   return (int64_t)(*this);
-      case DataType::UINT64:  return (uint64_t)(*this);
-      case DataType::DOUBLE:  return (double)(*this);
-      default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
     }
   }
 
