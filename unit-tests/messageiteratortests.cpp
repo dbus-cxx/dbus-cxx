@@ -149,12 +149,6 @@ bool call_message_append_extract_iterator_int8()
   return test_numeric_call_message_append_extract_iterator(v);
 }
 
-bool call_message_append_extract_iterator_float()
-{
-  float v = -2.8983;
-  return test_numeric_call_message_append_extract_iterator(v);
-}
-
 bool call_message_append_extract_iterator_long_int()
 {
   long int v = -48321;
@@ -523,12 +517,6 @@ bool call_message_iterator_insertion_extraction_operator_int8()
   return test_numeric_call_message_iterator_insertion_extraction_operator(v);
 }
 
-bool call_message_iterator_insertion_extraction_operator_float()
-{
-  float v = -2984.3933;
-  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
-}
-
 bool call_message_iterator_insertion_extraction_operator_long_int()
 {
   long int v = -67445;
@@ -618,8 +606,8 @@ bool call_message_append_extract_iterator_multiple( )
   std::string     s_1("Hello World")   , s_2("");
   DBus::Signature sig_1("a{iq}") , sig_2;
   char            c_1    = 'a'         , c_2    = '\0';
-  int8_t          i8_1   = 119         , i8_2   = 0;
-  float           f_1    = -222.43212  , f_2    = 0.00;
+  uint8_t          i8_1   = 119         , i8_2   = 0;
+  double           f_1    = -222.43212  , f_2    = 0.00;
   long int        li_1   = -344223     , li_2   = 0;
   unsigned long int uli_1= 94321       , uli_2  = 0;
   std::vector<double> ad_1             , ad_2;
@@ -664,7 +652,7 @@ bool call_message_append_extract_iterator_multiple( )
   sig_2  = (DBus::Signature)iter2;   iter2.next();
   c_2    = (char)iter2;              iter2.next();
   i8_2   = (int8_t)iter2;            iter2.next();
-  f_2    = (float)iter2;             iter2.next();
+  f_2    = (double)iter2;             iter2.next();
   li_2   = (long int)iter2;          iter2.next();
   uli_2  = (unsigned long int)iter2; iter2.next();
   iter2 >> ad_2;
@@ -711,7 +699,7 @@ bool call_message_iterator_insertion_extraction_operator_multiple( )
   DBus::Signature sig_1("a{iq}") , sig_2;
   char            c_1    = 'a'         , c_2    = '\0';
   int8_t          i8_1   = 119         , i8_2   = 0;
-  float           f_1    = -222.43212  , f_2    = 0.00;
+  double           f_1    = -222.43212  , f_2    = 0.00;
   long int        li_1   = -344223     , li_2   = 0;
   unsigned long int uli_1= 94321       , uli_2  = 0;
   std::vector<double> ad_1             , ad_2;
@@ -799,7 +787,6 @@ int main(int argc, char** argv){
   ADD_TEST(signature);
   ADD_TEST(char);
   ADD_TEST(int8);
-  ADD_TEST(float);
   ADD_TEST(long_int);
   ADD_TEST(unsigned_long_int);
   ADD_TEST(array_int);
@@ -826,7 +813,6 @@ int main(int argc, char** argv){
   ADD_TEST2(signature);
   ADD_TEST2(char);
   ADD_TEST2(int8);
-  ADD_TEST2(float);
   ADD_TEST2(long_int);
   ADD_TEST2(unsigned_long_int);
   ADD_TEST2(array_int);

@@ -414,25 +414,6 @@ namespace DBus
     }
   }
 
-  MessageIterator::operator float()
-  {
-    // TODO check for invalid
-    switch ( this->arg_type() )
-    {
-      case DataType::BYTE:    return (uint8_t)(*this);
-      case DataType::BOOLEAN: return (bool)(*this);
-      case DataType::INT16:   return (int16_t)(*this);
-      case DataType::UINT16:  return (uint16_t)(*this);
-      case DataType::INT32:   return (int32_t)(*this);
-      case DataType::UINT32:  return (uint32_t)(*this);
-      case DataType::INT64:   return (int64_t)(*this);
-      case DataType::UINT64:  return (uint64_t)(*this);
-      case DataType::DOUBLE:  return static_cast<float>(get_double());
-      default:
-        throw ErrorInvalidTypecast("MessageIterator:: casting non-numeric type to numeric value");
-    }
-  }
-
   MessageIterator::operator std::shared_ptr<FileDescriptor>(){
     switch ( this->arg_type() )
     {

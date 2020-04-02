@@ -167,7 +167,6 @@ namespace DBus
       
       operator char();
       operator int8_t();
-      operator float();
       #if DBUS_CXX_SIZEOF_LONG_INT == 4
         operator long int();
         operator unsigned long int();

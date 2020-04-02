@@ -84,7 +84,6 @@ namespace DBus
       MessageAppendIterator& operator<<( const int64_t& v );
       MessageAppendIterator& operator<<( const uint64_t& v );
       MessageAppendIterator& operator<<( const double& v );
-      MessageAppendIterator& operator<<( const float& v );
       MessageAppendIterator& operator<<( const char* v );
       MessageAppendIterator& operator<<( const std::string& v );
       MessageAppendIterator& operator<<( const Signature& v );

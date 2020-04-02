@@ -199,10 +199,6 @@ namespace DBus
       return *this;
   }
 
-  MessageAppendIterator& MessageAppendIterator::operator<<( const float& v ){
-    return *this;
-  }
-
   MessageAppendIterator& MessageAppendIterator::operator<<( const char* v ){
     uint32_t len = strlen( v ) & UINT32_MAX;
 
