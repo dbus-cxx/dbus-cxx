@@ -31,6 +31,8 @@
 #include <dbus-cxx/simplelogger.h>
 #include "validator.h"
 
+#include <unistd.h>
+
 static const char* LOGGER_NAME = "DBus.Message";
 
 namespace DBus
@@ -45,6 +47,9 @@ namespace DBus
 
   Message::~Message()
   {
+      for( int i : m_filedescriptors ){
+          close( i );
+      }
   }
 
 

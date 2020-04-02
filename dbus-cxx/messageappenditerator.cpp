@@ -30,6 +30,9 @@
 #include "types.h"
 #include "validator.h"
 
+#include <fcntl.h>
+#include <unistd.h>
+
 namespace DBus
 {
 
@@ -250,7 +253,7 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const Path& v ){
     if ( not this->is_valid() ) return *this;
 
-    if( m_currentContainer != ContainerType::None ){
+    if( m_currentContainer == ContainerType::None ){
         m_message->append_signature( signature( v ) );
     }
     m_marshaling.marshal( v );
@@ -259,16 +262,28 @@ namespace DBus
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const std::shared_ptr<FileDescriptor> v ){
-    bool result;
     int raw_fd;
+    uint32_t array_location;
 
     if ( not this->is_valid() ) return *this;
     if ( not v ) return *this;
 
     raw_fd = v->getDescriptor();
-    //result = dbus_message_iter_append_basic( &m_cobj, DBus::typeToDBusType( DataType::UNIX_FD ), &raw_fd );
+    if( m_currentContainer == ContainerType::None ){
+        m_message->append_signature( signature( v ) );
+    }
 
-    if ( ! result ) m_message->invalidate();
+    // Duplicate the FD so that when we return, it may be closed by the library user.
+    // See documentation for dbus_message_iter_append_basic
+    int new_fd = fcntl( raw_fd, F_DUPFD_CLOEXEC, 3 );
+    if( new_fd < 0 ){
+        m_message->invalidate();
+        return *this;
+    }
+
+    m_message->m_filedescriptors.push_back( new_fd );
+    array_location = m_message->m_filedescriptors.size() - 1;
+    m_marshaling.marshal( array_location );
 
     return *this;
   }

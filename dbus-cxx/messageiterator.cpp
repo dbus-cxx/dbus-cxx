@@ -24,6 +24,8 @@
 #include "types.h"
 #include "variant.h"
 
+#include <unistd.h>
+#include <fcntl.h>
 
 namespace DBus
 {
@@ -565,11 +567,22 @@ namespace DBus
 
   std::shared_ptr<FileDescriptor> MessageIterator::get_filedescriptor(){
     std::shared_ptr<FileDescriptor> fd;
-//    int raw_fd;
-//    if( this->arg_type() != DataType::UNIX_FD )
-//      throw ErrorInvalidTypecast("MessageIterator: getting FileDescriptor and type is not DataType::UNIX_FD");
-//    dbus_message_iter_get_basic( &m_cobj, &raw_fd );
-//    fd = FileDescriptor::create( raw_fd );
+    int32_t fd_location = m_demarshal->demarshal_int32_t();
+
+    if( fd_location >= 0 &&
+            m_message->m_filedescriptors.size() > fd_location ){
+        // This is likely a valid file descriptor.
+        // Because the current file descriptor goes away when the message gets destructed,
+        // duplicate the return value so that it will still be valid after the message goes away.
+        int new_fd = fcntl( m_message->m_filedescriptors[ fd_location ], F_DUPFD, 3 );
+        if( new_fd < 0 ){
+            return FileDescriptor::create( -1 );
+        }
+
+        return FileDescriptor::create( new_fd );
+    }
+
+    fd = FileDescriptor::create( -1 );
     return fd;
   }
 

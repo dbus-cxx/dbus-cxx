@@ -159,6 +159,7 @@ namespace DBus
     std::vector<uint8_t> m_body;
     Endianess m_endianess;
     uint8_t m_flags;
+    std::vector<int> m_filedescriptors;
 
     friend class MessageAppendIterator;
     friend class MessageIterator;
