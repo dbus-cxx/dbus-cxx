@@ -557,6 +557,9 @@ namespace DBus
   {
     if ( not ( this->arg_type() == DataType::STRING or this->arg_type() == DataType::OBJECT_PATH or this->arg_type() == DataType::SIGNATURE ) )
       throw ErrorInvalidTypecast("MessageIterator: getting char* and type is not one of DataType::STRING, DataType::OBJECT_PATH or DataType::SIGNATURE");
+    if( this->arg_type() == DataType::SIGNATURE ){
+        return m_demarshal->demarshal_signature();
+    }
     return m_demarshal->demarshal_string();
   }
 
