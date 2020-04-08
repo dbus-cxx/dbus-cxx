@@ -120,6 +120,8 @@ namespace priv {
       void print_tree( std::ostream* stream ) const;
 
   private:
+      void initialize();
+
       priv::SignatureNode* create_signature_tree( std::string::const_iterator* it,
                                   std::stack<ContainerType>* container_stack,
                                   bool* ok);
@@ -127,9 +129,9 @@ namespace priv {
       void print_node( std::ostream* stream, priv::SignatureNode* node, int spaces ) const;
 
     protected:
-
       std::string m_signature;
       priv::SignatureNode* m_startingNode;
+      bool m_valid;
 
   };
 

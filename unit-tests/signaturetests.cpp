@@ -145,6 +145,14 @@ bool signature_iterate_struct(){
     return true;
 }
 
+bool signature_unbalanced_struct(){
+    DBus::Signature sig( "(b" );
+
+    TEST_EQUALS_RET_FAIL( sig.is_valid(), false );
+
+    return true;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
   ret = signature_##name();\
 } \
@@ -164,6 +172,8 @@ int main(int argc, char** argv){
   ADD_TEST(iterate_multiple_types);
   ADD_TEST(iterate_dictionary);
   ADD_TEST(iterate_struct);
+
+  ADD_TEST(unbalanced_struct);
 
   return !ret;
 }

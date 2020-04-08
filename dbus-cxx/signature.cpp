@@ -19,8 +19,11 @@
 #include "signature.h"
 #include <dbus/dbus.h>
 #include <stack>
+#include "dbus-cxx-private.h"
 
 #include "types.h"
+
+static const char* LOGGER_NAME = "DBus.Signature";
 
 namespace DBus
 {
@@ -34,37 +37,25 @@ namespace DBus
   Signature::Signature( const std::string & s, size_type pos, size_type n ):
       m_signature( s, pos, n ),m_startingNode( nullptr )
   {
-      bool ok = true;
-      std::stack<ContainerType> containerStack;
-      std::string::const_iterator it = m_signature.begin();
-      m_startingNode = create_signature_tree( &it, &containerStack, &ok );
+      initialize();
   }
 
   Signature::Signature( const char *s ):
       m_signature( s ), m_startingNode( nullptr )
   {
-      bool ok = true;
-      std::stack<ContainerType> containerStack;
-      std::string::const_iterator it = m_signature.begin();
-      m_startingNode = create_signature_tree( &it, &containerStack, &ok );
+      initialize();
   }
 
   Signature::Signature( const char * s, size_type n ):
       m_signature( s,n ), m_startingNode( nullptr )
   {
-      bool ok = true;
-      std::stack<ContainerType> containerStack;
-      std::string::const_iterator it = m_signature.begin();
-      m_startingNode = create_signature_tree( &it, &containerStack, &ok );
+      initialize();
   }
 
   Signature::Signature( size_type n, char c ):
       m_signature( n,c ), m_startingNode( nullptr )
   {
-      bool ok = true;
-      std::stack<ContainerType> containerStack;
-      std::string::const_iterator it = m_signature.begin();
-      m_startingNode = create_signature_tree( &it, &containerStack, &ok );
+      initialize();
   }
 
   Signature::~Signature()
@@ -95,11 +86,13 @@ namespace DBus
 
   Signature::iterator Signature::begin()
   {
+      if( !m_valid ) return SignatureIterator();
     return SignatureIterator( m_startingNode );
   }
 
   Signature::const_iterator Signature::begin() const
   {
+      if( !m_valid ) return SignatureIterator();
     return SignatureIterator( m_startingNode );
   }
 
@@ -115,14 +108,16 @@ namespace DBus
 
   bool Signature::is_valid() const
   {
-    if ( m_signature.empty() ) return false;
-    return dbus_signature_validate( m_signature.c_str(), nullptr );
+    return m_valid;
   }
 
   bool Signature::is_singleton() const
   {
-    if ( m_signature.empty() ) return false;
-    return dbus_signature_validate_single( m_signature.c_str(), nullptr );
+    return m_valid &&
+            m_startingNode != nullptr &&
+            m_startingNode->m_dataType != DataType::INVALID  &&
+            m_startingNode->m_next == nullptr &&
+            m_startingNode->m_sub == nullptr;
   }
 
   priv::SignatureNode* Signature::create_signature_tree( std::string::const_iterator* it,
@@ -204,7 +199,8 @@ namespace DBus
               (*it)++;
             current->m_sub = create_signature_tree( it, container_stack, ok );
             if( tmpDataType == DataType::ARRAY ){
-                (*it)++;
+                container_stack->pop();
+                if( *it != m_signature.cend() ) (*it)++;
                 break;
             }
           }
@@ -241,6 +237,29 @@ namespace DBus
       }
 
       *stream << node->m_dataType;
+  }
+
+  void Signature::initialize(){
+      m_valid = true;
+      std::stack<ContainerType> containerStack;
+      std::string::const_iterator it = m_signature.begin();
+      m_startingNode = create_signature_tree( &it, &containerStack, &m_valid );
+
+      if( !containerStack.empty() ||
+              it != m_signature.end() ){
+          SIMPLELOGGER_DEBUG( LOGGER_NAME, "Either stack not empty or signature not used up completely" );
+          m_valid = false;
+      }
+
+      std::ostringstream logmsg;
+      logmsg << "Signature \'" << m_signature << "\' is ";
+      if( m_valid ){
+          logmsg << "valid";
+      }else{
+          logmsg << "invalid";
+      }
+
+      SIMPLELOGGER_DEBUG( LOGGER_NAME, logmsg.str() );
   }
 
 }

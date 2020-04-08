@@ -64,6 +64,7 @@ namespace DBus
     if ( not this->is_valid() ) return false;
 
     if( m_current->m_next == nullptr ){
+        m_current = nullptr;
         m_valid = false;
         return false;
     }

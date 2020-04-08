@@ -211,3 +211,4 @@ add_test( NAME signature-nested-array COMMAND test-signature iterate_nested_arra
 add_test( NAME signature-multiple-types COMMAND test-signature iterate_multiple_types)
 add_test( NAME signature-dictionary COMMAND test-signature iterate_dictionary)
 add_test( NAME signature-struct COMMAND test-signature iterate_struct)
+add_test( NAME signature-unbalanced-struct COMMAND test-signature unbalanced_struct)
