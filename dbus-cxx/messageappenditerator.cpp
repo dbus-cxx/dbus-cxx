@@ -319,9 +319,6 @@ namespace DBus
         signature.append( "v" );
         break;
     case ContainerType::DICT_ENTRY:
-        signature.append( "{" );
-        signature.append( sig );
-        signature.append( "}" );
         break;
     }
 

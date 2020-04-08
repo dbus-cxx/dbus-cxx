@@ -161,6 +161,38 @@ bool signature_iterate_nested_with_more_data(){
     return true;
 }
 
+bool signature_iterate_dict_and_data(){
+    DBus::Signature sig( "a{bs}ix" );
+
+    DBus::SignatureIterator it = sig.begin();
+
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::ARRAY );
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INT32 );
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INT64 );
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
+
+    return true;
+}
+
+bool signature_iterate_struct_and_data(){
+    DBus::Signature sig( "(bs)ix" );
+
+    DBus::SignatureIterator it = sig.begin();
+
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::STRUCT );
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INT32 );
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INT64 );
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
+
+    return true;
+}
+
 bool signature_unbalanced_struct(){
     DBus::Signature sig( "(b" );
 
@@ -189,6 +221,8 @@ int main(int argc, char** argv){
   ADD_TEST(iterate_dictionary);
   ADD_TEST(iterate_struct);
   ADD_TEST(iterate_nested_with_more_data);
+  ADD_TEST(iterate_dict_and_data);
+  ADD_TEST(iterate_struct_and_data);
 
   ADD_TEST(unbalanced_struct);
 

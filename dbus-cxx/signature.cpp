@@ -153,11 +153,9 @@ namespace DBus
               ContainerType currentTop = container_stack->top();
               if( currentTop == ContainerType::STRUCT &&
                       tmpDataType == DataType::STRUCT ){
-                container_stack->pop();
                 return first;
               }else if( currentTop == ContainerType::DICT_ENTRY &&
                       tmpDataType == DataType::DICT_ENTRY ){
-                  container_stack->pop();
                   return first;
               }else{
                   *ok = false;
@@ -182,23 +180,40 @@ namespace DBus
                   container_stack->top() == ContainerType::ARRAY &&
                   ti.is_basic() ){
             // We just added this basic element to the array
-              break;
-          }
-
-          if( !container_stack->empty() &&
-                  container_stack->top() == ContainerType::ARRAY &&
-                  ti.is_container() &&
-                  ending_container ){
-            // We just added this container element to the array
+              (*it)++;
               break;
           }
 
           if( ti.is_container() &&
                   tmpDataType != DataType::VARIANT ){
-              container_stack->push( char_to_container_type( **it ) );
+              ContainerType toPush = char_to_container_type( **it );
+              container_stack->push( toPush );
               (*it)++;
             current->m_sub = create_signature_tree( it, container_stack, ok );
-            if( tmpDataType == DataType::ARRAY ){
+
+            if( container_stack->top() != toPush ){
+                // Unbalanced
+                *ok = false;
+                return nullptr;
+            }
+
+            // If we're the ending character of a container,
+            // advance the iterator so we go to the next character
+            ending_container = is_ending_container( **it );
+            if( ending_container &&
+                    toPush == ContainerType::STRUCT ){
+                container_stack->pop();
+                if( !container_stack->empty() ){
+                    return first;
+                }
+
+            }else if( ending_container &&
+                      toPush == ContainerType::DICT_ENTRY ){
+                container_stack->pop();
+                (*it)++;
+                return first;
+            }else if( toPush == ContainerType::ARRAY &&
+                      current->m_sub != nullptr ){
                 // Note: need to be special about popping and advancing iterator
                 // Assume we have 'aaid' as our signature.  When popping the array
                 // off of our stack, we only need to advance the iterator once.
@@ -216,11 +231,14 @@ namespace DBus
                 }
 
                 if( isArrayEnd && *it != m_signature.cend() ){
-                    (*it)++;
+                    //(*it)++;
                     continue;
                 }
 
                 break;
+            }else{
+                *ok = false;
+                return nullptr;
             }
           }
 
