@@ -112,11 +112,14 @@ bool signature_iterate_dictionary(){
     TEST_EQUALS_RET_FAIL( it.is_dict(), true );
 
     DBus::SignatureIterator subit = it.recurse();
-    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::BYTE );
-    subit.next();
-    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::VARIANT );
-    subit.next();
-    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::INVALID );
+    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::DICT_ENTRY );
+
+    DBus::SignatureIterator subsubit = subit.recurse();
+    TEST_EQUALS_RET_FAIL( subsubit.type(), DBus::DataType::BYTE );
+    subsubit.next();
+    TEST_EQUALS_RET_FAIL( subsubit.type(), DBus::DataType::VARIANT );
+    subsubit.next();
+    TEST_EQUALS_RET_FAIL( subsubit.type(), DBus::DataType::INVALID );
 
     return true;
 }
@@ -131,7 +134,6 @@ bool signature_iterate_struct(){
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::STRUCT );
 
     DBus::SignatureIterator subit = it.recurse();
-    std::cout << "subit signature " << subit.signature() << std::endl;
     TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::BOOLEAN );
     subit.next();
     TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::DOUBLE );

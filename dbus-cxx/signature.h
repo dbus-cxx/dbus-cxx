@@ -26,12 +26,31 @@
 #include <string>
 #include <vector>
 #include <dbus/dbus.h>
+#include <stack>
+#include "enums.h"
 
 #ifndef DBUSCXX_SIGNATURE_H
 #define DBUSCXX_SIGNATURE_H
 
 namespace DBus
 {
+
+namespace priv {
+    /**
+     * Represents a single entry in our graph of the signature
+     */
+    class SignatureNode {
+    public:
+        SignatureNode( DataType d ) :
+            m_dataType( d ),
+            m_next( nullptr ),
+            m_sub( nullptr ){}
+
+        DataType m_dataType;
+        SignatureNode* m_next;
+        SignatureNode* m_sub;
+    };
+}
 
   class FileDescriptor;
   class Variant;
@@ -93,9 +112,24 @@ namespace DBus
       /** True if the signature is a valid DBus signature and contains exactly one complete type */
       bool is_singleton() const;
 
+      /**
+       * Print the signature tree to the given ostream.
+       *
+       * @param stream
+       */
+      void print_tree( std::ostream* stream ) const;
+
+  private:
+      priv::SignatureNode* create_signature_tree( std::string::const_iterator* it,
+                                  std::stack<ContainerType>* container_stack,
+                                  bool* ok);
+
+      void print_node( std::ostream* stream, priv::SignatureNode* node, int spaces ) const;
+
     protected:
 
       std::string m_signature;
+      priv::SignatureNode* m_startingNode;
 
   };
 

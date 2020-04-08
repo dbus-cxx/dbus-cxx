@@ -44,6 +44,8 @@ namespace DBus
           Signature demarshaled_sig = demarshal->demarshal_signature();
           m_subiterInfo.m_variantSignature = demarshaled_sig;
           m_signatureIterator = demarshaled_sig.begin();
+      }else if( d == DataType::DICT_ENTRY || d == DataType::STRUCT ){
+          m_demarshal->align( 8 );
       }
 
   }
@@ -57,7 +59,7 @@ namespace DBus
   MessageIterator::MessageIterator( const Message& message ):
       m_message( &message ),
       m_demarshal( new Demarshaling( m_message->m_body.data(), m_message->m_body.size(), m_message->m_endianess ) ),
-      m_signatureIterator( m_message->signature() )
+      m_signatureIterator( m_message->signature().begin() )
   {
     m_subiterInfo.m_subiterDataType = DataType::INVALID;
   }
@@ -65,7 +67,7 @@ namespace DBus
   MessageIterator::MessageIterator( std::shared_ptr<Message> message ):
       m_message( message.get() ),
       m_demarshal( new Demarshaling( m_message->m_body.data(), m_message->m_body.size(), m_message->m_endianess ) ),
-      m_signatureIterator( m_message->signature() )
+      m_signatureIterator( m_message->signature().begin() )
   {
       m_subiterInfo.m_subiterDataType = DataType::INVALID;
   }

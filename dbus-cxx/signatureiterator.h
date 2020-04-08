@@ -17,7 +17,6 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/enums.h>
-#include <dbus/dbus.h>
 #include <string>
 
 #ifndef DBUSCXX_SIGNATUREITERATOR_H
@@ -26,8 +25,16 @@
 namespace DBus
 {
 
+namespace priv{
+    class SignatureNode;
+}
+
   /**
-   * Signature iterator allowing type signatures to be parsed
+   * A SignatureIterator allows you to iterate over a given DBus signature, and
+   * to extract useful information out of the signature.
+   *
+   * Note that you must have a valid signature before you can create a SignatureIterator.
+   * Don't create this class directly; it can only be created from the Signature class.
    * 
    * @ingroup core
    *
@@ -39,9 +46,9 @@ namespace DBus
 
       SignatureIterator();
 
-      SignatureIterator( const std::string& signature );
-
       SignatureIterator( const SignatureIterator& other );
+
+      SignatureIterator( priv::SignatureNode* startnode );
 
       /** Invalidates the iterator */
       void invalidate();
@@ -110,20 +117,13 @@ namespace DBus
       std::string signature() const;
 
     private:
-      /**
-       * Recurse into the current container.
-       *
-       * @return A tuple which contains:
-       * - The substring that contains the container signature
-       * - An iterator to the first character in the contained signature
-       * - An interator to the last character in the contained signature
-       */
-      std::tuple<std::string,std::string::iterator,std::string::iterator> recurse_into_container( std::string::iterator current_pos );
+
+      std::string iterate_over_subsig( priv::SignatureNode* start ) const;
 
     protected:
       bool m_valid;
-      std::string m_signature;
-      std::string::iterator m_it;
+      priv::SignatureNode* m_current;
+      const priv::SignatureNode* m_first;
   };
 
 }

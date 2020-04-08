@@ -70,11 +70,13 @@ namespace DBus
           return DataType::ARRAY;
       case 'r':
       case '(':
+      case ')':
           return DataType::STRUCT;
       case 'v':
           return DataType::VARIANT;
       case 'e':
       case '{':
+      case '}':
         return DataType::DICT_ENTRY;
       case 'h':
           return DataType::UNIX_FD;
@@ -82,6 +84,44 @@ namespace DBus
       }
 
       return DataType::INVALID;
+  }
+
+  inline ContainerType char_to_container_type( char c ){
+      switch( c ){
+      case 'a':
+          return ContainerType::ARRAY;
+      case 'e':
+      case '{':
+          return ContainerType::DICT_ENTRY;
+      case '(':
+      case 'r':
+          return ContainerType::STRUCT;
+      case 'v':
+          return ContainerType::VARIANT;
+      }
+
+      return ContainerType::None;
+  }
+
+  inline bool is_ending_container( char c ){
+      switch( c ){
+      case '}':
+      case ')':
+          return true;
+      default:
+          return false;
+      }
+  }
+
+  inline ContainerType char_to_ending_container( char c ){
+      switch( c ){
+      case '}':
+          return ContainerType::DICT_ENTRY;
+      case ')':
+          return ContainerType::STRUCT;
+      }
+
+      return ContainerType::None;
   }
 
   inline DataType type( const uint8_t& )            { return DataType::BYTE; }
@@ -163,6 +203,12 @@ namespace DBus
      * @return
      */
     int32_t alignment() const;
+
+    /**
+     * Turn this type into a DBus char.
+     * @return
+     */
+    char to_dbus_char() const;
 
   private:
     DataType m_type;

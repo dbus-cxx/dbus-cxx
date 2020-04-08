@@ -373,7 +373,6 @@ bool call_message_append_extract_iterator_map_string_variant(){
   extracted_map = (std::map<std::string,DBus::Variant>)iter2;
 
   TEST_EQUALS_RET_FAIL( std::any_cast<int>(extracted_map["one"].value()), 99 );
-std::cout << extracted_map["xcom"].value().type().name() << " << type" << std::endl;
   TEST_EQUALS_RET_FAIL( std::any_cast<std::string>(extracted_map["xcom"].value()), "hi" );
 
   return true;

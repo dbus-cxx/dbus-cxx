@@ -187,6 +187,46 @@ namespace DBus {
       }
   }
 
+  char TypeInfo::to_dbus_char() const {
+      switch( m_type ){
+      case DataType::BYTE:
+        return 'y';
+      case DataType::BOOLEAN:
+        return 'b';
+      case DataType::INT16:
+        return 'n';
+      case DataType::UINT16:
+        return 'q';
+      case DataType::INT32:
+        return 'i';
+      case DataType::UINT32:
+        return 'u';
+      case DataType::INT64:
+        return 'x';
+      case DataType::UINT64:
+        return 't';
+      case DataType::DOUBLE:
+        return 'd';
+      case DataType::STRING:
+        return 's';
+      case DataType::OBJECT_PATH:
+        return 'o';
+      case DataType::SIGNATURE:
+        return 'g';
+      case DataType::ARRAY:
+        return 'a';
+      case DataType::VARIANT:
+        return 'v';
+      case DataType::UNIX_FD:
+        return 'h';
+    default:
+    case DataType::INVALID:
+        break;
+      }
+
+      return '\0';
+  }
+
   std::ostream& operator<<(std::ostream& os, DataType d){
       switch ( d )
       {

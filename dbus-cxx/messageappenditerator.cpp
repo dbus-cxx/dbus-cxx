@@ -309,7 +309,8 @@ namespace DBus
         signature.append( sig );
         // The size will get marshalled once we close the container
     {
-        SignatureIterator tmpSigIter( sig );
+        Signature tmpSig( sig );
+        SignatureIterator tmpSigIter = tmpSig.begin();
         TypeInfo ti( tmpSigIter.type() );
         array_align = ti.alignment();
     }
