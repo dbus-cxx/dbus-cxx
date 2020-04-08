@@ -56,6 +56,8 @@
 namespace sigc { template <typename T_return, typename ...T_arg> class signal; }
 namespace sigc { template <typename T_return, typename ...T_arg> class slot; }
 
+static const char* LOGGER_NAME = "DBus.Connection";
+
 namespace DBus
 {
 
@@ -71,7 +73,9 @@ struct Connection::ExpectingResponse {
     m_currentSerial = 1;
 
     if( type == BusType::SESSION ){
-        m_transport = priv::Transport::open_transport( std::string( getenv( "DBUS_SESSION_BUS_ADDRESS" ) ) );
+        std::string sessionBusAddr = std::string( getenv( "DBUS_SESSION_BUS_ADDRESS" ) );
+        SIMPLELOGGER_DEBUG(LOGGER_NAME, "Going to open session bus: " + sessionBusAddr );
+        m_transport = priv::Transport::open_transport( sessionBusAddr );
     }else if( type == BusType::SYSTEM ){
         std::string systemBusAddr = std::string( getenv( "DBUS_SYSTEM_BUS_ADDRESS" ) );
         if( systemBusAddr.empty() ){
@@ -99,7 +103,7 @@ struct Connection::ExpectingResponse {
       m_transport = priv::Transport::open_transport( address );
 
      if( !m_transport || !m_transport->is_valid() ){
-         SIMPLELOGGER_ERROR("dbus.Connection", "Unable to open transport" );
+         SIMPLELOGGER_ERROR(LOGGER_NAME, "Unable to open transport" );
          return;
      }
   }
@@ -135,6 +139,10 @@ struct Connection::ExpectingResponse {
 
   bool Connection::bus_register()
   {
+      if( !m_transport || !m_transport->is_valid() ){
+          return false;
+      }
+
       if( is_registered() ){
           return true;
       }
