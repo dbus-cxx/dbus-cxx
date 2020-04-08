@@ -145,6 +145,22 @@ bool signature_iterate_struct(){
     return true;
 }
 
+bool signature_iterate_nested_with_more_data(){
+    DBus::Signature sig( "aaidd" );
+
+    DBus::SignatureIterator it = sig.begin();
+
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::ARRAY );
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::DOUBLE );
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::DOUBLE );
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
+
+    return true;
+}
+
 bool signature_unbalanced_struct(){
     DBus::Signature sig( "(b" );
 
@@ -172,6 +188,7 @@ int main(int argc, char** argv){
   ADD_TEST(iterate_multiple_types);
   ADD_TEST(iterate_dictionary);
   ADD_TEST(iterate_struct);
+  ADD_TEST(iterate_nested_with_more_data);
 
   ADD_TEST(unbalanced_struct);
 

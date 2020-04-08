@@ -199,13 +199,32 @@ namespace DBus
               (*it)++;
             current->m_sub = create_signature_tree( it, container_stack, ok );
             if( tmpDataType == DataType::ARRAY ){
+                // Note: need to be special about popping and advancing iterator
+                // Assume we have 'aaid' as our signature.  When popping the array
+                // off of our stack, we only need to advance the iterator once.
+                // So basically, don't advance the iterator unless we're all the way
+                // at the begining of the array.
+                // This also means that we will either continue or break, depending on
+                // if we are at the end of the signature or not, so we know if we need
+                // to go on at all.
+                bool isArrayEnd = true;
+
                 container_stack->pop();
-                if( *it != m_signature.cend() ) (*it)++;
+                if( !container_stack->empty() &&
+                        container_stack->top() == ContainerType::ARRAY ){
+                    isArrayEnd = false;
+                }
+
+                if( isArrayEnd && *it != m_signature.cend() ){
+                    (*it)++;
+                    continue;
+                }
+
                 break;
             }
           }
 
-          (*it)++;
+          if( *it != m_signature.cend() ) (*it)++;
       }while( *it != m_signature.cend() );
 
       return first;
