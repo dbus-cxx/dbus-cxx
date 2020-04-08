@@ -113,11 +113,12 @@ static std::vector<ParsedTransport> parseTransports( std::string address_str ){
     return retval;
 }
 
-static int open_unix_socket( std::string socketAddress ){
+static int open_unix_socket( std::string socketAddress, bool is_abstract ){
     struct sockaddr_un addr;
     int fd;
     int stat;
     int passcred = 1;
+    socklen_t data_len = 0;
 
     memset( &addr, 0, sizeof( struct sockaddr_un ) );
     fd = ::socket( AF_UNIX, SOCK_STREAM, 0 );
@@ -128,9 +129,15 @@ static int open_unix_socket( std::string socketAddress ){
     }
 
     addr.sun_family = AF_UNIX;
-    memcpy( addr.sun_path, socketAddress.c_str(), socketAddress.size() );
+    if( is_abstract ){
+        memcpy( &addr.sun_path[ 1 ], socketAddress.c_str(), socketAddress.size() );
+        data_len = offsetof( struct sockaddr_un, sun_path ) + socketAddress.size() + 1;
+    }else{
+        memcpy( addr.sun_path, socketAddress.c_str(), socketAddress.size() );
+        data_len = sizeof( addr );
+    }
 
-    stat = ::connect( fd, (struct sockaddr*)&addr, sizeof( addr ) );
+    stat = ::connect( fd, (struct sockaddr*)&addr, data_len );
     if( stat < 0 ){
         int my_errno = errno;
         std::string errmsg = strerror( errno );
@@ -169,10 +176,24 @@ std::shared_ptr<Transport> Transport::open_transport( std::string address ){
     for( ParsedTransport param : transports ){
         if( param.m_transportName == "unix" ){
             std::string path = param.m_config[ "path" ];
+            std::string abstractPath = param.m_config[ "abstract" ];
             int fd;
 
             if( !path.empty() ){
-                fd = open_unix_socket( path );
+                fd = open_unix_socket( path, false );
+                if( fd >= 0 ){
+                    retTransport = SimpleTransport::create( fd, true );
+                    if( !retTransport->is_valid() ){
+                        retTransport.reset();
+                        continue;
+                    }
+                    negotiateFD = true;
+                    break;
+                }
+            }
+
+            if( !abstractPath.empty() ){
+                fd = open_unix_socket( abstractPath, true );
                 if( fd >= 0 ){
                     retTransport = SimpleTransport::create( fd, true );
                     if( !retTransport->is_valid() ){
