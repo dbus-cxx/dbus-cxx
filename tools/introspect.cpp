@@ -61,8 +61,6 @@ int main( int argc, const char** argv )
     return 1;
   }
 
-  DBus::init();
-  
   std::shared_ptr<Connection> conn;
 
   if ( use_system )

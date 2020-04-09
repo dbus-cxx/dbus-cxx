@@ -159,7 +159,7 @@ int main(int argc, char** argv){
   }else{
     server_setup();
     ret = true;
-    sleep( 1 );
+    sleep( 1000 );
   }
 
 

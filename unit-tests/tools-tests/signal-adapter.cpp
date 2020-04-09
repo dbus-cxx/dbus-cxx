@@ -19,12 +19,10 @@
 #include "signalNameAdapter.h"
 
 int main( int argc, char** argv ){
-    DBus::init();
-
     std::shared_ptr<DBus::Dispatcher> dispatch = DBus::Dispatcher::create();
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<signalNameAdapter> sigAdapt = signalNameAdapter::create( conn, nullptr );
+    std::shared_ptr<signalNameAdapter> sigAdapt = signalNameAdapter::create( conn, DBus::ThreadForCalling::DispatcherThread, nullptr );
 
     sigAdapt->exampleSignal( "foobar" );
 }

@@ -201,6 +201,44 @@ bool signature_unbalanced_struct(){
     return true;
 }
 
+bool signature_iterate_nested_struct(){
+    DBus::Signature sig( "(i(id))" );
+
+    DBus::SignatureIterator it = sig.begin();
+
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::STRUCT );
+
+    DBus::SignatureIterator subit = it.recurse();
+    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::INT32 );
+    subit.next();
+    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::STRUCT );
+
+    DBus::SignatureIterator subit2 = subit.recurse();
+    TEST_EQUALS_RET_FAIL( subit2.type(), DBus::DataType::INT32 );
+    subit2.next();
+    TEST_EQUALS_RET_FAIL( subit2.type(), DBus::DataType::DOUBLE );
+    subit2.next();
+    TEST_EQUALS_RET_FAIL( subit2.type(), DBus::DataType::INVALID );
+
+    subit.next();
+    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::INVALID );
+
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
+
+    return true;
+}
+
+bool signature_single_bool(){
+    DBus::Signature sig( "b" );
+
+    DBus::SignatureIterator it = sig.begin();
+
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::BOOLEAN );
+
+    return true;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
   ret = signature_##name();\
 } \
@@ -223,8 +261,10 @@ int main(int argc, char** argv){
   ADD_TEST(iterate_nested_with_more_data);
   ADD_TEST(iterate_dict_and_data);
   ADD_TEST(iterate_struct_and_data);
+  ADD_TEST(iterate_nested_struct);
 
   ADD_TEST(unbalanced_struct);
+  ADD_TEST(single_bool);
 
   return !ret;
 }
