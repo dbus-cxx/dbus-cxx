@@ -298,7 +298,7 @@ namespace DBus
           logmsg << "invalid";
       }
 
-      SIMPLELOGGER_DEBUG( LOGGER_NAME, logmsg.str() );
+      SIMPLELOGGER_TRACE( LOGGER_NAME, logmsg.str() );
   }
 
 }
