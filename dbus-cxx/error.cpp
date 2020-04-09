@@ -29,7 +29,9 @@ namespace DBus
   Error::Error( const char* name, const char* message )
   {
     m_name = std::string( name );
-    m_message = std::string( message );
+    if( message != nullptr ){
+        m_message = std::string( message );
+    }
   }
 
   Error::Error( const char* name, std::string message )
