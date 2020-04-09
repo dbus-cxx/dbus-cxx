@@ -31,6 +31,8 @@
 #include "simpletransport.h"
 #include "sasl.h"
 
+static const char* LOGGER_NAME = "DBus.Transport";
+
 using DBus::priv::Transport;
 
 class ParsedTransport {
@@ -124,7 +126,7 @@ static int open_unix_socket( std::string socketAddress, bool is_abstract ){
     fd = ::socket( AF_UNIX, SOCK_STREAM, 0 );
     if( fd < 0 ){
         std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG("dbus.Transport", "Unable to create socket: " + errmsg );
+        SIMPLELOGGER_DEBUG(LOGGER_NAME, "Unable to create socket: " + errmsg );
         return fd;
     }
 
@@ -141,18 +143,18 @@ static int open_unix_socket( std::string socketAddress, bool is_abstract ){
     if( stat < 0 ){
         int my_errno = errno;
         std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG("dbus.Transport", "Unable to connect: " + errmsg );
+        SIMPLELOGGER_DEBUG(LOGGER_NAME, "Unable to connect: " + errmsg );
         errno = my_errno;
         return stat;
     }
 
-    SIMPLELOGGER_DEBUG("dbus.Transport", "Opened dbus connection to " + socketAddress );
+    SIMPLELOGGER_DEBUG(LOGGER_NAME, "Opened dbus connection to " + socketAddress );
 
     stat = ::setsockopt( fd, SOL_SOCKET, SO_PASSCRED, &passcred, sizeof( int ) );
     if( stat < 0 ){
         int my_errno = errno;
         std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG("dbus.Transport", "Unable to set passcred: " + errmsg );
+        SIMPLELOGGER_DEBUG(LOGGER_NAME, "Unable to set passcred: " + errmsg );
         errno = my_errno;
         return stat;
     }
@@ -160,7 +162,9 @@ static int open_unix_socket( std::string socketAddress, bool is_abstract ){
     // Turn the FD into non-blocking
     {
         int flags = fcntl(fd, F_GETFL, 0);
-        fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+        if( fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0 ){
+            SIMPLELOGGER_ERROR(LOGGER_NAME, "Unable to set non-blocking" );
+        }
     }
 
     return fd;
@@ -215,7 +219,7 @@ std::shared_ptr<Transport> Transport::open_transport( std::string address ){
         retTransport->m_serverAddress = std::get<2>( resp );
 
         if( std::get<0>( resp ) == false ){
-            SIMPLELOGGER_DEBUG("dbus.Transport", "Did not authenticate with server" );
+            SIMPLELOGGER_DEBUG(LOGGER_NAME, "Did not authenticate with server" );
             retTransport.reset();
         }
     }
