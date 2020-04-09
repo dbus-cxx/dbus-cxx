@@ -63,7 +63,7 @@ bool Validator::validate_bus_name( std::string busname ){
     }
 
     for( ; it < busname.end(); it++ ){
-        if( !is_allowable_character( *it ) ) return false;
+        if( *it != '.' && !is_allowable_character( *it ) ) return false;
 
         if( previousChar == '.' && is_allowable_character( *it ) ){
             if( !isUnique && std::isdigit( *it ) ){
@@ -92,7 +92,7 @@ bool Validator::validate_interface_name( std::string interfacename ){
     }
 
     for( ; it < interfacename.end(); it++ ){
-        if( !is_allowable_character( *it ) ) return false;
+        if( *it != '.' && !is_allowable_character( *it ) ) return false;
 
         if( previousChar == '.' && is_allowable_character( *it ) ){
             if( std::isdigit( *it ) ){
