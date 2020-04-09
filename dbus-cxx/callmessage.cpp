@@ -104,7 +104,7 @@ namespace DBus
 
   void CallMessage::set_path( const std::string& p )
   {
-    m_headerMap[ MessageHeaderFields::Interface ] = Variant( Path( p ) );
+    m_headerMap[ MessageHeaderFields::Path ] = Variant( Path( p ) );
   }
 
   Path CallMessage::path() const
