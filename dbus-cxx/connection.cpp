@@ -68,7 +68,8 @@ struct Connection::ExpectingResponse {
 };
 
   Connection::Connection( BusType type ) :
-      m_dispatchingThread( std::this_thread::get_id() )
+      m_dispatchingThread( std::this_thread::get_id() ),
+      m_dispatchStatus( DispatchStatus::COMPLETE )
   {
     m_currentSerial = 1;
 
@@ -98,7 +99,8 @@ struct Connection::ExpectingResponse {
   }
 
   Connection::Connection( std::string address ) :
-      m_dispatchingThread( std::this_thread::get_id() )
+      m_dispatchingThread( std::this_thread::get_id() ),
+      m_dispatchStatus( DispatchStatus::COMPLETE )
   {
       m_transport = priv::Transport::open_transport( address );
 
@@ -559,6 +561,9 @@ struct Connection::ExpectingResponse {
       if( entry.handlingThread == m_dispatchingThread ){
           // We are in the dispatching thread here, so we can simply call the handle method
           //entry.handler->handle_message();
+          if( callmsg ){
+            entry.handler->handle_call_message( callmsg );
+          }
       }else{
           // A different thread needs to handle this.
           std::shared_ptr<ThreadDispatcher> disp = m_threadDispatchers[ entry.handlingThread ].lock();

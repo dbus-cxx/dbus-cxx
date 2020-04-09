@@ -242,6 +242,23 @@ namespace DBus {
       return os;
   }
 
+  inline std::ostream& operator<<( std::ostream& os, DispatchStatus status ){
+      os << "DispatchStatus::";
+      switch( status ){
+      case DispatchStatus::DATA_REMAINS:
+          os << "DATA_REMAINS";
+          break;
+      case DispatchStatus::COMPLETE:
+          os << "COMPLETE";
+          break;
+      case DispatchStatus::NEED_MEMORY:
+          os << "NEED_MEMORY";
+          break;
+      }
+
+      return os;
+  }
+
 }
 
 #endif

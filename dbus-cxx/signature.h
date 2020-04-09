@@ -47,8 +47,8 @@ namespace priv {
             m_sub( nullptr ){}
 
         DataType m_dataType;
-        SignatureNode* m_next;
-        SignatureNode* m_sub;
+        std::shared_ptr<priv::SignatureNode> m_next;
+        std::shared_ptr<priv::SignatureNode> m_sub;
     };
 }
 
@@ -122,7 +122,7 @@ namespace priv {
   private:
       void initialize();
 
-      priv::SignatureNode* create_signature_tree( std::string::const_iterator* it,
+      std::shared_ptr<priv::SignatureNode> create_signature_tree( std::string::const_iterator* it,
                                   std::stack<ContainerType>* container_stack,
                                   bool* ok);
 
@@ -130,7 +130,7 @@ namespace priv {
 
     protected:
       std::string m_signature;
-      priv::SignatureNode* m_startingNode;
+      std::shared_ptr<priv::SignatureNode> m_startingNode;
       bool m_valid;
 
   };

@@ -34,14 +34,6 @@
 namespace DBus
 {
 
-  /* Debug output strings */
-  static constexpr const char* dispatch_status_string[] =
-  {
-    "DispatchStatus::DATA_REMAINS",
-    "DispatchStatus::COMPLETE",
-    "DispatchStatus::NEED_MEMORY",
-  };
-
   Dispatcher::Dispatcher(bool is_running):
       m_running(false),
       m_dispatch_loop_limit(0)
@@ -251,7 +243,7 @@ namespace DBus
       // If the dispatch loop limit is zero we will loop as long as status is DispatchStatus::DATA_REMAINS
       if ( m_dispatch_loop_limit == 0 )
       {
-        SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "Dispatch Status: " << dispatch_status_string[ static_cast<int>( (*ci)->dispatch_status() ) ] );
+        SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "Dispatch Status: " << (*ci)->dispatch_status() );
         while ( (*ci)->dispatch_status() == DispatchStatus::DATA_REMAINS )
           (*ci)->dispatch();
       }

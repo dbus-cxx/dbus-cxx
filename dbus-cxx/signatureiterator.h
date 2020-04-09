@@ -18,6 +18,7 @@
  ***************************************************************************/
 #include <dbus-cxx/enums.h>
 #include <string>
+#include <memory>
 
 #ifndef DBUSCXX_SIGNATUREITERATOR_H
 #define DBUSCXX_SIGNATUREITERATOR_H
@@ -48,7 +49,7 @@ namespace priv{
 
       SignatureIterator( const SignatureIterator& other );
 
-      SignatureIterator( priv::SignatureNode* startnode );
+      SignatureIterator( std::shared_ptr<priv::SignatureNode> startnode );
 
       /** Invalidates the iterator */
       void invalidate();
@@ -118,12 +119,12 @@ namespace priv{
 
     private:
 
-      std::string iterate_over_subsig( priv::SignatureNode* start ) const;
+      std::string iterate_over_subsig( std::shared_ptr<priv::SignatureNode> start ) const;
 
     protected:
       bool m_valid;
-      priv::SignatureNode* m_current;
-      const priv::SignatureNode* m_first;
+      std::shared_ptr<priv::SignatureNode> m_current;
+      std::shared_ptr<priv::SignatureNode> m_first;
   };
 
 }

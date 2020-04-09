@@ -23,9 +23,9 @@ include( GNUInstallDirs )
 include( FindPkgConfig )
 include( CheckTypeSize )
 include( CTest )
-IF( CMAKE_BUILD_TYPE MATCHES DEBUG )
+IF( CMAKE_BUILD_TYPE MATCHES Debug )
 include( CodeCoverage )
-ENDIF( CMAKE_BUILD_TYPE MATCHES DEBUG )
+ENDIF( CMAKE_BUILD_TYPE MATCHES Debug )
 
 # version information
 set( DBUS_CXX_PACKAGE_MAJOR_VERSION 2 )
@@ -47,6 +47,9 @@ option( ENABLE_GLIBMM "Enable GLibMM support" OFF )
 option( BUILD_SITE "Build the dbus-cxx website reference" OFF )
 option( TOOLS_BUNDLED_CPPGENERATE "Use bundled libcppgenerate" ON )
 option( ENABLE_CODE_COVERAGE_REPORT "Enable code coverage report" OFF )
+if( CMAKE_BUILD_TYPE MATCHES Debug )
+option( ENABLE_ASAN "Enable ASAN for finding memory bugs" OFF )
+endif()
 
 #
 # Configure our compile options
@@ -54,6 +57,9 @@ option( ENABLE_CODE_COVERAGE_REPORT "Enable code coverage report" OFF )
 set( DBUS_CXX_HAVE_DBUS_12 1 )
 CHECK_TYPE_SIZE( "long int" DBUS_CXX_SIZEOF_LONG_INT )
 configure_file( dbus-cxx-config.h.cmake dbus-cxx/dbus-cxx-config.h )
+if( ${ENABLE_ASAN} )
+	set( CMAKE_CXX_FLAGS "-fsanitize=address" )
+endif()
 
 # 
 # All sources
@@ -332,3 +338,6 @@ message(STATUS "  Use bundled cppgenerate ......... : ${TOOLS_BUNDLED_CPPGENERAT
 message(STATUS "  Enable GLibmm support ........... : ${ENABLE_GLIBMM}")
 message(STATUS "  Build website ................... : ${BUILD_SITE}")
 message(STATUS "  Enable code coverage report ..... : ${ENABLE_CODE_COVERAGE_REPORT}")
+if( CMAKE_BUILD_TYPE MATCHES Debug )
+message(STATUS "  libasan enabled ................. : ${ENABLE_ASAN}")
+endif()

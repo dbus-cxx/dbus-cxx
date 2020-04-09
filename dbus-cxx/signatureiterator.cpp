@@ -37,7 +37,7 @@ namespace DBus
       m_first( other.m_first )
   {}
 
-  SignatureIterator::SignatureIterator( priv::SignatureNode* startnode ) :
+  SignatureIterator::SignatureIterator( std::shared_ptr<priv::SignatureNode> startnode ) :
     m_valid( startnode != nullptr ),
     m_current( startnode ),
     m_first( startnode ) {
@@ -148,7 +148,7 @@ namespace DBus
 
   std::string SignatureIterator::signature() const
   {
-    priv::SignatureNode* tmpCurrent;
+    std::shared_ptr<priv::SignatureNode> tmpCurrent;
     std::string signature;
 
     if( m_first == nullptr ){
@@ -157,8 +157,7 @@ namespace DBus
 
     TypeInfo ti( m_first->m_dataType );
     signature += ti.to_dbus_char();
-    signature += iterate_over_subsig( const_cast<priv::SignatureNode*>( m_first->m_sub ) );
-
+    signature += iterate_over_subsig( m_first->m_sub );
 
     for( tmpCurrent = m_first->m_next;
          tmpCurrent != nullptr;
@@ -171,14 +170,14 @@ namespace DBus
     return signature;
   }
 
-  std::string SignatureIterator::iterate_over_subsig( priv::SignatureNode* start ) const {
+  std::string SignatureIterator::iterate_over_subsig( std::shared_ptr<priv::SignatureNode> start ) const {
       std::string retval;
 
       if( start == nullptr ){
           return "";
       }
 
-      for( priv::SignatureNode* current = start;
+      for( std::shared_ptr<priv::SignatureNode> current = start;
            current != nullptr;
            current = current->m_next ){
           TypeInfo ti( current->m_dataType );

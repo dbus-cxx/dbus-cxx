@@ -120,12 +120,12 @@ namespace DBus
             m_startingNode->m_sub == nullptr;
   }
 
-  priv::SignatureNode* Signature::create_signature_tree( std::string::const_iterator* it,
+  std::shared_ptr<priv::SignatureNode> Signature::create_signature_tree( std::string::const_iterator* it,
                                                             std::stack<ContainerType>* container_stack,
                                                             bool* ok){
       DataType tmpDataType;
-      priv::SignatureNode* first = nullptr;
-      priv::SignatureNode* current = nullptr;
+      std::shared_ptr<priv::SignatureNode> first = nullptr;
+      std::shared_ptr<priv::SignatureNode> current = nullptr;
       bool ending_container;
 
       if( container_stack->size() > 64 ){
@@ -164,7 +164,7 @@ namespace DBus
           }
 
 
-          priv::SignatureNode* newnode = new priv::SignatureNode( tmpDataType );
+          std::shared_ptr<priv::SignatureNode> newnode = std::make_shared<priv::SignatureNode>( tmpDataType );
           if( current != nullptr ){
               current->m_next = newnode;
               current = newnode;
@@ -204,6 +204,7 @@ namespace DBus
                     toPush == ContainerType::STRUCT ){
                 container_stack->pop();
                 if( !container_stack->empty() ){
+                    (*it)++;
                     return first;
                 }
 
@@ -250,7 +251,7 @@ namespace DBus
 
 
   void Signature::print_tree( std::ostream *stream ) const {
-      DBus::priv::SignatureNode* current = m_startingNode;
+      std::shared_ptr<priv::SignatureNode> current = m_startingNode;
 
       while( current != nullptr ){
           *stream << current->m_dataType;
