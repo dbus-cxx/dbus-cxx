@@ -58,7 +58,7 @@ set( DBUS_CXX_HAVE_DBUS_12 1 )
 CHECK_TYPE_SIZE( "long int" DBUS_CXX_SIZEOF_LONG_INT )
 configure_file( dbus-cxx-config.h.cmake dbus-cxx/dbus-cxx-config.h )
 if( ${ENABLE_ASAN} )
-	set( CMAKE_CXX_FLAGS "-fsanitize=address" )
+	set( CMAKE_CXX_FLAGS "-fsanitize=address -fsanitize=null -fsanitize=return -fsanitize=object-size -fsanitize=bool -fsanitize=enum" )
 endif()
 
 # 

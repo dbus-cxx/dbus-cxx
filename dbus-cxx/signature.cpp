@@ -30,7 +30,8 @@ namespace DBus
 
   const Signature::size_type npos = std::string::npos;
 
-  Signature::Signature() : m_startingNode( nullptr )
+  Signature::Signature() : m_startingNode( nullptr ),
+      m_valid( false )
   {
   }
 

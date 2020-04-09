@@ -56,7 +56,8 @@ namespace DBus
 
   MessageAppendIterator::MessageAppendIterator( std::shared_ptr<Message> message, ContainerType container ):
       m_message( message.get() ),
-      m_subiter( nullptr )
+      m_subiter( nullptr ),
+      m_currentContainer( container )
   {
       if( message ){
           m_marshaling = Marshaling( &(message->m_body), Endianess::Big );
