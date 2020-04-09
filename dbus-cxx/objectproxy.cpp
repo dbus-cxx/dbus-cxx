@@ -60,7 +60,7 @@ namespace DBus
   {
   }
 
-  std::shared_ptr<Connection> ObjectProxy::connection() const
+  std::weak_ptr<Connection> ObjectProxy::connection() const
   {
     return m_connection;
   }
@@ -417,7 +417,8 @@ namespace DBus
 
   std::shared_ptr<const ReturnMessage> ObjectProxy::call( std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds ) const
   {
-    if ( not m_connection or not m_connection->is_valid() ) return std::shared_ptr<ReturnMessage>();
+      std::shared_ptr<Connection> conn = m_connection.lock();
+    if ( !conn ) return std::shared_ptr<ReturnMessage>();
 
 //     if ( not call_message->expects_reply() )
 //     {
@@ -425,14 +426,15 @@ namespace DBus
 //       return std::shared_ptr<ReturnMessage>();
 //     }
 
-    return m_connection->send_with_reply_blocking( call_message, timeout_milliseconds );
+    return conn->send_with_reply_blocking( call_message, timeout_milliseconds );
   }
 
   std::shared_ptr<PendingCall> ObjectProxy::call_async( std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds ) const
   {
-    if ( not m_connection or not m_connection->is_valid() ) return std::shared_ptr<PendingCall>();
+      std::shared_ptr<Connection> conn = m_connection.lock();
+    if ( !conn ) return std::shared_ptr<PendingCall>();
 
-    return m_connection->send_with_reply_async( call_message, timeout_milliseconds );
+    return conn->send_with_reply_async( call_message, timeout_milliseconds );
   }
 
   sigc::signal< void(std::shared_ptr<InterfaceProxy>)> ObjectProxy::signal_interface_added()

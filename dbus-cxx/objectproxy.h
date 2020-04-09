@@ -78,7 +78,7 @@ namespace DBus
 
       virtual ~ObjectProxy();
 
-      std::shared_ptr<Connection> connection() const;
+      std::weak_ptr<Connection> connection() const;
 
       void set_connection( std::shared_ptr<Connection> conn );
 
@@ -180,7 +180,7 @@ namespace DBus
 
     protected:
 
-      std::shared_ptr<Connection> m_connection;
+      std::weak_ptr<Connection> m_connection;
 
       std::string m_destination;
 

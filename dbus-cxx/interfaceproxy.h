@@ -65,7 +65,7 @@ namespace DBus {
 
       Path path() const;
 
-      std::shared_ptr<Connection> connection() const;
+      std::weak_ptr<Connection> connection() const;
 
       const std::string& name() const;
 

@@ -58,10 +58,10 @@ namespace DBus
     return Path();
   }
 
-  std::shared_ptr<Connection> InterfaceProxy::connection() const
+  std::weak_ptr<Connection> InterfaceProxy::connection() const
   {
     if ( m_object ) return m_object->connection();
-    return std::shared_ptr<Connection>();
+    return std::weak_ptr<Connection>();
   }
 
   const std::string & InterfaceProxy::name() const
@@ -284,8 +284,12 @@ namespace DBus
     m_signals.insert(sig);
 
     // connect it
-    if ( this->connection() and this->connection()->is_valid() )
-      this->connection()->add_signal_proxy(sig);
+    std::shared_ptr<Connection> conn = connection().lock();
+    if ( conn and conn->is_valid() ){
+      conn->add_signal_proxy(sig);
+    }else{
+        return false;
+    }
 
     return true;
   }
@@ -299,7 +303,10 @@ namespace DBus
   {
     if ( not sig ) return false;
     if ( not this->has_signal(sig) ) return false;
-    this->connection()->remove_signal_proxy(sig);
+    std::shared_ptr<Connection> conn = connection().lock();
+    if( conn ){
+        conn->remove_signal_proxy(sig);
+    }
     m_signals.erase(sig);
     return true;
   }
