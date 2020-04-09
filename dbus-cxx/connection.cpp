@@ -573,9 +573,9 @@ struct Connection::ExpectingResponse {
                   send( errMsg );
                   return;
               }
+          }else{
+              disp->add_message( entry.handler, msgToProcess );
           }
-
-          disp->add_message( entry.handler, msgToProcess );
       }
   }
 
