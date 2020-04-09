@@ -407,6 +407,12 @@ namespace DBus
    */
   DBUSCXX_ERROR( ErrorPollFailed, "poll() syscall failed" );
 
+  /**
+   * This error may be thrown if there is an invalid return value from a DBus function
+   * that should never have an invalid return value.
+   */
+  DBUSCXX_ERROR( ErrorInvalidReturn, "dbuscxx.Error.InvalidReturnValue" );
+
   class ErrorIncorrectDispatchThread : public Error {
     public:
     ErrorIncorrectDispatchThread( const char* message = nullptr )

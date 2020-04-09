@@ -216,8 +216,8 @@ void client_setup(){
 }
 
 void server_setup(){
-    int ret = conn->request_name( "dbuscxx.test", DBUS_NAME_FLAG_REPLACE_EXISTING );
-    if( ret != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER ) exit(1);
+    DBus::RequestNameResponse ret = conn->request_name( "dbuscxx.test", DBUSCXX_NAME_FLAG_REPLACE_EXISTING );
+    if( ret != DBus::RequestNameResponse::PrimaryOwner ) exit(1);
 
     object = conn->create_object( "/test", DBus::ThreadForCalling::DispatcherThread );
     int_method = object->create_method<int(int,int)>("foo.what", "add", sigc::ptr_fun( add ) );

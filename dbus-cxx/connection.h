@@ -38,6 +38,13 @@
 #ifndef DBUSCXX_CONNECTION_H
 #define DBUSCXX_CONNECTION_H
 
+/** Same as DBUS_NAME_FLAG_ALLOW_REPLACEMENT.  See request_name(). */
+#define DBUSCXX_NAME_FLAG_ALLOW_REPLACEMENT 0x01
+/** Same as DBUS_NAME_FLAG_REPLACE_EXISTING.  See request_name(). */
+#define DBUSCXX_NAME_FLAG_REPLACE_EXISTING 0x02
+/** Same as DBUS_NAME_FLAG_DO_NOT_QUEUE.  See request_name(). */
+#define DBUSCXX_NAME_FLAG_DO_NOT_QUEUE 0x04
+
 namespace DBus
 {
   class Message;
@@ -52,6 +59,7 @@ namespace DBus
  struct InterruptablePredicateAccumulatorDefaultFalse;
  class ThreadDispatcher;
  class ErrorMessage;
+ class DBusDaemonProxy;
 
  namespace priv{
     class Transport;
@@ -127,7 +135,7 @@ namespace DBus
       /** The bus' globally unique ID, as described in the D-Bus specification */
       const char* bus_id() const;
 
-      int request_name( const std::string& name, unsigned int flags = 0 );
+      RequestNameResponse request_name( const std::string& name, unsigned int flags = 0 );
 
       int release_name( const std::string& name );
 
@@ -444,6 +452,7 @@ namespace DBus
         std::map<std::string,std::shared_ptr<ObjectPathHandler>> m_path_handler_fallback;
         std::mutex m_threadDispatcherLock;
         std::map<std::thread::id,std::weak_ptr<ThreadDispatcher>> m_threadDispatchers;
+        std::shared_ptr<DBusDaemonProxy> m_daemonProxy;
       
       AddWatchSignal m_add_watch_signal;
       

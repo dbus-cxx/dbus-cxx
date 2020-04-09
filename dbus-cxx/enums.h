@@ -160,6 +160,20 @@ namespace DBus {
       Unix_FDs      = 9,
   };
 
+  /**
+   * Response status to attempting to register a name on the bus.
+   */
+  enum class RequestNameResponse {
+      /** The caller is now the primary owner */
+      PrimaryOwner,
+      /** The caller is in the queue */
+      NameInQueue,
+      /** The name exists and we cannot get it */
+      NameExists,
+      /** We are already the owner of the specified name */
+      AlreadyOwner
+  };
+
   inline uint8_t header_field_to_int( MessageHeaderFields header ){
       switch ( header ){
       case MessageHeaderFields::Path:

@@ -102,6 +102,7 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/transport.cpp
     dbus-cxx/sasl.cpp
     dbus-cxx/validator.cpp
+    dbus-cxx/daemon-proxy/DBusDaemonProxy.cpp
 )
 
 # headers that need to go in the include/ directory

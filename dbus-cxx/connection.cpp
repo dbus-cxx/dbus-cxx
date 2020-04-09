@@ -45,6 +45,7 @@
 #include "simpletransport.h"
 #include <poll.h>
 #include "utility.h"
+#include "daemon-proxy/DBusDaemonProxy.h"
 
 #include <fcntl.h>
 #include <cstring>
@@ -52,6 +53,11 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
+
+#define DBUSCXX_REQUEST_NAME_REPLY_PRIMARY_OWNER 0x01
+#define DBUSCXX_REQUEST_NAME_REPLY_IN_QUEUE 0x02
+#define DBUSCXX_REQUEST_NAME_REPLY_EXISTS 0x03
+#define DBUSCXX_REQUEST_NAME_REPLY_ALREADY_OWNER 0x04
 
 namespace sigc { template <typename T_return, typename ...T_arg> class signal; }
 namespace sigc { template <typename T_return, typename ...T_arg> class slot; }
@@ -149,14 +155,9 @@ struct Connection::ExpectingResponse {
           return true;
       }
 
-      std::shared_ptr<CallMessage> helloMsg = CallMessage::create( "org.freedesktop.DBus",
-                                                                   "/org/freedesktop/DBus",
-                                                                   "org.freedesktop.DBus",
-                                                                   "Hello" );
-      std::shared_ptr<ReturnMessage> retmsg =
-              send_with_reply_blocking( helloMsg, 1000 );
+      m_daemonProxy = DBus::DBusDaemonProxy::create( shared_from_this() );
 
-      retmsg >> m_uniqueName;
+      m_uniqueName = m_daemonProxy->Hello();
 
       return true;
   }
@@ -188,15 +189,29 @@ struct Connection::ExpectingResponse {
       return nullptr;
   }
 
-  int Connection::request_name( const std::string& name, unsigned int flags )
+  RequestNameResponse Connection::request_name( const std::string& name, unsigned int flags )
   {
-//    int result;
-//    Error error = Error();
+      if( !is_valid() ){
+        throw ErrorDisconnected();
+      }
 
-//    if ( not this->is_valid() ) return -1;
-//    result = dbus_bus_request_name( m_cobj, name.c_str(), flags, error.cobj() );
-//    if ( error.is_set() ) throw error;
-//    return result;
+      uint32_t retval = m_daemonProxy->RequestName( name, flags );
+      switch( retval ){
+      case DBUSCXX_REQUEST_NAME_REPLY_PRIMARY_OWNER:
+          return RequestNameResponse::PrimaryOwner;
+      case DBUSCXX_REQUEST_NAME_REPLY_IN_QUEUE:
+          return RequestNameResponse::NameInQueue;
+      case DBUSCXX_REQUEST_NAME_REPLY_EXISTS:
+          return RequestNameResponse::NameExists;
+      case DBUSCXX_REQUEST_NAME_REPLY_ALREADY_OWNER:
+          return RequestNameResponse::AlreadyOwner;
+      default:
+      {
+          std::ostringstream msg;
+          msg << "Unknown value from request_name:" << retval;
+          throw ErrorInvalidReturn( msg.str() );
+      }
+      }
   }
 
   int Connection::release_name( const std::string& name )
@@ -364,6 +379,11 @@ struct Connection::ExpectingResponse {
         std::vector<int> fds;
         fds.push_back( m_transport->fd() );
         int msToWait = timeout_milliseconds;
+
+        if( msToWait == -1 ){
+            // Use a sane default value
+            msToWait = 20000;
+        }
 
         do {
             std::tuple<bool,int,std::vector<int>,std::chrono::milliseconds> fdResponse =
