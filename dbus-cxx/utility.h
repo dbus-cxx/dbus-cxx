@@ -31,6 +31,7 @@
 #include <vector>
 #include <sigc++/sigc++.h>
 #include <chrono>
+#include <dbus-cxx/demangle.h>
 
 #ifndef DBUSCXX_UTILITY_H
 #define DBUSCXX_UTILITY_H
@@ -217,7 +218,7 @@ struct dbus_function_traits<std::function<T_ret(Args...)>>
 
   std::string debug_string() const {
     std::ostringstream ret;
-    ret << typeid(T_ret).name();
+    ret << demangle<T_ret>();
     ret << "(";
     ret << method_signature<Args...>().method_sig();
     ret << ")";

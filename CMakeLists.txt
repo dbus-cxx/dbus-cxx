@@ -23,6 +23,7 @@ include( GNUInstallDirs )
 include( FindPkgConfig )
 include( CheckTypeSize )
 include( CTest )
+include( CheckCXXSymbolExists )
 IF( CMAKE_BUILD_TYPE MATCHES Debug )
 include( CodeCoverage )
 ENDIF( CMAKE_BUILD_TYPE MATCHES Debug )
@@ -60,6 +61,13 @@ configure_file( dbus-cxx-config.h.cmake dbus-cxx/dbus-cxx-config.h )
 if( ${ENABLE_ASAN} )
 	set( CMAKE_CXX_FLAGS "-fsanitize=address -fsanitize=null -fsanitize=return -fsanitize=object-size -fsanitize=bool -fsanitize=enum" )
 endif()
+
+# Check for cxxabi.h so we can demangle symbols
+check_include_file_cxx( "cxxabi.h" DBUS_CXX_HAS_CXXABI_H )
+# Check to make sure the demangle symbol exists
+if( ${DBUS_CXX_HAS_CXXABI_H} )
+	check_cxx_symbol_exists( "abi::__cxa_demangle" "cxxabi.h" DBUS_CXX_HAS_CXA_DEMANGLE )
+endif( ${DBUS_CXX_HAS_CXXABI_H} )
 
 # 
 # All sources

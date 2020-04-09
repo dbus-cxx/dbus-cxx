@@ -20,8 +20,12 @@
 #ifndef DBUSCXX_DEMANGLE_H
 #define DBUSCXX_DEMANGLE_H
 
-#include <cxxabi.h>
 #include <string>
+#include <dbus-cxx-config.h>
+
+#if DBUS_CXX_HAS_CXXABI_H
+#include <cxxabi.h>
+#endif
 
 namespace DBus {
   /**
@@ -29,8 +33,9 @@ namespace DBus {
    */
   template <typename T>
   std::string demangle(){
-#ifdef DBUS_CXX_CXA_DEMANGLE
+#if DBUS_CXX_HAS_CXA_DEMANGLE
     int status;
+    T arg1;
     char* demangled = abi::__cxa_demangle( typeid(arg1).name(), nullptr, nullptr, &status );
     std::string arg1_name( demangled );
     free( demangled );
