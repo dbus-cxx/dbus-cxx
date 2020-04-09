@@ -55,6 +55,7 @@ SimpleTransport::SimpleTransport( int fd, bool initialize ) :
 }
 
 SimpleTransport::~SimpleTransport(){
+    close( m_fd );
     delete[] m_receiveBuffer;
 }
 
@@ -98,6 +99,11 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage(){
                             m_receiveBuffer + m_receiveBufferLocation,
                             16 - m_receiveBufferLocation );
         if( bytesRead < 0 ){
+            return std::shared_ptr<DBus::Message>();
+        }
+        if( bytesRead == 0 ){
+            // End of the stream
+            m_ok = false;
             return std::shared_ptr<DBus::Message>();
         }
         m_receiveBufferLocation += bytesRead;
