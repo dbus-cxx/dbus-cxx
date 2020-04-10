@@ -174,6 +174,15 @@ namespace DBus {
       AlreadyOwner
   };
 
+  enum class ReleaseNameResponse {
+      /** The name has been released */
+      NameReleased,
+      /** The given name does not exist on the bus */
+      NameNonExistant,
+      /** We are not the owner, and we also were not in the queue waiting to own the name */
+      NotOwner
+  };
+
   inline uint8_t header_field_to_int( MessageHeaderFields header ){
       switch ( header ){
       case MessageHeaderFields::Path:
