@@ -264,8 +264,15 @@ namespace DBus
 
       bool has_messages_to_send();
 
-      /** Cannot call dispatch() in a slot connected to this signal */
-      sigc::signal<void(DispatchStatus)>& signal_dispatch_status_changed();
+      /**
+       * This signal is emitted whenever we need to be dispatched.
+       *
+       * Cannot call dispatch() in a slot connected to this signal.
+       *
+       * Any slots that listen to this signal must be threadsafe, as this
+       * may be emitted from any thread.
+       */
+      sigc::signal<void()>& signal_needs_dispatch();
 
       /**
        * Signal emitted during dispatch. A slot returning true will cause the
@@ -361,15 +368,6 @@ namespace DBus
       void set_dispatching_thread( std::thread::id tid );
 
       /**
-       * Set the function to call that will wake up the dispatcher thread.
-       * It is very likely that this function needs to be safe to be called from different
-       * threads.
-       *
-       * @param func The function to call to wakeup the dispatcher
-       */
-      void set_dispatching_thread_wakeup_func( sigc::slot<void()> func );
-
-      /**
        * Add a thread dispatcher that will handle messages for a given thread.
        * This method must be called from the thread that this ThreadDispatcher
        * is being called from.
@@ -415,7 +413,6 @@ namespace DBus
           std::shared_ptr<ObjectPathHandler> handler;
           std::thread::id handlingThread;
       };
-        sigc::slot<void()> m_notifyDispatcherFunc;
         std::vector<uint8_t> m_sendBuffer;
         uint32_t m_currentSerial;
         std::shared_ptr<priv::Transport> m_transport;
@@ -433,34 +430,12 @@ namespace DBus
         std::mutex m_threadDispatcherLock;
         std::map<std::thread::id,std::weak_ptr<ThreadDispatcher>> m_threadDispatchers;
         std::shared_ptr<DBusDaemonProxy> m_daemonProxy;
+        sigc::signal<void()> m_needsDispatching;
       
-      
-      sigc::signal<void()> m_wakeup_main_signal;
-      
-      sigc::signal<void(DispatchStatus)> m_dispatch_status_signal;
       
       FilterSignal m_filter_signal;
-      
-      std::deque<std::shared_ptr<Watch>> m_unhandled_watches;
-      
-      typedef std::map<DBusTimeout*,std::shared_ptr<Timeout>> Timeouts;
-
-      Timeouts m_timeouts;
-
 
       ProxySignals m_proxy_signals;
-
-//       std::map<SignalReceiver::pointer, sigc::connection> m_sighandler_iface_conn;
-
-//       std::map<SignalReceiver::pointer, sigc::connection> m_sighandler_member_conn;
-
-//       void on_signal_handler_interface_changed(SignalReceiver::pointer handler);
-
-//       void on_signal_handler_member_changed(SignalReceiver::pointer handler);
-
-//       typedef std::map<std::string,signal_base> SignalVTable;
-//
-//       typedef std::map<std::string, SignalVTable> InterfaceVTable;
 
   };
   

@@ -706,9 +706,9 @@ struct Connection::ExpectingResponse {
 //    return dbus_connection_has_messages_to_send(m_cobj);
   }
 
-  sigc::signal< void(DispatchStatus) > & Connection::signal_dispatch_status_changed()
+  sigc::signal< void() > & Connection::signal_needs_dispatch()
   {
-    return m_dispatch_status_signal;
+    return m_needsDispatching;
   }
 
   FilterSignal& Connection::signal_filter()
@@ -953,17 +953,13 @@ struct Connection::ExpectingResponse {
       m_dispatchingThread = tid;
   }
 
-  void Connection::set_dispatching_thread_wakeup_func( sigc::slot<void()> func ){
-      m_notifyDispatcherFunc = func;
-  }
-
   void Connection::notify_dispatcher_or_dispatch(){
       m_dispatchStatus = DispatchStatus::DATA_REMAINS;
 
       if( std::this_thread::get_id() == m_dispatchingThread ){
           dispatch();
       }else{
-          m_notifyDispatcherFunc();
+          m_needsDispatching();
       }
   }
 

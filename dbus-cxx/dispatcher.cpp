@@ -73,11 +73,9 @@ namespace DBus
     if ( not connection or not connection->is_valid() ) return false;
     
     connection->set_dispatching_thread( m_dispatch_thread.get_id() );
-    connection->set_dispatching_thread_wakeup_func( sigc::mem_fun(*this, &Dispatcher::wakeup_thread) );
+    connection->signal_needs_dispatch().connect( sigc::mem_fun(*this, &Dispatcher::wakeup_thread) );
     m_connections.push_back(connection);
     wakeup_thread();
-    
-    connection->signal_dispatch_status_changed().connect(sigc::bind(sigc::mem_fun(*this, &Dispatcher::on_dispatch_status_changed), connection));
   
     return true;
   }
