@@ -146,6 +146,9 @@ int main(int argc, char** argv){
   bool ret = false;
   bool is_client = std::string( argv[1] ) == "client";
 
+  DBus::setLoggingFunction( DBus::logStdErr );
+  DBus::setLogLevel( SL_TRACE );
+
   dispatch = DBus::Dispatcher::create();
   conn = dispatch->create_connection(DBus::BusType::SESSION);
 
@@ -159,7 +162,7 @@ int main(int argc, char** argv){
   }else{
     server_setup();
     ret = true;
-    sleep( 1000 );
+    sleep( 1 );
   }
 
 

@@ -217,3 +217,16 @@ add_test( NAME signature-struct-and-data COMMAND test-signature iterate_struct_a
 
 add_test( NAME signature-unbalanced-struct COMMAND test-signature unbalanced_struct)
 add_test( NAME signature-single-bool COMMAND test-signature single_bool)
+
+#
+# Validation tests - make sure that our validation routines work correctly
+#
+add_executable( test-validation validationtests.cpp )
+target_link_libraries( test-validation ${TEST_LINK} )
+target_include_directories( test-validation PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( test-validation PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+set_property( TARGET test-validation PROPERTY CXX_STANDARD 17 )
+
+add_test( NAME one-section-busname COMMAND test-validation one_section_bus_name)
+add_test( NAME two-section-busname COMMAND test-validation two_section_bus_name)
+add_test( NAME three-section-busname COMMAND test-validation three_section_bus_name)

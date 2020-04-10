@@ -43,7 +43,7 @@ static bool is_allowable_character( char c ){
 
 bool Validator::validate_bus_name( std::string busname ){
     char previousChar = '\0';
-    int numElements = 0;
+    int numElements = 1;
     std::string::iterator it = busname.begin();
     bool isUnique = false;
 
@@ -79,7 +79,7 @@ bool Validator::validate_bus_name( std::string busname ){
 
 bool Validator::validate_interface_name( std::string interfacename ){
     char previousChar = '\0';
-    int numElements = 0;
+    int numElements = 1;
     std::string::iterator it = interfacename.begin();
 
     if( interfacename.size() > 255 || interfacename.empty() ){
