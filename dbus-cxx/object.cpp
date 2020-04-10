@@ -121,7 +121,7 @@ namespace DBus
 
     interface = Interface::create(name);
 
-    if ( this->add_interface(interface) ) return std::shared_ptr<Interface>();
+    if ( !this->add_interface(interface) ) return std::shared_ptr<Interface>();
 
     if ( not m_default_interface && name.empty() ) this->set_default_interface( interface->name() );
     return interface;

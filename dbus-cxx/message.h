@@ -160,6 +160,7 @@ namespace DBus
     Endianess m_endianess;
     uint8_t m_flags;
     std::vector<int> m_filedescriptors;
+    uint32_t m_serial;
 
     friend class MessageAppendIterator;
     friend class MessageIterator;

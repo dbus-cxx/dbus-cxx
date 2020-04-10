@@ -103,6 +103,7 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage(){
         }
         if( bytesRead == 0 ){
             // End of the stream
+            SIMPLELOGGER_TRACE( "dbus.SimpleTransport", "End of stream: closing transport" );
             m_ok = false;
             return std::shared_ptr<DBus::Message>();
         }

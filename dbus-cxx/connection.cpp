@@ -74,10 +74,10 @@ struct Connection::ExpectingResponse {
 };
 
   Connection::Connection( BusType type ) :
+      m_currentSerial( 1 ),
       m_dispatchingThread( std::this_thread::get_id() ),
       m_dispatchStatus( DispatchStatus::COMPLETE )
   {
-    m_currentSerial = 1;
 
     if( type == BusType::SESSION ){
         std::string sessionBusAddr = std::string( getenv( "DBUS_SESSION_BUS_ADDRESS" ) );
@@ -105,6 +105,7 @@ struct Connection::ExpectingResponse {
   }
 
   Connection::Connection( std::string address ) :
+      m_currentSerial( 1 ),
       m_dispatchingThread( std::this_thread::get_id() ),
       m_dispatchStatus( DispatchStatus::COMPLETE )
   {
@@ -259,14 +260,15 @@ struct Connection::ExpectingResponse {
 
   bool Connection::add_match( const std::string& rule )
   {
-//    Error error = Error();
+      if( !is_valid() ){
+        throw ErrorDisconnected();
+      }
 
-//    if ( not this->is_valid() ) return false;
-//    SIMPLELOGGER_DEBUG("dbus.Connection", "Adding the following match: " << rule );
-//    dbus_bus_add_match( m_cobj, rule.c_str(), error.cobj() );
+      SIMPLELOGGER_DEBUG(LOGGER_NAME, "Adding the following match: " << rule );
 
-//    if ( error.is_set() ) return false;
-//    return true;
+      m_daemonProxy->AddMatch( rule );
+
+    return true;
   }
 
   void Connection::add_match_nonblocking( const std::string& rule )
@@ -359,6 +361,12 @@ struct Connection::ExpectingResponse {
     if ( not message or not *message ) return std::shared_ptr<ReturnMessage>();
 
     std::shared_ptr<ReturnMessage> retmsg;
+    int msToWait = timeout_milliseconds;
+
+    if( msToWait == -1 ){
+        // Use a sane default value
+        msToWait = 20000;
+    }
 
     if( m_dispatchingThread == std::this_thread::get_id() ){
         uint32_t replySerialExpceted;
@@ -378,12 +386,6 @@ struct Connection::ExpectingResponse {
          */
         std::vector<int> fds;
         fds.push_back( m_transport->fd() );
-        int msToWait = timeout_milliseconds;
-
-        if( msToWait == -1 ){
-            // Use a sane default value
-            msToWait = 20000;
-        }
 
         do {
             std::tuple<bool,int,std::vector<int>,std::chrono::milliseconds> fdResponse =
@@ -393,6 +395,10 @@ struct Connection::ExpectingResponse {
 
             if( msToWait <= 0 ){
                 throw ErrorNoReply( "Did not receive a response in the alotted time" );
+            }
+
+            if( !m_transport->is_valid() ){
+                throw ErrorDisconnected();
             }
 
             std::shared_ptr<Message> incoming = m_transport->readMessage();
@@ -417,18 +423,25 @@ struct Connection::ExpectingResponse {
     }else{
         /*
          * We are trying to do a blocking method call in a thread that is not the dispatcher thread.
-         * Queue up the message, which will notify the dispatcher thread.
+         * Queue up the message and notify the dispatcher thread.
          */
-        uint32_t serial = send( message );
+        uint32_t serial;
         std::shared_ptr<ExpectingResponse> ex;
 
         {
-            // Add this to our expecting responses
-            std::unique_lock<std::mutex> lock( m_expectingResponsesLock );
+            OutgoingMessage outgoing;
+            std::scoped_lock<std::mutex,std::mutex> lock( m_outgoingLock, m_expectingResponsesLock );
+            outgoing.msg = message;
+            outgoing.serial = m_currentSerial++;
+            m_outgoingMessages.push( outgoing );
+            serial = outgoing.serial;
 
+            // Add this to our expecting responses
             ex = std::make_shared<ExpectingResponse>();
             m_expectingResponses[ serial ] = ex;
         }
+
+        notify_dispatcher_or_dispatch();
 
         {
             /*
@@ -436,23 +449,33 @@ struct Connection::ExpectingResponse {
              * the dispatching thread
              */
             std::unique_lock<std::mutex> lock( ex->cv_lock );
-            std::cv_status status = ex->cv.wait_for( lock, std::chrono::milliseconds( timeout_milliseconds ) );
+            std::cv_status status = ex->cv.wait_for( lock, std::chrono::milliseconds( msToWait ) );
+            std::shared_ptr<ExpectingResponse> resp;
 
             {
                 /*
                  * Now remove our expecting response to free up memory
                  */
                 std::unique_lock<std::mutex> lock( m_expectingResponsesLock );
-                m_expectingResponses.erase( m_expectingResponses.find( serial ) );
+                std::map<uint32_t,std::shared_ptr<ExpectingResponse>>::iterator it =
+                        m_expectingResponses.find( serial );
+                resp = (*it).second;
+
+                m_expectingResponses.erase( it );
+            }
+
+            if( !resp ){
+                throw ErrorUnexpectedResponse();
             }
 
             if( status == std::cv_status::no_timeout ){
-                std::shared_ptr<Message> gotMessage = m_expectingResponses[ serial ]->reply;
+                std::shared_ptr<Message> gotMessage = resp->reply;
                 if( gotMessage->type() == MessageType::RETURN ){
                     retmsg = std::static_pointer_cast<ReturnMessage>( gotMessage );
                 }else if( gotMessage->type() == MessageType::ERROR ){
                     std::shared_ptr<ErrorMessage> errmsg = std::static_pointer_cast<ErrorMessage>( gotMessage );
                     errmsg->throw_error();
+                }else if( gotMessage->type() == MessageType::SIGNAL ){
                 }else{
                     throw ErrorUnknown( "Why are we here" );
                 }
@@ -506,6 +529,7 @@ struct Connection::ExpectingResponse {
 
     // Try to read a message
     {
+        SIMPLELOGGER_DEBUG("DBus.Connection", "Try to read a message" );
         std::shared_ptr<Message> incoming = m_transport->readMessage();
         if( incoming ){
             m_incomingMessages.push( incoming );
@@ -533,13 +557,23 @@ struct Connection::ExpectingResponse {
       msgToProcess = m_incomingMessages.front();
       m_incomingMessages.pop();
 
-      uint32_t serial = msgToProcess->serial();
-      if( m_expectingResponses.find( serial ) != m_expectingResponses.end() ) {
-          // This is a response to something that a different thread is waiting for.
-          // Update the data and notify the thread!
-          m_expectingResponses[ serial ]->reply = msgToProcess;
-          m_expectingResponses[ serial ]->cv.notify_one();
-          return;
+      if( msgToProcess->type() == MessageType::RETURN ||
+              msgToProcess->type() == MessageType::ERROR ){
+          uint32_t reply_serial;
+
+          if( msgToProcess->type() == MessageType::RETURN ){
+              reply_serial = std::static_pointer_cast<ReturnMessage>( msgToProcess )->reply_serial();
+          }else{
+              reply_serial = std::static_pointer_cast<ErrorMessage>( msgToProcess )->reply_serial();
+          }
+
+          if( m_expectingResponses.find( reply_serial ) != m_expectingResponses.end() ) {
+              // This is a response to something that a different thread is waiting for.
+              // Update the data and notify the thread!
+              m_expectingResponses[ reply_serial ]->reply = msgToProcess;
+              m_expectingResponses[ reply_serial ]->cv.notify_one();
+              return;
+          }
       }
 
       std::shared_ptr<CallMessage> callmsg;

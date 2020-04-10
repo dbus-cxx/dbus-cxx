@@ -235,38 +235,28 @@ namespace DBus
   }
 
   void Dispatcher::dispatch_connections(){
-    unsigned int loop_count;
-    Connections::iterator ci;
-
-    for ( ci = m_connections.begin(); ci != m_connections.end(); ci++ )
-    {
-      // If the dispatch loop limit is zero we will loop as long as status is DispatchStatus::DATA_REMAINS
-      if ( m_dispatch_loop_limit == 0 )
-      {
-        SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "Dispatch Status: " << (*ci)->dispatch_status() );
-        while ( (*ci)->dispatch_status() == DispatchStatus::DATA_REMAINS )
-          (*ci)->dispatch();
-      }
-      // Otherwise, we will only perform a number of dispatches up to the loop limit
-      else
-      {
-        for ( loop_count = 0; loop_count < m_dispatch_loop_limit; loop_count++ )
-        {
-          // Make sure we need to dispatch before calling it
-          if ( (*ci)->dispatch_status() != DispatchStatus::COMPLETE ) (*ci)->dispatch();
-
-          // Are we done? If so, let's break out of the loop.
-          if ( (*ci)->dispatch_status() != DispatchStatus::DATA_REMAINS ) break;
-        }
-
-        // If we still have more to process let's set the processing flag to true
-        if ( (*ci)->dispatch_status() != DispatchStatus::DATA_REMAINS )
-        {
-          wakeup_thread();
-        }
-      }
-
+    uint32_t loop_limit = m_dispatch_loop_limit;
+    if( loop_limit == 0 ){
+        loop_limit = UINT32_MAX;
     }
+
+    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "Dispatching connections" );
+
+    for ( std::shared_ptr<Connection> conn : m_connections )
+    {
+        for( uint32_t x = 0; x < loop_limit; x++ ){
+            DispatchStatus stat = conn->dispatch();
+            if( stat == DispatchStatus::COMPLETE ){
+                break;
+            }
+        }
+
+        if( conn->dispatch_status() != DispatchStatus::COMPLETE ){
+            wakeup_thread();
+        }
+    }
+
+    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "done dispatching" );
   }
 
   bool Dispatcher::on_add_watch(std::shared_ptr<Watch> watch)

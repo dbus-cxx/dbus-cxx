@@ -217,6 +217,10 @@ namespace DBus
        * the dispatching thread, and will throw an exception if it is
        * called from the wrong thread.
        *
+       * This method, when called, will process at most one message.  This
+       * is required so that responses to method calls will appear to be fully
+       * blocking.
+       *
        * @return The status of dispatching.  This method should be called
        * util the status is DispatchStatus::COMPLETE
        */

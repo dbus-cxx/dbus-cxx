@@ -413,6 +413,11 @@ namespace DBus
    */
   DBUSCXX_ERROR( ErrorInvalidReturn, "dbuscxx.Error.InvalidReturnValue" );
 
+  /**
+   * This error may be thrown if we receive an unexpected response
+   */
+  DBUSCXX_ERROR( ErrorUnexpectedResponse, "dbuscxx.Error.UnexpectedResponse" );
+
   class ErrorIncorrectDispatchThread : public Error {
     public:
     ErrorIncorrectDispatchThread( const char* message = nullptr )

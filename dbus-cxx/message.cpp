@@ -41,7 +41,8 @@ namespace DBus
   Message::Message():
       m_valid( true ),
       m_endianess( Endianess::Big ),
-      m_flags( 0 )
+      m_flags( 0 ),
+      m_serial( 0 )
   {
   }
 
@@ -101,11 +102,7 @@ namespace DBus
 
   uint32_t Message::serial() const
   {
-      Variant value = header_field( MessageHeaderFields::Reply_Serial );
-      if( value.currentType() != DataType::INVALID ){
-          return std::any_cast<uint32_t>( value.value() );
-      }
-    return 0;
+      return m_serial;
   }
 
 //   Message Message::copy()
@@ -139,16 +136,16 @@ namespace DBus
   {
     Variant destination = header_field( MessageHeaderFields::Destination );
     if( destination.currentType() == DataType::STRING ){
-        return std::any_cast<std::string>( destination );
+        return std::any_cast<std::string>( destination.value() );
     }
     return "";
   }
 
   std::string Message::sender() const
   {
-      Variant destination = header_field( MessageHeaderFields::Sender );
-      if( destination.currentType() == DataType::STRING ){
-          return std::any_cast<std::string>( destination );
+      Variant sender = header_field( MessageHeaderFields::Sender );
+      if( sender.currentType() == DataType::STRING ){
+          return std::any_cast<std::string>( sender.value() );
       }
       return "";
   }
@@ -212,19 +209,21 @@ bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
 	// Marshal the length
     marshal.marshal( static_cast<uint32_t>( m_body.size() ) );
 
-    // Marshal the serial.  If the header field 'serial' exists,
-    // use that instead of the passed-in serial.  This means that we may skip serial numbers,
-    // but that shouldn't cause an issue
     if( mustHaveSerial ){
+        // Make sure that we have a header for our serial and it is not 0
         if( serialHeader.currentType() == DataType::UINT32 ){
-            serial = std::any_cast<uint32_t>( serialHeader );
+            uint32_t tmpSerial = std::any_cast<uint32_t>( serialHeader.value() );
+            if( tmpSerial == 0 ){
+                SIMPLELOGGER_ERROR( LOGGER_NAME, "Unable to serialize message: invalid return serial provided!" );
+                return false;
+            }
         }else{
             SIMPLELOGGER_ERROR( LOGGER_NAME, "Unable to serialize message: reply serial required but not found!" );
             return false;
         }
-    }else{
-        marshal.marshal( serial );
     }
+
+    marshal.marshal( serial );
 
     // Marshal our header array
     marshal.marshal( static_cast<uint32_t>( 0 ) ); // The size of the header array; we update this later
@@ -304,19 +303,24 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
 
     switch( method_type ){
     case 1:
+        SIMPLELOGGER_TRACE( LOGGER_NAME, "Creating CallMessage from data" );
         retmsg = CallMessage::create();
         break;
     case 2:
+        SIMPLELOGGER_TRACE( LOGGER_NAME, "Creating ReturnMessage from data" );
         retmsg = ReturnMessage::create();
         break;
     case 3:
+        SIMPLELOGGER_TRACE( LOGGER_NAME, "Creating ErrorMessage from data" );
         retmsg = ErrorMessage::create();
         break;
     case 4:
+        SIMPLELOGGER_TRACE( LOGGER_NAME, "Creating SignalMessage from data" );
         retmsg = SignalMessage::create();
         break;
     }
 
+    retmsg->m_serial = serial;
     retmsg->m_flags = flags;
     retmsg->m_valid = true;
     retmsg->m_headerMap = headerMap;
