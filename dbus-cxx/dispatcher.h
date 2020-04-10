@@ -97,10 +97,6 @@ namespace DBus
       unsigned int m_dispatch_loop_limit;
       
       void dispatch_thread_main();
-      
-      void on_wakeup_main(std::shared_ptr<Connection>);
-      
-      void on_dispatch_status_changed(DispatchStatus, std::shared_ptr<Connection>);
 
       void wakeup_thread();
 

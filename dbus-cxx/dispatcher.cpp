@@ -169,24 +169,6 @@ namespace DBus
 
     SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "done dispatching" );
   }
-
-  void Dispatcher::on_wakeup_main(std::shared_ptr<Connection> conn)
-  {
-    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "wakeup main" );
-    
-    wakeup_thread();
-  }
-
-  void Dispatcher::on_dispatch_status_changed(DispatchStatus status, std::shared_ptr<Connection> conn)
-  {
-    SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "dispatch status changed: " << static_cast<int>( status ) );
-
-    if ( status == DispatchStatus::DATA_REMAINS )
-    {
-      wakeup_thread();
-    }
-
-  }
   
   void Dispatcher::wakeup_thread(){
     char to_write = '0';
