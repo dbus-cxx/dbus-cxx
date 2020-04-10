@@ -57,6 +57,13 @@
 #define DBUSCXX_REQUEST_NAME_REPLY_EXISTS 0x03
 #define DBUSCXX_REQUEST_NAME_REPLY_ALREADY_OWNER 0x04
 
+#define DBUSCXX_RELEASE_NAME_REPLY_RELEASED 0x01
+#define DBUSCXX_RELEASE_NAME_REPLY_NON_EXISTENT 0x02
+#define DBUSCXX_RELEASE_NAME_REPLY_NOT_OWNER 0x03
+
+#define DBUSCXX_START_REPLY_SUCCESS 0x01
+#define DBUSCXX_START_REPLY_ALREADY_RUNNING 0x02
+
 namespace sigc { template <typename T_return, typename ...T_arg> class signal; }
 namespace sigc { template <typename T_return, typename ...T_arg> class slot; }
 
@@ -172,22 +179,6 @@ struct Connection::ExpectingResponse {
     return m_uniqueName;
   }
 
-  unsigned long Connection::unix_user( ) const
-  {
-//    Error error = Error();
-//    if ( not this->is_valid() ) return -1;
-//    return dbus_bus_get_unix_user( m_cobj, name.c_str(), error.cobj() );
-      return 0;
-  }
-
-  const char* Connection::bus_id() const
-  {
-//    Error error = Error();
-//    if ( not this->is_valid() ) return nullptr;
-//    return dbus_bus_get_id( m_cobj, error.cobj() );
-      return nullptr;
-  }
-
   RequestNameResponse Connection::request_name( const std::string& name, unsigned int flags )
   {
       if( !is_valid() ){
@@ -213,47 +204,42 @@ struct Connection::ExpectingResponse {
       }
   }
 
-  int Connection::release_name( const std::string& name )
+  ReleaseNameResponse Connection::release_name( const std::string& name )
   {
-//    int result;
-//    Error error = Error();
-
-//    if ( not this->is_valid() ) return -1;
-//    result = dbus_bus_release_name( m_cobj, name.c_str(), error.cobj() );
-//    if ( error.is_set() ) throw error;
-//    return result;
+    uint32_t retval = m_daemonProxy->ReleaseName( name );
+    switch( retval ){
+    case DBUSCXX_RELEASE_NAME_REPLY_RELEASED:
+        return ReleaseNameResponse::NameReleased;
+    case DBUSCXX_RELEASE_NAME_REPLY_NOT_OWNER:
+        return ReleaseNameResponse::NotOwner;
+    case DBUSCXX_RELEASE_NAME_REPLY_NON_EXISTENT:
+        return ReleaseNameResponse::NameNonExistant;
+    default:
+        std::ostringstream msg;
+        msg << "Unknown value from release_name:" << retval;
+        throw ErrorInvalidReturn( msg.str() );
+    }
   }
 
   bool Connection::name_has_owner( const std::string& name ) const
   {
-//    dbus_bool_t result;
-//    Error error = Error();
-
-//    if ( not this->is_valid() ) return false;
-//    result = dbus_bus_name_has_owner( m_cobj, name.c_str(), error.cobj() );
-//    if ( error.is_set() ) throw error;
-//    return result;
+    return m_daemonProxy->NameHasOwner( name );
   }
 
   StartReply Connection::start_service( const std::string& name, uint32_t flags ) const
   {
-//    dbus_bool_t succeeded;
-//    dbus_uint32_t result_code;
-//    Error error = Error();
+      uint32_t retval = m_daemonProxy->StartServiceByName( name, flags );
 
-//    if ( not this->is_valid() ) return StartReply::FAILED;
-
-//    succeeded = dbus_bus_start_service_by_name( m_cobj, name.c_str(), flags, &result_code, error.cobj() );
-
-//    if ( error.is_set() ) throw error;
-
-//    if ( succeeded )
-//      switch ( result_code ) {
-//        case DBUS_START_REPLY_SUCCESS: return StartReply::SUCCESS;
-//        case DBUS_START_REPLY_ALREADY_RUNNING: return StartReply::ALREADY_RUNNING;
-//      }
-
-    return StartReply::FAILED;
+      switch( retval ){
+      case DBUSCXX_START_REPLY_SUCCESS:
+          return StartReply::SUCCESS;
+      case DBUSCXX_START_REPLY_ALREADY_RUNNING:
+          return StartReply::ALREADY_RUNNING;
+      default:
+          std::ostringstream msg;
+          msg << "Unknown value from start_service:" << retval;
+          throw ErrorInvalidReturn( msg.str() );
+      }
   }
 
   bool Connection::add_match( const std::string& rule )
@@ -648,62 +634,10 @@ struct Connection::ExpectingResponse {
       return m_transport->fd();
   }
 
-  unsigned long Connection::unix_process_id() const
-  {
-//    dbus_bool_t result;
-//    unsigned long pid;
-//    if ( not this->is_valid() ) return -1;
-//    result = dbus_connection_get_unix_process_id( m_cobj, &pid );
-//    if ( not result ) return -1;
-//    return pid;
-  }
-
-  void Connection::set_allow_anonymous(bool allow)
-  {
-//    if ( not this->is_valid() ) return;
-//    dbus_connection_set_allow_anonymous( m_cobj, allow );
-  }
-
-  void Connection::set_route_peer_messages(bool route)
-  {
-//    if ( not this->is_valid() ) return;
-//    dbus_connection_set_route_peer_messages( m_cobj, route );
-  }
-
-  void Connection::set_max_message_size(long size)
-  {
-//    if ( not this->is_valid() ) return;
-//    dbus_connection_set_max_message_size( m_cobj, size );
-  }
-
-  long Connection::max_message_size()
-  {
-//    if ( not this->is_valid() ) return -1;
-//    return dbus_connection_get_max_message_size(m_cobj);
-  }
-
-  void Connection::set_max_received_size(long size)
-  {
-//    if ( not this->is_valid() ) return;
-//    dbus_connection_set_max_received_size( m_cobj, size );
-  }
-
-  long Connection::max_received_size()
-  {
-//    if ( not this->is_valid() ) return -1;
-//    return dbus_connection_get_max_received_size(m_cobj);
-  }
-
-  long Connection::outgoing_size()
-  {
-//    if ( not this->is_valid() ) return -1;
-//    return dbus_connection_get_outgoing_size(m_cobj);
-  }
-
   bool Connection::has_messages_to_send()
   {
-//    if ( not this->is_valid() ) return false;
-//    return dbus_connection_has_messages_to_send(m_cobj);
+    if ( not this->is_valid() ) return false;
+    return !m_outgoingMessages.empty();
   }
 
   sigc::signal< void() > & Connection::signal_needs_dispatch()

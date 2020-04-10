@@ -124,24 +124,47 @@ namespace DBus
       /** Gets the unique name of the connection as assigned by the message bus. */
       std::string unique_name() const;
 
-      // TODO set_unique_name() 
-
       /**
-       * The unix user id associated with the name connection or -1 if an
-       * error occurred
+       * Request the given name on the bus.
+       *
+       * @param name The name to request, e.g. "com.example.foo"
+       * @param flags Any flags with the name; see DBUSCXX_NAME_FLAG_XXX macros
+       * @return
        */
-      unsigned long unix_user() const;
-
-      /** The bus' globally unique ID, as described in the D-Bus specification */
-      const char* bus_id() const;
-
       RequestNameResponse request_name( const std::string& name, unsigned int flags = 0 );
 
-      int release_name( const std::string& name );
+      /**
+       * Release the specified name, after requesting it via request_name
+       *
+       * @param name The name to release on the bus
+       * @return
+       */
+      ReleaseNameResponse release_name( const std::string& name );
 
+      /**
+       * Check to see if the given name currently has an owner.
+       *
+       * Note that usage of this method in the form
+       * if( !connection->name_has_owner( "foo.bar" ) ){
+       *   connection->request_name( "foo.bar" );
+       * }
+       *
+       * may be subject to race conditions, as multiple applications may be attempting
+       * to request the bus name at the same time.  Instead, you should set the flags
+       * in the request_name method to do this in a bus-atomic manner.
+       *
+       * @param name
+       * @return
+       */
       bool name_has_owner( const std::string& name ) const;
 
-      StartReply start_service( const std::string& name, uint32_t flags ) const;
+      /**
+       * @brief start_service
+       * @param name
+       * @param flags
+       * @return
+       */
+      StartReply start_service( const std::string& name, uint32_t flags=0 ) const;
 
       bool add_match( const std::string& rule );
 
@@ -151,8 +174,6 @@ namespace DBus
 
       void remove_match_nonblocking( const std::string& rule );
 
-      // TODO dbus_connection_close 
-
       bool is_connected() const;
 
       bool is_authenticated() const;
@@ -160,10 +181,6 @@ namespace DBus
       bool is_anonymous() const;
 
       const char* server_id() const;
-
-      // TODO dbus_connection_preallocate_send
-      // TODO dbus_connection_free_preallocated_send
-      // TODO dbus_connection_send_preallocated
 
       /**
        * Queues up the message to be sent on the bus.
@@ -229,38 +246,6 @@ namespace DBus
       int unix_fd() const;
 
       int socket() const;
-
-      unsigned long unix_process_id() const;
-
-      // TODO dbus_connection_get_adt_audit_session_data
-
-      // TODO dbus_connection_set_unix_user_function
-
-      // TODO dbus_connection_get_windows_user
-
-      // TODO dbus_connection_set_windows_user_function
-
-      void set_allow_anonymous( bool allow=true );
-
-      void set_route_peer_messages( bool route=true );
-
-      // TODO dbus_connection_try_register_object_path
-      // TODO dbus_connection_register_object_path
-      // TODO dbus_connection_try_register_fallback
-      // TODO dbus_connection_register_fallback
-      // TODO dbus_connection_unregister_object_path
-      // TODO dbus_connection_get_object_path_data
-      // TODO dbus_connection_list_registered
-
-      void set_max_message_size( long size );
-
-      long max_message_size();
-
-      void set_max_received_size( long size );
-
-      long max_received_size();
-
-      long outgoing_size();
 
       bool has_messages_to_send();
 
