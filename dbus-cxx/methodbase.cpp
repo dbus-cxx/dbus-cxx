@@ -42,22 +42,6 @@ namespace DBus
     return m_name;
   }
 
-  void MethodBase::set_name(const std::string & name)
-  {
-    std::string old_name;
-    {
-      std::lock_guard<std::mutex> lock( m_name_mutex );
-      old_name = m_name;
-      m_name = name;
-    }
-    m_signal_name_changed.emit(old_name, m_name);
-  }
-
-  sigc::signal< void( const std::string &, const std::string &) > MethodBase::signal_name_changed()
-  {
-    return m_signal_name_changed;
-  }
-
   void MethodBase::set_arg_name(size_t i, const std::string& name){
       if( m_arg_names.size() <= i ){
           m_arg_names.resize( i + 1 );

@@ -69,17 +69,6 @@ namespace DBus
     return m_name;
   }
 
-  void DBus::InterfaceProxy::set_name(const std::string & new_name)
-  {
-    std::string old_name;
-    {
-      std::lock_guard<std::mutex> lock( m_name_mutex );
-      old_name = m_name;
-      m_name = new_name;
-    }
-    m_signal_name_changed.emit(old_name, new_name);
-  }
-
   const InterfaceProxy::Methods & InterfaceProxy::methods() const
   {
     return m_methods;
@@ -110,22 +99,8 @@ namespace DBus
     {
       std::unique_lock lock( m_methods_rwlock );
 
-      MethodSignalNameConnections::iterator i;
-
-      i = m_method_signal_name_connections.find(method);
-
-      if ( i == m_method_signal_name_connections.end() )
-      {
-        m_method_signal_name_connections[method] =
-            method->signal_name_changed().connect(sigc::bind(sigc::mem_fun(*this,&InterfaceProxy::on_method_name_changed),method));
-
         m_methods.insert(std::make_pair(method->name(), method));
         method->m_interface = this;
-      }
-      else
-      {
-        result = false;
-      }
     }
 
     m_signal_method_added.emit( method );
@@ -137,7 +112,6 @@ namespace DBus
   {
     Methods::iterator iter;
     std::shared_ptr<MethodProxyBase> method;
-    MethodSignalNameConnections::iterator i;
 
     {
       std::unique_lock lock( m_methods_rwlock );
@@ -147,16 +121,6 @@ namespace DBus
         method = iter->second;
         m_methods.erase( iter );
       }
-
-      if ( method )
-      {
-        i = m_method_signal_name_connections.find(method);
-        if ( i != m_method_signal_name_connections.end() )
-        {
-          i->second.disconnect();
-          m_method_signal_name_connections.erase(i);
-        }
-      }
     }
     method->m_interface = nullptr;
     
@@ -165,38 +129,26 @@ namespace DBus
 
   void InterfaceProxy::remove_method( std::shared_ptr<MethodProxyBase> method )
   {
-    Methods::iterator current, upper;
-    MethodSignalNameConnections::iterator i;
+    Methods::iterator location;
+    bool erased = false;
 
     if ( not method ) return;
 
     {
       std::unique_lock lock( m_methods_rwlock );
 
-      current = m_methods.lower_bound( method->name() );
+      location = m_methods.find( method->name() );
 
-      if ( current != m_methods.end() )
+      if ( location != m_methods.end() )
       {
-        upper = m_methods.upper_bound( method->name() );
-        for ( ; current != upper; current++ )
-        {
-          if ( current->second == method )
-          {
-            i = m_method_signal_name_connections.find(method);
-            if ( i != m_method_signal_name_connections.end() )
-            {
-              i->second.disconnect();
-              m_method_signal_name_connections.erase(i);
-            }
-            m_methods.erase(current);
-          }
-        }
+            m_methods.erase(location);
+            erased = true;
       }
     }
 
     method->m_interface = nullptr;
     
-    if ( method ) m_signal_method_removed.emit( method );
+    if ( method && erased ) m_signal_method_removed.emit( method );
   }
 
   bool InterfaceProxy::has_method( const std::string & name ) const
@@ -325,11 +277,6 @@ namespace DBus
     return m_signals.find(sig) != m_signals.end();
   }
 
-  sigc::signal< void(const std::string &, const std::string &) > InterfaceProxy::signal_name_changed()
-  {
-    return m_signal_name_changed;
-  }
-
   sigc::signal< void(std::shared_ptr<MethodProxyBase>) > InterfaceProxy::signal_method_added()
   {
     return m_signal_method_added;
@@ -338,38 +285,6 @@ namespace DBus
   sigc::signal< void(std::shared_ptr<MethodProxyBase>)> InterfaceProxy::signal_method_removed()
   {
     return m_signal_method_removed;
-  }
-
-  void InterfaceProxy::on_method_name_changed(const std::string & oldname, const std::string & newname, std::shared_ptr<MethodProxyBase> method)
-  {
-    std::unique_lock lock( m_methods_rwlock );
-
-    Methods::iterator current, upper;
-    current = m_methods.lower_bound(oldname);
-
-    if ( current != m_methods.end() )
-    {
-      upper = m_methods.upper_bound(oldname);
-
-      for ( ; current != upper; current++ )
-      {
-        if ( current->second == method )
-        {
-          m_methods.erase(current);
-          break;
-        }
-      }
-    }
-
-    m_methods.insert( std::make_pair(newname, method) );
-
-    MethodSignalNameConnections::iterator i;
-    i = m_method_signal_name_connections.find(method);
-    if ( i == m_method_signal_name_connections.end() )
-    {
-      m_method_signal_name_connections[method] =
-          method->signal_name_changed().connect(sigc::bind(sigc::mem_fun(*this,&InterfaceProxy::on_method_name_changed),method));
-    }
   }
 
   void InterfaceProxy::on_object_set_connection(std::shared_ptr< Connection > conn)
@@ -390,53 +305,6 @@ namespace DBus
     for ( Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++ )
       (*i)->set_path(path);
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ######################### OLD ################################################################################  
-//   InterfaceProxy::InterfaceProxy( Connection conn, const std::string& destination, const std::string& path, const std::string& interface ):
-//       ObjectProxy( conn, destination, path ),
-//       m_interface( interface )
-//   {}
-// 
-//   InterfaceProxy::InterfaceProxy( const std::string & destination, const std::string & path, const std::string & interface ):
-//           ObjectProxy( destination, path ),
-//                        m_interface( interface )
-//                        {}
-// 
-//   InterfaceProxy::InterfaceProxy( const std::string & path, const std::string & interface ):
-//                            ObjectProxy( path ),
-//                                         m_interface( interface )
-//                                         {}
-// 
-//   InterfaceProxy::InterfaceProxy( const std::string& interface ):
-//       m_interface( interface )
-//   {}
-// 
-//   InterfaceProxy::~InterfaceProxy()
-//   {}
-// 
-//   const std::string & InterfaceProxy::interface( )
-//   {
-//     return m_interface;
-//   }
-// 
-//   bool InterfaceProxy::set_interface( const std::string & interface )
-//   {
-//     m_interface = interface;
-//     return true;
-//   }
 
 }
 

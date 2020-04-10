@@ -133,30 +133,15 @@ namespace DBus
     
     {
       std::unique_lock lock( m_interfaces_rwlock );
-
-      InterfaceSignalNameConnections::iterator i;
-
-      i = m_interface_signal_name_connections.find(interface);
-
-      if ( i == m_interface_signal_name_connections.end() )
-      {
-        m_interface_signal_name_connections[interface] = interface->signal_name_changed().connect( sigc::bind(sigc::mem_fun(*this, &ObjectProxy::on_interface_name_changed), interface));
-
         m_interfaces.insert(std::make_pair(interface->name(), interface));
 
         interface->m_object = this;
-      }
-      else
-      {
-        result = false;
-      }
 
     }
 
     m_signal_interface_added.emit( interface );
 
-    // TODO allow control over this
-    if ( not m_default_interface ) this->set_default_interface( interface->name() );
+    if ( not m_default_interface && interface->name().empty() ) this->set_default_interface( interface->name() );
 
     return result;
   }
@@ -176,7 +161,6 @@ namespace DBus
   {
     Interfaces::iterator iter;
     std::shared_ptr<InterfaceProxy> interface, old_default;
-    InterfaceSignalNameConnections::iterator i;
     
     bool need_emit_default_changed = false;
 
@@ -192,13 +176,6 @@ namespace DBus
 
       if ( interface )
       {
-        i = m_interface_signal_name_connections.find(interface);
-        if ( i != m_interface_signal_name_connections.end() )
-        {
-          i->second.disconnect();
-          m_interface_signal_name_connections.erase(i);
-        }
-    
         if ( m_default_interface == interface ) {
           old_default = m_default_interface;
           m_default_interface = std::shared_ptr<InterfaceProxy>();
@@ -217,7 +194,6 @@ namespace DBus
   {
     Interfaces::iterator current, upper;
     std::shared_ptr<InterfaceProxy> old_default;
-    InterfaceSignalNameConnections::iterator i;
     
     bool need_emit_default_changed = false;
     bool interface_removed = false;
@@ -234,12 +210,6 @@ namespace DBus
       {
         if ( current->second == interface )
         {
-          i = m_interface_signal_name_connections.find(interface);
-          if ( i != m_interface_signal_name_connections.end() )
-          {
-            i->second.disconnect();
-            m_interface_signal_name_connections.erase(i);
-          }
     
           if ( m_default_interface == interface )
           {
@@ -420,12 +390,6 @@ namespace DBus
       std::shared_ptr<Connection> conn = m_connection.lock();
     if ( !conn ) return std::shared_ptr<ReturnMessage>();
 
-//     if ( not call_message->expects_reply() )
-//     {
-//       m_connection->send( call_message );
-//       return std::shared_ptr<ReturnMessage>();
-//     }
-
     return conn->send_with_reply_blocking( call_message, timeout_milliseconds );
   }
 
@@ -450,38 +414,6 @@ namespace DBus
   sigc::signal< void(std::shared_ptr<InterfaceProxy>, std::shared_ptr<InterfaceProxy>)> ObjectProxy::signal_default_interface_changed()
   {
     return m_signal_default_interface_changed;
-  }
-
-  void ObjectProxy::on_interface_name_changed(const std::string & oldname, const std::string & newname, std::shared_ptr<InterfaceProxy> interface)
-  {
-    std::unique_lock lock( m_interfaces_rwlock );
-
-    Interfaces::iterator current, upper;
-    current = m_interfaces.lower_bound(oldname);
-
-    if ( current != m_interfaces.end() )
-    {
-      upper = m_interfaces.upper_bound(oldname);
-
-      for ( ; current != upper; current++ )
-      {
-        if ( current->second == interface )
-        {
-          m_interfaces.erase(current);
-          break;
-        }
-      }
-    }
-
-    m_interfaces.insert( std::make_pair(newname, interface) );
-
-    InterfaceSignalNameConnections::iterator i;
-    i = m_interface_signal_name_connections.find(interface);
-    if ( i == m_interface_signal_name_connections.end() )
-    {
-      m_interface_signal_name_connections[interface] =
-          interface->signal_name_changed().connect(sigc::bind(sigc::mem_fun(*this,&ObjectProxy::on_interface_name_changed),interface));
-    }
   }
 
 }

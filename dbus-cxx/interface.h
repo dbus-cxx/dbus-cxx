@@ -225,7 +225,7 @@ namespace DBus {
 
       friend class Object;
 
-      std::string m_name;
+      const std::string m_name;
 
       std::string m_path;
       
@@ -240,16 +240,6 @@ namespace DBus {
       sigc::signal<void(std::shared_ptr<MethodBase>)> m_signal_method_added;
       
       sigc::signal<void(std::shared_ptr<MethodBase>)> m_signal_method_removed;
-
-      typedef std::map<std::shared_ptr<MethodBase>,sigc::connection> MethodSignalNameConnections;
-
-      MethodSignalNameConnections m_method_signal_name_connections;
-
-      /**
-       * Callback point that updates the method name map when a method changes
-       * its name.
-       */
-      void on_method_name_changed(const std::string& oldname, const std::string& newname, std::shared_ptr<MethodBase> method);
 
       void set_path( const std::string& new_path );
 

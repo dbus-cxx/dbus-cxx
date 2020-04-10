@@ -82,25 +82,13 @@ namespace DBus
     bool result = true;
     
     if ( not method ) return false;
+
+    if( has_method( method->name() ) ) return false;
     
     {
       std::unique_lock lock( m_methods_rwlock );
 
-      MethodSignalNameConnections::iterator i;
-
-      i = m_method_signal_name_connections.find(method);
-
-      if ( i == m_method_signal_name_connections.end() )
-      {
-        m_method_signal_name_connections[method] =
-            method->signal_name_changed().connect(sigc::bind(sigc::mem_fun(*this,&Interface::on_method_name_changed),method));
-
-        m_methods.insert(std::make_pair(method->name(), method));
-      }
-      else
-      {
-        result = false;
-      }
+      m_methods.insert(std::make_pair(method->name(), method));
     }
 
     m_signal_method_added.emit( method );
@@ -112,7 +100,6 @@ namespace DBus
   {
     Methods::iterator iter;
     std::shared_ptr<MethodBase> method;
-    MethodSignalNameConnections::iterator i;
 
     {
       std::unique_lock lock( m_methods_rwlock );
@@ -121,16 +108,6 @@ namespace DBus
       if ( iter != m_methods.end() ) {
         method = iter->second;
         m_methods.erase( iter );
-      }
-
-      if ( method )
-      {
-        i = m_method_signal_name_connections.find(method);
-        if ( i != m_method_signal_name_connections.end() )
-        {
-          i->second.disconnect();
-          m_method_signal_name_connections.erase(i);
-        }
       }
     }
 
@@ -145,7 +122,6 @@ namespace DBus
   bool Interface::remove_method( std::shared_ptr<MethodBase> torem )
   {
     Methods::iterator iter;
-    MethodSignalNameConnections::iterator i;
     std::shared_ptr<MethodBase> method;
 
     {
@@ -159,12 +135,6 @@ namespace DBus
       if ( method == torem )
       {
         m_methods.erase( iter );
-        i = m_method_signal_name_connections.find(method);
-        if ( i != m_method_signal_name_connections.end() )
-        {
-          i->second.disconnect();
-          m_method_signal_name_connections.erase(i);
-        }
       }
     }
 
@@ -343,38 +313,6 @@ namespace DBus
     }
 
     return method_it->second->handle_call_message( conn, message );
-  }
-
-  void Interface::on_method_name_changed(const std::string & oldname, const std::string & newname, std::shared_ptr<MethodBase> method)
-  {
-    std::unique_lock lock( m_methods_rwlock );
-
-    Methods::iterator current, upper;
-    current = m_methods.lower_bound(oldname);
-
-    if ( current != m_methods.end() )
-    {
-      upper = m_methods.upper_bound(oldname);
-
-      for ( ; current != upper; current++ )
-      {
-        if ( current->second == method )
-        {
-          m_methods.erase(current);
-          break;
-        }
-      }
-    }
-
-    m_methods.insert( std::make_pair(newname, method) );
-
-    MethodSignalNameConnections::iterator i;
-    i = m_method_signal_name_connections.find(method);
-    if ( i == m_method_signal_name_connections.end() )
-    {
-      m_method_signal_name_connections[method] =
-          method->signal_name_changed().connect(sigc::bind(sigc::mem_fun(*this,&Interface::on_method_name_changed),method));
-    }
   }
 
   void Interface::set_path(const std::string& new_path)

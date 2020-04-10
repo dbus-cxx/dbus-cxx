@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2009,2010 by Rick L. Vinyard, Jr.                       *
  *   rvinyard@cs.nmsu.edu                                                  *
- *   Copyright (C) 2019 by Robert Middleton                                *
+ *   Copyright (C) 2019-2020 by Robert Middleton                           *
  *   robert.middleton@rm5248.com                                           *
  *                                                                         *
  *                                                                         *
@@ -49,7 +49,9 @@ namespace DBus
   class ReturnMessage;
 
   /**
-   * Base class for all methods(proxy and local)
+   * Base class for all methods(proxy and local).
+   *
+   * Note that the name of the method is immutable and cannot be changed once a method is created.
    *
    * @ingroup local
    * @ingroup objects
@@ -68,23 +70,11 @@ namespace DBus
       uint32_t sendMessage( std::shared_ptr<Connection> connection, const std::shared_ptr<const Message> );
 
     public:
-      ~MethodBase();
+      virtual ~MethodBase();
 
       const std::string& name() const;
 
-      void set_name( const std::string& name );
-
-
       virtual HandlerResult handle_call_message( std::shared_ptr<Connection> connection, std::shared_ptr<const CallMessage> message ) = 0;
-
-      /**
-       * This method is needed to be able to create a duplicate of a child
-       * capable of parsing their specific template type message.
-       */
-      //TODO is this needed anymore?
-      //virtual pointer clone() = 0;
-
-      sigc::signal<void(const std::string&/*old name*/, const std::string&/*new name*/)> signal_name_changed();
 
       /** Returns a DBus XML description of this interface */
       virtual std::string introspect(int space_depth=0) const { return std::string(); };
@@ -95,12 +85,7 @@ namespace DBus
 
     protected:
 
-      std::string m_name;
-
-      /** Ensures that the name doesn't change while the name changed signal is emitting */
-      std::mutex m_name_mutex;
-
-      sigc::signal<void(const std::string&, const std::string&)> m_signal_name_changed;
+      const std::string m_name;
 
       std::vector<std::string> m_arg_names;
 
@@ -109,12 +94,6 @@ namespace DBus
   template <typename T_type>
   class Method : public MethodBase {
   private:
-/*
-      template <class Tuple, size_t... Is>
-      void call_slot(Tuple t, std::index_sequence<Is...> ){
-          m_slot( std::get<Is>(t)... );
-      }
-*/
       Method(const std::string& name) : MethodBase(name){}
 
   public:

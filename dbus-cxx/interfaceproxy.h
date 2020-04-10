@@ -42,6 +42,9 @@ namespace DBus {
   /**
    * An InterfaceProxy represents a remote Interface in another application on the DBus.
    *
+   * Note that the interface name is immutable and cannot be changed once the interface
+   * has been created.
+   *
    * @ingroup objects
    * @ingroup proxy
    * 
@@ -69,8 +72,6 @@ namespace DBus {
 
       const std::string& name() const;
 
-      void set_name( const std::string& new_name );
-
       const Methods& methods() const;
 
       /** Returns the first method with the given name */
@@ -81,14 +82,19 @@ namespace DBus {
       {
         std::shared_ptr< MethodProxy<T_type> > method;
         method = MethodProxy<T_type>::create(name);
-        this->add_method(method);
+        if( !this->add_method(method) ){
+            return std::shared_ptr< MethodProxy<T_type> >();
+        }
         return method;
       }
 
-      /** Adds the named method */
+      /**
+       * Adds the named method.  If a method with the same name already exists,
+       * does not replace the current method(returns false).
+       */
       bool add_method( std::shared_ptr<MethodProxyBase> method );
 
-      /** Removes the first method with the given name */
+      /** Removes the method with the given name */
       void remove_method( const std::string& name );
 
       /** Removed the specific method */
@@ -133,13 +139,10 @@ namespace DBus {
 
       bool has_signal( std::shared_ptr<signal_proxy_base> sig ) const;
 
-      /** Signal emitted when the name is changed */
-      sigc::signal<void(const std::string&/*old name*/,const std::string&/*new name*/)> signal_name_changed();
-
-      /** Signal emitted when a method of the given name is added */
+      /** Signal emitted when a method is added to this interface */
       sigc::signal<void(std::shared_ptr<MethodProxyBase>)> signal_method_added();
 
-      /** Signal emitted when a method of the given name is removed */
+      /** Signal emitted when a method is removed from thsi interface */
       sigc::signal<void(std::shared_ptr<MethodProxyBase>)> signal_method_removed();
 
     protected:
@@ -148,28 +151,17 @@ namespace DBus {
       
       ObjectProxy* m_object;
       
-      std::string m_name;
+      const std::string m_name;
       
       Methods m_methods;
 
       Signals m_signals;
 
       mutable std::shared_mutex m_methods_rwlock;
-
-      /** Ensures that the name doesn't change while the name changed signal is emitting */
-      std::mutex m_name_mutex;
-
-      sigc::signal<void(const std::string&,const std::string&)> m_signal_name_changed;
       
       sigc::signal<void(std::shared_ptr<MethodProxyBase>)> m_signal_method_added;
       
       sigc::signal<void(std::shared_ptr<MethodProxyBase>)> m_signal_method_removed;
-
-      typedef std::map<std::shared_ptr<MethodProxyBase>,sigc::connection> MethodSignalNameConnections;
-
-      MethodSignalNameConnections m_method_signal_name_connections;
-
-      void on_method_name_changed(const std::string& oldname, const std::string& newname, std::shared_ptr<MethodProxyBase> method);
 
       void on_object_set_connection( std::shared_ptr<Connection> conn );
 

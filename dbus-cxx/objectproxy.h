@@ -200,12 +200,6 @@ namespace DBus
 
       sigc::signal<void(std::shared_ptr<InterfaceProxy>)> m_signal_interface_removed;
 
-      typedef std::map<std::shared_ptr<InterfaceProxy>,sigc::connection> InterfaceSignalNameConnections;
-
-      InterfaceSignalNameConnections m_interface_signal_name_connections;
-
-      void on_interface_name_changed(const std::string& oldname, const std::string& newname, std::shared_ptr<InterfaceProxy> interface);
-
   };
 
 }
