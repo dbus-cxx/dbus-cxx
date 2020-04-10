@@ -33,8 +33,6 @@
 namespace DBus
 {
   class Connection;
-  class Timeout;
-  class Watch;
 
   /**
    * Handles multi-threaded dispatching of one or more connections.
@@ -42,8 +40,8 @@ namespace DBus
    * This class provides a way to handle multiple connections with one set of
    * dispatching threads.
    *
-   * This dispatcher creates two threads, one to watch I/O file descriptors
-   * for activity and the other to handle message dispatching.
+   * This dispatcher creates a separate thread to handle the reading/writing
+   * of data to the bus.
    *
    * @ingroup core
    *
@@ -85,22 +83,6 @@ namespace DBus
       volatile bool m_running;
       
       std::thread m_dispatch_thread;
-
-      class WatchPair {
-      public:
-          WatchPair() : read_watch( nullptr ), write_watch( nullptr ){}
-          WatchPair( std::shared_ptr<Watch> read, std::shared_ptr<Watch> write ) :
-              read_watch( read ),
-              write_watch( write ) {}
-
-          std::shared_ptr<Watch> read_watch;
-          std::shared_ptr<Watch> write_watch;
-      };
-      std::mutex m_mutex_watches;
-      std::map<int,WatchPair> m_watches_map;
-      
-      std::mutex m_mutex_exception_fd_set;
-      std::vector<int> m_exception_fd_set;
       
       /* socketpair for telling the thread to process data */
       int process_fd[ 2 ];
@@ -114,35 +96,13 @@ namespace DBus
        */
       unsigned int m_dispatch_loop_limit;
       
-      virtual void dispatch_thread_main();
-      
-      bool on_add_watch(std::shared_ptr<Watch>);
-      
-      bool on_remove_watch(std::shared_ptr<Watch>);
-      
-      void on_watch_toggled(std::shared_ptr<Watch>);
-      
-      bool on_add_timeout(std::shared_ptr<Timeout>);
-      
-      bool on_remove_timeout(std::shared_ptr<Timeout>);
-      
-      bool on_timeout_toggled(std::shared_ptr<Timeout>);
+      void dispatch_thread_main();
       
       void on_wakeup_main(std::shared_ptr<Connection>);
       
       void on_dispatch_status_changed(DispatchStatus, std::shared_ptr<Connection>);
 
       void wakeup_thread();
-
-      /**
-       * Add all read and write watch FDs to the given vector to watch.
-       */
-      void add_read_and_write_watches( std::vector<struct ::pollfd>* fds );
-
-      /**
-       * Handle all of the read and write watches if the given FD needs to be serviced.
-       */
-      void handle_read_and_write_watches( std::vector<struct ::pollfd>* fds );
 
       /**
        * Dispatch all of our connections

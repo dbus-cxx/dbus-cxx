@@ -264,26 +264,6 @@ namespace DBus
 
       bool has_messages_to_send();
 
-      typedef sigc::signal<bool(std::shared_ptr<Watch>)>::accumulated<InterruptablePredicateAccumulatorDefaultFalse> AddWatchSignal;
-
-      /** Cannot call watch.handle() in a slot connected to this signal */
-      AddWatchSignal& signal_add_watch();
-
-      sigc::signal<bool(std::shared_ptr<Watch>)>& signal_remove_watch();
-
-      sigc::signal<void(std::shared_ptr<Watch>)>& signal_watch_toggled();
-
-      typedef sigc::signal<bool(std::shared_ptr<Timeout>)>::accumulated<InterruptablePredicateAccumulatorDefaultFalse> AddTimeoutSignal;
-      
-      /** Cannot call timeout.handle() in a slot connected to this signal */
-      AddTimeoutSignal& signal_add_timeout();
-
-      sigc::signal<bool(std::shared_ptr<Timeout>)>& signal_remove_timeout();
-
-      sigc::signal<bool(std::shared_ptr<Timeout>)>& signal_timeout_toggled();
-
-      sigc::signal<void()>& signal_wakeup_main();
-
       /** Cannot call dispatch() in a slot connected to this signal */
       sigc::signal<void(DispatchStatus)>& signal_dispatch_status_changed();
 
@@ -292,10 +272,6 @@ namespace DBus
        * message to be filtered.
        */
       FilterSignal& signal_filter();
-
-      const std::deque<std::shared_ptr<Watch>>& unhandled_watches() const;
-      
-      void remove_unhandled_watch(const std::shared_ptr<Watch> w);
 
       /**
        * Create and return a new object, registering the object automatically.  If the registering
@@ -458,17 +434,6 @@ namespace DBus
         std::map<std::thread::id,std::weak_ptr<ThreadDispatcher>> m_threadDispatchers;
         std::shared_ptr<DBusDaemonProxy> m_daemonProxy;
       
-      AddWatchSignal m_add_watch_signal;
-      
-      sigc::signal<bool(std::shared_ptr<Watch>)> m_remove_watch_signal;
-      
-      sigc::signal<void(std::shared_ptr<Watch>)> m_watch_toggled_signal;
-      
-      AddTimeoutSignal m_add_timeout_signal;
-      
-      sigc::signal<bool(std::shared_ptr<Timeout>)> m_remove_timeout_signal;
-      
-      sigc::signal<bool(std::shared_ptr<Timeout>)> m_timeout_toggled_signal;
       
       sigc::signal<void()> m_wakeup_main_signal;
       
@@ -481,10 +446,6 @@ namespace DBus
       typedef std::map<DBusTimeout*,std::shared_ptr<Timeout>> Timeouts;
 
       Timeouts m_timeouts;
-
-      friend void init(bool);
-
-
 
 
       ProxySignals m_proxy_signals;
@@ -500,24 +461,6 @@ namespace DBus
 //       typedef std::map<std::string,signal_base> SignalVTable;
 //
 //       typedef std::map<std::string, SignalVTable> InterfaceVTable;
-
-      static dbus_bool_t on_add_watch_callback( DBusWatch* cwatch, void* data );
-
-      static void on_remove_watch_callback( DBusWatch* cwatch, void* data );
-
-      static void on_watch_toggled_callback( DBusWatch* cwatch, void* data );
-
-      static dbus_bool_t on_add_timeout_callback( DBusTimeout* ctimeout, void* data );
-
-      static void on_remove_timeout_callback( DBusTimeout* ctimeout, void* data );
-
-      static void on_timeout_toggled_callback( DBusTimeout* ctimeout, void* data );
-
-      static void on_wakeup_main_callback( void* data );
-
-      static void on_dispatch_status_callback( DBusConnection* connection, DBusDispatchStatus new_status, void* data );
-
-      static DBusHandlerResult on_filter_callback( DBusConnection* connection, DBusMessage* message, void* data );
 
   };
   

@@ -39,8 +39,6 @@
 #include "returnmessage.h"
 #include <sigc++/sigc++.h>
 #include "signal_proxy_base.h"
-#include "timeout.h"
-#include "watch.h"
 #include "transport.h"
 #include "simpletransport.h"
 #include <poll.h>
@@ -708,41 +706,6 @@ struct Connection::ExpectingResponse {
 //    return dbus_connection_has_messages_to_send(m_cobj);
   }
 
-  Connection::AddWatchSignal& Connection::signal_add_watch()
-  {
-    return m_add_watch_signal;
-  }
-
-  sigc::signal<bool(std::shared_ptr<Watch>)>& Connection::signal_remove_watch()
-  {
-    return m_remove_watch_signal;
-  }
-
-  sigc::signal<void(std::shared_ptr<Watch>)>& Connection::signal_watch_toggled()
-  {
-    return m_watch_toggled_signal;
-  }
-
-  Connection::AddTimeoutSignal& Connection::signal_add_timeout()
-  {
-    return m_add_timeout_signal;
-  }
-
-  sigc::signal<bool(std::shared_ptr<Timeout>)>& Connection::signal_remove_timeout()
-  {
-    return m_remove_timeout_signal;
-  }
-
-  sigc::signal<bool(std::shared_ptr<Timeout>)>& Connection::signal_timeout_toggled()
-  {
-    return m_timeout_toggled_signal;
-  }
-
-  sigc::signal< void() > & Connection::signal_wakeup_main()
-  {
-    return m_wakeup_main_signal;
-  }
-
   sigc::signal< void(DispatchStatus) > & Connection::signal_dispatch_status_changed()
   {
     return m_dispatch_status_signal;
@@ -756,27 +719,6 @@ struct Connection::ExpectingResponse {
   void Connection::set_global_change_sigpipe(bool will_modify_sigpipe)
   {
     dbus_connection_set_change_sigpipe(will_modify_sigpipe);
-  }
-
-  const std::deque<std::shared_ptr<Watch>>& Connection::unhandled_watches() const
-  {
-    return m_unhandled_watches;
-  }
-  
-  void Connection::remove_unhandled_watch(const std::shared_ptr<Watch> w)
-  {
-    std::deque<std::shared_ptr<Watch>>::iterator i;
-    
-    if ( not w ) return;
-    
-    for (i = m_unhandled_watches.begin(); i != m_unhandled_watches.end(); i++)
-    {
-      if ( (*i)->cobj() == w->cobj() )
-      {
-        m_unhandled_watches.erase(i);
-        return;
-      }
-    }
   }
 
   std::shared_ptr<Object> Connection::create_object(const std::string & path, ThreadForCalling calling)
@@ -977,150 +919,6 @@ struct Connection::ExpectingResponse {
 // //                            DEBUG_OUT( "Connection::register_signal()", "the interface vtable for " << (long unsigned)m_cobj << " has " << interface_vtable->size() << " elements" );
 //   }
 //
-
-
-  dbus_bool_t Connection::on_add_watch_callback(DBusWatch * cwatch, void * data)
-  {
-    bool result;
-    Connection* conn = static_cast<Connection*>(data);
-    std::shared_ptr<Watch> watch = Watch::create(cwatch);
-    result = conn->signal_add_watch().emit(watch);
-    if ( not result ) conn->m_unhandled_watches.push_back(watch);
-    return true;
-  }
-
-  void Connection::on_remove_watch_callback(DBusWatch * cwatch, void * data)
-  {
-    Connection* conn = static_cast<Connection*>(data);
-    conn->signal_remove_watch().emit(Watch::create(cwatch));
-  }
-
-  void Connection::on_watch_toggled_callback(DBusWatch * cwatch, void * data)
-  {
-    Connection* conn = static_cast<Connection*>(data);
-    conn->signal_watch_toggled().emit(Watch::create(cwatch));
-  }
-
-  dbus_bool_t Connection::on_add_timeout_callback(DBusTimeout * ctimeout, void * data)
-  {
-    assert(ctimeout);
-    bool result;
-    Connection* conn = static_cast<Connection*>(data);
-    std::shared_ptr<Timeout> timeout = Timeout::create(ctimeout);
-    SIMPLELOGGER_DEBUG( "dbus.Connection", "Connection::on_add_timeout_callback  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
-
-    // We'll give a signal callback a chance to handle the timeout
-    result = conn->signal_add_timeout().emit(timeout);
-
-    // If not, the connection will have to handle the timeout itself
-    if ( not result )
-    {
-      Timeouts::iterator i;
-      // Is this timeout already added?
-      i = conn->m_timeouts.find(ctimeout);
-      if ( i != conn->m_timeouts.end() )
-      {
-        // We already have the timeout, so let's just re-arm it
-        i->second->arm();
-      }
-      else
-      {
-        conn->m_timeouts[ctimeout] = timeout;
-        timeout->arm();
-      }
-    }
-    return true;
-  }
-
-  void Connection::on_remove_timeout_callback(DBusTimeout * ctimeout, void * data)
-  {
-    Connection* conn = static_cast<Connection*>(data);
-    std::shared_ptr<Timeout> timeout = Timeout::create(ctimeout);
-    SIMPLELOGGER_DEBUG( "dbus.Connection", "Remove timeout callback. enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
-
-    // Erase the timeout if this connection handled it
-    // Otherwise, this has no effect
-    conn->m_timeouts.erase(ctimeout);
-
-    conn->signal_remove_timeout().emit(timeout);
-  }
-
-  void Connection::on_timeout_toggled_callback(DBusTimeout * ctimeout, void * data)
-  {
-    Connection* conn = static_cast<Connection*>(data);
-    std::shared_ptr<Timeout> timeout = Timeout::create(ctimeout);
-    SIMPLELOGGER_DEBUG( "dbus.Connection", "Timeout toggled.  enabled:" << timeout->is_enabled() << "  interval: " << timeout->interval() );
-
-    // If we handled the timeout we'll handle the enabling/disabling
-    Timeouts::iterator i;
-    i = conn->m_timeouts.find(ctimeout);
-    if ( i != conn->m_timeouts.end() )
-    {
-      if ( i->second->is_enabled() ) i->second->arm();
-      else i->second->arm(false);
-    }
-    // But, if we didn't handle it will pass it along to the signal
-    else
-    {
-      conn->signal_timeout_toggled().emit(timeout);
-    }
-  }
-
-  void Connection::on_wakeup_main_callback(void * data)
-  {
-    Connection* conn = static_cast<Connection*>(data);
-    conn->signal_wakeup_main().emit();
-  }
-
-  void Connection::on_dispatch_status_callback(DBusConnection * connection, DBusDispatchStatus new_status, void * data)
-  {
-    Connection* conn = static_cast<Connection*>(data);
-    conn->signal_dispatch_status_changed().emit(static_cast<DispatchStatus>(new_status));
-  }
-
-  DBusHandlerResult Connection::on_filter_callback(DBusConnection * connection, DBusMessage * message, void * data)
-  {
-    if ( message == nullptr ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-    
-    std::shared_ptr<Connection> conn;// = static_cast<Connection*>(data)->self();
-    FilterResult filter_result = FilterResult::DONT_FILTER;
-    HandlerResult signal_result = HandlerResult::NOT_HANDLED;
-    std::shared_ptr<Message> msg;// = Message::create(message);
-
-    filter_result = conn->signal_filter().emit(conn, msg);
-
-    SIMPLELOGGER_DEBUG( "dbus.Connection", "Filter callback.  filter_result: " << static_cast<int>( filter_result ) );
-
-    // Deliver signals to signal proxies
-    if ( filter_result != FilterResult::FILTER and msg->type() == MessageType::SIGNAL )
-    {
-      std::shared_ptr<SignalMessage> smsg;// = SignalMessage::create(msg);
-      HandlerResult result = HandlerResult::NOT_HANDLED;
-
-      SIMPLELOGGER_DEBUG( "dbus.Connection", "Handling signal " 
-          << smsg->path()
-          << " "
-          << smsg->interface()
-          << " "
-          << smsg->member() );
-
-      for( std::shared_ptr<signal_proxy_base> sighandler : conn->m_proxy_signals ){
-          HandlerResult tmpResult = sighandler->handle_signal( smsg );
-          if( tmpResult == HandlerResult::HANDLED ){
-              result = HandlerResult::HANDLED;
-              // Go on at this point incase there are multiple handles for the signal
-          }else if( tmpResult == HandlerResult::NEEDS_MEMORY ){
-              result = HandlerResult::NEEDS_MEMORY;
-              // Can't do anything else at this point
-              break;
-          }
-      }
-    }
-
-    if ( signal_result == HandlerResult::HANDLED or filter_result == FilterResult::FILTER ) return DBUS_HANDLER_RESULT_HANDLED;
-    if ( signal_result == HandlerResult::NEEDS_MEMORY or filter_result == FilterResult::NEEDS_MEMORY ) return DBUS_HANDLER_RESULT_NEED_MEMORY;
-    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-  }
 
   std::string Connection::introspect(const std::string& destination, const std::string& path)
   {

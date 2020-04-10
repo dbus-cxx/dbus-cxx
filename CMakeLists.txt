@@ -98,11 +98,9 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/signal_proxy_base.cpp
     dbus-cxx/signature.cpp
     dbus-cxx/signatureiterator.cpp
-    dbus-cxx/timeout.cpp
     dbus-cxx/utility.cpp
     dbus-cxx/types.cpp
     dbus-cxx/variant.cpp
-    dbus-cxx/watch.cpp
     dbus-cxx/marshaling.cpp
     dbus-cxx/demarshaling.cpp
     dbus-cxx/simpletransport.cpp
@@ -147,11 +145,9 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/signatureiterator.h
     dbus-cxx/simplelogger_defs.h
     dbus-cxx/simplelogger.h
-    dbus-cxx/timeout.h
     dbus-cxx/types.h
     dbus-cxx/utility.h
     dbus-cxx/demangle.h
-    dbus-cxx/watch.h
     dbus-cxx/dbus_signal.h
     dbus-cxx/interface.h
     dbus-cxx/interfaceproxy.h
