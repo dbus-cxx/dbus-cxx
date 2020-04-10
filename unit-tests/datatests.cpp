@@ -30,14 +30,12 @@ std::shared_ptr<DBus::MethodProxy<int(int,int)>> int_method_proxy;
 std::shared_ptr<DBus::MethodProxy<void()>> void_method_proxy;
 std::shared_ptr<DBus::MethodProxy<void(struct custom)>> void_custom_method_proxy;
 std::shared_ptr<DBus::MethodProxy<int(int, struct custom)>> int_custom_method_proxy2;
-std::shared_ptr<DBus::MethodProxy<int(int, std::vector<struct custom>)>> int_vec_custom_method_proxy2;
 
 std::shared_ptr<DBus::Object> object;
 std::shared_ptr<DBus::Method<int(int,int)>> int_method;
 std::shared_ptr<DBus::Method<void()>> void_method;
 std::shared_ptr<DBus::Method<void(struct custom)>> void_custom_method;
 std::shared_ptr<DBus::Method<int(int,struct custom)>> int_custom_method2;
-std::shared_ptr<DBus::Method<int(int,std::vector<struct custom>)>> int_vec_custom_method2;
 
 int add(int a, int b){
     return a + b;
@@ -52,17 +50,6 @@ int int_intcustom_symbol(int i, struct custom c){
   return i + c.first + c.second;
 }
 
-int int_int_vec_custom_symbol(int i, std::vector<struct custom> vec){
-  int retval = 0;
-
-  for( struct custom cust : vec ){
-    retval += cust.first;
-    retval += cust.second;
-  }
-
-  return retval;
-}
-
 void client_setup(){
     proxy = conn->create_object_proxy( "dbuscxx.test", "/test" );
 
@@ -70,7 +57,6 @@ void client_setup(){
     void_method_proxy = proxy->create_method<void()>( "foo.what", "void" );
     void_custom_method_proxy = proxy->create_method<void(struct custom)>( "foo.what", "void_custom" );
     int_custom_method_proxy2 = proxy->create_method<int(int,struct custom)>( "foo.what", "int_intcustom" );
-    int_vec_custom_method_proxy2 = proxy->create_method<int(int,std::vector<struct custom>)>( "foo.what", "int_int_veccustom" );
 }
 
 void server_setup(){
@@ -82,7 +68,6 @@ void server_setup(){
     void_method = object->create_method<void()>("foo.what", "void", sigc::ptr_fun( void_method_symbol ) );
     void_custom_method = object->create_method<void(struct custom)>("foo.what", "void_custom", sigc::ptr_fun( void_custom_method_symbol ) );
     int_custom_method2 = object->create_method<int(int,struct custom)>("foo.what", "int_intcustom", sigc::ptr_fun( int_intcustom_symbol ) );
-    int_vec_custom_method2 = object->create_method<int(int,std::vector<struct custom>)>("foo.what", "int_int_veccustom", sigc::ptr_fun( int_int_vec_custom_symbol ) );
 }
 
 bool data_send_integers(){
@@ -115,24 +100,6 @@ bool data_send_intcustom(){
     return TEST_EQUALS( val, 25 );
 }
 
-bool data_send_intveccustom(){
-    struct custom c;
-    c.first = 50;
-    c.second = 2;
-
-    struct custom c1;
-    c1.first = 3;
-    c1.second = 9;
-
-    std::vector<struct custom> callparam;
-    callparam.push_back( c );
-    callparam.push_back( c1 );
-
-    int val = (*int_vec_custom_method_proxy2)( 22, callparam );
-
-    return TEST_EQUALS( val, 64 );
-}
-
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
   ret = data_##name();\
 } \
@@ -158,7 +125,6 @@ int main(int argc, char** argv){
     ADD_TEST(void_method);
     ADD_TEST(void_custom);
     ADD_TEST(send_intcustom);
-    ADD_TEST(send_intveccustom);
   }else{
     server_setup();
     ret = true;
