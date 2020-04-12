@@ -32,12 +32,6 @@ namespace DBus
   {
   }
 
-  MethodProxyBase::MethodProxyBase(const MethodProxyBase& other):
-      m_interface(other.m_interface),
-      m_name(other.m_name)
-  {
-  }
-
   std::shared_ptr<MethodProxyBase> MethodProxyBase::create(const std::string & name)
   {
     return std::shared_ptr<MethodProxyBase>( new MethodProxyBase(name) );
@@ -55,17 +49,6 @@ namespace DBus
   const std::string & MethodProxyBase::name() const
   {
     return m_name;
-  }
-
-  void MethodProxyBase::set_name(const std::string & name)
-  {
-    std::string old_name;
-    {
-      std::lock_guard<std::mutex> lock( m_name_mutex );
-      old_name = m_name;
-      m_name = name;
-    }
-    m_signal_name_changed.emit(old_name, m_name);
   }
 
   std::shared_ptr<CallMessage> DBus::MethodProxyBase::create_call_message() const
@@ -86,11 +69,6 @@ namespace DBus
   {
     if ( not m_interface ) return std::shared_ptr<PendingCall>();
     return m_interface->call_async(call_message, timeout_milliseconds);
-  }
-
-  sigc::signal< void(const std::string &, const std::string &) > MethodProxyBase::signal_name_changed()
-  {
-    return m_signal_name_changed;
   }
 
 }

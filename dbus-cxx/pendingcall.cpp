@@ -24,88 +24,51 @@
 namespace DBus
 {
 
-  PendingCall::PendingCall( DBusPendingCall* cobj )
-      : m_cobj( cobj )
+
+  PendingCall::PendingCall() :
+      m_canceled( false )
   {
-    if ( m_cobj && !dbus_pending_call_set_notify( m_cobj, PendingCall::notify_callback, this, NULL ) ) {
-      throw ErrorNoMemory( "Unable to initialize pending call" );
-    }
   }
 
-  PendingCall::PendingCall( const PendingCall& c ) :
-      m_cobj( c.m_cobj ),
-      m_signal_notify( c.m_signal_notify )
+  std::shared_ptr<PendingCall> PendingCall::create()
   {
-    if ( m_cobj )
-      dbus_pending_call_ref( m_cobj );
-  }
-
-  std::shared_ptr<PendingCall> PendingCall::create( DBusPendingCall * cobj )
-  {
-    return std::shared_ptr<PendingCall>( new PendingCall( cobj ) );
-  }
-
-  std::shared_ptr<PendingCall> PendingCall::create( const PendingCall & other )
-  {
-    return std::shared_ptr<PendingCall>( new PendingCall( other ) );
+    return std::shared_ptr<PendingCall>( new PendingCall() );
   }
 
   PendingCall::~PendingCall()
   {
-    if ( m_cobj ){
-      //At this point, there are no more references to this PendingCall - which means that when 
-      //we get a callback, we will(most likely) segfault because the memory has been deallocated.
-      //Unref the pending call and then cancel it.
-      //dbus_pending_call_unref( m_cobj );
-      dbus_pending_call_cancel( m_cobj );
-    }
-  }
-
-  PendingCall& PendingCall::operator=( const PendingCall& other )
-  {
-    if ( m_cobj )
-      dbus_pending_call_unref( m_cobj );
-    m_cobj = other.m_cobj;
-    if ( m_cobj )
-      dbus_pending_call_ref( m_cobj );
-    return *this;
   }
 
   void PendingCall::cancel()
   {
-    if ( m_cobj )
-      dbus_pending_call_cancel( m_cobj );
+      m_canceled = true;
   }
 
-  bool PendingCall::completed()
+  bool PendingCall::completed() const
   {
-    if ( m_cobj )
-      return dbus_pending_call_get_completed( m_cobj );
-    return true;
+    return m_reply->is_valid();
   }
 
-  std::shared_ptr<Message> PendingCall::steal_reply()
+  std::shared_ptr<Message> PendingCall::reply() const
   {
-    if ( m_cobj ) return Message::create( dbus_pending_call_steal_reply( m_cobj ) );
-    return std::shared_ptr<Message>();
+    return m_reply;
   }
 
-  void PendingCall::block()
+  void PendingCall::block() const
   {
-    if ( m_cobj )
-      dbus_pending_call_block( m_cobj );
+      if( m_canceled ){
+          return;
+      }
   }
 
-  sigc::signal<void()> PendingCall::signal_notify()
+  sigc::signal<void()> PendingCall::signal_notify() const
   {
     return m_signal_notify;
   }
 
-  void PendingCall::notify_callback( DBusPendingCall* dpc, void* data )
-  {
-    PendingCall * pc = static_cast<PendingCall*>( data );
-
-    pc->m_signal_notify.emit();
+  void PendingCall::set_reply( std::shared_ptr<Message> msg ){
+      m_reply = msg;
+      m_signal_notify.emit();
   }
 
 }

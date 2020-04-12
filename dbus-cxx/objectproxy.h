@@ -90,15 +90,12 @@ namespace DBus
 
       void set_path( const std::string& path );
 
-      typedef std::multimap<std::string, std::shared_ptr<InterfaceProxy>> Interfaces;
+      typedef std::map<std::string, std::shared_ptr<InterfaceProxy>> Interfaces;
 
       const Interfaces& interfaces() const;
 
       /** Returns the first interface with the given name */
       std::shared_ptr<InterfaceProxy> interface( const std::string& name ) const;
-
-      /** Alias for interface(name) */
-      std::shared_ptr<InterfaceProxy> operator[]( const std::string& name ) const;
 
       /** Adds the interface to this object */
       bool add_interface( std::shared_ptr<InterfaceProxy> interface );
@@ -120,24 +117,20 @@ namespace DBus
 
       bool has_interface( std::shared_ptr<InterfaceProxy> interface ) const;
 
-      std::shared_ptr<InterfaceProxy> default_interface() const;
-
-      bool set_default_interface( const std::string& new_default_name );
-
-      bool set_default_interface( std::shared_ptr<InterfaceProxy> new_default );
-
-      void remove_default_interface();
-
       /** Adds the method to the named interface */
       bool add_method( const std::string& interface, std::shared_ptr<MethodProxyBase> method );
-
-      /** Adds the method to the default interface */
-      bool add_method( std::shared_ptr<MethodProxyBase> method );
 
       std::shared_ptr<CallMessage> create_call_message( const std::string& interface_name, const std::string& method_name ) const;
 
       std::shared_ptr<CallMessage> create_call_message( const std::string& method_name ) const;
 
+      /**
+       * Forwards this CallMessage to the Connection that this ObjectProxy is on, and returns a
+       * message with the response.
+       *
+       * @param timeout_milliseconds
+       * @return
+       */
       std::shared_ptr<const ReturnMessage> call( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
       std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
@@ -172,11 +165,21 @@ namespace DBus
         return interface->create_signal<T_type...>(sig_name);
       }
 
+      /**
+       * Return a signal that you may connect to when an interface is added.
+       * This will be emitted from the thread that added the interface.
+       *
+       * @return
+       */
       sigc::signal<void(std::shared_ptr<InterfaceProxy>)> signal_interface_added();
 
+      /**
+       * Return a signal that you may connect to when an interface is removed.
+       * This will be emitted from the thread that added the interface.
+       *
+       * @return
+       */
       sigc::signal<void(std::shared_ptr<InterfaceProxy>)> signal_interface_removed();
-
-      sigc::signal<void(std::shared_ptr<InterfaceProxy>/*old default*/,std::shared_ptr<InterfaceProxy>/*new default*/)> signal_default_interface_changed();
 
     protected:
 
@@ -191,10 +194,6 @@ namespace DBus
       std::mutex m_name_mutex;
 
       Interfaces m_interfaces;
-
-      std::shared_ptr<InterfaceProxy> m_default_interface;
-
-      sigc::signal<void(std::shared_ptr<InterfaceProxy>,std::shared_ptr<InterfaceProxy>)> m_signal_default_interface_changed;
 
       sigc::signal<void(std::shared_ptr<InterfaceProxy>)> m_signal_interface_added;
 

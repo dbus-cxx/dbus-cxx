@@ -55,8 +55,6 @@ namespace DBus
     protected:
 
       MethodProxyBase( const std::string& name );
-      
-      MethodProxyBase(const MethodProxyBase& other);
 
     public:
       static std::shared_ptr<MethodProxyBase> create( const std::string& name );
@@ -67,17 +65,11 @@ namespace DBus
 
       const std::string& name() const;
 
-      void set_name( const std::string& name );
-
       std::shared_ptr<CallMessage> create_call_message( ) const;
 
       std::shared_ptr<const ReturnMessage> call( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
-      //TODO make a call() function that takes in a builder(for the milliseconds)
-
       std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
-
-      sigc::signal<void(const std::string&/*old name*/, const std::string&/*new name*/)> signal_name_changed();
 
     protected:
 
@@ -86,12 +78,7 @@ namespace DBus
 
       InterfaceProxy* m_interface;
 
-      std::string m_name;
-
-      /** Ensures that the name doesn't change while the name changed signal is emitting */
-      std::mutex m_name_mutex;
-
-      sigc::signal<void(const std::string&, const std::string&)> m_signal_name_changed;
+      const std::string m_name;
 
   };
 

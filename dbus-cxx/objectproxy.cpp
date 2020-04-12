@@ -118,11 +118,6 @@ namespace DBus
     return iter->second;
   }
 
-  std::shared_ptr<InterfaceProxy> ObjectProxy::operator[]( const std::string& name ) const
-  {
-    return this->interface(name);
-  }
-
   bool ObjectProxy::add_interface( std::shared_ptr<InterfaceProxy> interface )
   {
     bool result = true;
@@ -140,8 +135,6 @@ namespace DBus
     }
 
     m_signal_interface_added.emit( interface );
-
-    if ( not m_default_interface && interface->name().empty() ) this->set_default_interface( interface->name() );
 
     return result;
   }
@@ -161,8 +154,7 @@ namespace DBus
   {
     Interfaces::iterator iter;
     std::shared_ptr<InterfaceProxy> interface, old_default;
-    
-    bool need_emit_default_changed = false;
+
 
     {
       std::unique_lock lock( m_interfaces_rwlock );
@@ -174,28 +166,16 @@ namespace DBus
         m_interfaces.erase(iter);
       }
 
-      if ( interface )
-      {
-        if ( m_default_interface == interface ) {
-          old_default = m_default_interface;
-          m_default_interface = std::shared_ptr<InterfaceProxy>();
-          need_emit_default_changed = true;
-        }
-      }
-
     }
 
     if ( interface ) m_signal_interface_removed.emit( interface );
-
-    if ( need_emit_default_changed ) m_signal_default_interface_changed.emit( old_default, m_default_interface );
   }
 
   void ObjectProxy::remove_interface( std::shared_ptr<InterfaceProxy> interface )
   {
-    Interfaces::iterator current, upper;
+    Interfaces::iterator location;
     std::shared_ptr<InterfaceProxy> old_default;
-    
-    bool need_emit_default_changed = false;
+
     bool interface_removed = false;
 
     if ( not interface ) return;
@@ -203,35 +183,15 @@ namespace DBus
     {
       std::unique_lock lock( m_interfaces_rwlock );
 
-      current = m_interfaces.lower_bound( interface->name() );
-      upper = m_interfaces.upper_bound( interface->name() );
-
-      for ( ; current != upper; current++ )
-      {
-        if ( current->second == interface )
-        {
-    
-          if ( m_default_interface == interface )
-          {
-            old_default = m_default_interface;
-            m_default_interface = std::shared_ptr<InterfaceProxy>();
-            need_emit_default_changed = true;
-          }
-
-          interface->m_object = nullptr;
-          m_interfaces.erase(current);
-
+      location = m_interfaces.find( interface->name() );
+      if( location != m_interfaces.end() ){
+          m_interfaces.erase( location );
           interface_removed = true;
-        
-          break;
-        }
       }
 
     }
 
     if ( interface_removed ) m_signal_interface_removed.emit( interface );
-
-    if ( need_emit_default_changed ) m_signal_default_interface_changed.emit( old_default, m_default_interface );
   }
 
   bool ObjectProxy::has_interface( const std::string & name ) const
@@ -270,62 +230,6 @@ namespace DBus
     return result;
   }
 
-  std::shared_ptr<InterfaceProxy> ObjectProxy::default_interface() const
-  {
-    return m_default_interface;
-  }
-
-  bool ObjectProxy::set_default_interface( const std::string& new_default_name )
-  {
-    Interfaces::iterator iter;
-    std::shared_ptr<InterfaceProxy> old_default;
-    bool result = false;
-
-    {
-      std::shared_lock lock( m_interfaces_rwlock );
-
-      iter = m_interfaces.find( new_default_name );
-
-      if ( iter != m_interfaces.end() )
-      {
-        result = true;
-        old_default = m_default_interface;
-        m_default_interface = iter->second;
-      }
-    
-    }
-
-    if ( result ) m_signal_default_interface_changed.emit( old_default, m_default_interface );
-
-    return result;
-  }
-
-  bool ObjectProxy::set_default_interface( std::shared_ptr<InterfaceProxy> interface )
-  {
-    Interfaces::iterator iter;
-    std::shared_ptr<InterfaceProxy> old_default;
-
-    if ( not interface ) return false;
-
-    if ( not this->has_interface(interface) ) this->add_interface(interface);
-
-    old_default = m_default_interface;
-    m_default_interface = interface;
-
-    m_signal_default_interface_changed.emit( old_default, m_default_interface );
-
-    return true;
-  }
-
-  void ObjectProxy::remove_default_interface()
-  {
-    if ( not m_default_interface ) return;
-
-    std::shared_ptr<InterfaceProxy> old_default = m_default_interface;
-    m_default_interface = std::shared_ptr<InterfaceProxy>();
-    m_signal_default_interface_changed.emit( old_default, m_default_interface );
-  }
-
   bool ObjectProxy::add_method( const std::string& ifacename, std::shared_ptr<MethodProxyBase> method )
   {
     if ( not method ) return false;
@@ -335,22 +239,6 @@ namespace DBus
     if ( not iface ) iface = this->create_interface(ifacename);
 
     return iface->add_method( method );
-  }
-
-  bool ObjectProxy::add_method( std::shared_ptr<MethodProxyBase> method )
-  {
-    if ( not method ) return false;
-    
-    std::shared_ptr<InterfaceProxy> iface = m_default_interface;
-    
-    if ( not iface )
-    {
-      iface = this->interface("");
-      if ( not iface ) iface = this->create_interface("");
-      if ( not m_default_interface ) this->set_default_interface(iface);
-    }
-
-    return iface->add_method(method);
   }
 
   std::shared_ptr<CallMessage> ObjectProxy::create_call_message( const std::string& interface_name, const std::string& method_name ) const
@@ -409,11 +297,6 @@ namespace DBus
   sigc::signal< void(std::shared_ptr<InterfaceProxy>)> ObjectProxy::signal_interface_removed()
   {
     return m_signal_interface_removed;
-  }
-
-  sigc::signal< void(std::shared_ptr<InterfaceProxy>, std::shared_ptr<InterfaceProxy>)> ObjectProxy::signal_default_interface_changed()
-  {
-    return m_signal_default_interface_changed;
   }
 
 }

@@ -196,7 +196,14 @@ namespace DBus
        */
       Connection& operator<<( std::shared_ptr<const Message> msg );
 
-      std::shared_ptr<PendingCall> send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds=-1 ) const;
+      /**
+       * Send a message and return a handle to the pending call.
+       *
+       * @param message
+       * @param timeout_milliseconds
+       * @return
+       */
+      std::shared_ptr<PendingCall> send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds=-1 );
 
       /**
        * Send a CallMessage, and wait for the reply.

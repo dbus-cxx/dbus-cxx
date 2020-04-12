@@ -16,7 +16,6 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <dbus/dbus.h>
 #include <sigc++/sigc++.h>
 #include <memory>
 
@@ -38,38 +37,53 @@ namespace DBus
   {
     protected:
 
-      PendingCall( DBusPendingCall* cobj = nullptr );
-
-      PendingCall( const PendingCall& );
+      PendingCall( );
 
     public:
-      static std::shared_ptr<PendingCall> create( DBusPendingCall* cobj = nullptr );
-
-      static std::shared_ptr<PendingCall> create( const PendingCall& );
+      static std::shared_ptr<PendingCall> create( );
 
       virtual ~PendingCall();
 
-      PendingCall& operator=( const PendingCall& other );
-
+      /**
+       * Cancel the pending call; that is, signal_notify() will not
+       * be emitted if and when the reply eventually comes back.
+       */
       void cancel();
 
-      bool completed();
+      /**
+       * Check to see if the reply has actually come back.
+       */
+      bool completed() const;
 
-      std::shared_ptr<Message> steal_reply();
+      /**
+       * Check to see if the
+       * @return
+       */
+//      bool is_timeout() const;
 
-      void block();
+      /**
+       * Get the reply that this pending call represents.  If
+       * completed() is not true, or this call has been canceled,
+       * returns an invalid pointer.
+       *
+       * @return
+       */
+      std::shared_ptr<Message> reply() const;
 
-      sigc::signal<void()> signal_notify();
+      void block() const;
 
-      DBusPendingCall* cobj();
+      sigc::signal<void()> signal_notify() const;
+
+      void set_reply( std::shared_ptr<Message> msg );
 
     private:
 
-      DBusPendingCall* m_cobj;
-
       sigc::signal<void()> m_signal_notify;
 
-      static void notify_callback( DBusPendingCall* pending, void* data );
+      std::shared_ptr<Message> m_reply;
+
+      bool m_canceled;
+
   };
 
 }

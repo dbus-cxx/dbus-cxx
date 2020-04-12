@@ -327,14 +327,14 @@ struct Connection::ExpectingResponse {
     return *this;
   }
 
-  std::shared_ptr<PendingCall> Connection::send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds ) const
+  std::shared_ptr<PendingCall> Connection::send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds )
   {
-    DBusPendingCall* reply;
     if ( not this->is_valid() ) throw ErrorDisconnected();
     if ( not message or not *message ) return std::shared_ptr<PendingCall>();
+    uint32_t reply_serial = send( message );
     //if ( not dbus_connection_send_with_reply( m_cobj, message->cobj(), &reply, timeout_milliseconds ) )
       throw ErrorNoMemory( "Unable to start asynchronous call" );
-    return PendingCall::create( reply );
+    return PendingCall::create();
   }
 
   std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking( std::shared_ptr<const CallMessage> message, int timeout_milliseconds )
@@ -598,7 +598,6 @@ struct Connection::ExpectingResponse {
 
       if( entry.handlingThread == m_dispatchingThread ){
           // We are in the dispatching thread here, so we can simply call the handle method
-          //entry.handler->handle_message();
           if( callmsg ){
             entry.handler->handle_call_message( callmsg );
           }
@@ -872,9 +871,9 @@ struct Connection::ExpectingResponse {
     pending = this->send_with_reply_async(msg);
     this->flush();
     pending->block();
-    retmsg = pending->steal_reply();
+    //retmsg = pending->steal_reply();
 
-//     retmsg = this->send_with_reply_blocking( msg );
+    retmsg = this->send_with_reply_blocking( msg );
 
     if (not retmsg) return failed;
     
