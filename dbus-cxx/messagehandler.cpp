@@ -17,37 +17,15 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "messagehandler.h"
-#include "connection.h"
-#include "enums.h"
-#include "message.h"
-#include "accumulators.h"
 
 namespace DBus
 {
 
   MessageHandler::MessageHandler()
-      : sigc::trackable()
   {
   }
 
-  HandlerResult MessageHandler::handle_message(std::shared_ptr<Connection> conn, std::shared_ptr<const Message> msg)
-  {
-    return m_signal_message.emit(conn, msg);
-  }
-
-  MessageHandler::MessageSignal& MessageHandler::signal_message()
-  {
-    return m_signal_message;
-  }
-
-  DBusHandlerResult MessageHandler::message_handler_callback(DBusConnection * conn, DBusMessage * message, void * user_data)
-  {
-    if ( user_data == nullptr ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-
-    MessageHandler* handler = static_cast<MessageHandler*>(user_data);
-
-    //return static_cast<DBusHandlerResult>(handler->handle_message( Connection::self(conn), Message::create(message) ));
-  }
+  MessageHandler::~MessageHandler(){}
 
 }
 

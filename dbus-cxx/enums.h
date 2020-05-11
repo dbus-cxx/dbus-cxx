@@ -88,9 +88,16 @@ namespace DBus {
 
   enum class HandlerResult
   {
-    HANDLED = DBUS_HANDLER_RESULT_HANDLED,
-    NOT_HANDLED = DBUS_HANDLER_RESULT_NOT_YET_HANDLED,
-    NEEDS_MEMORY = DBUS_HANDLER_RESULT_NEED_MEMORY,
+      /** This message was handled appropriately */
+      Handled,
+      /** This message had an invalid interface */
+      Invalid_Interface,
+      /** This message had an invalid method to call */
+      Invalid_Method,
+      /** This message had an invalid path */
+      Invalid_Path,
+      /** This message was not handled for some reason */
+      Not_Handled,
   };
 
   enum class FilterResult
@@ -277,6 +284,28 @@ namespace DBus {
       case DispatchStatus::NEED_MEMORY:
           os << "NEED_MEMORY";
           break;
+      }
+
+      return os;
+  }
+
+  inline std::ostream& operator<<( std::ostream& os, HandlerResult res ){
+      os << "HandlerResult::";
+      switch( res ){
+      case HandlerResult::Handled:
+          os << "Handled";
+          break;
+      case HandlerResult::Not_Handled:
+          os << "Not_Handled";
+          break;
+      case HandlerResult::Invalid_Path:
+          os << "Invalid_Path";
+          break;
+      case HandlerResult::Invalid_Method:
+          os << "Invalid_Method";
+          break;
+      case HandlerResult::Invalid_Interface:
+          os << "Invalid_Interface";
       }
 
       return os;

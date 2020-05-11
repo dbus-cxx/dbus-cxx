@@ -300,34 +300,40 @@ namespace DBus
 
       bool unregister_object( const std::string& path );
 
+      /**
+       * Create and return a signal proxy that lets you listen to signals sent on the DBus.
+       *
+       * Normally, you want to add signal proxies via Interface::add_signal.
+       *
+       * This method may be used when you need more control over the match rule for the signal
+       * that you want to listen to.
+       *
+       * This method automatically calls add_signal_proxy.
+       */
       template<typename... T_arg>
-      std::shared_ptr<signal_proxy<T_arg...> > create_signal_proxy( const SignalMatchRule& rule )
+      std::shared_ptr<signal_proxy<T_arg...> > create_signal_proxy( const SignalMatchRule& rule, ThreadForCalling calling )
       {
         std::shared_ptr<signal_proxy<T_arg...> > sig;
         sig = signal_proxy<T_arg...>::create(rule);
-        this->add_signal_proxy( sig );
+        this->add_signal_proxy( sig, calling );
         return sig;
       }
 
       /**
-       * Adds the given signal proxy to the connection
+       * Adds the given signal proxy to the connection.
        */
-      std::shared_ptr<signal_proxy_base> add_signal_proxy( std::shared_ptr<signal_proxy_base> signal );
+      std::shared_ptr<signal_proxy_base> add_signal_proxy( std::shared_ptr<signal_proxy_base> signal, ThreadForCalling calling );
 
       bool remove_signal_proxy( std::shared_ptr<signal_proxy_base> proxy );
 
-      typedef std::vector<std::shared_ptr<signal_proxy_base>> ProxySignals;
-      
-      typedef std::map<std::string,ProxySignals> NameToProxySignalMap;
-
       /** Gets all the signal handlers */
-      const ProxySignals& get_signal_proxies();
+      const std::vector<std::shared_ptr<signal_proxy_base>>& get_signal_proxies();
 
       /** Gets the signal handlers for a specific interface */
-      ProxySignals get_signal_proxies( const std::string& interface );
+      std::vector<std::shared_ptr<signal_proxy_base>> get_signal_proxies( const std::string& interface );
 
       /** Gets the signal handlers for a specific interface and member */
-      ProxySignals get_signal_proxies( const std::string& interface, const std::string& member );
+      std::vector<std::shared_ptr<signal_proxy_base>> get_signal_proxies( const std::string& interface, const std::string& member );
 
       /** Create a signal, that when it is emitted will send that signal over the DBus  */
       template <class... T_arg>
@@ -395,6 +401,16 @@ namespace DBus
 
       void remove_invalid_threaddispatchers_and_associated_objects();
 
+      /**
+       * Send an error back to the calling application based on HandlerResult.  No-op if the
+       * result indicates that there is no error.
+       *
+       */
+      void send_error_on_handler_result( std::shared_ptr<const CallMessage> msg, HandlerResult result );
+
+      void process_call_message( std::shared_ptr<const CallMessage> msg );
+      void process_signal_message( std::shared_ptr<const SignalMessage> msg );
+
     protected:
       struct ExpectingResponse;
       struct OutgoingMessage{
@@ -423,11 +439,14 @@ namespace DBus
         std::map<std::thread::id,std::weak_ptr<ThreadDispatcher>> m_threadDispatchers;
         std::shared_ptr<DBusDaemonProxy> m_daemonProxy;
         sigc::signal<void()> m_needsDispatching;
+        std::mutex m_proxySignalsLock;
+        std::vector<std::shared_ptr<signal_proxy_base>> m_proxySignals;
+        std::vector<std::shared_ptr<signal_proxy_base>> m_allProxySignals;
       
       
       FilterSignal m_filter_signal;
 
-      ProxySignals m_proxy_signals;
+
 
   };
   

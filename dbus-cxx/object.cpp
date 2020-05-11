@@ -286,18 +286,22 @@ namespace DBus
     return m_signal_default_interface_changed;
   }
 
-  HandlerResult Object::handle_message( std::shared_ptr<Connection> connection , std::shared_ptr<const Message> message )
+  HandlerResult Object::handle_message( std::shared_ptr<const Message> message )
   {
-
-  }
-
-  void Object::handle_call_message(std::shared_ptr<const CallMessage> msg) {
       std::shared_ptr<Connection> connection = m_connection.lock();
+      std::shared_ptr<const CallMessage> msg;
 
       if( !connection ){
           SIMPLELOGGER_ERROR(LOGGER_NAME,"Object::handle_call_message: unable to handle call message: invalid connection");
-          return;
+          return HandlerResult::Not_Handled;
       }
+
+      if( message->type() != MessageType::CALL ){
+          SIMPLELOGGER_ERROR(LOGGER_NAME,"Object::handle_call_message: unable to handle call message: message is not call message");
+          return HandlerResult::Not_Handled;
+      }
+
+      msg = std::static_pointer_cast<const CallMessage>( message );
 
       if ( msg->interface() == DBUS_CXX_INTROSPECTABLE_INTERFACE )
       {
@@ -307,7 +311,7 @@ namespace DBus
         introspection += this->introspect();
         *return_message << introspection;
         connection << return_message;
-        return;
+        return HandlerResult::Handled;
       }
 
       std::shared_lock lock( m_interfaces_rwlock );
@@ -327,41 +331,15 @@ namespace DBus
        * as though it had an arbitrary one of those interfaces.
        */
       if( iface_iter == m_interfaces.end() ){
-        // Unable to find an interface to use
+        // Unable to find an interface to use, try to use the default
           if( m_default_interface ){
-              //m_default_interface->handle_call_message();
-              return;
+              return m_default_interface->handle_call_message( connection, msg );
           }
 
-          std::shared_ptr<ErrorMessage> errmsg = msg->create_error_reply();
-
-
-          std::ostringstream strErrMsg;
-          strErrMsg << "dbus-cxx: unable to find interface named "
-                    << msg->interface()
-                    << " and no default interface set";
-
-          SIMPLELOGGER_ERROR(LOGGER_NAME, "Object::handle_call_message: unable to handle, returning error: " + strErrMsg.str() );
-
-          errmsg->set_name( DBUSCXX_ERROR_UNKNOWN_INTERFACE );
-          errmsg->set_message( strErrMsg.str() );
-          connection << errmsg;
+          return  HandlerResult::Invalid_Interface;
       }else{
           interface = iface_iter->second;
-          if( interface->handle_call_message( connection, msg ) == HandlerResult::NOT_HANDLED ){
-              std::shared_ptr<ErrorMessage> errmsg = msg->create_error_reply();
-
-              std::ostringstream strErrMsg;
-              strErrMsg << "dbus-cxx: unable to find method named "
-                        << msg->member()
-                        << " on interface "
-                        << msg->interface();
-              SIMPLELOGGER_ERROR(LOGGER_NAME, "Object::handle_call_message: unable to handle, returning error: " + strErrMsg.str() );
-
-              errmsg->set_name( DBUSCXX_ERROR_UNKNOWN_METHOD );
-              errmsg->set_message( strErrMsg.str() );
-              connection << errmsg;
-          }
+          return interface->handle_call_message( connection, msg );
       }
   }
 

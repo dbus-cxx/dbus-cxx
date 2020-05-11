@@ -108,7 +108,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             .setStatic( true )
             .setReturnType( "std::shared_ptr<" + newclass.getName() + ">" )
             .addCode( cppgenerate::CodeBlock::create()
-                .addLine( "return std::shared_ptr<" + newclass.getName() + ">( new " + newclass.getName() + "( conn, dest, path ) );" ) )
+                .addLine( "return std::shared_ptr<" + newclass.getName() + ">( new " + newclass.getName() + "( conn, dest, path, signalCallingThread ) );" ) )
             .addArgument( cppgenerate::Argument::create()
               .setType( "std::shared_ptr<DBus::Connection>" )
               .setName( "conn" ) )
@@ -119,7 +119,11 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             .addArgument( cppgenerate::Argument::create()
               .setType( "std::string" )
               .setName( "path" )
-              .setDefaultValue( path ) ) );
+              .setDefaultValue( path ) )
+            .addArgument( cppgenerate::Argument::create()
+              .setType( "DBus::ThreadForCalling" )
+              .setName( "signalCallingThread" )
+              .setDefaultValue( "DBus::ThreadForCalling::DispatcherThread" ) ) );
 
         m_currentProxyConstructor = cppgenerate::Constructor::create()
             .setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
@@ -133,7 +137,11 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
             .addArgument( cppgenerate::Argument::create()
               .setType( "std::string" )
               .setName( "path" )
-              .setDefaultValue( path ) );
+              .setDefaultValue( path ) )
+            .addArgument( cppgenerate::Argument::create()
+              .setType( "DBus::ThreadForCalling" )
+              .setName( "signalCallingThread" )
+              .setDefaultValue( "DBus::ThreadForCalling::DispatcherThread" ) );
               
         m_proxyClasses.push_back( newclass );
 
@@ -431,7 +439,7 @@ void CodeGenerator::end_element( std::string tagName ){
             .addLine( proxyMemberVar.name() + 
                       " = this->create_signal" + templateType + 
                       "( \"" + m_currentInterface + "\", \"" + 
-                      m_currentSignal.name() + "\" );" ) );
+                      m_currentSignal.name() + "\", signalCallingThread );" ) );
 
     }
 }

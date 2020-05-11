@@ -106,6 +106,7 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/simpletransport.cpp
     dbus-cxx/sendmsgtransport.cpp
     dbus-cxx/transport.cpp
+    dbus-cxx/threaddispatcher.cpp
     dbus-cxx/sasl.cpp
     dbus-cxx/validator.cpp
     dbus-cxx/daemon-proxy/DBusDaemonProxy.cpp

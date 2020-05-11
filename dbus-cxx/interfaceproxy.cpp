@@ -103,8 +103,6 @@ namespace DBus
         method->m_interface = this;
     }
 
-    m_signal_method_added.emit( method );
-
     return result;
   }
 
@@ -123,8 +121,6 @@ namespace DBus
       }
     }
     method->m_interface = nullptr;
-    
-    if ( method ) m_signal_method_removed.emit( method );
   }
 
   void InterfaceProxy::remove_method( std::shared_ptr<MethodProxyBase> method )
@@ -147,8 +143,6 @@ namespace DBus
     }
 
     method->m_interface = nullptr;
-    
-    if ( method && erased ) m_signal_method_removed.emit( method );
   }
 
   bool InterfaceProxy::has_method( const std::string & name ) const
@@ -220,7 +214,7 @@ namespace DBus
     return std::shared_ptr<signal_proxy_base>();
   }
 
-  bool InterfaceProxy::add_signal(std::shared_ptr<signal_proxy_base> sig)
+  bool InterfaceProxy::add_signal(std::shared_ptr<signal_proxy_base> sig, ThreadForCalling calling )
   {
     // is it a valid signal?
     if ( not sig ) return false;
@@ -238,10 +232,12 @@ namespace DBus
     // connect it
     std::shared_ptr<Connection> conn = connection().lock();
     if ( conn and conn->is_valid() ){
-      conn->add_signal_proxy(sig);
+      conn->add_signal_proxy(sig, calling);
     }else{
         return false;
     }
+
+    m_callingMap[ sig ] = calling;
 
     return true;
   }
@@ -260,6 +256,7 @@ namespace DBus
         conn->remove_signal_proxy(sig);
     }
     m_signals.erase(sig);
+    m_callingMap.erase( sig );
     return true;
   }
 
@@ -277,26 +274,11 @@ namespace DBus
     return m_signals.find(sig) != m_signals.end();
   }
 
-  sigc::signal< void(std::shared_ptr<MethodProxyBase>) > InterfaceProxy::signal_method_added()
-  {
-    return m_signal_method_added;
-  }
-
-  sigc::signal< void(std::shared_ptr<MethodProxyBase>)> InterfaceProxy::signal_method_removed()
-  {
-    return m_signal_method_removed;
-  }
-
   void InterfaceProxy::on_object_set_connection(std::shared_ptr< Connection > conn)
   {
-    for ( Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++ )
-    {
-      if ( (not conn or not conn->is_valid()) and (*i)->connection() ) (*i)->connection()->remove_signal_proxy(*i);
-      if ( conn and conn->is_valid() )
-      {
-        for ( Signals::iterator i = m_signals.begin(); i != m_signals.end(); i++ )
-          conn->add_signal_proxy( *i );
-      }
+    for ( std::shared_ptr<signal_proxy_base> sig : m_signals ){
+        ThreadForCalling calling = m_callingMap[ sig ];
+        conn->add_signal_proxy( sig, calling );
     }
   }
 

@@ -122,23 +122,27 @@ namespace DBus
           debug_str << method_sig_gen.debug_string();
           debug_str << ">::handle_call_message method=";
           debug_str << name();
-          DBUSCXX_DEBUG_STDSTR( "dbus.Method", debug_str.str() );
+          DBUSCXX_DEBUG_STDSTR( "DBus.Method", debug_str.str() );
 
-          if( !connection || !message ) return HandlerResult::NOT_HANDLED;
+          if( !connection || !message ) return HandlerResult::Not_Handled;
 
           try{
               std::shared_ptr<ReturnMessage> retmsg = message->create_reply();
-              if( !retmsg ) return HandlerResult::NOT_HANDLED;
+              if( !retmsg ) return HandlerResult::Not_Handled;
 
               method_sig_gen.extractAndCall(message, retmsg, m_slot );
 
               sendMessage( connection, retmsg );
-          }catch( ErrorInvalidTypecast ){
-              return HandlerResult::NOT_HANDLED;
-         }catch( const std::exception &e ){
-            std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, e.what() );
+          }catch( ErrorInvalidTypecast &e ){
+              std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUSCXX_ERROR_INVALID_SIGNATURE, e.what() );
 
-            if( !errmsg ) return HandlerResult::NOT_HANDLED;
+              if( !errmsg ) return HandlerResult::Not_Handled;
+
+              sendMessage( connection, errmsg );
+         }catch( const std::exception &e ){
+            std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUSCXX_ERROR_FAILED, e.what() );
+
+            if( !errmsg ) return HandlerResult::Not_Handled;
 
             sendMessage( connection, errmsg );
          }catch( ... ){
@@ -147,14 +151,14 @@ namespace DBus
                    << DBUS_CXX_PACKAGE_MINOR_VERSION << "."
                    << DBUS_CXX_PACKAGE_MICRO_VERSION
                    << ": unknown error(uncaught exception)";
-            std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUS_ERROR_FAILED, stream.str() );
+            std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUSCXX_ERROR_FAILED, stream.str() );
 
-            if( !errmsg ) return HandlerResult::NOT_HANDLED;
+            if( !errmsg ) return HandlerResult::Not_Handled;
 
             sendMessage( connection, errmsg );
          }
 
-         return HandlerResult::HANDLED;
+         return HandlerResult::Handled;
       }
 
 

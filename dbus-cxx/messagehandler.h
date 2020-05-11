@@ -17,8 +17,6 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/enums.h>
-#include <dbus/dbus.h>
-#include <sigc++/signal.h>
 #include <memory>
 
 #ifndef DBUSCXX_MESSAGEHANDLER_H
@@ -28,38 +26,38 @@ namespace DBus
 {
   class Connection;
   class Message;
-  struct MessageHandlerAccumulator;
 
   /**
    * @ingroup objects
    * @ingroup local
    * 
-   * This class provides a common base class for all message handlers
+   * Interface indicating that the implementing classes can process messages.
+   * Messages will be either CallMessage or SignalMessage.
    *
    * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
    */
-  class MessageHandler : public sigc::trackable
+  class MessageHandler
   {
     protected:
       MessageHandler();
+      virtual ~MessageHandler();
 
     public:
-      /** The default implementation simply emits the message signal and returns the result */
-      virtual HandlerResult handle_message( std::shared_ptr<Connection>, std::shared_ptr<const Message> );
-
-      typedef sigc::signal<HandlerResult(std::shared_ptr<Connection>, std::shared_ptr<const Message>)>::accumulated<MessageHandlerAccumulator> MessageSignal;
-
-      MessageSignal& signal_message();
-
-    protected:
-
-      MessageSignal m_signal_message;
-
       /**
-       * When used as a callback, this method expects @param user_data to contain a pointer
-       * to the MessageHandler instance.
+       * Attempt to handle the given message.  This method will only ever be called
+       * when msg is either a CallMessage or a SignalMessage.
+       *
+       * The object that is handling the method should return a HandlerResult based
+       * on the result of the message handling.  Any errors will then be automatically
+       * propogated back over the bus.
+       *
+       * Alternatively, if the handler sends out a custom error message, return
+       * HandlerResult::Handled to indicate that no errors need to be sent back.
+       *
+       * @param msg
+       * @return
        */
-      static DBusHandlerResult message_handler_callback(DBusConnection* connection, DBusMessage* message, void* user_data);
+      virtual HandlerResult handle_message( std::shared_ptr<const Message> msg ) = 0;
 
   };
 

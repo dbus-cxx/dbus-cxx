@@ -149,7 +149,7 @@ class signal_proxy
       debug_str << method_sig_gen.debug_string();
       debug_str << ">::on_dbus_incoming method=";
       debug_str << msg->member();
-      DBUSCXX_DEBUG_STDSTR( "dbus.signal_proxy", debug_str.str() );
+      DBUSCXX_DEBUG_STDSTR( "DBus.signal_proxy", debug_str.str() );
 
       try {
         MessageIterator i = msg->begin();
@@ -159,14 +159,14 @@ class signal_proxy
         tup_args );
         std::apply(&signal_proxy::emit, std::tuple_cat(std::make_tuple(this), tup_args) );
       }catch ( ErrorInvalidTypecast& e ) {
-          DBUSCXX_DEBUG_STDSTR( "dbus.signal_proxy", "Caught error invalid typecast" );
-          return HandlerResult::NOT_HANDLED;
+          DBUSCXX_DEBUG_STDSTR( "DBus.signal_proxy", "Caught error invalid typecast" );
+          return HandlerResult::Not_Handled;
       }catch( ... ){
-          DBUSCXX_DEBUG_STDSTR( "dbus.signal_proxy", "Unknown exception" );
-          return HandlerResult::NOT_HANDLED;
+          DBUSCXX_DEBUG_STDSTR( "DBus.signal_proxy", "Unknown exception" );
+          return HandlerResult::Not_Handled;
       }
     
-      return HandlerResult::HANDLED;
+      return HandlerResult::Handled;
     }
 
 };

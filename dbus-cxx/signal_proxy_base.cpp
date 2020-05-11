@@ -97,7 +97,7 @@ SignalMatchRule SignalMatchRule::create(){
 
   HandlerResult signal_proxy_base::handle_signal( std::shared_ptr<const SignalMessage> msg )
   {
-    if ( not this->matches( msg ) ) return HandlerResult::NOT_HANDLED;
+    if ( not this->matches( msg ) ) return HandlerResult::Not_Handled;
 
     return on_dbus_incoming( msg );
   }

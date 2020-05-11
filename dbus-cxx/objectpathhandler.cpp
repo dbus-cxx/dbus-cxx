@@ -26,10 +26,6 @@ namespace sigc { template <typename T_return, typename ...T_arg> class signal; }
 
 namespace DBus
 {
-  struct DBusObjectPathVTable ObjectPathHandler::m_dbus_vtable = {
-    path_unregister_callback,
-    message_handler_callback
-  };
   
   ObjectPathHandler::ObjectPathHandler(const std::string& path, PrimaryFallback pf):
       m_path(path),
@@ -105,24 +101,6 @@ namespace DBus
   sigc::signal< void(std::shared_ptr<Connection>)> & ObjectPathHandler::signal_unregistered()
   {
     return m_signal_unregistered;
-  }
-
-  DBusHandlerResult ObjectPathHandler::message_handler_callback(DBusConnection * connection, DBusMessage * message, void * user_data)
-  {
-    DBus::HandlerResult result;
-    if ( user_data == nullptr ) return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-    ObjectPathHandler* handler = static_cast<ObjectPathHandler*>(user_data);
-    //result = handler->handle_message(Connection::self(connection), Message::create(message));
-    SIMPLELOGGER_DEBUG("dbus.ObjectPathHandler","ObjectPathHandler::message_handler_callback: result = " << static_cast<int>( result ) );
-    if ( result == HandlerResult::HANDLED ) return DBUS_HANDLER_RESULT_HANDLED;
-    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-  }
-
-  void ObjectPathHandler::path_unregister_callback(DBusConnection * connection, void * user_data)
-  {
-    if ( user_data == nullptr ) return;
-//    ObjectPathHandler* handler = static_cast<ObjectPathHandler*>(user_data);
-//    handler->m_signal_unregistered.emit(Connection::self(connection));
   }
 
   void ObjectPathHandler::set_connection(std::shared_ptr<Connection> conn){

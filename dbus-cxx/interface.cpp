@@ -309,7 +309,7 @@ namespace DBus
 
     if ( method_it == m_methods.end() )
     {
-      return HandlerResult::NOT_HANDLED;
+      return HandlerResult::Not_Handled;
     }
 
     return method_it->second->handle_call_message( conn, message );

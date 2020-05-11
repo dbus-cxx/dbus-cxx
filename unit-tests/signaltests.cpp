@@ -18,12 +18,13 @@
  ***************************************************************************/
 #include <dbus-cxx.h>
 #include <unistd.h>
+#include <iostream>
 
 #include "test_macros.h"
 
-std::shared_ptr<DBus::Dispatcher> dispatch;
-std::string signal_value;
-int num_rx = 0;
+static std::shared_ptr<DBus::Dispatcher> dispatch;
+static std::string signal_value;
+static int num_rx = 0;
 
 void sigHandle( std::string value ){
     signal_value = value;
@@ -50,7 +51,8 @@ bool signal_tx_rx(){
         DBus::SignalMatchRule::create()
           .setPath("/test/signal")
           .setInterface("test.signal.type")
-          .setMember( "Path" ) );
+          .setMember( "Path" ),
+                DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( sigHandle ) );
 
@@ -69,7 +71,8 @@ bool signal_void_txrx(){
         DBus::SignalMatchRule::create()
           .setPath("/test/signal")
           .setInterface("test.signal.type")
-          .setMember( "ExampleMember" ) );
+          .setMember( "ExampleMember" ),
+                DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( voidSigHandle ) );
 
@@ -86,7 +89,8 @@ bool signal_path_match_only(){
     std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
     std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
         DBus::SignalMatchRule::create()
-          .setPath("/test/signal") );
+          .setPath("/test/signal"),
+                DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( voidSigHandle ) );
 
@@ -103,7 +107,8 @@ bool signal_interface_match_only(){
     std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
     std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
         DBus::SignalMatchRule::create()
-          .setInterface("test.signal.type") );
+          .setInterface("test.signal.type"),
+                DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( voidSigHandle ) );
 
@@ -120,7 +125,8 @@ bool signal_member_match_only(){
     std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
     std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
         DBus::SignalMatchRule::create()
-          .setMember( "ExampleMember" ) );
+          .setMember( "ExampleMember" ),
+                DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( voidSigHandle ) );
 
@@ -139,10 +145,12 @@ bool signal_multiple_handlers(){
         DBus::SignalMatchRule::create()
           .setPath("/test/signal")
           .setInterface("test.signal.type")
-          .setMember( "ExampleMember" ) );
+          .setMember( "ExampleMember" ),
+                DBus::ThreadForCalling::DispatcherThread );
     std::shared_ptr<DBus::signal_proxy<>> proxy2 = conn->create_signal_proxy<>(
         DBus::SignalMatchRule::create()
-          .setMember( "ExampleMember" ) );
+          .setMember( "ExampleMember" ),
+                DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( voidSigHandle ) );
     proxy2->connect( sigc::ptr_fun( voidSigHandle ) );
@@ -162,10 +170,12 @@ bool signal_remove_handler(){
         DBus::SignalMatchRule::create()
           .setPath("/test/signal")
           .setInterface("test.signal.type")
-          .setMember( "ExampleMember" ) );
+          .setMember( "ExampleMember" ),
+                DBus::ThreadForCalling::DispatcherThread );
     std::shared_ptr<DBus::signal_proxy<>> proxy2 = conn->create_signal_proxy<>(
         DBus::SignalMatchRule::create()
-          .setMember( "ExampleMember" ) );
+          .setMember( "ExampleMember" ),
+                DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( voidSigHandle ) );
     proxy2->connect( sigc::ptr_fun( voidSigHandle ) );
@@ -195,6 +205,9 @@ int main(int argc, char** argv){
 
   std::string test_name = argv[1];
   bool ret = false;
+
+  DBus::setLoggingFunction( DBus::logStdErr );
+  DBus::setLogLevel( SL_TRACE );
 
   dispatch = DBus::Dispatcher::create();
 

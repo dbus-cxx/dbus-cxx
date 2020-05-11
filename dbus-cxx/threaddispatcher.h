@@ -25,6 +25,9 @@ namespace DBus{
 
 class Message;
 class ObjectPathHandler;
+class signal_proxy_base;
+class SignalMessage;
+class CallMessage;
 
 /**
  * A ThreadDispatcher is responsible for executing method calls
@@ -38,10 +41,12 @@ class ObjectPathHandler;
  *
  * If you're using GLib, link with dbus-cxx-glib and use the GLibThreadDispatcher
  * class.
+ *
+ * Note that all methods in this class are called from the dispatcher thread.
  */
 class ThreadDispatcher {
 public:
-    virtual ~ThreadDispatcher(){}
+    virtual ~ThreadDispatcher();
 
     /**
      * When a new message comes in that needs to be processed, this method
@@ -56,7 +61,39 @@ public:
      * @param object The object to send the message to
      * @param message The message to send to the object
      */
-    virtual void add_message( std::shared_ptr<ObjectPathHandler> object, std::shared_ptr<const Message> message ) = 0;
+    virtual void add_message( std::shared_ptr<ObjectPathHandler> object, std::shared_ptr<const CallMessage> message ) = 0;
+
+    /**
+     * Add a signal proxy that must emit its signals from the thread represented
+     * by this ThreadDispatcher
+     *
+     * @param handler A handler that can handle incoming signals
+     */
+    virtual void add_signal_proxy( std::shared_ptr<signal_proxy_base> handler ) = 0;
+
+    /**
+     * Remove a signal proxy.  Note that it is possible that this method is called
+     * with a signal_proxy_base that has not been previously added with add_signal_proxy;
+     * this is not an error and should not cause unintended consequences.
+     *
+     * @param handler The handler to remove
+     * @returns True if the signal proxy was removed, false otherwise.
+     */
+    virtual bool remove_signal_proxy( std::shared_ptr<signal_proxy_base> handler ) = 0;
+
+    /**
+     * When a new signal message comes in that needs to be processed, this method
+     * is called with the SignalMessage that must be emitted from this thread.
+     *
+     * Generally, this method should push the SignalMesage onto some sort of
+     * mutex-lcoked queue and then wakeup this thread.  This thread will then
+     * lock the mutex, pop an element off of the queue, and loop through all
+     * of the signal proxys (added via add_signal_proxy) and calling the
+     * SignalProxyBase::on_dbus_incoming method.
+     *
+     * @param message The message to be emitted
+     */
+    virtual void add_signal( std::shared_ptr<const SignalMessage> message ) = 0;
 
 };
 

@@ -113,7 +113,7 @@ namespace DBus {
       std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
       template <class T_return, class... T_arg>
-      std::shared_ptr<signal_proxy<T_return,T_arg...> > create_signal( const std::string& sig_name )
+      std::shared_ptr<signal_proxy<T_return,T_arg...> > create_signal( const std::string& sig_name, ThreadForCalling calling )
       {
         std::shared_ptr< signal_proxy<T_return,T_arg...> > sig;
         SignalMatchRule match = SignalMatchRule::create()
@@ -121,7 +121,7 @@ namespace DBus {
             .setInterface( m_name )
             .setMember( sig_name );
         sig = signal_proxy<T_return,T_arg...>::create( match );
-        this->add_signal(sig);
+        this->add_signal(sig, calling);
         return sig;
       }
 
@@ -129,7 +129,7 @@ namespace DBus {
 
       std::shared_ptr<signal_proxy_base> signal( const std::string& signame );
 
-      bool add_signal( std::shared_ptr<signal_proxy_base> sig );
+      bool add_signal( std::shared_ptr<signal_proxy_base> sig, ThreadForCalling calling );
 
       bool remove_signal( const std::string& signame );
 
@@ -138,12 +138,6 @@ namespace DBus {
       bool has_signal( const std::string& signame ) const;
 
       bool has_signal( std::shared_ptr<signal_proxy_base> sig ) const;
-
-      /** Signal emitted when a method is added to this interface */
-      sigc::signal<void(std::shared_ptr<MethodProxyBase>)> signal_method_added();
-
-      /** Signal emitted when a method is removed from thsi interface */
-      sigc::signal<void(std::shared_ptr<MethodProxyBase>)> signal_method_removed();
 
     protected:
 
@@ -157,11 +151,9 @@ namespace DBus {
 
       Signals m_signals;
 
+      std::map<std::shared_ptr<signal_proxy_base>,ThreadForCalling> m_callingMap;
+
       mutable std::shared_mutex m_methods_rwlock;
-      
-      sigc::signal<void(std::shared_ptr<MethodProxyBase>)> m_signal_method_added;
-      
-      sigc::signal<void(std::shared_ptr<MethodProxyBase>)> m_signal_method_removed;
 
       void on_object_set_connection( std::shared_ptr<Connection> conn );
 

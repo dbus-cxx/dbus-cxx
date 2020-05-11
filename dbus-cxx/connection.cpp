@@ -561,20 +561,23 @@ struct Connection::ExpectingResponse {
       }
 
       std::shared_ptr<CallMessage> callmsg;
-      std::string path;
-      PathHandlingEntry entry;
-      bool error = false;
 
       if( msgToProcess->type() == MessageType::CALL ) {
           callmsg = std::static_pointer_cast<CallMessage>( msgToProcess );
-          path = callmsg->path();
+          process_call_message( callmsg );
       }else if( msgToProcess->type() == MessageType::SIGNAL ){
           std::shared_ptr<SignalMessage> signalmsg = std::static_pointer_cast<SignalMessage>( msgToProcess );
-          path = signalmsg->path();
+          process_signal_message( signalmsg );
       }else{
         SIMPLELOGGER_ERROR("DBus.Connection", "Unable to process message: invalid type " << msgToProcess->type() );
         return;
       }
+  }
+
+  void Connection::process_call_message( std::shared_ptr<const CallMessage> callmsg ){
+      std::string path = callmsg->path();
+      PathHandlingEntry entry;
+      bool error = false;
 
       {
           std::unique_lock<std::mutex> lock( m_pathHandlerLock );
@@ -594,13 +597,10 @@ struct Connection::ExpectingResponse {
           return;
       }
 
-      // TODO need to figure out how to manage the signals
-
       if( entry.handlingThread == m_dispatchingThread ){
           // We are in the dispatching thread here, so we can simply call the handle method
-          if( callmsg ){
-            entry.handler->handle_call_message( callmsg );
-          }
+          HandlerResult res = entry.handler->handle_message( callmsg );
+          send_error_on_handler_result( callmsg, res );
       }else{
           // A different thread needs to handle this.
           std::shared_ptr<ThreadDispatcher> disp = m_threadDispatchers[ entry.handlingThread ].lock();
@@ -616,9 +616,67 @@ struct Connection::ExpectingResponse {
                   return;
               }
           }else{
-              disp->add_message( entry.handler, msgToProcess );
+              disp->add_message( entry.handler, callmsg );
           }
       }
+  }
+
+  void Connection::process_signal_message( std::shared_ptr<const SignalMessage> msg ){
+      {
+          // See if any of our handlers can handle this
+          std::unique_lock<std::mutex> lock( m_proxySignalsLock );
+          for( std::shared_ptr<signal_proxy_base> handler : m_proxySignals ){
+            handler->handle_signal( msg );
+          }
+      }
+
+      // Give this signal to all of our ThreadDispatchers as well
+      {
+          std::unique_lock<std::mutex> lock( m_threadDispatcherLock );
+          for( auto const& x : m_threadDispatchers ){
+              std::shared_ptr<ThreadDispatcher> disp = x.second.lock();
+              if( disp ){
+                  disp->add_signal( msg );
+              }
+          }
+      }
+  }
+
+
+  void Connection::send_error_on_handler_result(std::shared_ptr<const CallMessage> callmsg, HandlerResult result){
+      if( result == HandlerResult::Handled ){
+          return;
+      }
+
+      std::shared_ptr<ErrorMessage> errMsg = callmsg->create_error_reply();
+      std::ostringstream strErrMsg;
+
+      switch( result ){
+      case HandlerResult::Invalid_Path:
+          strErrMsg << "dbus-cxx: could not find path "
+                    << callmsg->path();
+          errMsg->set_name( DBUSCXX_ERROR_FAILED );
+          errMsg->set_message( strErrMsg.str() );
+          break;
+      case HandlerResult::Invalid_Method:
+          strErrMsg << "dbus-cxx: unable to find method named "
+                    << callmsg->member()
+                    << " on interface "
+                    << callmsg->interface();
+          errMsg->set_name( DBUSCXX_ERROR_UNKNOWN_METHOD );
+          errMsg->set_message( strErrMsg.str() );
+          break;
+      case HandlerResult::Invalid_Interface:
+          strErrMsg << "dbus-cxx: unable to find interface named "
+                    << callmsg->interface();
+          errMsg->set_name( DBUSCXX_ERROR_UNKNOWN_INTERFACE );
+          errMsg->set_message( strErrMsg.str() );
+          break;
+      default:
+          break;
+      }
+
+      send( errMsg );
   }
 
   int Connection::unix_fd() const
@@ -714,15 +772,42 @@ struct Connection::ExpectingResponse {
     return false;
   }
 
-  std::shared_ptr<signal_proxy_base> Connection::add_signal_proxy(std::shared_ptr<signal_proxy_base> signal)
+  std::shared_ptr<signal_proxy_base> Connection::add_signal_proxy(std::shared_ptr<signal_proxy_base> signal, ThreadForCalling calling)
   {
     if ( not signal ) return std::shared_ptr<signal_proxy_base>();
     
-    SIMPLELOGGER_DEBUG( "dbus.Connection", "Adding signal " << signal->interface() << ":" << signal->name() );
+    SIMPLELOGGER_DEBUG( LOGGER_NAME, "Adding signal " << signal->interface() << ":" << signal->name() );
 
     if ( signal->connection() ) signal->connection()->remove_signal_proxy(signal);
 
-    m_proxy_signals.push_back( signal );
+    m_allProxySignals.push_back( signal );
+
+    if( calling == ThreadForCalling::DispatcherThread ||
+            (calling == ThreadForCalling::CurrentThread &&
+              std::this_thread::get_id() == m_dispatchingThread) ){
+        // We can call this from the dispatch thread, or we want it to be called from
+        // the current thread(which happens to be the dispatch thread)
+        std::unique_lock<std::mutex> lock( m_proxySignalsLock );
+        m_proxySignals.push_back( signal );
+    }else{
+        // We need to give this signal to the appropriate ThreadDispatcher to handle
+        std::unique_lock<std::mutex> lock( m_threadDispatcherLock );
+        std::map<std::thread::id,std::weak_ptr<ThreadDispatcher>>::iterator iter =
+                m_threadDispatchers.find( std::this_thread::get_id() );
+
+        if( iter == m_threadDispatchers.end() ){
+            SIMPLELOGGER_ERROR( LOGGER_NAME, "Unable to find a thread dispatcher on current thread, not adding signal proxy" );
+            return std::shared_ptr<signal_proxy_base>();
+        }
+
+        std::shared_ptr<ThreadDispatcher> thrDispatch = iter->second.lock();
+        if( !thrDispatch ){
+            SIMPLELOGGER_ERROR( LOGGER_NAME, "Unable to find a valid thread dispatcher on current thread, not adding signal proxy" );
+            return std::shared_ptr<signal_proxy_base>();
+        }
+
+        thrDispatch->add_signal_proxy( signal );
+    }
 
     this->add_match( signal->match_rule() );
     signal->set_connection( shared_from_this() );
@@ -734,17 +819,38 @@ struct Connection::ExpectingResponse {
   {
     if ( not signal ) return false;
 
-    SIMPLELOGGER_DEBUG( "dbus.Connection", "remove_signal_proxy" );
+    SIMPLELOGGER_DEBUG( LOGGER_NAME, "remove_signal_proxy with match rule " << signal->match_rule() );
 
     this->remove_match( signal->match_rule() );
 
-    ProxySignals::iterator it = std::find( m_proxy_signals.begin(), m_proxy_signals.end(), signal );
-    if( it != m_proxy_signals.end() ){
-        m_proxy_signals.erase( it );
-        return true;
+    bool removed = false;
+
+    {
+        std::unique_lock<std::mutex> lock( m_proxySignalsLock );
+        std::vector<std::shared_ptr<signal_proxy_base>>::iterator it =
+                std::find( m_proxySignals.begin(), m_proxySignals.end(), signal );
+        if( it != m_proxySignals.end() ){
+            m_proxySignals.erase( it );
+            removed = true;
+        }
+
+        it = std::find( m_allProxySignals.begin(), m_allProxySignals.end(), signal );
+        if( it != m_allProxySignals.end() ){
+            m_allProxySignals.erase( it );
+        }
     }
 
-    return false;
+    {
+        std::unique_lock<std::mutex> lock( m_threadDispatcherLock );
+        for( auto const& x : m_threadDispatchers ){
+            std::shared_ptr<ThreadDispatcher> disp = x.second.lock();
+            if( disp && disp->remove_signal_proxy( signal ) ){
+                removed = true;
+            }
+        }
+    }
+
+    return removed;
   }
 
 //   bool Connection::register_signal_handler(SignalReceiver::pointer sighandler)
@@ -784,16 +890,16 @@ struct Connection::ExpectingResponse {
 //     return false;
 //   }
 
-  const Connection::ProxySignals& Connection::get_signal_proxies()
+  const std::vector<std::shared_ptr<signal_proxy_base>>& Connection::get_signal_proxies()
   {
-    return m_proxy_signals;
+    return m_proxySignals;
   }
 
-  Connection::ProxySignals Connection::get_signal_proxies(const std::string & interface)
+  std::vector<std::shared_ptr<signal_proxy_base>> Connection::get_signal_proxies(const std::string & interface)
   {
-    ProxySignals ret;
+    std::vector<std::shared_ptr<signal_proxy_base>> ret;
 
-    for( std::shared_ptr<signal_proxy_base> base : m_proxy_signals ){
+    for( std::shared_ptr<signal_proxy_base> base : m_allProxySignals ){
         if( base->interface().compare( interface ) == 0 ){
             ret.push_back( base );
         }
@@ -802,11 +908,11 @@ struct Connection::ExpectingResponse {
     return ret;
   }
 
-  Connection::ProxySignals Connection::get_signal_proxies(const std::string & interface, const std::string & member)
+  std::vector<std::shared_ptr<signal_proxy_base>> Connection::get_signal_proxies(const std::string & interface, const std::string & member)
   {
-    ProxySignals ret;
+    std::vector<std::shared_ptr<signal_proxy_base>> ret;
 
-    for( std::shared_ptr<signal_proxy_base> base : m_proxy_signals ){
+    for( std::shared_ptr<signal_proxy_base> base : m_allProxySignals ){
         if( base->interface().compare( interface ) == 0 &&
             base->name().compare( member ) == 0 ){
             ret.push_back( base );

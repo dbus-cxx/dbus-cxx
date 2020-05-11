@@ -70,13 +70,6 @@ namespace DBus
       /** Tries to register the handler using the provided connection and with the currently set path and primary/fallback setting */
       virtual bool register_with_connection(std::shared_ptr<Connection> conn);
 
-      /**
-       * Handle a call message to this object path
-       *
-       * @param msg
-       */
-      virtual void handle_call_message( std::shared_ptr<const CallMessage> msg ) = 0;
-
       /** Unregisters the handler */
       bool unregister();
 
@@ -99,12 +92,6 @@ namespace DBus
       sigc::signal<void(std::shared_ptr<Connection>) > m_signal_registered;
 
       sigc::signal<void(std::shared_ptr<Connection>) > m_signal_unregistered;
-
-      static struct DBusObjectPathVTable m_dbus_vtable;
-
-      static DBusHandlerResult message_handler_callback(DBusConnection* connection, DBusMessage* message, void* user_data);
-
-      static void path_unregister_callback(DBusConnection* connection, void* user_data);
 
   };
 

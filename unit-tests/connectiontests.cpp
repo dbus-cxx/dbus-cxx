@@ -20,7 +20,7 @@
 
 #include "test_macros.h"
 
-std::shared_ptr<DBus::Dispatcher> dispatch;
+static std::shared_ptr<DBus::Dispatcher> dispatch;
 
 bool connection_create_int_signal(){
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
@@ -44,15 +44,16 @@ bool connection_create_signal_proxy(){
     std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>( 
         DBus::SignalMatchRule::create()
           .setInterface("interface.name")
-          .setMember("myname") );
+          .setMember("myname"),
+                DBus::ThreadForCalling::DispatcherThread );
 
-    DBus::Connection::ProxySignals map = conn->get_signal_proxies();
+    std::vector<std::shared_ptr<DBus::signal_proxy_base>> map = conn->get_signal_proxies();
     TEST_ASSERT_RET_FAIL( map.size() == 1 );
 
-    DBus::Connection::ProxySignals by_iface_name = conn->get_signal_proxies("interface.name");
+    std::vector<std::shared_ptr<DBus::signal_proxy_base>> by_iface_name = conn->get_signal_proxies("interface.name");
     TEST_ASSERT_RET_FAIL( by_iface_name.size() == 1 );
 
-    DBus::Connection::ProxySignals by_iface_and_member = conn->get_signal_proxies("interface.name", "myname");
+    std::vector<std::shared_ptr<DBus::signal_proxy_base>> by_iface_and_member = conn->get_signal_proxies("interface.name", "myname");
     TEST_ASSERT_RET_FAIL( by_iface_and_member.size() == 1 );
 
     return true;
@@ -64,9 +65,10 @@ bool connection_get_signal_proxy_by_iface(){
     std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>( 
         DBus::SignalMatchRule::create()
           .setInterface("interface.name")
-          .setMember("myname") );
+          .setMember("myname"),
+                DBus::ThreadForCalling::DispatcherThread );
 
-    DBus::Connection::ProxySignals signals = conn->get_signal_proxies("interface.name");
+    std::vector<std::shared_ptr<DBus::signal_proxy_base>> signals = conn->get_signal_proxies("interface.name");
     TEST_ASSERT_RET_FAIL( signals.size() == 1 );
 
     return true;
@@ -78,10 +80,11 @@ bool connection_get_signal_proxy_by_iface_and_name(){
     std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>( 
         DBus::SignalMatchRule::create()
           .setInterface("interface.name")
-          .setMember("myname") );
+          .setMember("myname"),
+                DBus::ThreadForCalling::DispatcherThread );
 
 
-    DBus::Connection::ProxySignals signals = conn->get_signal_proxies("interface.name", "myname");
+    std::vector<std::shared_ptr<DBus::signal_proxy_base>> signals = conn->get_signal_proxies("interface.name", "myname");
     TEST_ASSERT_RET_FAIL( signals.size() == 1 );
     TEST_ASSERT_RET_FAIL( signals.front() == proxy );
 

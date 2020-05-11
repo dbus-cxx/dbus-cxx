@@ -158,11 +158,11 @@ namespace DBus
        */
       template <class... T_type>
       std::shared_ptr<signal_proxy<T_type...> >
-      create_signal( const std::string& interface_name, const std::string& sig_name )
+      create_signal( const std::string& interface_name, const std::string& sig_name, ThreadForCalling calling )
       {
         std::shared_ptr<InterfaceProxy> interface = this->interface(interface_name);
         if ( not interface ) interface = this->create_interface( interface_name );
-        return interface->create_signal<T_type...>(sig_name);
+        return interface->create_signal<T_type...>(sig_name, calling);
       }
 
       /**

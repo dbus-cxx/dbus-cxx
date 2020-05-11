@@ -341,9 +341,7 @@ namespace DBus
        * @param conn The Connection to send the reply message on
        * @param msg The message to handle; must be a CallMessage or it will not be handled
        */
-      virtual HandlerResult handle_message( std::shared_ptr<Connection> conn, std::shared_ptr<const Message> msg);
-
-      void handle_call_message( std::shared_ptr<const CallMessage> msg );
+      HandlerResult handle_message( std::shared_ptr<const Message> msg);
 
     protected:
 

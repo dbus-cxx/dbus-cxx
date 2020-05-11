@@ -73,27 +73,27 @@ namespace DBus
    *
    * Otherwise it will return HandlerResult::NOT_HANDLED.
    */
-  struct MessageHandlerAccumulator {
-    typedef HandlerResult result_type;
+//  struct MessageHandlerAccumulator {
+//    typedef HandlerResult result_type;
 
-    template <typename T_iterator>
-    result_type operator()( T_iterator first, T_iterator last ) const {
-      HandlerResult retval = HandlerResult::NOT_HANDLED;
-      while ( first != last ) {
-        switch ( *first )
-        {
-          case HandlerResult::HANDLED:
-            return HandlerResult::HANDLED;
-          case HandlerResult::NEEDS_MEMORY:
-            retval = HandlerResult::NEEDS_MEMORY;
-            // no break because we'll slide through to the next case
-          case HandlerResult::NOT_HANDLED:
-            ++first;
-        }
-      }
-      return retval;
-    }
-  };
+//    template <typename T_iterator>
+//    result_type operator()( T_iterator first, T_iterator last ) const {
+//      HandlerResult retval = HandlerResult::NOT_HANDLED;
+//      while ( first != last ) {
+//        switch ( *first )
+//        {
+//          case HandlerResult::HANDLED:
+//            return HandlerResult::HANDLED;
+//          case HandlerResult::NEEDS_MEMORY:
+//            retval = HandlerResult::NEEDS_MEMORY;
+//            // no break because we'll slide through to the next case
+//          case HandlerResult::NOT_HANDLED:
+//            ++first;
+//        }
+//      }
+//      return retval;
+//    }
+//  };
 
   /**
    * This accumulator will try each slot and stop when the first slot returns
