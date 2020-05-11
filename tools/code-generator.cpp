@@ -181,7 +181,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
                           newAdapterClass.getName() +
                        ">( new " + newAdapterClass.getName() + "( adaptee, path ) );" )
                 .addLine( "if( connection ){ " )
-                .addLine( "  if( connection->register_object( new_adaptee, calling_thread ) == DBus::RegistrationStatus::Success ){" )
+                .addLine( "  if( connection->register_object( new_adaptee, calling_thread ) != DBus::RegistrationStatus::Success ){" )
                 .addLine( "    return std::shared_ptr<" + newAdapterClass.getName() + ">();" )
                 .addLine( "  }" )
                 .addLine( "}" )
