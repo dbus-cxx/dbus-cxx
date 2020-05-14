@@ -28,6 +28,8 @@ IF( CMAKE_BUILD_TYPE MATCHES Debug )
 include( CodeCoverage )
 ENDIF( CMAKE_BUILD_TYPE MATCHES Debug )
 
+find_package( Threads REQUIRED )
+
 # version information
 set( DBUS_CXX_PACKAGE_MAJOR_VERSION 2 )
 set( DBUS_CXX_PACKAGE_MINOR_VERSION 0 )
@@ -192,7 +194,7 @@ include_directories( ${DBUS_CXX_INCLUDE_DIRECTORIES}
 add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} )
 #add_library( dbus-cxx-static STATIC ${DBUS_CXX_SOURCES} )
 set_target_properties( dbus-cxx PROPERTIES VERSION 2.0.0 SOVERSION 2 )
-target_link_libraries( dbus-cxx ${dbus_LIBS} ${sigc_LIBS} -lrt )
+target_link_libraries( dbus-cxx ${dbus_LIBS} ${sigc_LIBS} Threads::Threads -lrt )
 
 # Dbus-cxx requires at least C++17 due to libsigc++-3.0
 set_property( TARGET dbus-cxx PROPERTY CXX_STANDARD 17 )

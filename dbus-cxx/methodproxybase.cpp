@@ -42,6 +42,12 @@ namespace DBus
   {
   }
 
+  MethodProxyBase::MethodProxyBase( const MethodProxyBase& other ) :
+      m_priv( std::make_unique<priv_data>( other.m_priv->m_name ) )
+  {
+        m_priv->m_interface = other.m_priv->m_interface;
+  }
+
   std::shared_ptr<MethodProxyBase> MethodProxyBase::create(const std::string & name)
   {
     return std::shared_ptr<MethodProxyBase>( new MethodProxyBase(name) );

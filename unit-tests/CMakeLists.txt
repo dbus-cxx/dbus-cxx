@@ -1,6 +1,6 @@
 
-set( TEST_INCLUDES ${dbus_INCLUDE_DIRS} ${sigc_INCLUDE_DIRS} ${cppgenerate_INCLUDE_DIRS} )
-set( TEST_LINK dbus-cxx ${dbus_LDFLAGS} ${sigc_LDFLAGS} ${popt_LDFLAGS} ${expat_LDFLAGS} -lrt )
+set( TEST_INCLUDES ${sigc_INCLUDE_DIRS} ${cppgenerate_INCLUDE_DIRS} )
+set( TEST_LINK dbus-cxx ${sigc_LDFLAGS} ${popt_LDFLAGS} ${expat_LDFLAGS} -lrt )
 
 link_directories( ${CMAKE_BINARY_DIR} )
 
@@ -229,3 +229,18 @@ set_property( TARGET test-validation PROPERTY CXX_STANDARD 17 )
 add_test( NAME one-section-busname COMMAND test-validation one_section_bus_name)
 add_test( NAME two-section-busname COMMAND test-validation two_section_bus_name)
 add_test( NAME three-section-busname COMMAND test-validation three_section_bus_name)
+
+#
+# Thread affinity tests - make sure that when we define what thread we want to be
+#  called from, it calls it from the correct thread
+#
+add_executable( test-affinity affinity-tests.cpp )
+target_link_libraries( test-affinity ${TEST_LINK} )
+target_include_directories( test-affinity PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( test-affinity PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+set_property( TARGET test-affinity PROPERTY CXX_STANDARD 17 )
+
+add_test( NAME affinity-signal-dispatcher-thread COMMAND dbus-wrapper.sh test-affinity signal_dispatcher_thread)
+add_test( NAME affinity-signal-main-thread COMMAND dbus-wrapper.sh test-affinity signal_main_thread)
+add_test( NAME affinity-message-dispatcher-thread COMMAND dbus-wrapper.sh test-affinity message_dispatch_thread)
+add_test( NAME affinity-message-main-thread COMMAND dbus-wrapper.sh test-affinity message_main_thread)

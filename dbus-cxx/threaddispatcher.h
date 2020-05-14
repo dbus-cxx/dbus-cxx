@@ -86,10 +86,10 @@ public:
      * is called with the SignalMessage that must be emitted from this thread.
      *
      * Generally, this method should push the SignalMesage onto some sort of
-     * mutex-lcoked queue and then wakeup this thread.  This thread will then
+     * mutex-locked queue and then wakeup this thread.  This thread will then
      * lock the mutex, pop an element off of the queue, and loop through all
      * of the signal proxys (added via add_signal_proxy) and calling the
-     * SignalProxyBase::on_dbus_incoming method.
+     * SignalProxyBase::handle_signal method.
      *
      * @param message The message to be emitted
      */

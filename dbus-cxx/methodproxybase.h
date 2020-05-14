@@ -56,6 +56,8 @@ namespace DBus
 
       MethodProxyBase( const std::string& name );
 
+      MethodProxyBase( const MethodProxyBase& other );
+
     public:
       static std::shared_ptr<MethodProxyBase> create( const std::string& name );
 
@@ -122,7 +124,7 @@ namespace DBus
          debug_str << name();
          DBUSCXX_DEBUG_STDSTR( "DBus.MethodProxy", debug_str.str() );
 
-         return std::async( std::launch::async, this->operator(), this, args... );
+         return std::async( std::launch::async, *this, args... );
     }
 
     static std::shared_ptr<MethodProxy> create(const std::string& name){
