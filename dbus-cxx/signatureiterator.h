@@ -17,6 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/enums.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 #include <string>
 #include <memory>
 
@@ -50,6 +51,8 @@ namespace priv{
       SignatureIterator( const SignatureIterator& other );
 
       SignatureIterator( std::shared_ptr<priv::SignatureNode> startnode );
+
+      ~SignatureIterator();
 
       /** Invalidates the iterator */
       void invalidate();
@@ -121,10 +124,10 @@ namespace priv{
 
       std::string iterate_over_subsig( std::shared_ptr<priv::SignatureNode> start ) const;
 
-    protected:
-      bool m_valid;
-      std::shared_ptr<priv::SignatureNode> m_current;
-      std::shared_ptr<priv::SignatureNode> m_first;
+    private:
+      class priv_data;
+
+      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
   };
 
 }

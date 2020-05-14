@@ -30,32 +30,47 @@ namespace DBus
 
   const Signature::size_type npos = std::string::npos;
 
-  Signature::Signature() : m_startingNode( nullptr ),
-      m_valid( false )
+  class Signature::priv_data{
+  public:
+      priv_data() :
+          m_valid( false )
+      {}
+
+      std::string m_signature;
+      std::shared_ptr<priv::SignatureNode> m_startingNode;
+      bool m_valid;
+  };
+
+  Signature::Signature() :
+      m_priv( std::make_shared<priv_data>() )
   {
   }
 
   Signature::Signature( const std::string & s, size_type pos, size_type n ):
-      m_signature( s, pos, n ),m_startingNode( nullptr )
+      m_priv( std::make_shared<priv_data>() )
   {
+      m_priv->m_signature = std::string( s, pos, n );
       initialize();
   }
 
-  Signature::Signature( const char *s ):
-      m_signature( s ), m_startingNode( nullptr )
+  Signature::Signature( const char *s ) :
+      m_priv( std::make_shared<priv_data>() )
   {
+      m_priv->m_signature = std::string( s );
       initialize();
   }
 
   Signature::Signature( const char * s, size_type n ):
-      m_signature( s,n ), m_startingNode( nullptr )
+      m_priv( std::make_shared<priv_data>() )
   {
+      m_priv->m_signature = std::string( s, n );
       initialize();
   }
 
   Signature::Signature( size_type n, char c ):
-      m_signature( n,c ), m_startingNode( nullptr )
+      m_priv( std::make_shared<priv_data>() )
   {
+      m_priv->m_signature = std::string( n, c );
       initialize();
   }
 
@@ -65,36 +80,36 @@ namespace DBus
 
   Signature::operator const std::string &() const
   {
-    return m_signature;
+    return m_priv->m_signature;
   }
 
   const std::string& Signature::str() const
   {
-    return m_signature;
+    return m_priv->m_signature;
   }
 
   Signature & Signature::operator =(const std::string & s)
   {
-    m_signature = s;
+    m_priv->m_signature = s;
     return *this;
   }
 
   Signature & Signature::operator =(const char* s)
   {
-    m_signature = s;
+    m_priv->m_signature = s;
     return *this;
   }
 
   Signature::iterator Signature::begin()
   {
-      if( !m_valid ) return SignatureIterator();
-    return SignatureIterator( m_startingNode );
+      if( !m_priv->m_valid ) return SignatureIterator();
+    return SignatureIterator( m_priv->m_startingNode );
   }
 
   Signature::const_iterator Signature::begin() const
   {
-      if( !m_valid ) return SignatureIterator();
-    return SignatureIterator( m_startingNode );
+      if( !m_priv->m_valid ) return SignatureIterator();
+    return SignatureIterator( m_priv->m_startingNode );
   }
 
   Signature::iterator Signature::end()
@@ -109,16 +124,16 @@ namespace DBus
 
   bool Signature::is_valid() const
   {
-    return m_valid;
+    return m_priv->m_valid;
   }
 
   bool Signature::is_singleton() const
   {
-    return m_valid &&
-            m_startingNode != nullptr &&
-            m_startingNode->m_dataType != DataType::INVALID  &&
-            m_startingNode->m_next == nullptr &&
-            m_startingNode->m_sub == nullptr;
+    return m_priv->m_valid &&
+            m_priv->m_startingNode != nullptr &&
+            m_priv->m_startingNode->m_dataType != DataType::INVALID  &&
+            m_priv->m_startingNode->m_next == nullptr &&
+            m_priv->m_startingNode->m_sub == nullptr;
   }
 
   std::shared_ptr<priv::SignatureNode> Signature::create_signature_tree( std::string::const_iterator* it,
@@ -134,7 +149,7 @@ namespace DBus
           return nullptr;
       }
 
-      if( *it == m_signature.cend() ){
+      if( *it == m_priv->m_signature.cend() ){
           return nullptr;
       }
 
@@ -232,7 +247,7 @@ namespace DBus
                     isArrayEnd = false;
                 }
 
-                if( isArrayEnd && *it != m_signature.cend() ){
+                if( isArrayEnd && *it != m_priv->m_signature.cend() ){
                     //(*it)++;
                     continue;
                 }
@@ -244,15 +259,15 @@ namespace DBus
             }
           }
 
-          if( *it != m_signature.cend() ) (*it)++;
-      }while( *it != m_signature.cend() );
+          if( *it != m_priv->m_signature.cend() ) (*it)++;
+      }while( *it != m_priv->m_signature.cend() );
 
       return first;
   }
 
 
   void Signature::print_tree( std::ostream *stream ) const {
-      std::shared_ptr<priv::SignatureNode> current = m_startingNode;
+      std::shared_ptr<priv::SignatureNode> current = m_priv->m_startingNode;
 
       while( current != nullptr ){
           *stream << current->m_dataType;
@@ -279,20 +294,20 @@ namespace DBus
   }
 
   void Signature::initialize(){
-      m_valid = true;
+      m_priv->m_valid = true;
       std::stack<ContainerType> containerStack;
-      std::string::const_iterator it = m_signature.begin();
-      m_startingNode = create_signature_tree( &it, &containerStack, &m_valid );
+      std::string::const_iterator it = m_priv->m_signature.begin();
+      m_priv->m_startingNode = create_signature_tree( &it, &containerStack, &m_priv->m_valid );
 
       if( !containerStack.empty() ||
-              it != m_signature.end() ){
+              it != m_priv->m_signature.end() ){
           SIMPLELOGGER_DEBUG( LOGGER_NAME, "Either stack not empty or signature not used up completely" );
-          m_valid = false;
+          m_priv->m_valid = false;
       }
 
       std::ostringstream logmsg;
-      logmsg << "Signature \'" << m_signature << "\' is ";
-      if( m_valid ){
+      logmsg << "Signature \'" << m_priv->m_signature << "\' is ";
+      if( m_priv->m_valid ){
           logmsg << "valid";
       }else{
           logmsg << "invalid";

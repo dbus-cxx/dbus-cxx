@@ -30,65 +30,98 @@
 namespace DBus
 {
 
+class MessageIterator::priv_data{
+public:
+    priv_data() : m_message( nullptr )
+    {}
+
+    struct SubiterInformation {
+        SubiterInformation() :
+            m_subiterDataType( DataType::INVALID ),
+            m_arrayLastPosition( 0 ) {}
+
+        DataType m_subiterDataType;
+      uint32_t m_arrayLastPosition;
+      Signature m_variantSignature;
+    };
+
+    const Message* m_message;
+    std::shared_ptr<Demarshaling> m_demarshal;
+    SignatureIterator m_signatureIterator;
+    SubiterInformation m_subiterInfo;
+};
+
   MessageIterator::MessageIterator( DataType d,
                                     SignatureIterator sig,
                                     const Message* message,
-                                    std::shared_ptr<Demarshaling> demarshal ) :
-      m_message( message ),
-      m_demarshal( demarshal ),
-      m_signatureIterator( sig ){
+                                    std::shared_ptr<Demarshaling> demarshal ){
+      m_priv = std::make_shared<priv_data>();
+      m_priv->m_message = message;
+      m_priv->m_demarshal = demarshal;
+      m_priv->m_signatureIterator = sig;
+
       if( d == DataType::ARRAY ){
-          m_subiterInfo.m_subiterDataType = d;
-          m_subiterInfo.m_arrayLastPosition = m_demarshal->current_offset() + m_demarshal->demarshal_uint32_t();
+          m_priv->m_subiterInfo.m_subiterDataType = d;
+          m_priv->m_subiterInfo.m_arrayLastPosition = m_priv->m_demarshal->current_offset() + m_priv->m_demarshal->demarshal_uint32_t();
       }else if( d == DataType::VARIANT ){
           Signature demarshaled_sig = demarshal->demarshal_signature();
-          m_subiterInfo.m_variantSignature = demarshaled_sig;
-          m_signatureIterator = demarshaled_sig.begin();
+          m_priv->m_subiterInfo.m_variantSignature = demarshaled_sig;
+          m_priv->m_signatureIterator = demarshaled_sig.begin();
       }else if( d == DataType::DICT_ENTRY || d == DataType::STRUCT ){
-          m_demarshal->align( 8 );
+          m_priv->m_demarshal->align( 8 );
       }
 
   }
 
   MessageIterator::MessageIterator():
-      m_message( nullptr )
+      m_priv( std::make_shared<priv_data>() )
   {
-      m_subiterInfo.m_subiterDataType = DataType::INVALID;
+      m_priv->m_subiterInfo.m_subiterDataType = DataType::INVALID;
   }
 
   MessageIterator::MessageIterator( const Message& message ):
-      m_message( &message ),
-      m_demarshal( new Demarshaling( m_message->m_body.data(), m_message->m_body.size(), m_message->m_endianess ) ),
-      m_signatureIterator( m_message->signature().begin() )
+      m_priv( std::make_shared<priv_data>() )
   {
-    m_subiterInfo.m_subiterDataType = DataType::INVALID;
+      m_priv->m_message = &message;
+      m_priv->m_demarshal = std::shared_ptr<Demarshaling>(
+                  new Demarshaling( m_priv->m_message->body()->data(),
+                                    m_priv->m_message->body()->size(),
+                                    m_priv->m_message->endianess() )
+                  );
+      m_priv->m_signatureIterator = m_priv->m_message->signature().begin();
+    m_priv->m_subiterInfo.m_subiterDataType = DataType::INVALID;
   }
 
   MessageIterator::MessageIterator( std::shared_ptr<Message> message ):
-      m_message( message.get() ),
-      m_demarshal( new Demarshaling( m_message->m_body.data(), m_message->m_body.size(), m_message->m_endianess ) ),
-      m_signatureIterator( m_message->signature().begin() )
+      m_priv( std::make_shared<priv_data>() )
   {
-      m_subiterInfo.m_subiterDataType = DataType::INVALID;
+      m_priv->m_message = message.get();
+      m_priv->m_demarshal = std::shared_ptr<Demarshaling>(
+                  new Demarshaling( m_priv->m_message->body()->data(),
+                                    m_priv->m_message->body()->size(),
+                                    m_priv->m_message->endianess() )
+                  );
+      m_priv->m_signatureIterator = m_priv->m_message->signature().begin();
+    m_priv->m_subiterInfo.m_subiterDataType = DataType::INVALID;
   }
 
   const Message* MessageIterator::message() const
   {
-    return m_message;
+    return m_priv->m_message;
   }
 
   void MessageIterator::invalidate()
   {
-    m_message = nullptr;
+    m_priv->m_message = nullptr;
   }
 
   bool MessageIterator::is_valid() const
   {
-    if ( not (m_message and m_message->is_valid() ) ) return false;
+    if ( not (m_priv->m_message and m_priv->m_message->is_valid() ) ) return false;
     if ( this->arg_type() == DataType::INVALID ) return false;
-    if ( m_subiterInfo.m_subiterDataType == DataType::ARRAY ){
+    if ( m_priv->m_subiterInfo.m_subiterDataType == DataType::ARRAY ){
         // We are in a subiter here, figure out if we're at the end of the array yet
-        if( m_demarshal->current_offset() > m_subiterInfo.m_arrayLastPosition ){
+        if( m_priv->m_demarshal->current_offset() >m_priv-> m_subiterInfo.m_arrayLastPosition ){
             return false;
         }
         return true;
@@ -98,7 +131,7 @@ namespace DBus
 
   bool MessageIterator::has_next() const
   {
-    if ( this->is_valid() ) return m_signatureIterator.has_next();
+    if ( this->is_valid() ) return m_priv->m_signatureIterator.has_next();
     return false;
   }
 
@@ -110,13 +143,13 @@ namespace DBus
     // Arrays are valid until they can read no more data,
     // structs iterate over their types like normal,
     // and variants do ..  ?
-    if( m_subiterInfo.m_subiterDataType == DataType::ARRAY ){
+    if( m_priv->m_subiterInfo.m_subiterDataType == DataType::ARRAY ){
         // Question: should this try to advance the iterator by reading a value
         // and then just discarding it?
         return true;
     }
 
-    bool result = m_signatureIterator.next();
+    bool result = m_priv->m_signatureIterator.next();
 
     if ( not result or this->arg_type() == DataType::INVALID )
     {
@@ -144,19 +177,19 @@ namespace DBus
   bool MessageIterator::operator==( const MessageIterator& other )
   {
       //TODO finish this method
-    return ( m_message == other.m_message );
+    return ( m_priv->m_message == other.m_priv->m_message );
   }
 
   DataType MessageIterator::arg_type() const
   {
-    return m_signatureIterator.type();
+    return m_priv->m_signatureIterator.type();
   }
 
   DataType MessageIterator::element_type() const
   {
     if ( this->arg_type() != DataType::ARRAY )
       return DataType::INVALID;
-    return m_signatureIterator.element_type();
+    return m_priv->m_signatureIterator.element_type();
   }
 
   bool MessageIterator::is_fixed() const
@@ -185,17 +218,17 @@ namespace DBus
   {
     if ( not this->is_container() ) return MessageIterator();
 
-    MessageIterator iter( m_signatureIterator.type(),
-                          m_signatureIterator.recurse(),
-                          m_message,
-                          m_demarshal );
+    MessageIterator iter( m_priv->m_signatureIterator.type(),
+                          m_priv->m_signatureIterator.recurse(),
+                          m_priv->m_message,
+                          m_priv->m_demarshal );
 
     return iter;
   }
 
   std::string MessageIterator::signature() const
   {
-    return m_signatureIterator.signature();
+    return m_priv->m_signatureIterator.signature();
   }
 
   MessageIterator::operator bool()
@@ -455,63 +488,63 @@ namespace DBus
   {
     if ( this->arg_type() != DataType::BOOLEAN )
       throw ErrorInvalidTypecast("MessageIterator: getting bool and type is not DataType::BOOLEAN");
-    return m_demarshal->demarshal_boolean();
+    return m_priv->m_demarshal->demarshal_boolean();
   }
 
   uint8_t MessageIterator::get_uint8()
   {
     if ( this->arg_type() != DataType::BYTE )
       throw ErrorInvalidTypecast("MessageIterator: getting uint8_t and type is not DataType::BYTE");
-    return m_demarshal->demarshal_uint8_t();
+    return m_priv->m_demarshal->demarshal_uint8_t();
   }
 
   int16_t MessageIterator::get_int16()
   {
     if ( this->arg_type() != DataType::INT16 )
       throw ErrorInvalidTypecast("MessageIterator: getting int16_t and type is not DataType::INT16");
-    return m_demarshal->demarshal_int16_t();
+    return m_priv->m_demarshal->demarshal_int16_t();
   }
 
   uint16_t MessageIterator::get_uint16()
   {
     if ( this->arg_type() != DataType::UINT16 )
       throw ErrorInvalidTypecast("MessageIterator: getting uint16_t and type is not DataType::UINT16");
-    return m_demarshal->demarshal_uint16_t();
+    return m_priv->m_demarshal->demarshal_uint16_t();
   }
 
   int32_t MessageIterator::get_int32()
   {
     if ( this->arg_type() != DataType::INT32 )
       throw ErrorInvalidTypecast("MessageIterator: getting int32_t and type is not DataType::INT32");
-    return m_demarshal->demarshal_int32_t();
+    return m_priv->m_demarshal->demarshal_int32_t();
   }
 
   uint32_t MessageIterator::get_uint32()
   {
     if ( this->arg_type() != DataType::UINT32 )
       throw ErrorInvalidTypecast("MessageIterator: getting uint32_t and type is not DataType::UINT32");
-    return m_demarshal->demarshal_uint32_t();
+    return m_priv->m_demarshal->demarshal_uint32_t();
   }
 
   int64_t MessageIterator::get_int64()
   {
     if ( this->arg_type() != DataType::INT64 )
       throw ErrorInvalidTypecast("MessageIterator: getting int64_t and type is not DataType::INT64");
-    return m_demarshal->demarshal_int64_t();
+    return m_priv->m_demarshal->demarshal_int64_t();
   }
 
   uint64_t MessageIterator::get_uint64()
   {
     if ( this->arg_type() != DataType::UINT64 )
       throw ErrorInvalidTypecast("MessageIterator: getting uint64_t and type is not DataType::UINT64");
-    return m_demarshal->demarshal_uint64_t();
+    return m_priv->m_demarshal->demarshal_uint64_t();
   }
 
   double MessageIterator::get_double()
   {
     if ( this->arg_type() != DataType::DOUBLE )
       throw ErrorInvalidTypecast("MessageIterator: getting double and type is not DataType::DOUBLE");
-    return m_demarshal->demarshal_double();
+    return m_priv->m_demarshal->demarshal_double();
   }
 
   std::string MessageIterator::get_string()
@@ -519,30 +552,27 @@ namespace DBus
     if ( not ( this->arg_type() == DataType::STRING or this->arg_type() == DataType::OBJECT_PATH or this->arg_type() == DataType::SIGNATURE ) )
       throw ErrorInvalidTypecast("MessageIterator: getting char* and type is not one of DataType::STRING, DataType::OBJECT_PATH or DataType::SIGNATURE");
     if( this->arg_type() == DataType::SIGNATURE ){
-        return m_demarshal->demarshal_signature();
+        return m_priv->m_demarshal->demarshal_signature();
     }
-    return m_demarshal->demarshal_string();
+    return m_priv->m_demarshal->demarshal_string();
   }
 
   std::shared_ptr<FileDescriptor> MessageIterator::get_filedescriptor(){
     std::shared_ptr<FileDescriptor> fd;
-    int32_t fd_location = m_demarshal->demarshal_int32_t();
+    int32_t fd_location = m_priv->m_demarshal->demarshal_int32_t();
 
-    if( fd_location >= 0 &&
-            m_message->m_filedescriptors.size() > fd_location ){
-        // This is likely a valid file descriptor.
-        // Because the current file descriptor goes away when the message gets destructed,
-        // duplicate the return value so that it will still be valid after the message goes away.
-        int new_fd = fcntl( m_message->m_filedescriptors[ fd_location ], F_DUPFD, 3 );
-        if( new_fd < 0 ){
-            return FileDescriptor::create( -1 );
-        }
-
-        return FileDescriptor::create( new_fd );
+    int raw_fd = m_priv->m_message->filedescriptor_at_location( fd_location );
+    if( raw_fd < 0 ){
+        return FileDescriptor::create( -1 );
     }
 
-    fd = FileDescriptor::create( -1 );
-    return fd;
+    // We need to duplicate, as the filedescriptors will be closed when the message is destructed
+    int new_fd = fcntl( raw_fd, F_DUPFD, 3 );
+    if( new_fd < 0 ){
+        return FileDescriptor::create( -1 );
+    }
+
+    return FileDescriptor::create( new_fd );
   }
 
   Variant MessageIterator::get_variant(){
@@ -552,7 +582,7 @@ namespace DBus
   }
 
   Signature MessageIterator::get_signature(){
-      return m_demarshal->demarshal_signature();
+      return m_priv->m_demarshal->demarshal_signature();
   }
 
 }

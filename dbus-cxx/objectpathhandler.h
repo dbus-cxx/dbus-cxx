@@ -18,6 +18,7 @@
  ***************************************************************************/
 #include <dbus-cxx/messagehandler.h>
 #include <dbus/dbus.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 #include <memory>
 #include <string>
 #include "enums.h"
@@ -81,17 +82,10 @@ namespace DBus
        */
       sigc::signal<void(std::shared_ptr<Connection>) >& signal_unregistered();
 
-    protected:
+    private:
+      class priv_data;
 
-      std::weak_ptr<Connection> m_connection;
-
-      Path m_path;
-
-      PrimaryFallback m_primary_fallback;
-
-      sigc::signal<void(std::shared_ptr<Connection>) > m_signal_registered;
-
-      sigc::signal<void(std::shared_ptr<Connection>) > m_signal_unregistered;
+      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
 
   };
 

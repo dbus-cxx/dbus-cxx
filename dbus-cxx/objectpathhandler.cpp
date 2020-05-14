@@ -27,10 +27,22 @@ namespace sigc { template <typename T_return, typename ...T_arg> class signal; }
 namespace DBus
 {
   
+class ObjectPathHandler::priv_data {
+public:
+    priv_data(){}
+
+    std::weak_ptr<Connection> m_connection;
+    Path m_path;
+    PrimaryFallback m_primary_fallback;
+    sigc::signal<void(std::shared_ptr<Connection>) > m_signal_registered;
+    sigc::signal<void(std::shared_ptr<Connection>) > m_signal_unregistered;
+};
+
   ObjectPathHandler::ObjectPathHandler(const std::string& path, PrimaryFallback pf):
-      m_path(path),
-      m_primary_fallback(pf)
+      m_priv( std::make_unique<priv_data>() )
   {
+      m_priv->m_path = path;
+      m_priv->m_primary_fallback = pf;
   }
 
   ObjectPathHandler::~ObjectPathHandler()
@@ -39,17 +51,17 @@ namespace DBus
 
   const Path& ObjectPathHandler::path() const
   {
-    return m_path;
+    return m_priv->m_path;
   }
 
   PrimaryFallback ObjectPathHandler::is_primary_or_fallback()
   {
-    return m_primary_fallback;
+    return m_priv->m_primary_fallback;
   }
 
   std::weak_ptr< Connection > ObjectPathHandler::connection() const
   {
-    return m_connection;
+    return m_priv->m_connection;
   }
 
   bool ObjectPathHandler::register_with_connection(std::shared_ptr<Connection> conn)
@@ -57,7 +69,7 @@ namespace DBus
     dbus_bool_t result;
     Error error = Error();
 
-    SIMPLELOGGER_DEBUG("dbus.ObjectPathHandler","Registering path " << m_path << " with connection");
+    SIMPLELOGGER_DEBUG("dbus.ObjectPathHandler","Registering path " << m_priv->m_path << " with connection");
 
     if ( not conn or not conn->is_valid() ) return false;
 
@@ -81,31 +93,31 @@ namespace DBus
     
     if ( not result ) return false;
 
-    m_connection = conn;
+    m_priv->m_connection = conn;
     
     return true;
   }
 
   bool ObjectPathHandler::unregister()
   {
-      std::shared_ptr connection = m_connection.lock();
+      std::shared_ptr connection = m_priv->m_connection.lock();
     if( !connection ) return true;
-    return connection->unregister_object( m_path );
+    return connection->unregister_object( m_priv->m_path );
   }
 
   sigc::signal< void(std::shared_ptr<Connection>)> & ObjectPathHandler::signal_registered()
   {
-    return m_signal_registered;
+    return m_priv->m_signal_registered;
   }
 
   sigc::signal< void(std::shared_ptr<Connection>)> & ObjectPathHandler::signal_unregistered()
   {
-    return m_signal_unregistered;
+    return m_priv->m_signal_unregistered;
   }
 
   void ObjectPathHandler::set_connection(std::shared_ptr<Connection> conn){
       unregister();
-      m_connection = conn;
+      m_priv->m_connection = conn;
   }
 
 }

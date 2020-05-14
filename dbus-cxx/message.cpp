@@ -38,17 +38,33 @@ static const char* LOGGER_NAME = "DBus.Message";
 namespace DBus
 {
 
-  Message::Message():
-      m_valid( true ),
-      m_endianess( Endianess::Big ),
-      m_flags( 0 ),
-      m_serial( 0 )
+class Message::priv_data {
+public:
+    priv_data() :
+        m_valid( true ),
+        m_endianess( Endianess::Big ),
+        m_flags( 0 ),
+        m_serial( 0 )
+    {}
+
+
+    bool m_valid;
+    std::map<MessageHeaderFields,Variant> m_headerMap;
+    std::vector<uint8_t> m_body;
+    Endianess m_endianess;
+    uint8_t m_flags;
+    std::vector<int> m_filedescriptors;
+    uint32_t m_serial;
+};
+
+  Message::Message()
   {
+      m_priv = std::make_unique<priv_data>();
   }
 
   Message::~Message()
   {
-      for( int i : m_filedescriptors ){
+      for( int i : m_priv->m_filedescriptors ){
           close( i );
       }
   }
@@ -77,7 +93,7 @@ namespace DBus
 
       if( headersEqual ){
           // Okay, all of the headers are equal at this point, now we can check the raw data
-          dataEqual = m_body == other.m_body;
+          dataEqual = m_priv->m_body == other.m_priv->m_body;
       }
 
       return  headersEqual && dataEqual;
@@ -87,12 +103,12 @@ namespace DBus
   {
     // TODO fix this
 //     return ( m_cobj != nullptr and m_valid );
-    return m_valid;
+    return m_priv->m_valid;
   }
 
   void Message::invalidate()
   {
-    m_valid = false;
+    m_priv->m_valid = false;
   }
 
   Message::operator bool() const
@@ -102,7 +118,7 @@ namespace DBus
 
   uint32_t Message::serial() const
   {
-      return m_serial;
+      return m_priv->m_serial;
   }
 
 //   Message Message::copy()
@@ -114,21 +130,21 @@ namespace DBus
   void Message::set_auto_start( bool auto_start)
   {
       if( auto_start ){
-          m_flags &= ~DBUSCXX_MESSAGE_NO_AUTO_START_FLAG;
+          m_priv->m_flags &= ~DBUSCXX_MESSAGE_NO_AUTO_START_FLAG;
       }else{
-          m_flags |= DBUSCXX_MESSAGE_NO_AUTO_START_FLAG;
+          m_priv->m_flags |= DBUSCXX_MESSAGE_NO_AUTO_START_FLAG;
       }
   }
 
   bool Message::auto_start()
   {
-    return m_flags & DBUSCXX_MESSAGE_NO_AUTO_START_FLAG;
+    return m_priv->m_flags & DBUSCXX_MESSAGE_NO_AUTO_START_FLAG;
   }
 
   bool Message::set_destination( const std::string& s )
   {
       if( Validator::validate_bus_name( s ) == false ) return false;
-    m_headerMap[ MessageHeaderFields::Destination ] = DBus::Variant( s );
+    m_priv->m_headerMap[ MessageHeaderFields::Destination ] = DBus::Variant( s );
     return true;
   }
 
@@ -179,7 +195,7 @@ bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
     Variant serialHeader = header_field( MessageHeaderFields::Reply_Serial );
     bool mustHaveSerial = false;
 
-    vec->reserve( vec->size() + m_body.size() + 256 );
+    vec->reserve( vec->size() + m_priv->m_body.size() + 256 );
     marshal.marshal( static_cast<uint8_t>( 'B' ) );
     switch( type() ){
     case MessageType::INVALID:
@@ -201,13 +217,13 @@ bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
 	}
 
 	// Now marshal the flags
-    marshal.marshal( m_flags );
+    marshal.marshal( m_priv->m_flags );
 
 	// Marshal the protocol version
     marshal.marshal( static_cast<uint8_t>( 1 ) );
 
 	// Marshal the length
-    marshal.marshal( static_cast<uint32_t>( m_body.size() ) );
+    marshal.marshal( static_cast<uint32_t>( m_priv->m_body.size() ) );
 
     if( mustHaveSerial ){
         // Make sure that we have a header for our serial and it is not 0
@@ -228,7 +244,7 @@ bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
     // Marshal our header array
     marshal.marshal( static_cast<uint32_t>( 0 ) ); // The size of the header array; we update this later
 
-    for( const std::pair<const MessageHeaderFields,Variant>& entry : m_headerMap ){
+    for( const std::pair<const MessageHeaderFields,Variant>& entry : m_priv->m_headerMap ){
         if( entry.second.currentType() == DataType::INVALID ) continue;
 
         marshal.align( 8 );
@@ -241,7 +257,7 @@ bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
     // Align the message data to an 8-byte boundary and add the data!
     marshal.align( 8 );
 
-    for( const uint8_t& byte : m_body ){
+    for( const uint8_t& byte : m_priv->m_body ){
         vec->push_back( byte );
     }
 
@@ -320,21 +336,21 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
         break;
     }
 
-    retmsg->m_serial = serial;
-    retmsg->m_flags = flags;
-    retmsg->m_valid = true;
-    retmsg->m_headerMap = headerMap;
-    retmsg->m_endianess = msgEndian;
-    retmsg->m_body.reserve( bodyLen );
+    retmsg->m_priv->m_serial = serial;
+    retmsg->m_priv->m_flags = flags;
+    retmsg->m_priv->m_valid = true;
+    retmsg->m_priv->m_headerMap = headerMap;
+    retmsg->m_priv->m_endianess = msgEndian;
+    retmsg->m_priv->m_body.reserve( bodyLen );
     for( uint32_t x = 0; x < bodyLen; x++ ){
-        retmsg->m_body.push_back( demarshal.demarshal_uint8_t() );
+        retmsg->m_priv->m_body.push_back( demarshal.demarshal_uint8_t() );
     }
 
     return retmsg;
 }
 
 void Message::append_signature(std::string toappend){
-    DBus::Variant val = m_headerMap[ MessageHeaderFields::Signature ];
+    DBus::Variant val = m_priv->m_headerMap[ MessageHeaderFields::Signature ];
     std::string newval;
 
     if( val.currentType() != DataType::INVALID ){
@@ -343,13 +359,13 @@ void Message::append_signature(std::string toappend){
     }
 
     newval += toappend;
-    m_headerMap[ MessageHeaderFields::Signature ] = DBus::Variant( Signature( newval ) );
+    m_priv->m_headerMap[ MessageHeaderFields::Signature ] = DBus::Variant( Signature( newval ) );
 }
 
 Variant Message::header_field( MessageHeaderFields field ) const {
     std::map<MessageHeaderFields,Variant>::const_iterator location =
-            m_headerMap.find( field );
-    if( location != m_headerMap.end() ){
+            m_priv->m_headerMap.find( field );
+    if( location != m_priv->m_headerMap.end() ){
         return location->second;
     }
 
@@ -358,11 +374,56 @@ Variant Message::header_field( MessageHeaderFields field ) const {
 
 void Message::clear_sig_and_data(){
     std::map<MessageHeaderFields,Variant>::const_iterator location =
-            m_headerMap.find( MessageHeaderFields::Signature );
-    if( location != m_headerMap.end() ){
-        m_headerMap.erase( location );
+            m_priv->m_headerMap.find( MessageHeaderFields::Signature );
+    if( location != m_priv->m_headerMap.end() ){
+        m_priv->m_headerMap.erase( location );
     }
-    m_body.clear();
+    m_priv->m_body.clear();
+}
+
+uint8_t Message::flags() const {
+    return m_priv->m_flags;
+}
+
+void Message::set_flags( uint8_t flags ) {
+    m_priv->m_flags = flags;
+}
+
+Variant Message::set_header_field( MessageHeaderFields field, Variant value ){
+    DBus::Variant retval = header_field( field );
+
+    m_priv->m_headerMap[ field ] = value;
+
+    return retval;
+}
+
+std::vector<uint8_t>* Message::body() {
+    return &m_priv->m_body;
+}
+
+const std::vector<uint8_t>* Message::body() const{
+    return &m_priv->m_body;
+}
+
+void Message::add_filedescriptor( int fd ){
+    m_priv->m_filedescriptors.push_back( fd );
+}
+
+uint32_t Message::filedescriptors_size() const{
+    return m_priv->m_filedescriptors.size();
+}
+
+DBus::Endianess Message::endianess() const {
+    return m_priv->m_endianess;
+}
+
+int Message::filedescriptor_at_location(int location) const {
+    if( location < m_priv->m_filedescriptors.size() &&
+            location >= 0 ){
+        return m_priv->m_filedescriptors[ location ];
+    }
+
+    return -1;
 }
 
 std::ostream& operator <<( std::ostream& os, const DBus::Message* msg ){
@@ -387,10 +448,10 @@ std::ostream& operator <<( std::ostream& os, const DBus::Message* msg ){
     }
 
     os << std::endl;
-    os << "  Message length: " << msg->m_body.size() << std::endl;
-    os << "  Endianess: " << msg->m_endianess << std::endl;
+    os << "  Message length: " << msg->m_priv->m_body.size() << std::endl;
+    os << "  Endianess: " << msg->m_priv->m_endianess << std::endl;
     os << "  Headers:" << std::endl;
-    for( const std::pair<const MessageHeaderFields,DBus::Variant>& set : msg->m_headerMap ){
+    for( const std::pair<const MessageHeaderFields,DBus::Variant>& set : msg->m_priv->m_headerMap ){
         std::any value = set.second.value();
         os << "    ";
         switch( set.first ){

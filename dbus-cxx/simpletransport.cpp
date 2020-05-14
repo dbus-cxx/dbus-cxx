@@ -30,33 +30,57 @@
 
 using DBus::priv::SimpleTransport;
 
+enum class ReadingState {
+    FirstHeaderPart,
+    SecondHeaderPart,
+    Body
+};
+
+class SimpleTransport::priv_data{
+public:
+    priv_data( int fd ):
+        m_fd( fd ),
+        m_readingState( ReadingState::FirstHeaderPart ),
+        m_receiveBuffer( nullptr ),
+        m_receiveBufferLocation( 0 ),
+        m_receiveBufferSize( 512 ),
+        m_headerLeftToRead( 0 )
+    {}
+
+    int m_fd;
+    bool m_ok;
+    ReadingState m_readingState;
+    std::vector<uint8_t> m_sendBuffer;
+    uint8_t* m_receiveBuffer;
+    uint32_t m_receiveBufferLocation;
+    uint32_t m_receiveBufferSize;
+    uint32_t m_bodyLeftToRead;
+    uint32_t m_headerLeftToRead;
+};
+
 SimpleTransport::SimpleTransport( int fd, bool initialize ) :
-    m_fd( fd ),
-    m_readingState( ReadingState::FirstHeaderPart ),
-    m_receiveBufferLocation( 0 ),
-    m_receiveBufferSize( 512 ),
-    m_headerLeftToRead( 0 ){
+    m_priv( std::make_unique<priv_data>( fd ) ){
     uint8_t nulbyte = 0;
 
     if( initialize ){
-        if( ::write( m_fd, &nulbyte, 1 ) < 0 ){
+        if( ::write( m_priv->m_fd, &nulbyte, 1 ) < 0 ){
             int my_errno = errno;
             std::string errmsg = strerror( errno );
             SIMPLELOGGER_DEBUG("dbus.SimpleTransport", "Unable to write nul byte: " + errmsg );
-            m_ok = false;
-            close( m_fd );
+            m_priv->m_ok = false;
+            close( m_priv->m_fd );
             errno = my_errno;
             return;
         }
     }
 
-    m_receiveBuffer = new uint8_t[ m_receiveBufferSize ];
-    m_ok = true;
+    m_priv->m_receiveBuffer = new uint8_t[ m_priv->m_receiveBufferSize ];
+    m_priv->m_ok = true;
 }
 
 SimpleTransport::~SimpleTransport(){
-    close( m_fd );
-    delete[] m_receiveBuffer;
+    close( m_priv->m_fd );
+    delete[] m_priv->m_receiveBuffer;
 }
 
 
@@ -66,16 +90,16 @@ std::shared_ptr<SimpleTransport> SimpleTransport::create( int fd, bool initializ
 
 ssize_t SimpleTransport::writeMessage( std::shared_ptr<const Message> message, uint32_t serial ){
     std::ostringstream debug_str;
-    m_sendBuffer.clear();
-    if( !message->serialize_to_vector( &m_sendBuffer, serial ) ){
+    m_priv->m_sendBuffer.clear();
+    if( !message->serialize_to_vector( &m_priv->m_sendBuffer, serial ) ){
         return 0;
     }
 
     debug_str << "Going to send the following bytes: " << std::endl;
-    DBus::hexdump( &m_sendBuffer, &debug_str );
+    DBus::hexdump( &m_priv->m_sendBuffer, &debug_str );
     SIMPLELOGGER_TRACE( "dbus.SimpleTransport", debug_str.str() );
 
-    ssize_t bytesWritten = ::write( m_fd, m_sendBuffer.data(), m_sendBuffer.size() );
+    ssize_t bytesWritten = ::write( m_priv->m_fd, m_priv->m_sendBuffer.data(), m_priv->m_sendBuffer.size() );
     if( bytesWritten < 0 ){
         int my_errno = errno;
         std::string errmsg = strerror( errno );
@@ -90,36 +114,36 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage(){
     ssize_t bytesRead;
     std::shared_ptr<Message> retmsg;
 
-    if( m_readingState == ReadingState::FirstHeaderPart ){
+    if( m_priv->m_readingState == ReadingState::FirstHeaderPart ){
         /*
          * First part of the reading: read the first 16 bytes, which include the
          * important data(including the size of the variable-length array)
          */
-        bytesRead = ::read( m_fd,
-                            m_receiveBuffer + m_receiveBufferLocation,
-                            16 - m_receiveBufferLocation );
+        bytesRead = ::read( m_priv->m_fd,
+                            m_priv->m_receiveBuffer + m_priv->m_receiveBufferLocation,
+                            16 - m_priv->m_receiveBufferLocation );
         if( bytesRead < 0 ){
             return std::shared_ptr<DBus::Message>();
         }
         if( bytesRead == 0 ){
             // End of the stream
             SIMPLELOGGER_TRACE( "dbus.SimpleTransport", "End of stream: closing transport" );
-            m_ok = false;
+            m_priv->m_ok = false;
             return std::shared_ptr<DBus::Message>();
         }
-        m_receiveBufferLocation += bytesRead;
+        m_priv->m_receiveBufferLocation += bytesRead;
 
-        if( m_receiveBufferLocation == 16 ){
-            m_readingState = ReadingState::SecondHeaderPart;
+        if( m_priv->m_receiveBufferLocation == 16 ){
+            m_priv->m_readingState = ReadingState::SecondHeaderPart;
         }
     }
 
-    if( m_readingState == ReadingState::SecondHeaderPart ){
+    if( m_priv->m_readingState == ReadingState::SecondHeaderPart ){
         /*
          * Next part of the reading: read the variable-sized array in the header
          */
-        if( m_headerLeftToRead == 0 ){
-            Demarshaling m( m_receiveBuffer, 16, Endianess::Big );
+        if( m_priv->m_headerLeftToRead == 0 ){
+            Demarshaling m( m_priv->m_receiveBuffer, 16, Endianess::Big );
             uint32_t totalMessageSize;
             uint32_t headerArraySize;
             int bytesToAdd;
@@ -129,7 +153,7 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage(){
             }
 
             m.setDataOffset( 4 );
-            m_bodyLeftToRead =  m.demarshal_uint32_t();
+            m_priv->m_bodyLeftToRead =  m.demarshal_uint32_t();
             m.setDataOffset( 12 );
             headerArraySize = m.demarshal_uint32_t();
 
@@ -138,18 +162,18 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage(){
             if( bytesToAdd != 8 ){
                 headerArraySize += bytesToAdd;
             }
-            m_headerLeftToRead = headerArraySize;
+           m_priv-> m_headerLeftToRead = headerArraySize;
 
             totalMessageSize = ( 12 /* Basic header size */
-                                 + m_headerLeftToRead
-                                 + m_bodyLeftToRead
+                                 + m_priv->m_headerLeftToRead
+                                 + m_priv->m_bodyLeftToRead
                                  + 12 /* Extra padding */ );
-            if( m_receiveBufferSize < totalMessageSize ){
-                m_receiveBufferSize = totalMessageSize;
-                uint8_t* newbuffer = new uint8_t[ m_receiveBufferSize ];
-                std::memcpy( newbuffer, m_receiveBuffer, m_receiveBufferLocation );
-                delete[] m_receiveBuffer;
-                m_receiveBuffer = newbuffer;
+            if( m_priv->m_receiveBufferSize < totalMessageSize ){
+                m_priv->m_receiveBufferSize = totalMessageSize;
+                uint8_t* newbuffer = new uint8_t[ m_priv->m_receiveBufferSize ];
+                std::memcpy( newbuffer, m_priv->m_receiveBuffer, m_priv->m_receiveBufferLocation );
+                delete[] m_priv->m_receiveBuffer;
+                m_priv->m_receiveBuffer = newbuffer;
             }
         }
 
@@ -157,49 +181,49 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage(){
          * Now that we know how big the variable-sized array is and the body size,
          * try to read that number of bytes(to keep the number of read() calls down)
          */
-        bytesRead = ::read( m_fd,
-                            m_receiveBuffer + m_receiveBufferLocation,
-                            m_headerLeftToRead + m_bodyLeftToRead );
+        bytesRead = ::read( m_priv->m_fd,
+                            m_priv->m_receiveBuffer + m_priv->m_receiveBufferLocation,
+                            m_priv->m_headerLeftToRead + m_priv->m_bodyLeftToRead );
 
         if( bytesRead < 0 ){
             return std::shared_ptr<DBus::Message>();
         }
-        m_receiveBufferLocation += bytesRead;
-        if( m_headerLeftToRead - bytesRead <= 0 ){
-            bytesRead -= m_headerLeftToRead;
-            m_headerLeftToRead = 0;
+        m_priv->m_receiveBufferLocation += bytesRead;
+        if( m_priv->m_headerLeftToRead - bytesRead <= 0 ){
+            bytesRead -= m_priv->m_headerLeftToRead;
+            m_priv->m_headerLeftToRead = 0;
         }
-        m_bodyLeftToRead -= bytesRead;
+        m_priv->m_bodyLeftToRead -= bytesRead;
 
-        if( m_headerLeftToRead == 0 ){
+        if( m_priv->m_headerLeftToRead == 0 ){
             // We have at least full header at this point
-            m_readingState = ReadingState::Body;
+            m_priv->m_readingState = ReadingState::Body;
         }
     }
 
-    if( m_readingState == ReadingState::Body ){
-        if( m_bodyLeftToRead ){
-            bytesRead = ::read( m_fd,
-                                m_receiveBuffer + m_receiveBufferLocation,
-                                m_bodyLeftToRead );
+    if( m_priv->m_readingState == ReadingState::Body ){
+        if( m_priv->m_bodyLeftToRead ){
+            bytesRead = ::read( m_priv->m_fd,
+                                m_priv->m_receiveBuffer + m_priv->m_receiveBufferLocation,
+                                m_priv->m_bodyLeftToRead );
             if( bytesRead < 0 ){
                 return std::shared_ptr<DBus::Message>();
             }
-            m_bodyLeftToRead -= bytesRead;
+            m_priv->m_bodyLeftToRead -= bytesRead;
         }
 
-        if( m_bodyLeftToRead == 0 ) {
+        if( m_priv->m_bodyLeftToRead == 0 ) {
             // We have a full message at this point!
             std::ostringstream debug_str;
             debug_str << "Going to create a message from the following data: " << std::endl;
-            DBus::hexdump( m_receiveBuffer, m_receiveBufferLocation, &debug_str );
+            DBus::hexdump( m_priv->m_receiveBuffer, m_priv->m_receiveBufferLocation, &debug_str );
             SIMPLELOGGER_TRACE( "dbus.SimpleTransport", debug_str.str() );
 
-            retmsg = Message::create_from_data( m_receiveBuffer, m_receiveBufferLocation );
+            retmsg = Message::create_from_data( m_priv->m_receiveBuffer, m_priv->m_receiveBufferLocation );
 
-            m_receiveBufferLocation = 0;
-            m_readingState = ReadingState::FirstHeaderPart;
-            m_headerLeftToRead = 0;
+            m_priv->m_receiveBufferLocation = 0;
+            m_priv->m_readingState = ReadingState::FirstHeaderPart;
+            m_priv->m_headerLeftToRead = 0;
         }
     }
 
@@ -207,9 +231,9 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage(){
 }
 
 bool SimpleTransport::is_valid() const {
-    return m_ok;
+    return m_priv->m_ok;
 }
 
 int SimpleTransport::fd() const {
-    return m_fd;
+    return m_priv->m_fd;
 }

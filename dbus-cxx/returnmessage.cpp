@@ -43,7 +43,7 @@ namespace DBus
   bool ReturnMessage::set_reply_serial( uint32_t s )
   {
     Variant serialField = Variant( s );
-    m_headerMap[ MessageHeaderFields::Reply_Serial ] = serialField;
+    set_header_field( MessageHeaderFields::Reply_Serial, serialField );
     return false;
   }
 

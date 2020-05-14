@@ -22,6 +22,8 @@
 #include <tuple>
 #include <vector>
 #include <stdint.h>
+#include <dbus-cxx-config.h>
+#include <memory>
 
 namespace DBus {
 namespace priv{
@@ -40,6 +42,8 @@ public:
      */
     SASL( int fd, bool negotiateFDPassing );
 
+    ~SASL();
+
     /**
      * Perform the authentication with the server.
      *
@@ -57,8 +61,9 @@ private:
     std::vector<uint8_t> hex_to_vector( std::string hexData );
 
 private:
-    int m_fd;
-    bool m_negotiateFDpassing;
+    class priv_data;
+
+    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
 };
 
 } /* namespace priv */

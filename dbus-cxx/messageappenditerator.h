@@ -20,6 +20,7 @@
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/signature.h>
 #include <dbus-cxx/marshaling.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 #include <dbus/dbus.h>
 #include <stddef.h>
 #include <map>
@@ -108,7 +109,7 @@ namespace DBus
         }
 
         for ( size_t i=0; i < v.size(); i++ )
-          *m_subiter << v[i];
+          *sub_iterator() << v[i];
 
         success = this->close_container();
         if( not success ){
@@ -124,10 +125,10 @@ namespace DBus
         typename std::map<Key,Data>::const_iterator it;
         this->open_container( ContainerType::ARRAY, sig );
         for ( it = dictionary.begin(); it != dictionary.end(); it++ ) {
-          m_subiter->open_container( ContainerType::DICT_ENTRY, std::string() );
-          *(m_subiter->m_subiter) << it->first;
-          *(m_subiter->m_subiter) << it->second;
-          m_subiter->close_container();
+          sub_iterator()->open_container( ContainerType::DICT_ENTRY, std::string() );
+          *(sub_iterator()->sub_iterator()) << it->first;
+          *(sub_iterator()->sub_iterator()) << it->second;
+          sub_iterator()->close_container();
         }
         this->close_container();
 
@@ -155,13 +156,10 @@ namespace DBus
 
       MessageAppendIterator* sub_iterator();
 
-    protected:
-      Marshaling m_marshaling;
-      Message* m_message;
-      MessageAppendIterator* m_subiter;
-      std::vector<uint8_t> m_workingBuffer;
-      ContainerType m_currentContainer;
-      int32_t m_arrayAlignment;
+    private:
+      class priv_data;
+
+      std::shared_ptr<priv_data> m_priv;
   };
 
 }

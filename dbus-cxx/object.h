@@ -21,6 +21,7 @@
 #include <dbus-cxx/dbus_signal.h>
 #include <dbus-cxx/objectpathhandler.h>
 #include <dbus-cxx/interface.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -134,7 +135,7 @@ namespace DBus
       std::shared_ptr<Method<T_type> >
       create_method( const std::string& method_name, sigc::slot<T_type> slot )
       {
-        if ( not m_default_interface )
+        if ( not default_interface() )
         {
           this->create_interface("");
           this->set_default_interface("");
@@ -142,7 +143,7 @@ namespace DBus
         // TODO throw an error if the default interface still doesn't exist
 
         std::shared_ptr< Method<T_type> > method;
-        method = m_default_interface->create_method<T_type>(method_name);
+        method = default_interface()->create_method<T_type>(method_name);
         method->set_method( slot );
         return method;
       }
@@ -343,28 +344,10 @@ namespace DBus
        */
       HandlerResult handle_message( std::shared_ptr<const Message> msg);
 
-    protected:
+    private:
+      class priv_data;
 
-      Children m_children;
-      
-      mutable std::shared_mutex m_interfaces_rwlock;
-
-      std::mutex m_name_mutex;
-
-      Interfaces m_interfaces;
-
-      std::shared_ptr<Interface>  m_default_interface;
-
-      sigc::signal<void(std::shared_ptr<Interface>,std::shared_ptr<Interface>) > m_signal_default_interface_changed;
-
-      sigc::signal<void(std::shared_ptr<Interface>) > m_signal_interface_added;
-
-      sigc::signal<void(std::shared_ptr<Interface>) > m_signal_interface_removed;
-
-      typedef std::map<std::shared_ptr<Interface> ,sigc::connection> InterfaceSignalNameConnections;
-
-      InterfaceSignalNameConnections m_interface_signal_name_connections;
-
+      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
   };
 
 }

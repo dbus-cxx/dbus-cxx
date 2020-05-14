@@ -17,6 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/path.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 #include <stddef.h>
 #include <memory>
 #include <string>
@@ -55,8 +56,6 @@ namespace DBus
 
       signal_base(std::shared_ptr<Connection> connection, const std::string& interface, const std::string& name);
 
-      signal_base(const signal_base& other);
-
     public:
       virtual ~signal_base();
 
@@ -88,7 +87,7 @@ namespace DBus
        * This method is needed to be able to create a duplicate of a child
        * capable of parsing their specific template type message.
        */
-      virtual std::shared_ptr<signal_base> clone() = 0;
+//      virtual std::shared_ptr<signal_base> clone() = 0;
 
       /** Returns a DBus XML description of this interface */
       virtual std::string introspect(int space_depth=0) const { return std::string(); }
@@ -98,22 +97,12 @@ namespace DBus
       virtual void set_arg_name(size_t i, const std::string& name) { }
 
     protected:
-
-      std::weak_ptr<Connection> m_connection;
-
-      std::string m_sender;
-
-      Path m_path;
-
-      std::string m_interface;
-
-      std::string m_name;
-
-      std::string m_destination;
-
-      std::string m_match_rule;
-
       bool handle_dbus_outgoing( std::shared_ptr<const Message> );
+
+  private:
+      class priv_data;
+
+      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
   };
 
 }

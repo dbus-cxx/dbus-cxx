@@ -92,8 +92,6 @@ class SignalMatchRule {
     protected:
       signal_proxy_base(const SignalMatchRule& matchRule);
 
-      signal_proxy_base(const signal_proxy_base& other);
-
       virtual ~signal_proxy_base();
 
       bool matches(std::shared_ptr<const SignalMessage> msg);
@@ -102,15 +100,14 @@ class SignalMatchRule {
        * This method is needed to be able to create a duplicate of a child
        * capable of parsing their specific template type message.
        */
-      virtual std::shared_ptr<signal_base> clone() = 0;
+//      virtual std::shared_ptr<signal_base> clone() = 0;
 
       virtual HandlerResult on_dbus_incoming( std::shared_ptr<const SignalMessage> msg ) = 0;
 
-    protected:
+  private:
+      class priv_data;
 
-      std::string m_match_rule;
-
-      sigc::signal<HandlerResult(std::shared_ptr<const SignalMessage>)>::accumulated<MessageHandlerAccumulator> m_signal_dbus_incoming;
+      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
   };
 
 /**
@@ -135,8 +132,8 @@ class signal_proxy
     static std::shared_ptr<signal_proxy> create(const SignalMatchRule& matchRule)
     { return std::shared_ptr<signal_proxy>( new signal_proxy(matchRule) ); }
 
-    virtual std::shared_ptr<signal_base> clone()
-    { return std::shared_ptr<signal_base>( new signal_proxy(*this) ); }
+//    virtual std::shared_ptr<signal_base> clone()
+//    { return std::shared_ptr<signal_base>( new signal_proxy(*this) ); }
 
   protected:
     HandlerResult on_dbus_incoming( std::shared_ptr<const SignalMessage> msg )

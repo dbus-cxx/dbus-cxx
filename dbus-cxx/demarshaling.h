@@ -24,6 +24,8 @@
 #include <dbus-cxx/path.h>
 #include <dbus-cxx/signature.h>
 #include <dbus-cxx/enums.h>
+#include <dbus-cxx/dbus-cxx-config.h>
+#include <memory>
 
 namespace DBus{
 
@@ -42,6 +44,8 @@ public:
      * C array of data, with the given endianess.
      */
     Demarshaling( const uint8_t* data, uint32_t dataLen, Endianess endian );
+
+    ~Demarshaling();
 
     /**
      * Set the data C array to marshal/demarshal.  This also has
@@ -94,10 +98,9 @@ private:
     int64_t demarshalLongLittle();
 
 private:
-    const uint8_t* m_data;
-    uint32_t m_dataLen;
-    uint32_t m_dataPos;
-    Endianess m_endian;
+    class priv_data;
+
+    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
 };
 
 }

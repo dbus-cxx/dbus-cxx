@@ -29,10 +29,26 @@ namespace DBus
   class PendingCall;
   class ReturnMessage;
 
+  class ObjectProxy::priv_data {
+  public:
+      priv_data( std::shared_ptr<Connection> conn, const std::string& destination, const std::string& path ) :
+          m_connection(conn),
+          m_destination(destination),
+          m_path(path)
+      {}
+
+      std::weak_ptr<Connection> m_connection;
+      std::string m_destination;
+      Path m_path;
+      mutable std::shared_mutex m_interfaces_rwlock;
+      std::mutex m_name_mutex;
+      Interfaces m_interfaces;
+      sigc::signal<void(std::shared_ptr<InterfaceProxy>)> m_signal_interface_added;
+      sigc::signal<void(std::shared_ptr<InterfaceProxy>)> m_signal_interface_removed;
+  };
+
   ObjectProxy::ObjectProxy( std::shared_ptr<Connection> conn, const std::string& destination, const std::string& path ):
-      m_connection(conn),
-      m_destination(destination),
-      m_path(path)
+      m_priv( std::make_unique<priv_data>( conn, destination, path ) )
   {
   }
 
@@ -62,13 +78,13 @@ namespace DBus
 
   std::weak_ptr<Connection> ObjectProxy::connection() const
   {
-    return m_connection;
+    return m_priv->m_connection;
   }
 
   void ObjectProxy::set_connection( std::shared_ptr<Connection> conn )
   {
-    m_connection = conn;
-    for ( Interfaces::iterator i = m_interfaces.begin(); i != m_interfaces.end(); i++ )
+    m_priv->m_connection = conn;
+    for ( Interfaces::iterator i = m_priv->m_interfaces.begin(); i != m_priv->m_interfaces.end(); i++ )
     {
       i->second->on_object_set_connection( conn );
     }
@@ -76,23 +92,23 @@ namespace DBus
 
   const std::string& ObjectProxy::destination() const
   {
-    return m_destination;
+    return m_priv->m_destination;
   }
 
   void ObjectProxy::set_destination( const std::string& destination )
   {
-    m_destination = destination;
+    m_priv->m_destination = destination;
   }
 
   const Path& ObjectProxy::path() const
   {
-    return m_path;
+    return m_priv->m_path;
   }
 
   void ObjectProxy::set_path( const std::string& path )
   {
-    m_path = path;
-    for ( Interfaces::iterator i = m_interfaces.begin(); i != m_interfaces.end(); i++ )
+    m_priv->m_path = path;
+    for ( Interfaces::iterator i = m_priv->m_interfaces.begin(); i != m_priv->m_interfaces.end(); i++ )
     {
       i->second->on_object_set_path( path );
     }
@@ -100,7 +116,7 @@ namespace DBus
 
   const ObjectProxy::Interfaces & ObjectProxy::interfaces() const
   {
-    return m_interfaces;
+    return m_priv->m_interfaces;
   }
 
   std::shared_ptr<InterfaceProxy> ObjectProxy::interface( const std::string & name ) const
@@ -108,12 +124,12 @@ namespace DBus
     Interfaces::const_iterator iter;
 
     {
-      std::shared_lock lock( m_interfaces_rwlock );
+      std::shared_lock lock( m_priv->m_interfaces_rwlock );
 
-      iter = m_interfaces.find( name );
+      iter = m_priv->m_interfaces.find( name );
     }
 
-    if ( iter == m_interfaces.end() ) return std::shared_ptr<InterfaceProxy>();
+    if ( iter == m_priv->m_interfaces.end() ) return std::shared_ptr<InterfaceProxy>();
 
     return iter->second;
   }
@@ -124,17 +140,17 @@ namespace DBus
 
     if ( not interface ) return false;
 
-    if ( interface->m_object ) interface->m_object->remove_interface( interface );
+    if ( interface->object() ) interface->object()->remove_interface( interface );
     
     {
-      std::unique_lock lock( m_interfaces_rwlock );
-        m_interfaces.insert(std::make_pair(interface->name(), interface));
+      std::unique_lock lock( m_priv->m_interfaces_rwlock );
+        m_priv->m_interfaces.insert(std::make_pair(interface->name(), interface));
 
-        interface->m_object = this;
+        interface->set_object( this );
 
     }
 
-    m_signal_interface_added.emit( interface );
+    m_priv->m_signal_interface_added.emit( interface );
 
     return result;
   }
@@ -157,18 +173,18 @@ namespace DBus
 
 
     {
-      std::unique_lock lock( m_interfaces_rwlock );
+      std::unique_lock lock( m_priv->m_interfaces_rwlock );
     
-      iter = m_interfaces.find( name );
-      if ( iter != m_interfaces.end() )
+      iter = m_priv->m_interfaces.find( name );
+      if ( iter != m_priv->m_interfaces.end() )
       {
         interface = iter->second;
-        m_interfaces.erase(iter);
+        m_priv->m_interfaces.erase(iter);
       }
 
     }
 
-    if ( interface ) m_signal_interface_removed.emit( interface );
+    if ( interface ) m_priv->m_signal_interface_removed.emit( interface );
   }
 
   void ObjectProxy::remove_interface( std::shared_ptr<InterfaceProxy> interface )
@@ -181,27 +197,27 @@ namespace DBus
     if ( not interface ) return;
 
     {
-      std::unique_lock lock( m_interfaces_rwlock );
+      std::unique_lock lock( m_priv->m_interfaces_rwlock );
 
-      location = m_interfaces.find( interface->name() );
-      if( location != m_interfaces.end() ){
-          m_interfaces.erase( location );
+      location = m_priv->m_interfaces.find( interface->name() );
+      if( location != m_priv->m_interfaces.end() ){
+          m_priv->m_interfaces.erase( location );
           interface_removed = true;
       }
 
     }
 
-    if ( interface_removed ) m_signal_interface_removed.emit( interface );
+    if ( interface_removed ) m_priv->m_signal_interface_removed.emit( interface );
   }
 
   bool ObjectProxy::has_interface( const std::string & name ) const
   {
     Interfaces::const_iterator i;
-    std::shared_lock lock( m_interfaces_rwlock );
+    std::shared_lock lock( m_priv->m_interfaces_rwlock );
 
-    i = m_interfaces.find( name );
+    i = m_priv->m_interfaces.find( name );
 
-    return ( i != m_interfaces.end() );
+    return ( i != m_priv->m_interfaces.end() );
   }
 
   bool ObjectProxy::has_interface( std::shared_ptr<InterfaceProxy> interface ) const
@@ -210,13 +226,13 @@ namespace DBus
     
     Interfaces::const_iterator current, upper;
     bool result = false;
-    std::shared_lock lock( m_interfaces_rwlock );
+    std::shared_lock lock( m_priv->m_interfaces_rwlock );
 
-    current = m_interfaces.lower_bound(interface->name());
+    current = m_priv->m_interfaces.lower_bound(interface->name());
 
-    if ( current != m_interfaces.end() )
+    if ( current != m_priv->m_interfaces.end() )
     {
-      upper = m_interfaces.upper_bound(interface->name());
+      upper = m_priv->m_interfaces.upper_bound(interface->name());
       for ( ; current != upper; current++)
       {
         if ( current->second == interface )
@@ -245,13 +261,13 @@ namespace DBus
   {
     std::shared_ptr<CallMessage> call_message;
     
-    if ( m_destination.empty() )
+    if ( m_priv->m_destination.empty() )
     {
-      call_message = CallMessage::create( m_path, interface_name, method_name );
+      call_message = CallMessage::create( m_priv->m_path, interface_name, method_name );
     }
     else
     {
-      call_message = CallMessage::create( m_destination, m_path, interface_name, method_name );
+      call_message = CallMessage::create( m_priv->m_destination, m_priv->m_path, interface_name, method_name );
     }
 
     return call_message;
@@ -261,13 +277,13 @@ namespace DBus
   {
     std::shared_ptr<CallMessage> call_message;
     
-    if ( m_destination.empty() )
+    if ( m_priv->m_destination.empty() )
     {
-      call_message = CallMessage::create( m_path, method_name );
+      call_message = CallMessage::create( m_priv->m_path, method_name );
     }
     else
     {
-      call_message = CallMessage::create( m_destination, m_path, "", method_name );
+      call_message = CallMessage::create( m_priv->m_destination, m_priv->m_path, "", method_name );
     }
 
     return call_message;
@@ -275,7 +291,7 @@ namespace DBus
 
   std::shared_ptr<const ReturnMessage> ObjectProxy::call( std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds ) const
   {
-      std::shared_ptr<Connection> conn = m_connection.lock();
+      std::shared_ptr<Connection> conn = m_priv->m_connection.lock();
     if ( !conn ) return std::shared_ptr<ReturnMessage>();
 
     return conn->send_with_reply_blocking( call_message, timeout_milliseconds );
@@ -283,7 +299,7 @@ namespace DBus
 
   std::shared_ptr<PendingCall> ObjectProxy::call_async( std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds ) const
   {
-      std::shared_ptr<Connection> conn = m_connection.lock();
+      std::shared_ptr<Connection> conn = m_priv->m_connection.lock();
     if ( !conn ) return std::shared_ptr<PendingCall>();
 
     return conn->send_with_reply_async( call_message, timeout_milliseconds );
@@ -291,12 +307,12 @@ namespace DBus
 
   sigc::signal< void(std::shared_ptr<InterfaceProxy>)> ObjectProxy::signal_interface_added()
   {
-    return m_signal_interface_added;
+    return m_priv->m_signal_interface_added;
   }
 
   sigc::signal< void(std::shared_ptr<InterfaceProxy>)> ObjectProxy::signal_interface_removed()
   {
-    return m_signal_interface_removed;
+    return m_priv->m_signal_interface_removed;
   }
 
 }

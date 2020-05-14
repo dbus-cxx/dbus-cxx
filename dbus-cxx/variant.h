@@ -22,6 +22,7 @@
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/path.h>
 #include <dbus-cxx/signature.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 #include <string>
 #include <any>
 #include <stdint.h>
@@ -56,6 +57,7 @@ class Variant {
     explicit Variant( Path path );
     explicit Variant( std::shared_ptr<FileDescriptor> fd );
     Variant( const Variant& other );
+    ~Variant();
 
     Signature signature() const;
 
@@ -69,14 +71,14 @@ class Variant {
 
     bool operator==( const Variant& other ) const;
 
+    Variant& operator=( const Variant& other );
+
     static Variant createFromMessage( MessageIterator iter );
 
   private:
-    DataType m_currentType;
-    Signature m_signature;
-    std::any m_data;
-    std::vector<uint8_t> m_marshaled;
-    int m_dataAlignment;
+    class priv_data;
+
+    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
 
     friend std::ostream& operator<<( std::ostream& os, const Variant& var );
 };

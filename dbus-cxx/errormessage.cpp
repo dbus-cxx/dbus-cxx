@@ -35,9 +35,9 @@ namespace DBus
   ErrorMessage::ErrorMessage( std::shared_ptr<const CallMessage> to_reply, const std::string& name, const std::string& message )
   {
     if ( to_reply ){
-        m_headerMap[ MessageHeaderFields::Reply_Serial ] = Variant( to_reply->serial() );
+        set_header_field( MessageHeaderFields::Reply_Serial, Variant( to_reply->serial() ) );
     }
-    m_headerMap[ MessageHeaderFields::Error_Name ] = Variant( name );
+    set_header_field( MessageHeaderFields::Error_Name, Variant( name ) );
     append() << message;
   }
 
@@ -67,7 +67,7 @@ namespace DBus
 
   void ErrorMessage::set_name( const std::string& n )
   {
-    m_headerMap[ MessageHeaderFields::Error_Name ] = Variant( n );
+    set_header_field( MessageHeaderFields::Error_Name, Variant( n ) );
   }
 
   MessageType ErrorMessage::type() const {
@@ -95,7 +95,7 @@ namespace DBus
   bool ErrorMessage::set_reply_serial( uint32_t s )
   {
     Variant serialField = Variant( s );
-    m_headerMap[ MessageHeaderFields::Reply_Serial ] = serialField;
+    set_header_field( MessageHeaderFields::Reply_Serial, serialField );
     return false;
   }
 

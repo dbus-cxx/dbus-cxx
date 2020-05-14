@@ -86,7 +86,7 @@ namespace DBus
     std::shared_ptr<ReturnMessage> retmsg = ReturnMessage::create();
     retmsg->set_reply_serial( serial() );
     retmsg->set_destination( sender() );
-    if( m_flags & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED ){
+    if( flags() & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED ){
         retmsg->invalidate();
     }
     return retmsg;
@@ -97,7 +97,7 @@ namespace DBus
     if ( not this->is_valid() ) return std::shared_ptr<ErrorMessage>();
     std::shared_ptr<ErrorMessage> retmsg = ErrorMessage::create();
     retmsg->set_reply_serial( serial() );
-    if( m_flags & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED ){
+    if( flags() & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED ){
         retmsg->invalidate();
     }
     return retmsg;
@@ -105,7 +105,7 @@ namespace DBus
 
   void CallMessage::set_path( const std::string& p )
   {
-    m_headerMap[ MessageHeaderFields::Path ] = Variant( Path( p ) );
+    set_header_field( MessageHeaderFields::Path, Variant( Path( p ) ) );
   }
 
   Path CallMessage::path() const
@@ -120,7 +120,7 @@ namespace DBus
 
   void CallMessage::set_interface( const std::string& i )
   {
-    m_headerMap[ MessageHeaderFields::Interface ] = Variant( i );
+    set_header_field( MessageHeaderFields::Interface, Variant( i ) );
   }
 
   std::string CallMessage::interface() const {
@@ -133,7 +133,7 @@ namespace DBus
 
   void CallMessage::set_member( const std::string& m )
   {
-    m_headerMap[ MessageHeaderFields::Member ] = Variant( m );
+    set_header_field( MessageHeaderFields::Member, Variant( m ) );
   }
 
   std::string CallMessage::member() const
@@ -147,16 +147,18 @@ namespace DBus
 
   void CallMessage::set_no_reply( bool no_reply )
   {
+      uint8_t newflags = flags();
       if( no_reply ){
-        m_flags |= DBUSCXX_MESSAGE_NO_REPLY_EXPECTED;
+        newflags |= DBUSCXX_MESSAGE_NO_REPLY_EXPECTED;
       }else{
-          m_flags &= (~DBUSCXX_MESSAGE_NO_REPLY_EXPECTED);
+          newflags &= (~DBUSCXX_MESSAGE_NO_REPLY_EXPECTED);
       }
+      set_flags( newflags );
   }
 
   bool CallMessage::expects_reply() const
   {
-    return m_flags & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED;
+    return flags() & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED;
   }
 
   MessageType CallMessage::type() const {

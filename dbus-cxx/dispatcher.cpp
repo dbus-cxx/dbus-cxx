@@ -30,11 +30,34 @@
 namespace DBus
 {
 
-  Dispatcher::Dispatcher(bool is_running):
-      m_running(false),
-      m_dispatch_loop_limit(0)
+class Dispatcher::priv_data{
+public:
+    priv_data() :
+        m_running(false),
+        m_dispatch_loop_limit(0){
+
+    }
+
+    std::vector<std::shared_ptr<Connection>> m_connections;
+    volatile bool m_running;
+    std::thread m_dispatch_thread;
+    /* socketpair for telling the thread to process data */
+    int process_fd[ 2 ];
+    /**
+     * This is the maximum number of dispatches that will occur for a
+     * connection in one iteration of the dispatch thread.
+     *
+     * If set to 0, a particular connection will continue to dispatch
+     * as long as its status remains DISPATCH_DATA_REMAINS.
+     */
+    unsigned int m_dispatch_loop_limit;
+
+};
+
+  Dispatcher::Dispatcher(bool is_running)
   {
-    if( socketpair( AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, process_fd ) < 0 ){
+      m_priv = std::make_unique<priv_data>();
+    if( socketpair( AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, m_priv->process_fd ) < 0 ){
         SIMPLELOGGER_ERROR( "DBus.Dispatcher", "error creating socket pair" );
         throw ErrorDispatcherInitFailed();
     }
@@ -72,9 +95,9 @@ namespace DBus
   {
     if ( not connection or not connection->is_valid() ) return false;
     
-    connection->set_dispatching_thread( m_dispatch_thread.get_id() );
+    connection->set_dispatching_thread( m_priv->m_dispatch_thread.get_id() );
     connection->signal_needs_dispatch().connect( sigc::mem_fun(*this, &Dispatcher::wakeup_thread) );
-    m_connections.push_back(connection);
+    m_priv->m_connections.push_back(connection);
     wakeup_thread();
   
     return true;
@@ -82,25 +105,25 @@ namespace DBus
 
   bool Dispatcher::start()
   {
-    if ( m_running ) return false;
+    if ( m_priv->m_running ) return false;
     
-    m_running = true;
+    m_priv->m_running = true;
     
-    m_dispatch_thread = std::thread( &Dispatcher::dispatch_thread_main, this );
+    m_priv->m_dispatch_thread = std::thread( &Dispatcher::dispatch_thread_main, this );
     
     return true;
   }
 
   bool Dispatcher::stop()
   {
-    if ( not m_running ) return false;
+    if ( not m_priv->m_running ) return false;
 
-    m_running = false;
+    m_priv->m_running = false;
     
     wakeup_thread();
 
-    if( m_dispatch_thread.joinable() ){
-      m_dispatch_thread.join();
+    if( m_priv->m_dispatch_thread.joinable() ){
+      m_priv->m_dispatch_thread.join();
     }
     
     return true;
@@ -108,22 +131,22 @@ namespace DBus
 
   bool Dispatcher::is_running()
   {
-    return m_running;
+    return m_priv->m_running;
   }
 
   void Dispatcher::dispatch_thread_main()
   {
     std::vector<int> fds;
 
-    for( std::shared_ptr<Connection> conn : m_connections ){
+    for( std::shared_ptr<Connection> conn : m_priv->m_connections ){
         conn->set_dispatching_thread( std::this_thread::get_id() );
     }
     
-    while ( m_running ) {
+    while ( m_priv->m_running ) {
       fds.clear();
-      fds.push_back( process_fd[ 1 ] );
+      fds.push_back( m_priv->process_fd[ 1 ] );
 
-      for( std::shared_ptr<Connection> conn : m_connections ){
+      for( std::shared_ptr<Connection> conn : m_priv->m_connections ){
           if( !conn->is_registered() ){
               SIMPLELOGGER_ERROR( "dbus.Dispatcher", "going to register bus" );
               conn->bus_register();
@@ -136,9 +159,9 @@ namespace DBus
               DBus::priv::wait_for_fd_activity( fds, -1 );
       std::vector<int> fdsToRead = std::get<2>( fdResponse );
 
-      if( fdsToRead[ 0 ] == process_fd[ 1 ] ){
+      if( fdsToRead[ 0 ] == m_priv->process_fd[ 1 ] ){
           char discard;
-          read( process_fd[ 1 ], &discard, sizeof(char) );
+          read( m_priv->process_fd[ 1 ], &discard, sizeof(char) );
       }
 
       dispatch_connections();
@@ -146,14 +169,14 @@ namespace DBus
   }
 
   void Dispatcher::dispatch_connections(){
-    uint32_t loop_limit = m_dispatch_loop_limit;
+    uint32_t loop_limit = m_priv->m_dispatch_loop_limit;
     if( loop_limit == 0 ){
         loop_limit = UINT32_MAX;
     }
 
     SIMPLELOGGER_DEBUG( "dbus.Dispatcher", "Dispatching connections" );
 
-    for ( std::shared_ptr<Connection> conn : m_connections )
+    for ( std::shared_ptr<Connection> conn : m_priv->m_connections )
     {
         for( uint32_t x = 0; x < loop_limit; x++ ){
             DispatchStatus stat = conn->dispatch();
@@ -172,7 +195,7 @@ namespace DBus
   
   void Dispatcher::wakeup_thread(){
     char to_write = '0';
-    if( write( process_fd[ 0 ], &to_write, sizeof( char ) ) < 0 ){
+    if( write( m_priv->process_fd[ 0 ], &to_write, sizeof( char ) ) < 0 ){
         SIMPLELOGGER_ERROR( "dbus.Dispatcher", "Can't write to socketpair?!" );
     }
   }

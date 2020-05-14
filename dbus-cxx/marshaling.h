@@ -25,6 +25,7 @@
 #include <dbus-cxx/path.h>
 #include <dbus-cxx/signature.h>
 #include <dbus-cxx/enums.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 
 namespace DBus{
 
@@ -42,6 +43,8 @@ public:
 	 * vector of data, with the given endianess.
 	 */
 	Marshaling( std::vector<uint8_t>* data, Endianess endian );
+
+    ~Marshaling();
 
     /**
      * Set the data vector to marshal/demarshal.
@@ -86,8 +89,9 @@ private:
 	void marshalLongLittle( uint64_t toMarshal );
 
 private:
-	std::vector<uint8_t>* m_data;
-    Endianess m_endian;
+    class priv_data;
+
+    std::shared_ptr<priv_data> m_priv;
 };
 
 }

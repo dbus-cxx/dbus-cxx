@@ -79,16 +79,19 @@ SignalMatchRule SignalMatchRule::create(){
     return SignalMatchRule();
 }
 
+class signal_proxy_base::priv_data {
+public:
+    priv_data(){}
+
+    std::string m_match_rule;
+    sigc::signal<HandlerResult(std::shared_ptr<const SignalMessage>)>::accumulated<MessageHandlerAccumulator> m_signal_dbus_incoming;
+};
+
   signal_proxy_base::signal_proxy_base( const SignalMatchRule& matchRule ):
       signal_base( matchRule.getPath(), matchRule.getInterface(), matchRule.getMember() ),
-      m_match_rule( matchRule.getMatchRule() )
+      m_priv( std::make_unique<priv_data>() )
   {
-  }
-
-  signal_proxy_base::signal_proxy_base( const signal_proxy_base& other ):
-      signal_base( other )
-  {
-    // TODO connect to the other's connection
+      m_priv->m_match_rule = matchRule.getMatchRule();
   }
 
   signal_proxy_base::~signal_proxy_base()
@@ -104,22 +107,22 @@ SignalMatchRule SignalMatchRule::create(){
 
   const std::string & signal_proxy_base::match_rule() const
   {
-    return m_match_rule;
+    return m_priv->m_match_rule;
   }
 
   bool signal_proxy_base::matches( std::shared_ptr<const SignalMessage> msg )
   {
     if ( not msg or not msg->is_valid() ) return false;
 
-    if ( not m_interface.empty() && m_interface != msg->interface() ) return false;
+    if ( not interface().empty() && interface() != msg->interface() ) return false;
 
-    if ( not m_name.empty() && m_name != msg->member() ) return false;
+    if ( not name().empty() && name() != msg->member() ) return false;
 
-    if ( not m_sender.empty() and m_sender != msg->sender() ) return false;
+    if ( not sender().empty() and sender() != msg->sender() ) return false;
 
-    if ( not m_destination.empty() and m_destination != msg->destination() ) return false;
+    if ( not destination().empty() and destination() != msg->destination() ) return false;
 
-    if ( not m_path.empty() and m_path != msg->path() ) return false;
+    if ( not path().empty() and path() != msg->path() ) return false;
 
     return true;
   }

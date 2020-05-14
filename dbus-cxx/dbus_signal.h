@@ -66,10 +66,10 @@ public:
     return std::shared_ptr<signal>( new signal(path, interface, member) );
   }
 
-  virtual std::shared_ptr<signal_base> clone()
-  {
-    return std::shared_ptr<signal_base>( new signal(*this) );
-  }
+//  virtual std::shared_ptr<signal_base> clone()
+//  {
+//    return std::shared_ptr<signal_base>( new signal(*this) );
+//  }
 
   /** Returns a DBus XML description of this interface */
   virtual std::string introspect(int space_depth=0) const
@@ -104,14 +104,14 @@ public:
 
   void internal_callback(T_type... args)
   {
-    std::shared_ptr<SignalMessage> __msg = SignalMessage::create(m_path, m_interface, m_name);
+    std::shared_ptr<SignalMessage> __msg = SignalMessage::create(path(), interface(), name());
     DBUSCXX_DEBUG_STDSTR( "dbus.signal", "Sending following signal: " 
         << __msg->path()
         << " "
         << __msg->interface()
         << " "
         << __msg->member() );
-    if ( not m_destination.empty() ) __msg->set_destination(m_destination);
+    if ( not destination().empty() ) __msg->set_destination( destination() );
     (*__msg << ... << args);
     bool result = this->handle_dbus_outgoing(__msg);
     DBUSCXX_DEBUG_STDSTR( "dbus.signal", "signal::internal_callback: result=" << result );

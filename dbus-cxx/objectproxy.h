@@ -18,6 +18,7 @@
  ***************************************************************************/
 #include <dbus-cxx/signal_proxy_base.h>
 #include <dbus-cxx/interfaceproxy.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -181,24 +182,10 @@ namespace DBus
        */
       sigc::signal<void(std::shared_ptr<InterfaceProxy>)> signal_interface_removed();
 
-    protected:
+    private:
+      class priv_data;
 
-      std::weak_ptr<Connection> m_connection;
-
-      std::string m_destination;
-
-      Path m_path;
-      
-      mutable std::shared_mutex m_interfaces_rwlock;
-
-      std::mutex m_name_mutex;
-
-      Interfaces m_interfaces;
-
-      sigc::signal<void(std::shared_ptr<InterfaceProxy>)> m_signal_interface_added;
-
-      sigc::signal<void(std::shared_ptr<InterfaceProxy>)> m_signal_interface_removed;
-
+      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
   };
 
 }

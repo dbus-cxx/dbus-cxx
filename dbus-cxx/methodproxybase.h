@@ -71,15 +71,16 @@ namespace DBus
 
       std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
-    protected:
+  private:
+      void set_interface( InterfaceProxy* proxy );
+
+    private:
+      class priv_data;
+
+      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
 
       // Declare InterfaceProxy as a friend so that it can set the interface
       friend class InterfaceProxy;
-
-      InterfaceProxy* m_interface;
-
-      const std::string m_name;
-
   };
 
 

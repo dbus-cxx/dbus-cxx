@@ -72,51 +72,91 @@ static const char* LOGGER_NAME = "DBus.Connection";
 namespace DBus
 {
 
-struct Connection::ExpectingResponse {
+struct ExpectingResponse {
     std::mutex cv_lock;
     std::condition_variable cv;
     std::shared_ptr<Message> reply;
 };
 
-  Connection::Connection( BusType type ) :
-      m_currentSerial( 1 ),
-      m_dispatchingThread( std::this_thread::get_id() ),
-      m_dispatchStatus( DispatchStatus::COMPLETE )
+struct OutgoingMessage{
+    std::shared_ptr<const Message> msg;
+    uint32_t serial;
+};
+
+struct PathHandlingEntry{
+    std::shared_ptr<ObjectPathHandler> handler;
+    std::thread::id handlingThread;
+};
+
+class Connection::priv_data{
+public:
+    priv_data() :
+        m_currentSerial( 1 ),
+        m_dispatchingThread( std::this_thread::get_id() ),
+        m_dispatchStatus( DispatchStatus::COMPLETE )
+    {}
+
+    std::vector<uint8_t> m_sendBuffer;
+    uint32_t m_currentSerial;
+    std::shared_ptr<priv::Transport> m_transport;
+    std::string m_uniqueName;
+    std::thread::id m_dispatchingThread;
+    std::queue<std::shared_ptr<Message>> m_incomingMessages;
+    std::mutex m_outgoingLock;
+    std::queue<OutgoingMessage> m_outgoingMessages;
+    std::mutex m_expectingResponsesLock;
+    std::map<uint32_t,std::shared_ptr<ExpectingResponse>> m_expectingResponses;
+    DispatchStatus m_dispatchStatus;
+    std::mutex m_pathHandlerLock;
+    std::map<std::string,PathHandlingEntry> m_path_handler;
+    std::map<std::string,std::shared_ptr<ObjectPathHandler>> m_path_handler_fallback;
+    std::mutex m_threadDispatcherLock;
+    std::map<std::thread::id,std::weak_ptr<ThreadDispatcher>> m_threadDispatchers;
+    std::shared_ptr<DBusDaemonProxy> m_daemonProxy;
+    sigc::signal<void()> m_needsDispatching;
+    std::mutex m_proxySignalsLock;
+    std::vector<std::shared_ptr<signal_proxy_base>> m_proxySignals;
+    std::vector<std::shared_ptr<signal_proxy_base>> m_allProxySignals;
+
+
+  FilterSignal m_filter_signal;
+};
+
+  Connection::Connection( BusType type )
   {
+      m_priv = std::make_unique<priv_data>();
 
     if( type == BusType::SESSION ){
         std::string sessionBusAddr = std::string( getenv( "DBUS_SESSION_BUS_ADDRESS" ) );
         SIMPLELOGGER_DEBUG(LOGGER_NAME, "Going to open session bus: " + sessionBusAddr );
-        m_transport = priv::Transport::open_transport( sessionBusAddr );
+        m_priv->m_transport = priv::Transport::open_transport( sessionBusAddr );
     }else if( type == BusType::SYSTEM ){
         std::string systemBusAddr = std::string( getenv( "DBUS_SYSTEM_BUS_ADDRESS" ) );
         if( systemBusAddr.empty() ){
             systemBusAddr = "unix:path=/var/run/dbus/system_bus_socket";
         }
-        m_transport = priv::Transport::open_transport( systemBusAddr );
+        m_priv->m_transport = priv::Transport::open_transport( systemBusAddr );
     }else if( type == BusType::STARTER ){
          std::string starterBusAddr = std::string( getenv( "DBUS_STARTER_ADDRESS" ) );
          if( starterBusAddr.empty() ){
              SIMPLELOGGER_ERROR("dbus.Connection", "Attempting to connect "
                   "to DBUS_STARTER_ADDRESS, but environment variable not defined or empty" );
          }
-         m_transport = priv::Transport::open_transport( starterBusAddr );
+         m_priv->m_transport = priv::Transport::open_transport( starterBusAddr );
     }
 
-    if( !m_transport || !m_transport->is_valid() ){
+    if( !m_priv->m_transport || !m_priv->m_transport->is_valid() ){
         SIMPLELOGGER_ERROR("dbus.Connection", "Unable to open transport" );
         return;
     }
   }
 
-  Connection::Connection( std::string address ) :
-      m_currentSerial( 1 ),
-      m_dispatchingThread( std::this_thread::get_id() ),
-      m_dispatchStatus( DispatchStatus::COMPLETE )
+  Connection::Connection( std::string address )
   {
-      m_transport = priv::Transport::open_transport( address );
+      m_priv = std::make_unique<priv_data>();
+      m_priv->m_transport = priv::Transport::open_transport( address );
 
-     if( !m_transport || !m_transport->is_valid() ){
+     if( !m_priv->m_transport || !m_priv->m_transport->is_valid() ){
          SIMPLELOGGER_ERROR(LOGGER_NAME, "Unable to open transport" );
          return;
      }
@@ -148,12 +188,12 @@ struct Connection::ExpectingResponse {
 
   bool Connection::is_valid() const
   {
-    return m_transport.operator bool() && m_transport->is_valid();
+    return m_priv->m_transport.operator bool() && m_priv->m_transport->is_valid();
   }
 
   bool Connection::bus_register()
   {
-      if( !m_transport || !m_transport->is_valid() ){
+      if( !m_priv->m_transport || !m_priv->m_transport->is_valid() ){
           return false;
       }
 
@@ -161,22 +201,22 @@ struct Connection::ExpectingResponse {
           return true;
       }
 
-      m_daemonProxy = DBus::DBusDaemonProxy::create( shared_from_this() );
+      m_priv->m_daemonProxy = DBus::DBusDaemonProxy::create( shared_from_this() );
 
-      m_uniqueName = m_daemonProxy->Hello();
+      m_priv->m_uniqueName = m_priv->m_daemonProxy->Hello();
 
       return true;
   }
 
   bool Connection::is_registered() const
   {
-    return !m_uniqueName.empty();
+    return !m_priv->m_uniqueName.empty();
   }
 
   std::string Connection::unique_name() const
   {
     if ( not this->is_valid() ) return std::string("");
-    return m_uniqueName;
+    return m_priv->m_uniqueName;
   }
 
   RequestNameResponse Connection::request_name( const std::string& name, unsigned int flags )
@@ -185,7 +225,7 @@ struct Connection::ExpectingResponse {
         throw ErrorDisconnected();
       }
 
-      uint32_t retval = m_daemonProxy->RequestName( name, flags );
+      uint32_t retval = m_priv->m_daemonProxy->RequestName( name, flags );
       switch( retval ){
       case DBUSCXX_REQUEST_NAME_REPLY_PRIMARY_OWNER:
           return RequestNameResponse::PrimaryOwner;
@@ -206,7 +246,7 @@ struct Connection::ExpectingResponse {
 
   ReleaseNameResponse Connection::release_name( const std::string& name )
   {
-    uint32_t retval = m_daemonProxy->ReleaseName( name );
+    uint32_t retval = m_priv->m_daemonProxy->ReleaseName( name );
     switch( retval ){
     case DBUSCXX_RELEASE_NAME_REPLY_RELEASED:
         return ReleaseNameResponse::NameReleased;
@@ -223,12 +263,12 @@ struct Connection::ExpectingResponse {
 
   bool Connection::name_has_owner( const std::string& name ) const
   {
-    return m_daemonProxy->NameHasOwner( name );
+    return m_priv->m_daemonProxy->NameHasOwner( name );
   }
 
   StartReply Connection::start_service( const std::string& name, uint32_t flags ) const
   {
-      uint32_t retval = m_daemonProxy->StartServiceByName( name, flags );
+      uint32_t retval = m_priv->m_daemonProxy->StartServiceByName( name, flags );
 
       switch( retval ){
       case DBUSCXX_START_REPLY_SUCCESS:
@@ -250,7 +290,7 @@ struct Connection::ExpectingResponse {
 
       SIMPLELOGGER_DEBUG(LOGGER_NAME, "Adding the following match: " << rule );
 
-      m_daemonProxy->AddMatch( rule );
+      m_priv->m_daemonProxy->AddMatch( rule );
 
     return true;
   }
@@ -306,14 +346,14 @@ struct Connection::ExpectingResponse {
   {
     if ( not this->is_valid() ) throw ErrorDisconnected();
     if ( !msg ) return 0;
-    if( m_currentSerial == 0 ) m_currentSerial = 1;
+    if( m_priv->m_currentSerial == 0 ) m_priv->m_currentSerial = 1;
 
     OutgoingMessage outgoing;
     {
-        std::unique_lock<std::mutex> lock( m_outgoingLock );
+        std::unique_lock<std::mutex> lock( m_priv->m_outgoingLock );
         outgoing.msg = msg;
-        outgoing.serial = m_currentSerial++;
-        m_outgoingMessages.push( outgoing );
+        outgoing.serial = m_priv->m_currentSerial++;
+        m_priv->m_outgoingMessages.push( outgoing );
     }
 
     notify_dispatcher_or_dispatch();
@@ -352,7 +392,7 @@ struct Connection::ExpectingResponse {
         msToWait = 20000;
     }
 
-    if( m_dispatchingThread == std::this_thread::get_id() ){
+    if( m_priv->m_dispatchingThread == std::this_thread::get_id() ){
         uint32_t replySerialExpceted;
         bool gotReply = false;
 
@@ -361,7 +401,7 @@ struct Connection::ExpectingResponse {
          * Don't queue up this message, just send it.
          */
         {
-            std::unique_lock<std::mutex> lock( m_outgoingLock );
+            std::unique_lock<std::mutex> lock( m_priv->m_outgoingLock );
             replySerialExpceted = write_single_message( message );
         }
 
@@ -369,7 +409,7 @@ struct Connection::ExpectingResponse {
          * Read messages until we find the one with the serial that we are expecting
          */
         std::vector<int> fds;
-        fds.push_back( m_transport->fd() );
+        fds.push_back( m_priv->m_transport->fd() );
 
         do {
             std::tuple<bool,int,std::vector<int>,std::chrono::milliseconds> fdResponse =
@@ -381,14 +421,14 @@ struct Connection::ExpectingResponse {
                 throw ErrorNoReply( "Did not receive a response in the alotted time" );
             }
 
-            if( !m_transport->is_valid() ){
+            if( !m_priv->m_transport->is_valid() ){
                 throw ErrorDisconnected();
             }
 
-            std::shared_ptr<Message> incoming = m_transport->readMessage();
+            std::shared_ptr<Message> incoming = m_priv->m_transport->readMessage();
             if( incoming ){
                 if( incoming->serial() != replySerialExpceted ){
-                    m_incomingMessages.push( incoming );
+                    m_priv->m_incomingMessages.push( incoming );
                     continue;
                 }
 
@@ -414,15 +454,15 @@ struct Connection::ExpectingResponse {
 
         {
             OutgoingMessage outgoing;
-            std::scoped_lock<std::mutex,std::mutex> lock( m_outgoingLock, m_expectingResponsesLock );
+            std::scoped_lock<std::mutex,std::mutex> lock( m_priv->m_outgoingLock, m_priv->m_expectingResponsesLock );
             outgoing.msg = message;
-            outgoing.serial = m_currentSerial++;
-            m_outgoingMessages.push( outgoing );
+            outgoing.serial = m_priv->m_currentSerial++;
+            m_priv->m_outgoingMessages.push( outgoing );
             serial = outgoing.serial;
 
             // Add this to our expecting responses
             ex = std::make_shared<ExpectingResponse>();
-            m_expectingResponses[ serial ] = ex;
+            m_priv->m_expectingResponses[ serial ] = ex;
         }
 
         notify_dispatcher_or_dispatch();
@@ -440,12 +480,12 @@ struct Connection::ExpectingResponse {
                 /*
                  * Now remove our expecting response to free up memory
                  */
-                std::unique_lock<std::mutex> lock( m_expectingResponsesLock );
+                std::unique_lock<std::mutex> lock( m_priv->m_expectingResponsesLock );
                 std::map<uint32_t,std::shared_ptr<ExpectingResponse>>::iterator it =
-                        m_expectingResponses.find( serial );
+                        m_priv->m_expectingResponses.find( serial );
                 resp = (*it).second;
 
-                m_expectingResponses.erase( it );
+                m_priv->m_expectingResponses.erase( it );
             }
 
             if( !resp ){
@@ -476,35 +516,35 @@ struct Connection::ExpectingResponse {
   {
     if ( not this->is_valid() ) return;
     {
-        std::unique_lock lock( m_outgoingLock );
-        while( !m_outgoingMessages.empty() ){
-            OutgoingMessage outgoing = m_outgoingMessages.front();
-            m_outgoingMessages.pop();
+        std::unique_lock lock( m_priv->m_outgoingLock );
+        while( !m_priv->m_outgoingMessages.empty() ){
+            OutgoingMessage outgoing = m_priv->m_outgoingMessages.front();
+            m_priv->m_outgoingMessages.pop();
 
-            m_transport->writeMessage( outgoing.msg, outgoing.serial );
+            m_priv->m_transport->writeMessage( outgoing.msg, outgoing.serial );
         }
     }
   }
 
   uint32_t Connection::write_single_message( std::shared_ptr<const Message> msg ){
-      uint32_t retval = m_currentSerial;
-      m_transport->writeMessage( msg, m_currentSerial++ );
+      uint32_t retval = m_priv->m_currentSerial;
+      m_priv->m_transport->writeMessage( msg, m_priv->m_currentSerial++ );
       return retval;
   }
 
   DispatchStatus Connection::dispatch_status( ) const
   {
     if ( not this->is_valid() ) return DispatchStatus::COMPLETE;
-    return m_dispatchStatus;
+    return m_priv->m_dispatchStatus;
   }
 
   DispatchStatus Connection::dispatch( )
   {
-      if( std::this_thread::get_id() != m_dispatchingThread ){
+      if( std::this_thread::get_id() != m_priv->m_dispatchingThread ){
           throw ErrorIncorrectDispatchThread( "Calling Connection::dispatch from non-dispatching thread" );
       }
     if ( not this->is_valid() ){
-        m_dispatchStatus = DispatchStatus::COMPLETE;
+        m_priv->m_dispatchStatus = DispatchStatus::COMPLETE;
         return DispatchStatus::COMPLETE;
     }
 
@@ -514,32 +554,32 @@ struct Connection::ExpectingResponse {
     // Try to read a message
     {
         SIMPLELOGGER_DEBUG("DBus.Connection", "Try to read a message" );
-        std::shared_ptr<Message> incoming = m_transport->readMessage();
+        std::shared_ptr<Message> incoming = m_priv->m_transport->readMessage();
         if( incoming ){
-            m_incomingMessages.push( incoming );
+            m_priv->m_incomingMessages.push( incoming );
         }
     }
 
     // Process any messages that we need to
     process_single_message();
 
-    if( m_outgoingMessages.empty() &&
-            m_incomingMessages.empty() ){
-        m_dispatchStatus = DispatchStatus::COMPLETE;
+    if( m_priv->m_outgoingMessages.empty() &&
+            m_priv->m_incomingMessages.empty() ){
+        m_priv->m_dispatchStatus = DispatchStatus::COMPLETE;
     }else{
-        m_dispatchStatus = DispatchStatus::DATA_REMAINS;
+        m_priv->m_dispatchStatus = DispatchStatus::DATA_REMAINS;
     }
 
-    return m_dispatchStatus;
+    return m_priv->m_dispatchStatus;
   }
 
   void Connection::process_single_message(){
       std::shared_ptr<Message> msgToProcess;
 
-      if( m_incomingMessages.empty() ) return;
+      if( m_priv->m_incomingMessages.empty() ) return;
 
-      msgToProcess = m_incomingMessages.front();
-      m_incomingMessages.pop();
+      msgToProcess = m_priv->m_incomingMessages.front();
+      m_priv->m_incomingMessages.pop();
 
       if( msgToProcess->type() == MessageType::RETURN ||
               msgToProcess->type() == MessageType::ERROR ){
@@ -551,11 +591,11 @@ struct Connection::ExpectingResponse {
               reply_serial = std::static_pointer_cast<ErrorMessage>( msgToProcess )->reply_serial();
           }
 
-          if( m_expectingResponses.find( reply_serial ) != m_expectingResponses.end() ) {
+          if( m_priv->m_expectingResponses.find( reply_serial ) != m_priv->m_expectingResponses.end() ) {
               // This is a response to something that a different thread is waiting for.
               // Update the data and notify the thread!
-              m_expectingResponses[ reply_serial ]->reply = msgToProcess;
-              m_expectingResponses[ reply_serial ]->cv.notify_one();
+              m_priv->m_expectingResponses[ reply_serial ]->reply = msgToProcess;
+              m_priv->m_expectingResponses[ reply_serial ]->cv.notify_one();
               return;
           }
       }
@@ -580,10 +620,10 @@ struct Connection::ExpectingResponse {
       bool error = false;
 
       {
-          std::unique_lock<std::mutex> lock( m_pathHandlerLock );
+          std::unique_lock<std::mutex> lock( m_priv->m_pathHandlerLock );
           std::map<std::string,PathHandlingEntry>::iterator it;
-          it = m_path_handler.find( path );
-          if( it != m_path_handler.end() ){
+          it = m_priv->m_path_handler.find( path );
+          if( it != m_priv->m_path_handler.end() ){
               entry = it->second;
           }else{
               error = true;
@@ -597,13 +637,13 @@ struct Connection::ExpectingResponse {
           return;
       }
 
-      if( entry.handlingThread == m_dispatchingThread ){
+      if( entry.handlingThread == m_priv->m_dispatchingThread ){
           // We are in the dispatching thread here, so we can simply call the handle method
           HandlerResult res = entry.handler->handle_message( callmsg );
           send_error_on_handler_result( callmsg, res );
       }else{
           // A different thread needs to handle this.
-          std::shared_ptr<ThreadDispatcher> disp = m_threadDispatchers[ entry.handlingThread ].lock();
+          std::shared_ptr<ThreadDispatcher> disp = m_priv->m_threadDispatchers[ entry.handlingThread ].lock();
 
           if( !disp ){
               // Remove all invalid thread dispatchers, return an error
@@ -624,16 +664,16 @@ struct Connection::ExpectingResponse {
   void Connection::process_signal_message( std::shared_ptr<const SignalMessage> msg ){
       {
           // See if any of our handlers can handle this
-          std::unique_lock<std::mutex> lock( m_proxySignalsLock );
-          for( std::shared_ptr<signal_proxy_base> handler : m_proxySignals ){
+          std::unique_lock<std::mutex> lock( m_priv->m_proxySignalsLock );
+          for( std::shared_ptr<signal_proxy_base> handler : m_priv->m_proxySignals ){
             handler->handle_signal( msg );
           }
       }
 
       // Give this signal to all of our ThreadDispatchers as well
       {
-          std::unique_lock<std::mutex> lock( m_threadDispatcherLock );
-          for( auto const& x : m_threadDispatchers ){
+          std::unique_lock<std::mutex> lock( m_priv->m_threadDispatcherLock );
+          for( auto const& x : m_priv->m_threadDispatchers ){
               std::shared_ptr<ThreadDispatcher> disp = x.second.lock();
               if( disp ){
                   disp->add_signal( msg );
@@ -682,29 +722,29 @@ struct Connection::ExpectingResponse {
   int Connection::unix_fd() const
   {
     if ( not this->is_valid() ) return -1;
-    return m_transport->fd();
+    return m_priv->m_transport->fd();
   }
 
   int Connection::socket() const
   {
       if ( not this->is_valid() ) return -1;
-      return m_transport->fd();
+      return m_priv->m_transport->fd();
   }
 
   bool Connection::has_messages_to_send()
   {
     if ( not this->is_valid() ) return false;
-    return !m_outgoingMessages.empty();
+    return !m_priv->m_outgoingMessages.empty();
   }
 
   sigc::signal< void() > & Connection::signal_needs_dispatch()
   {
-    return m_needsDispatching;
+    return m_priv->m_needsDispatching;
   }
 
   FilterSignal& Connection::signal_filter()
   {
-    return m_filter_signal;
+    return m_priv->m_filter_signal;
   }
 
   void Connection::set_global_change_sigpipe(bool will_modify_sigpipe)
@@ -728,19 +768,19 @@ struct Connection::ExpectingResponse {
 
     SIMPLELOGGER_DEBUG("dbus.Connection", "Connection::register_object at path " << object->path() );
 
-    std::unique_lock<std::mutex> lock( m_pathHandlerLock );
-    if( m_path_handler.find( object->path() ) != m_path_handler.end() ){
+    std::unique_lock<std::mutex> lock( m_priv->m_pathHandlerLock );
+    if( m_priv->m_path_handler.find( object->path() ) != m_priv->m_path_handler.end() ){
         return RegistrationStatus::Failed_Path_in_Use;
     }
 
     PathHandlingEntry entry;
     entry.handler = object;
     if( calling == ThreadForCalling::DispatcherThread ){
-        entry.handlingThread = m_dispatchingThread;
+        entry.handlingThread = m_priv->m_dispatchingThread;
     }else{
         entry.handlingThread = std::this_thread::get_id();
     }
-    m_path_handler[ object->path() ] = entry;
+    m_priv->m_path_handler[ object->path() ] = entry;
 
     object->set_connection( shared_from_this() );
 
@@ -761,11 +801,11 @@ struct Connection::ExpectingResponse {
 
   bool Connection::unregister_object(const std::string & path)
   {
-    std::unique_lock<std::mutex> lock( m_pathHandlerLock );
+    std::unique_lock<std::mutex> lock( m_priv->m_pathHandlerLock );
     std::map<std::string,PathHandlingEntry>::iterator it;
-    it = m_path_handler.find( path );
-    if( it != m_path_handler.end() ){
-        m_path_handler.erase( it );
+    it = m_priv->m_path_handler.find( path );
+    if( it != m_priv->m_path_handler.end() ){
+        m_priv->m_path_handler.erase( it );
         return true;
     }
 
@@ -780,22 +820,22 @@ struct Connection::ExpectingResponse {
 
     if ( signal->connection() ) signal->connection()->remove_signal_proxy(signal);
 
-    m_allProxySignals.push_back( signal );
+    m_priv->m_allProxySignals.push_back( signal );
 
     if( calling == ThreadForCalling::DispatcherThread ||
             (calling == ThreadForCalling::CurrentThread &&
-              std::this_thread::get_id() == m_dispatchingThread) ){
+              std::this_thread::get_id() == m_priv->m_dispatchingThread) ){
         // We can call this from the dispatch thread, or we want it to be called from
         // the current thread(which happens to be the dispatch thread)
-        std::unique_lock<std::mutex> lock( m_proxySignalsLock );
-        m_proxySignals.push_back( signal );
+        std::unique_lock<std::mutex> lock( m_priv->m_proxySignalsLock );
+        m_priv->m_proxySignals.push_back( signal );
     }else{
         // We need to give this signal to the appropriate ThreadDispatcher to handle
-        std::unique_lock<std::mutex> lock( m_threadDispatcherLock );
+        std::unique_lock<std::mutex> lock( m_priv->m_threadDispatcherLock );
         std::map<std::thread::id,std::weak_ptr<ThreadDispatcher>>::iterator iter =
-                m_threadDispatchers.find( std::this_thread::get_id() );
+                m_priv->m_threadDispatchers.find( std::this_thread::get_id() );
 
-        if( iter == m_threadDispatchers.end() ){
+        if( iter == m_priv->m_threadDispatchers.end() ){
             SIMPLELOGGER_ERROR( LOGGER_NAME, "Unable to find a thread dispatcher on current thread, not adding signal proxy" );
             return std::shared_ptr<signal_proxy_base>();
         }
@@ -826,23 +866,23 @@ struct Connection::ExpectingResponse {
     bool removed = false;
 
     {
-        std::unique_lock<std::mutex> lock( m_proxySignalsLock );
+        std::unique_lock<std::mutex> lock( m_priv->m_proxySignalsLock );
         std::vector<std::shared_ptr<signal_proxy_base>>::iterator it =
-                std::find( m_proxySignals.begin(), m_proxySignals.end(), signal );
-        if( it != m_proxySignals.end() ){
-            m_proxySignals.erase( it );
+                std::find( m_priv->m_proxySignals.begin(), m_priv->m_proxySignals.end(), signal );
+        if( it != m_priv->m_proxySignals.end() ){
+            m_priv->m_proxySignals.erase( it );
             removed = true;
         }
 
-        it = std::find( m_allProxySignals.begin(), m_allProxySignals.end(), signal );
-        if( it != m_allProxySignals.end() ){
-            m_allProxySignals.erase( it );
+        it = std::find( m_priv->m_allProxySignals.begin(), m_priv->m_allProxySignals.end(), signal );
+        if( it != m_priv->m_allProxySignals.end() ){
+            m_priv->m_allProxySignals.erase( it );
         }
     }
 
     {
-        std::unique_lock<std::mutex> lock( m_threadDispatcherLock );
-        for( auto const& x : m_threadDispatchers ){
+        std::unique_lock<std::mutex> lock( m_priv->m_threadDispatcherLock );
+        for( auto const& x : m_priv->m_threadDispatchers ){
             std::shared_ptr<ThreadDispatcher> disp = x.second.lock();
             if( disp && disp->remove_signal_proxy( signal ) ){
                 removed = true;
@@ -892,14 +932,14 @@ struct Connection::ExpectingResponse {
 
   const std::vector<std::shared_ptr<signal_proxy_base>>& Connection::get_signal_proxies()
   {
-    return m_proxySignals;
+    return m_priv->m_proxySignals;
   }
 
   std::vector<std::shared_ptr<signal_proxy_base>> Connection::get_signal_proxies(const std::string & interface)
   {
     std::vector<std::shared_ptr<signal_proxy_base>> ret;
 
-    for( std::shared_ptr<signal_proxy_base> base : m_allProxySignals ){
+    for( std::shared_ptr<signal_proxy_base> base : m_priv->m_allProxySignals ){
         if( base->interface().compare( interface ) == 0 ){
             ret.push_back( base );
         }
@@ -912,7 +952,7 @@ struct Connection::ExpectingResponse {
   {
     std::vector<std::shared_ptr<signal_proxy_base>> ret;
 
-    for( std::shared_ptr<signal_proxy_base> base : m_allProxySignals ){
+    for( std::shared_ptr<signal_proxy_base> base : m_priv->m_allProxySignals ){
         if( base->interface().compare( interface ) == 0 &&
             base->name().compare( member ) == 0 ){
             ret.push_back( base );
@@ -989,34 +1029,34 @@ struct Connection::ExpectingResponse {
   }
 
   void Connection::set_dispatching_thread( std::thread::id tid ){
-      m_dispatchingThread = tid;
+      m_priv->m_dispatchingThread = tid;
   }
 
   void Connection::notify_dispatcher_or_dispatch(){
-      m_dispatchStatus = DispatchStatus::DATA_REMAINS;
+      m_priv->m_dispatchStatus = DispatchStatus::DATA_REMAINS;
 
-      if( std::this_thread::get_id() == m_dispatchingThread ){
+      if( std::this_thread::get_id() == m_priv->m_dispatchingThread ){
           dispatch();
       }else{
-          m_needsDispatching();
+          m_priv->m_needsDispatching();
       }
   }
 
   void Connection::add_thread_dispatcher( std::weak_ptr<ThreadDispatcher> disp ){
-    std::unique_lock<std::mutex> lock( m_threadDispatcherLock );
-    m_threadDispatchers[ std::this_thread::get_id() ] = disp;
+    std::unique_lock<std::mutex> lock( m_priv->m_threadDispatcherLock );
+    m_priv->m_threadDispatchers[ std::this_thread::get_id() ] = disp;
   }
 
   void Connection::remove_invalid_threaddispatchers_and_associated_objects(){
       std::vector<std::thread::id> invalidThreadIds;
 
       {
-          std::unique_lock<std::mutex> lock( m_threadDispatcherLock );
-          for( auto it = m_threadDispatchers.begin();
-               it != m_threadDispatchers.end(); ){
+          std::unique_lock<std::mutex> lock( m_priv->m_threadDispatcherLock );
+          for( auto it = m_priv->m_threadDispatchers.begin();
+               it != m_priv->m_threadDispatchers.end(); ){
               if( it->second.expired() ){
                   invalidThreadIds.push_back( it->first );
-                  it = m_threadDispatchers.erase( it );
+                  it = m_priv->m_threadDispatchers.erase( it );
               }else{
                   it++;
               }
@@ -1026,10 +1066,10 @@ struct Connection::ExpectingResponse {
       if( invalidThreadIds.empty() ) return;
 
       {
-          std::unique_lock<std::mutex> lock( m_pathHandlerLock );
-          for( auto it = m_path_handler.begin(); it != m_path_handler.end(); ){
+          std::unique_lock<std::mutex> lock( m_priv->m_pathHandlerLock );
+          for( auto it = m_priv->m_path_handler.begin(); it != m_priv->m_path_handler.end(); ){
               if( std::find( invalidThreadIds.begin(), invalidThreadIds.end(), it->second.handlingThread ) != invalidThreadIds.end() ){
-                  it = m_path_handler.erase( it );
+                  it = m_priv->m_path_handler.erase( it );
               }else{
                   it++;
               }

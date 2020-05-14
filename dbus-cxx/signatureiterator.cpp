@@ -26,32 +26,49 @@
 namespace DBus
 {
 
+  class SignatureIterator::priv_data{
+  public:
+      priv_data() :
+          m_valid( false )
+      {}
+
+      priv_data( std::shared_ptr<priv::SignatureNode> startnode ) :
+          m_valid( startnode != nullptr ),
+          m_current( startnode ),
+          m_first( startnode )
+      {}
+
+      bool m_valid;
+      std::shared_ptr<priv::SignatureNode> m_current;
+      std::shared_ptr<priv::SignatureNode> m_first;
+  };
+
   SignatureIterator::SignatureIterator():
-      m_valid(false)
+      m_priv( std::make_unique<priv_data>() )
   {
   }
 
   SignatureIterator::SignatureIterator( const SignatureIterator& other ) :
-      m_valid( other.m_valid ),
-      m_current( other.m_current ),
-      m_first( other.m_first )
-  {}
+      m_priv( std::make_unique<priv_data>() )
+  {
+      *m_priv = *other.m_priv;
+  }
 
   SignatureIterator::SignatureIterator( std::shared_ptr<priv::SignatureNode> startnode ) :
-    m_valid( startnode != nullptr ),
-    m_current( startnode ),
-    m_first( startnode ) {
-
+      m_priv( std::make_unique<priv_data>( startnode ) )
+  {
   }
+
+  SignatureIterator::~SignatureIterator(){}
 
   void SignatureIterator::invalidate()
   {
-    m_valid = false;
+    m_priv->m_valid = false;
   }
 
   bool SignatureIterator::is_valid() const
   {
-    return ( m_valid and this->type() != DataType::INVALID );
+    return ( m_priv->m_valid and this->type() != DataType::INVALID );
   }
 
   SignatureIterator::operator bool() const
@@ -63,13 +80,13 @@ namespace DBus
   {
     if ( not this->is_valid() ) return false;
 
-    if( m_current->m_next == nullptr ){
-        m_current = nullptr;
-        m_valid = false;
+    if( m_priv->m_current->m_next == nullptr ){
+        m_priv->m_current = nullptr;
+        m_priv->m_valid = false;
         return false;
     }
 
-    m_current = m_current->m_next;
+    m_priv->m_current = m_priv->m_current->m_next;
 
     return true;
   }
@@ -90,20 +107,20 @@ namespace DBus
 
   bool SignatureIterator::operator==( const SignatureIterator& other )
   {
-    return m_current == other.m_current;
+    return m_priv->m_current == other.m_priv->m_current;
   }
 
   DataType SignatureIterator::type() const
   {
-    if ( not m_valid ) return DataType::INVALID;
+    if ( not m_priv->m_valid ) return DataType::INVALID;
     
-    return m_current->m_dataType;
+    return m_priv->m_current->m_dataType;
   }
 
   DataType SignatureIterator::element_type() const
   {
     if ( this->type() != DataType::ARRAY ) return DataType::INVALID;
-    SignatureIterator subit( m_current->m_sub );
+    SignatureIterator subit( m_priv->m_current->m_sub );
     return subit.type();
   }
 
@@ -141,7 +158,7 @@ namespace DBus
 
     if ( not this->is_container() ) return SignatureIterator();
 
-    SignatureIterator subiter = SignatureIterator( m_current->m_sub );
+    SignatureIterator subiter = SignatureIterator( m_priv->m_current->m_sub );
     
     return subiter;
   }
@@ -151,15 +168,15 @@ namespace DBus
     std::shared_ptr<priv::SignatureNode> tmpCurrent;
     std::string signature;
 
-    if( m_first == nullptr ){
+    if( m_priv->m_first == nullptr ){
         return "";
     }
 
-    TypeInfo ti( m_first->m_dataType );
+    TypeInfo ti( m_priv->m_first->m_dataType );
     signature += ti.to_dbus_char();
-    signature += iterate_over_subsig( m_first->m_sub );
+    signature += iterate_over_subsig( m_priv->m_first->m_sub );
 
-    for( tmpCurrent = m_first->m_next;
+    for( tmpCurrent = m_priv->m_first->m_next;
          tmpCurrent != nullptr;
          tmpCurrent = tmpCurrent->m_next ){
         TypeInfo ti( tmpCurrent->m_dataType );
@@ -190,16 +207,16 @@ namespace DBus
 
 SignatureIterator& SignatureIterator::operator=( const SignatureIterator& other ){
     if( this != &other ){
-        m_valid = other.m_valid;
-        m_current = other.m_current;
-        m_first = other.m_first;
+        m_priv->m_valid = other.m_priv->m_valid;
+        m_priv->m_current = other.m_priv->m_current;
+        m_priv->m_first = other.m_priv->m_first;
     }
 
     return *this;
 }
 
 bool SignatureIterator::has_next() const {
-    return m_current->m_next != nullptr;
+    return m_priv->m_current->m_next != nullptr;
 }
 
 }

@@ -30,158 +30,234 @@ namespace DBus { class FileDescriptor; }
 
 using DBus::Variant;
 
+class Variant::priv_data {
+public:
+    priv_data() :
+        m_currentType( DataType::INVALID )
+    {}
+
+    priv_data( uint8_t byte ) :
+        m_currentType( DataType::BYTE ),
+        m_signature( DBus::signature( byte ) ),
+        m_data( byte ),
+        m_dataAlignment( 1 )
+    {
+        Marshaling marshal( &m_marshaled, Endianess::Big );
+        marshal.marshal( byte );
+    }
+
+    priv_data( bool b ) :
+        m_currentType( DataType::BOOLEAN ),
+        m_signature( DBus::signature( b ) ),
+        m_data( b ),
+        m_dataAlignment( 4 )
+    {
+        Marshaling marshal( &m_marshaled, Endianess::Big );
+        marshal.marshal( b );
+    }
+
+    priv_data( int16_t i ) :
+        m_currentType( DataType::INT16 ),
+        m_signature( DBus::signature( i ) ),
+        m_data( i ),
+        m_dataAlignment( 2 )
+    {
+        Marshaling marshal( &m_marshaled, Endianess::Big );
+        marshal.marshal( i );
+    }
+
+    priv_data( uint16_t i ) :
+        m_currentType( DataType::UINT16 ),
+        m_signature( DBus::signature( i ) ),
+        m_data( i ),
+        m_dataAlignment( 2 )
+    {
+        Marshaling marshal( &m_marshaled, Endianess::Big );
+        marshal.marshal( i );
+    }
+
+    priv_data( int32_t i ) :
+        m_currentType( DataType::INT32 ),
+        m_signature( DBus::signature( i ) ),
+        m_data( i ),
+        m_dataAlignment( 4 )
+    {
+        Marshaling marshal( &m_marshaled, Endianess::Big );
+        marshal.marshal( i );
+    }
+
+    priv_data( uint32_t i ) :
+        m_currentType( DataType::UINT32 ),
+        m_signature( DBus::signature( i ) ),
+        m_data( i ),
+        m_dataAlignment( 4 )
+    {
+        Marshaling marshal( &m_marshaled, Endianess::Big );
+        marshal.marshal( i );
+    }
+
+    priv_data( int64_t i ) :
+        m_currentType( DataType::INT64 ),
+        m_signature( DBus::signature( i ) ),
+        m_data( i ),
+        m_dataAlignment( 8 )
+    {
+        Marshaling marshal( &m_marshaled, Endianess::Big );
+        marshal.marshal( i );
+    }
+
+   priv_data( uint64_t i ) :
+        m_currentType( DataType::UINT64 ),
+        m_signature( DBus::signature( i ) ),
+        m_data( i ),
+        m_dataAlignment( 8 )
+    {
+        Marshaling marshal( &m_marshaled, Endianess::Big );
+        marshal.marshal( i );
+    }
+
+    priv_data( double i ) :
+        m_currentType( DataType::DOUBLE ),
+        m_signature( DBus::signature( i ) ),
+        m_data( i ),
+        m_dataAlignment( 8 )
+    {
+        Marshaling marshal( &m_marshaled, Endianess::Big );
+        marshal.marshal( i );
+    }
+
+    priv_data( const char* cstr ) :
+        priv_data( std::string( cstr ) ){}
+
+    priv_data( std::string str ) :
+        m_currentType( DataType::STRING ),
+        m_signature( DBus::signature( str ) ),
+        m_data( str ),
+        m_dataAlignment( 4 )
+    {
+        Marshaling marshal( &m_marshaled, Endianess::Big );
+        marshal.marshal( str );
+    }
+
+    priv_data( DBus::Signature sig ) :
+        m_currentType( DataType::SIGNATURE ),
+        m_signature( DBus::signature( sig ) ),
+        m_data( sig ),
+        m_dataAlignment( 1 )
+    {
+        Marshaling marshal( &m_marshaled, Endianess::Big );
+        marshal.marshal( sig );
+    }
+
+    priv_data( DBus::Path path ) :
+        m_currentType( DataType::OBJECT_PATH ),
+        m_signature( DBus::signature( path ) ),
+        m_data( path ),
+        m_dataAlignment( 4 )
+    {
+        Marshaling marshal( &m_marshaled, Endianess::Big );
+        marshal.marshal( path );
+    }
+
+    priv_data( std::shared_ptr<FileDescriptor> fd ) :
+        m_currentType( DataType::UNIX_FD ),
+        m_signature( DBus::signature( fd ) ),
+        m_data( fd ),
+        m_dataAlignment( 4 )
+    {}
+
+//    priv_data( const priv_data& other ) = default;
+//    priv_data( const priv_data& other ) :
+//        m_currentType( other.m_currentType ),
+//        m_signature( other.m_signature ),
+//        m_data( other.m_data ),
+//        m_marshaled( other.m_marshaled ),
+//        m_dataAlignment( other.m_dataAlignment ) {
+//    }
+
+public:
+    DataType m_currentType;
+    Signature m_signature;
+    std::any m_data;
+    std::vector<uint8_t> m_marshaled;
+    int m_dataAlignment;
+};
+
 Variant::Variant() :
-    m_currentType( DataType::INVALID )
+    m_priv( std::make_unique<priv_data>() )
 {}
 
 Variant::Variant( uint8_t byte ) :
-    m_currentType( DataType::BYTE ),
-    m_signature( DBus::signature( byte ) ),
-    m_data( byte ),
-    m_dataAlignment( 1 )
-{
-	Marshaling marshal( &m_marshaled, Endianess::Big );
-	marshal.marshal( byte );
-}
+    m_priv( std::make_unique<priv_data>( byte ) )
+{}
 
 Variant::Variant( bool b ) :
-    m_currentType( DataType::BOOLEAN ),
-    m_signature( DBus::signature( b ) ),
-    m_data( b ),
-    m_dataAlignment( 4 )
-{
-	Marshaling marshal( &m_marshaled, Endianess::Big );
-	marshal.marshal( b );
-}
+    m_priv( std::make_unique<priv_data>( b ) )
+{}
 
 Variant::Variant( int16_t i ) :
-    m_currentType( DataType::INT16 ),
-    m_signature( DBus::signature( i ) ),
-    m_data( i ),
-    m_dataAlignment( 2 )
-{
-	Marshaling marshal( &m_marshaled, Endianess::Big );
-	marshal.marshal( i );
-}
+    m_priv( std::make_unique<priv_data>( i ) )
+{}
 
 Variant::Variant( uint16_t i ) :
-    m_currentType( DataType::UINT16 ),
-    m_signature( DBus::signature( i ) ),
-    m_data( i ),
-    m_dataAlignment( 2 )
-{
-	Marshaling marshal( &m_marshaled, Endianess::Big );
-	marshal.marshal( i );
-}
+    m_priv( std::make_unique<priv_data>( i ) )
+{}
 
 Variant::Variant( int32_t i ) :
-    m_currentType( DataType::INT32 ),
-    m_signature( DBus::signature( i ) ),
-    m_data( i ),
-    m_dataAlignment( 4 )
-{
-	Marshaling marshal( &m_marshaled, Endianess::Big );
-	marshal.marshal( i );
-}
+    m_priv( std::make_unique<priv_data>( i ) )
+{}
 
 Variant::Variant( uint32_t i ) :
-    m_currentType( DataType::UINT32 ),
-    m_signature( DBus::signature( i ) ),
-    m_data( i ),
-    m_dataAlignment( 4 )
-{
-	Marshaling marshal( &m_marshaled, Endianess::Big );
-	marshal.marshal( i );
-}
+    m_priv( std::make_unique<priv_data>( i ) )
+{}
 
 Variant::Variant( int64_t i ) :
-    m_currentType( DataType::INT64 ),
-    m_signature( DBus::signature( i ) ),
-    m_data( i ),
-    m_dataAlignment( 8 )
-{
-	Marshaling marshal( &m_marshaled, Endianess::Big );
-	marshal.marshal( i );
-}
+    m_priv( std::make_unique<priv_data>( i ) )
+{}
 
 Variant::Variant( uint64_t i ) :
-    m_currentType( DataType::UINT64 ),
-    m_signature( DBus::signature( i ) ),
-    m_data( i ),
-    m_dataAlignment( 8 )
-{
-	Marshaling marshal( &m_marshaled, Endianess::Big );
-	marshal.marshal( i );
-}
+    m_priv( std::make_unique<priv_data>( i ) )
+{}
 
 Variant::Variant( double i ) :
-    m_currentType( DataType::DOUBLE ),
-    m_signature( DBus::signature( i ) ),
-    m_data( i ),
-    m_dataAlignment( 8 )
-{
-	Marshaling marshal( &m_marshaled, Endianess::Big );
-	marshal.marshal( i );
-}
+    m_priv( std::make_unique<priv_data>( i ) )
+{}
 
 Variant::Variant( const char* cstr ) :
     Variant( std::string( cstr ) ){}
 
 Variant::Variant( std::string str ) :
-    m_currentType( DataType::STRING ),
-    m_signature( DBus::signature( str ) ),
-    m_data( str ),
-    m_dataAlignment( 4 )
-{
-	Marshaling marshal( &m_marshaled, Endianess::Big );
-	marshal.marshal( str );
-}
+    m_priv( std::make_unique<priv_data>( str ) )
+{}
 
 Variant::Variant( DBus::Signature sig ) :
-    m_currentType( DataType::SIGNATURE ),
-    m_signature( DBus::signature( sig ) ),
-    m_data( sig ),
-    m_dataAlignment( 1 )
-{
-	Marshaling marshal( &m_marshaled, Endianess::Big );
-	marshal.marshal( sig );
-}
+    m_priv( std::make_unique<priv_data>( sig ) )
+{}
 
 Variant::Variant( DBus::Path path ) :
-    m_currentType( DataType::OBJECT_PATH ),
-    m_signature( DBus::signature( path ) ),
-    m_data( path ),
-    m_dataAlignment( 4 )
-{
-	Marshaling marshal( &m_marshaled, Endianess::Big );
-	marshal.marshal( path );
-}
+    m_priv( std::make_unique<priv_data>( path ) )
+{}
 
 Variant::Variant( std::shared_ptr<FileDescriptor> fd ) :
-    m_currentType( DataType::UNIX_FD ),
-    m_signature( DBus::signature( fd ) ),
-    m_data( fd ),
-    m_dataAlignment( 4 )
+    m_priv( std::make_unique<priv_data>( fd ) )
 {}
 
 Variant::Variant( const Variant& other ) :
-    m_signature( other.m_signature ),
-    m_currentType( other.m_currentType ),
-    m_data( other.m_data ),
-    m_marshaled( other.m_marshaled ),
-    m_dataAlignment( other.m_dataAlignment ) {
-}
+    m_priv( std::make_unique<priv_data>( *other.m_priv ) )
+{}
+
+Variant::~Variant(){}
 
 DBus::Signature Variant::signature() const {
-    return m_signature;
+    return m_priv->m_signature;
 }
 
 DBus::DataType Variant::currentType() const {
-    return m_currentType;
+    return m_priv->m_currentType;
 }
 
 std::any Variant::value() const {
-    return m_data;
+    return m_priv->m_data;
 }
 
 DBus::Variant Variant::createFromMessage( MessageIterator iter ){
@@ -233,11 +309,11 @@ DBus::Variant Variant::createFromMessage( MessageIterator iter ){
 }
 
 const std::vector<uint8_t>* Variant::marshaled() const {
-    return &m_marshaled;
+    return &m_priv->m_marshaled;
 }
 
 int Variant::data_alignment() const {
-    return m_dataAlignment;
+    return m_priv->m_dataAlignment;
 }
 
 bool Variant::operator==( const Variant& other ) const {
@@ -245,10 +321,16 @@ bool Variant::operator==( const Variant& other ) const {
     bool vectorsEqual = false;
 
     if( sameType ){
-        vectorsEqual = other.m_marshaled == m_marshaled;
+        vectorsEqual = other.m_priv->m_marshaled == m_priv->m_marshaled;
     }
 
     return sameType && vectorsEqual;
+}
+
+Variant& Variant::operator=(const Variant &other) {
+    *m_priv = *other.m_priv;
+
+    return *this;
 }
 
 namespace DBus {

@@ -24,6 +24,7 @@
 #include <dbus-cxx/signal_proxy_base.h>
 #include <dbus-cxx/threaddispatcher.h>
 #include <dbus-cxx/errormessage.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 #include <deque>
 #include <map>
 #include <memory>
@@ -77,7 +78,7 @@ namespace DBus
   class Connection : public std::enable_shared_from_this<Connection>
   {
     
-    protected:
+    private:
       Connection( BusType type );
 
       Connection( std::string address );
@@ -104,7 +105,7 @@ namespace DBus
        */
       static std::shared_ptr<Connection> create( std::string address );
 
-      virtual ~Connection();
+      ~Connection();
 
       /** True if this is a valid connection; false otherwise */
       operator bool() const;
@@ -411,46 +412,11 @@ namespace DBus
       void process_call_message( std::shared_ptr<const CallMessage> msg );
       void process_signal_message( std::shared_ptr<const SignalMessage> msg );
 
-    protected:
-      struct ExpectingResponse;
-      struct OutgoingMessage{
-          std::shared_ptr<const Message> msg;
-          uint32_t serial;
-      };
-      struct PathHandlingEntry{
-          std::shared_ptr<ObjectPathHandler> handler;
-          std::thread::id handlingThread;
-      };
-        std::vector<uint8_t> m_sendBuffer;
-        uint32_t m_currentSerial;
-        std::shared_ptr<priv::Transport> m_transport;
-        std::string m_uniqueName;
-        std::thread::id m_dispatchingThread;
-        std::queue<std::shared_ptr<Message>> m_incomingMessages;
-        std::mutex m_outgoingLock;
-        std::queue<OutgoingMessage> m_outgoingMessages;
-        std::mutex m_expectingResponsesLock;
-        std::map<uint32_t,std::shared_ptr<ExpectingResponse>> m_expectingResponses;
-        DispatchStatus m_dispatchStatus;
-        std::mutex m_pathHandlerLock;
-        std::map<std::string,PathHandlingEntry> m_path_handler;
-        std::map<std::string,std::shared_ptr<ObjectPathHandler>> m_path_handler_fallback;
-        std::mutex m_threadDispatcherLock;
-        std::map<std::thread::id,std::weak_ptr<ThreadDispatcher>> m_threadDispatchers;
-        std::shared_ptr<DBusDaemonProxy> m_daemonProxy;
-        sigc::signal<void()> m_needsDispatching;
-        std::mutex m_proxySignalsLock;
-        std::vector<std::shared_ptr<signal_proxy_base>> m_proxySignals;
-        std::vector<std::shared_ptr<signal_proxy_base>> m_allProxySignals;
-      
-      
-      FilterSignal m_filter_signal;
+  private:
+      class priv_data;
 
-
-
+      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
   };
-  
-
 
 inline
 std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<DBus::Message> msg)
@@ -516,6 +482,6 @@ std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> p
   return ptr;
 }
 
-}
+} /* namespace DBus */
 
 #endif

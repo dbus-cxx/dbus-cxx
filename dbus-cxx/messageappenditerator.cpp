@@ -36,34 +36,48 @@
 namespace DBus
 {
 
-  MessageAppendIterator::MessageAppendIterator( ContainerType container ):
-      m_message( nullptr ),
-      m_subiter( nullptr ),
-      m_currentContainer( container )
+class MessageAppendIterator::priv_data{
+public:
+    priv_data() :
+        m_message( nullptr ),
+        m_subiter( nullptr ),
+        m_arrayAlignment( 0 ){}
+
+    Marshaling m_marshaling;
+    Message* m_message;
+    MessageAppendIterator* m_subiter;
+    std::vector<uint8_t> m_workingBuffer;
+    ContainerType m_currentContainer;
+    int32_t m_arrayAlignment;
+};
+
+  MessageAppendIterator::MessageAppendIterator( ContainerType container )
   {
+      m_priv = std::make_shared<priv_data>();
+      m_priv->m_currentContainer = container;
   }
 
-  MessageAppendIterator::MessageAppendIterator( Message& message, ContainerType container ):
-      m_marshaling( &(message.m_body), Endianess::Big ),
-      m_message( &message ),
-      m_subiter( nullptr ),
-      m_currentContainer( container )
+  MessageAppendIterator::MessageAppendIterator( Message& message, ContainerType container )
   {
+      m_priv = std::make_shared<priv_data>();
+      m_priv->m_marshaling = Marshaling( message.body(), Endianess::Big );
+      m_priv->m_message = &message;
+      m_priv->m_currentContainer = container;
       if( container != ContainerType::None ){
-          m_marshaling = Marshaling( &m_workingBuffer, Endianess::Big );
+          m_priv->m_marshaling = Marshaling( &m_priv->m_workingBuffer, Endianess::Big );
       }
   }
 
-  MessageAppendIterator::MessageAppendIterator( std::shared_ptr<Message> message, ContainerType container ):
-      m_message( message.get() ),
-      m_subiter( nullptr ),
-      m_currentContainer( container )
+  MessageAppendIterator::MessageAppendIterator( std::shared_ptr<Message> message, ContainerType container )
   {
+      m_priv = std::make_shared<priv_data>();
+      m_priv->m_message = message.get();
+      m_priv->m_currentContainer = container;
       if( message ){
-          m_marshaling = Marshaling( &(message->m_body), Endianess::Big );
+          m_priv->m_marshaling = Marshaling( message->body(), Endianess::Big );
       }
       if( container != ContainerType::None ){
-          m_marshaling = Marshaling( &m_workingBuffer, Endianess::Big );
+          m_priv->m_marshaling = Marshaling( &m_priv->m_workingBuffer, Endianess::Big );
       }
   }
 
@@ -74,13 +88,13 @@ namespace DBus
 
   void MessageAppendIterator::invalidate()
   {
-    m_message = nullptr;
-    m_subiter = nullptr;
+    m_priv->m_message = nullptr;
+    m_priv->m_subiter = nullptr;
   }
 
   bool MessageAppendIterator::is_valid() const
   {
-    if ( not( m_message and m_message->is_valid() ) ) return false;
+    if ( not( m_priv->m_message and m_priv->m_message->is_valid() ) ) return false;
     return true;
   }
 
@@ -93,10 +107,10 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const bool& v ){
     if ( not this->is_valid() ) return *this;
 
-    if( m_currentContainer == ContainerType::None ){
-        m_message->append_signature( signature( v ) );
+    if( m_priv->m_currentContainer == ContainerType::None ){
+        m_priv->m_message->append_signature( signature( v ) );
     }
-    m_marshaling.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 
     return *this;
   }
@@ -104,10 +118,10 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint8_t& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer == ContainerType::None ){
-          m_message->append_signature( signature( v ) );
+      if( m_priv->m_currentContainer == ContainerType::None ){
+          m_priv->m_message->append_signature( signature( v ) );
       }
-      m_marshaling.marshal( v );
+      m_priv->m_marshaling.marshal( v );
 
       return *this;
   }
@@ -115,10 +129,10 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const int16_t& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer == ContainerType::None ){
-          m_message->append_signature( signature( v ) );
+      if( m_priv->m_currentContainer == ContainerType::None ){
+          m_priv->m_message->append_signature( signature( v ) );
       }
-      m_marshaling.marshal( v );
+      m_priv->m_marshaling.marshal( v );
 
       return *this;
   }
@@ -126,10 +140,10 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint16_t& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer == ContainerType::None ){
-          m_message->append_signature( signature( v ) );
+      if( m_priv->m_currentContainer == ContainerType::None ){
+          m_priv->m_message->append_signature( signature( v ) );
       }
-      m_marshaling.marshal( v );
+      m_priv->m_marshaling.marshal( v );
 
       return *this;
   }
@@ -137,10 +151,10 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const int32_t& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer == ContainerType::None ){
-          m_message->append_signature( signature( v ) );
+      if( m_priv->m_currentContainer == ContainerType::None ){
+          m_priv->m_message->append_signature( signature( v ) );
       }
-      m_marshaling.marshal( v );
+      m_priv->m_marshaling.marshal( v );
 
       return *this;
   }
@@ -148,10 +162,10 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint32_t& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer == ContainerType::None ){
-          m_message->append_signature( signature( v ) );
+      if( m_priv->m_currentContainer == ContainerType::None ){
+          m_priv->m_message->append_signature( signature( v ) );
       }
-      m_marshaling.marshal( v );
+      m_priv->m_marshaling.marshal( v );
 
       return *this;
   }
@@ -159,10 +173,10 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const int64_t& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer == ContainerType::None ){
-          m_message->append_signature( signature( v ) );
+      if( m_priv->m_currentContainer == ContainerType::None ){
+          m_priv->m_message->append_signature( signature( v ) );
       }
-      m_marshaling.marshal( v );
+      m_priv->m_marshaling.marshal( v );
 
       return *this;
   }
@@ -170,10 +184,10 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint64_t& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer == ContainerType::None ){
-          m_message->append_signature( signature( v ) );
+      if( m_priv->m_currentContainer == ContainerType::None ){
+          m_priv->m_message->append_signature( signature( v ) );
       }
-      m_marshaling.marshal( v );
+      m_priv->m_marshaling.marshal( v );
 
       return *this;
   }
@@ -181,10 +195,10 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const double& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer == ContainerType::None ){
-          m_message->append_signature( signature( v ) );
+      if( m_priv->m_currentContainer == ContainerType::None ){
+          m_priv->m_message->append_signature( signature( v ) );
       }
-      m_marshaling.marshal( v );
+      m_priv->m_marshaling.marshal( v );
 
       return *this;
   }
@@ -194,11 +208,11 @@ namespace DBus
 
     if ( not this->is_valid() ) return *this;
 
-    if( m_currentContainer == ContainerType::None ){
-        m_message->append_signature( signature( std::string() ) );
+    if( m_priv->m_currentContainer == ContainerType::None ){
+        m_priv->m_message->append_signature( signature( std::string() ) );
     }
 
-    m_marshaling.marshal( std::string( v, len ) );
+    m_priv->m_marshaling.marshal( std::string( v, len ) );
 
     return *this;
   }
@@ -206,11 +220,11 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const std::string& v ){
       if ( not this->is_valid() ) return *this;
 
-      if( m_currentContainer == ContainerType::None ){
-          m_message->append_signature( signature( std::string() ) );
+      if( m_priv->m_currentContainer == ContainerType::None ){
+          m_priv->m_message->append_signature( signature( std::string() ) );
       }
 
-      m_marshaling.marshal( v );
+      m_priv->m_marshaling.marshal( v );
       return *this;
   }
 
@@ -220,18 +234,18 @@ namespace DBus
 
     std::string realSig = v.str();
     if( realSig.length() > UINT8_MAX ){
-        m_message->invalidate();
+        m_priv->m_message->invalidate();
         return *this;
     }
 
-    if( m_currentContainer == ContainerType::None ){
-        m_message->append_signature( signature( v ) );
+    if( m_priv->m_currentContainer == ContainerType::None ){
+        m_priv->m_message->append_signature( signature( v ) );
     }
-    m_marshaling.marshal( static_cast<uint8_t>( realSig.length() & 0xFF ) );
+    m_priv->m_marshaling.marshal( static_cast<uint8_t>( realSig.length() & 0xFF ) );
     for( const char& c : realSig ){
-        m_marshaling.marshal( static_cast<uint8_t>( c ) );
+        m_priv->m_marshaling.marshal( static_cast<uint8_t>( c ) );
     }
-    m_marshaling.marshal( static_cast<uint8_t>( 0 ) );
+    m_priv->m_marshaling.marshal( static_cast<uint8_t>( 0 ) );
 
     return *this;
   }
@@ -239,10 +253,10 @@ namespace DBus
   MessageAppendIterator& MessageAppendIterator::operator<<( const Path& v ){
     if ( not this->is_valid() ) return *this;
 
-    if( m_currentContainer == ContainerType::None ){
-        m_message->append_signature( signature( v ) );
+    if( m_priv->m_currentContainer == ContainerType::None ){
+        m_priv->m_message->append_signature( signature( v ) );
     }
-    m_marshaling.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 
     return *this;
   }
@@ -255,21 +269,21 @@ namespace DBus
     if ( not v ) return *this;
 
     raw_fd = v->getDescriptor();
-    if( m_currentContainer == ContainerType::None ){
-        m_message->append_signature( signature( v ) );
+    if( m_priv->m_currentContainer == ContainerType::None ){
+        m_priv->m_message->append_signature( signature( v ) );
     }
 
     // Duplicate the FD so that when we return, it may be closed by the library user.
     // See documentation for dbus_message_iter_append_basic
     int new_fd = fcntl( raw_fd, F_DUPFD_CLOEXEC, 3 );
     if( new_fd < 0 ){
-        m_message->invalidate();
+        m_priv->m_message->invalidate();
         return *this;
     }
 
-    m_message->m_filedescriptors.push_back( new_fd );
-    array_location = m_message->m_filedescriptors.size() - 1;
-    m_marshaling.marshal( array_location );
+    m_priv->m_message->add_filedescriptor( new_fd );
+    array_location = m_priv->m_message->filedescriptors_size() - 1;
+    m_priv->m_marshaling.marshal( array_location );
 
     return *this;
   }
@@ -282,9 +296,9 @@ namespace DBus
 
     this->open_container( ContainerType::VARIANT, v.signature()  );
     *this << v.signature();
-    m_marshaling.align( v.data_alignment() );
+    m_priv->m_marshaling.align( v.data_alignment() );
     for( const uint8_t& data : *(v.marshaled()) ){
-        m_subiter->m_workingBuffer.push_back( data );
+        m_priv->m_subiter->m_priv->m_workingBuffer.push_back( data );
     }
     this->close_container();
 
@@ -323,54 +337,54 @@ namespace DBus
         break;
     }
 
-    if ( m_subiter ) this->close_container();
+    if ( m_priv->m_subiter ) this->close_container();
 
-    if ( m_message ){
-        m_message->append_signature( signature );
-      m_subiter = new MessageAppendIterator( *m_message, t );
-      m_subiter->m_arrayAlignment = array_align;
+    if ( m_priv->m_message ){
+        m_priv->m_message->append_signature( signature );
+      m_priv->m_subiter = new MessageAppendIterator( *m_priv->m_message, t );
+      m_priv->m_subiter->m_priv->m_arrayAlignment = array_align;
     } else
-      m_subiter = new MessageAppendIterator( t );
+      m_priv->m_subiter = new MessageAppendIterator( t );
 
     return true;
   }
 
   bool MessageAppendIterator::close_container( )
   {
-    if ( ! m_subiter ) return false;
+    if ( ! m_priv->m_subiter ) return false;
 
-    switch( m_subiter->m_currentContainer ){
+    switch( m_priv->m_subiter->m_priv->m_currentContainer ){
     case ContainerType::None: return false;
     case ContainerType::ARRAY:
     {
-        uint32_t arraySize = static_cast<uint32_t>( m_subiter->m_workingBuffer.size() );
+        uint32_t arraySize = static_cast<uint32_t>( m_priv->m_subiter->m_priv->m_workingBuffer.size() );
         if( arraySize > Validator::maximum_array_size() ){
-            m_message->invalidate();
+            m_priv->m_message->invalidate();
             return true;
         }
-        m_marshaling.marshal( arraySize );
-        m_marshaling.align( m_subiter->m_arrayAlignment );
+        m_priv->m_marshaling.marshal( arraySize );
+        m_priv->m_marshaling.align( m_priv->m_subiter->m_priv->m_arrayAlignment );
     }
         break;
     case ContainerType::DICT_ENTRY:
     case ContainerType::STRUCT:
-        m_marshaling.align( 8 );
+        m_priv->m_marshaling.align( 8 );
         break;
     case ContainerType::VARIANT:
         break;
     }
 
-    for( const uint8_t& dataByte : m_subiter->m_workingBuffer ){
-        m_marshaling.marshal( dataByte );
+    for( const uint8_t& dataByte : m_priv->m_subiter->m_priv->m_workingBuffer ){
+        m_priv->m_marshaling.marshal( dataByte );
     }
-    delete m_subiter;
-    m_subiter = nullptr;
+    delete m_priv->m_subiter;
+    m_priv->m_subiter = nullptr;
     return true;
   }
 
   MessageAppendIterator* MessageAppendIterator::sub_iterator()
   {
-    return m_subiter;
+    return m_priv->m_subiter;
   }
 
 }

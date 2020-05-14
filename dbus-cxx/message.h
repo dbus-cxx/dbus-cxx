@@ -143,6 +143,23 @@ namespace DBus
      */
     Variant header_field( MessageHeaderFields field ) const;
 
+    /**
+     * The message flags, as the marshaled byte
+     * @return
+     */
+    uint8_t flags() const;
+
+    /**
+     * Set the given header field.  Returns the previously set value, if it exists.
+     *
+     * @param field The field to set
+     * @param value The value to set the header field to
+     * @return The old value, if it exists.
+     */
+    Variant set_header_field( MessageHeaderFields field, Variant value );
+
+    Endianess endianess() const;
+
     static std::shared_ptr<Message> create_from_data( uint8_t* data, uint32_t data_len );
 
     protected:
@@ -154,13 +171,19 @@ namespace DBus
      */
     void clear_sig_and_data();
 
-      bool m_valid;
-    std::map<MessageHeaderFields,Variant> m_headerMap;
-    std::vector<uint8_t> m_body;
-    Endianess m_endianess;
-    uint8_t m_flags;
-    std::vector<int> m_filedescriptors;
-    uint32_t m_serial;
+    void set_flags( uint8_t flags );
+
+  private:
+    std::vector<uint8_t>* body();
+    const std::vector<uint8_t>* body() const;
+    void add_filedescriptor( int fd );
+    uint32_t filedescriptors_size() const;
+    int filedescriptor_at_location( int location ) const;
+
+  private:
+    class priv_data;
+
+    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
 
     friend class MessageAppendIterator;
     friend class MessageIterator;

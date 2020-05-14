@@ -118,7 +118,7 @@ namespace DBus {
         std::shared_ptr< signal_proxy<T_return,T_arg...> > sig;
         SignalMatchRule match = SignalMatchRule::create()
             .setPath( this->path() )
-            .setInterface( m_name )
+            .setInterface( name() )
             .setMember( sig_name );
         sig = signal_proxy<T_return,T_arg...>::create( match );
         this->add_signal(sig, calling);
@@ -139,25 +139,19 @@ namespace DBus {
 
       bool has_signal( std::shared_ptr<signal_proxy_base> sig ) const;
 
-    protected:
-
-      friend class ObjectProxy;
-      
-      ObjectProxy* m_object;
-      
-      const std::string m_name;
-      
-      Methods m_methods;
-
-      Signals m_signals;
-
-      std::map<std::shared_ptr<signal_proxy_base>,ThreadForCalling> m_callingMap;
-
-      mutable std::shared_mutex m_methods_rwlock;
-
+    private:
       void on_object_set_connection( std::shared_ptr<Connection> conn );
 
       void on_object_set_path( const std::string& path );
+
+      void set_object( ObjectProxy* obj );
+
+    private:
+      class priv_data;
+
+      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
+
+      friend class ObjectProxy;
   };
 
 }

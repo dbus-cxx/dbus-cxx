@@ -17,6 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus/dbus.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 #include <list>
 #include <map>
 #include <memory>
@@ -49,7 +50,7 @@ namespace DBus
    */
   class Dispatcher
   {
-    protected:
+    private:
 
       Dispatcher(bool is_running=true);
 
@@ -57,7 +58,7 @@ namespace DBus
 
       static std::shared_ptr<Dispatcher> create( bool is_running=true );
 
-      virtual ~Dispatcher();
+      ~Dispatcher();
       
       /** @name Managing Connections */
       //@{
@@ -75,26 +76,7 @@ namespace DBus
       
       bool is_running();
 
-    protected:
-      
-      typedef std::vector<std::shared_ptr<Connection>> Connections;
-      Connections m_connections;
-      
-      volatile bool m_running;
-      
-      std::thread m_dispatch_thread;
-      
-      /* socketpair for telling the thread to process data */
-      int process_fd[ 2 ];
-
-      /**
-       * This is the maximum number of dispatches that will occur for a
-       * connection in one iteration of the dispatch thread.
-       *
-       * If set to 0, a particular connection will continue to dispatch
-       * as long as its status remains DISPATCH_DATA_REMAINS.
-       */
-      unsigned int m_dispatch_loop_limit;
+    private:
       
       void dispatch_thread_main();
 
@@ -104,6 +86,11 @@ namespace DBus
        * Dispatch all of our connections
        */
       void dispatch_connections();
+
+  private:
+      class priv_data;
+
+      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
   };
 
 }

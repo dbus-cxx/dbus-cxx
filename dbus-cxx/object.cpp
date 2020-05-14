@@ -38,8 +38,26 @@ namespace DBus
   class ErrorInvalidMessageType;
   class ReturnMessage;
 
+  typedef std::map<std::shared_ptr<Interface> ,sigc::connection> InterfaceSignalNameConnections;
+
+  class Object::priv_data{
+  public:
+      priv_data(){}
+
+      Children m_children;
+      mutable std::shared_mutex m_interfaces_rwlock;
+      std::mutex m_name_mutex;
+      Interfaces m_interfaces;
+      std::shared_ptr<Interface>  m_default_interface;
+      sigc::signal<void(std::shared_ptr<Interface>,std::shared_ptr<Interface>) > m_signal_default_interface_changed;
+      sigc::signal<void(std::shared_ptr<Interface>) > m_signal_interface_added;
+      sigc::signal<void(std::shared_ptr<Interface>) > m_signal_interface_removed;
+      InterfaceSignalNameConnections m_interface_signal_name_connections;
+  };
+
   Object::Object( const std::string& path, PrimaryFallback pf ):
-      ObjectPathHandler( path, pf )
+      ObjectPathHandler( path, pf ),
+      m_priv( std::make_unique<priv_data>() )
   {
   }
 
@@ -57,13 +75,13 @@ namespace DBus
     SIMPLELOGGER_DEBUG(LOGGER_NAME,"Object::set_connection");
     ObjectPathHandler::set_connection(conn);
 
-    for (Children::iterator c = m_children.begin(); c != m_children.end(); c++)
+    for (Children::iterator c = m_priv->m_children.begin(); c != m_priv->m_children.end(); c++)
       c->second->set_connection(conn);
   }
 
   const Object::Interfaces & Object::interfaces() const
   {
-    return m_interfaces;
+    return m_priv->m_interfaces;
   }
 
   std::shared_ptr<Interface> Object::interface( const std::string & name ) const
@@ -71,12 +89,12 @@ namespace DBus
     Interfaces::const_iterator iter;
 
     {
-      std::shared_lock lock( m_interfaces_rwlock );
+      std::shared_lock lock( m_priv->m_interfaces_rwlock );
 
-      iter = m_interfaces.find( name );
+      iter = m_priv->m_interfaces.find( name );
     }
 
-    if ( iter == m_interfaces.end() ) return std::shared_ptr<Interface>();
+    if ( iter == m_priv->m_interfaces.end() ) return std::shared_ptr<Interface>();
 
     return iter->second;
   }
@@ -90,17 +108,17 @@ namespace DBus
     SIMPLELOGGER_DEBUG(LOGGER_NAME,"Object::add_interface " << interface->name() );
 
     {
-      std::unique_lock lock( m_interfaces_rwlock );
+      std::unique_lock lock( m_priv->m_interfaces_rwlock );
 
       InterfaceSignalNameConnections::iterator i;
 
-      i = m_interface_signal_name_connections.find(interface);
+      i = m_priv->m_interface_signal_name_connections.find(interface);
 
-      if ( i == m_interface_signal_name_connections.end() )
+      if ( i == m_priv->m_interface_signal_name_connections.end() )
       {
-        m_interfaces.insert(std::make_pair(interface->name(), interface));
+        m_priv->m_interfaces.insert(std::make_pair(interface->name(), interface));
 
-        interface->set_path(m_path);
+        interface->set_path( path() );
       }
       else
       {
@@ -108,7 +126,7 @@ namespace DBus
       }
     }
 
-    m_signal_interface_added.emit( interface );
+    m_priv->m_signal_interface_added.emit( interface );
 
     SIMPLELOGGER_DEBUG(LOGGER_NAME,"Object::add_interface " << interface->name() << " successful: " << result);
 
@@ -123,7 +141,7 @@ namespace DBus
 
     if ( !this->add_interface(interface) ) return std::shared_ptr<Interface>();
 
-    if ( not m_default_interface && name.empty() ) this->set_default_interface( interface->name() );
+    if ( not m_priv->m_default_interface && name.empty() ) this->set_default_interface( interface->name() );
     return interface;
   }
 
@@ -134,42 +152,42 @@ namespace DBus
     InterfaceSignalNameConnections::iterator i;
 
     {
-      std::unique_lock lock( m_interfaces_rwlock );
+      std::unique_lock lock( m_priv->m_interfaces_rwlock );
     
-      iter = m_interfaces.find( name );
-      if ( iter != m_interfaces.end() )
+      iter = m_priv->m_interfaces.find( name );
+      if ( iter != m_priv->m_interfaces.end() )
       {
         interface = iter->second;
-        m_interfaces.erase(iter);
+        m_priv->m_interfaces.erase(iter);
       }
 
       if ( interface )
       {
-        i = m_interface_signal_name_connections.find(interface);
-        if ( i != m_interface_signal_name_connections.end() )
+        i = m_priv->m_interface_signal_name_connections.find(interface);
+        if ( i != m_priv->m_interface_signal_name_connections.end() )
         {
           i->second.disconnect();
-          m_interface_signal_name_connections.erase(i);
+          m_priv->m_interface_signal_name_connections.erase(i);
         }
       }
     }
 
-    if ( interface ) m_signal_interface_removed.emit( interface );
+    if ( interface ) m_priv->m_signal_interface_removed.emit( interface );
   }
 
   bool Object::has_interface( const std::string & name )
   {
     Interfaces::const_iterator i;
-    std::shared_lock lock( m_interfaces_rwlock );
+    std::shared_lock lock( m_priv->m_interfaces_rwlock );
     
-    i = m_interfaces.find( name );
+    i = m_priv->m_interfaces.find( name );
 
-    return ( i != m_interfaces.end() );
+    return ( i != m_priv->m_interfaces.end() );
   }
 
   std::shared_ptr<Interface> Object::default_interface() const
   {
-    return m_default_interface;
+    return m_priv->m_default_interface;
   }
 
   bool Object::set_default_interface( const std::string& new_default_name )
@@ -179,47 +197,47 @@ namespace DBus
     bool result = false;
 
     {
-      std::shared_lock lock( m_interfaces_rwlock );
+      std::shared_lock lock( m_priv->m_interfaces_rwlock );
 
-      iter = m_interfaces.find( new_default_name );
+      iter = m_priv->m_interfaces.find( new_default_name );
 
-      if ( iter != m_interfaces.end() )
+      if ( iter != m_priv->m_interfaces.end() )
       {
         result = true;
-        old_default = m_default_interface;
-        m_default_interface = iter->second;
+        old_default = m_priv->m_default_interface;
+        m_priv->m_default_interface = iter->second;
       }
     }
 
-    if ( result ) m_signal_default_interface_changed.emit( old_default, m_default_interface );
+    if ( result ) m_priv->m_signal_default_interface_changed.emit( old_default, m_priv->m_default_interface );
 
     return result;
   }
 
   bool Object::set_default_interface( std::shared_ptr<Interface> interface ){
     if( !interface ) return false;
-    m_default_interface = interface;
+    m_priv->m_default_interface = interface;
     return true;
   }
 
   void Object::remove_default_interface()
   {
-    if ( not m_default_interface ) return;
+    if ( not m_priv->m_default_interface ) return;
 
-    std::shared_ptr<Interface> old_default = m_default_interface;
-    m_default_interface = std::shared_ptr<Interface>();
-    m_signal_default_interface_changed.emit( old_default, m_default_interface );
+    std::shared_ptr<Interface> old_default = m_priv->m_default_interface;
+    m_priv->m_default_interface = std::shared_ptr<Interface>();
+    m_priv->m_signal_default_interface_changed.emit( old_default, m_priv->m_default_interface );
   }
 
   const Object::Children& Object::children() const
   {
-    return m_children;
+    return m_priv->m_children;
   }
 
   std::shared_ptr<Object> Object::child(const std::string& name) const
   {
-    Children::const_iterator i = m_children.find(name);
-    if ( i == m_children.end() ) return std::shared_ptr<Object>();
+    Children::const_iterator i = m_priv->m_children.find(name);
+    if ( i == m_priv->m_children.end() ) return std::shared_ptr<Object>();
     return i->second;
   }
 
@@ -227,9 +245,9 @@ namespace DBus
   {
     if ( not child ) return false;
     if ( not force and this->has_child(name) ) return false;
-    std::shared_ptr<Connection> conn = m_connection.lock();
+    std::shared_ptr<Connection> conn = connection().lock();
     if ( conn ){
-        m_children[name] = child;
+        m_priv->m_children[name] = child;
         child->register_with_connection(conn);
         return true;
     }
@@ -239,15 +257,15 @@ namespace DBus
 
   bool Object::remove_child(const std::string& name)
   {
-    Children::iterator i = m_children.find(name);
-    if ( i == m_children.end() ) return false;
-    m_children.erase(i);
+    Children::iterator i = m_priv->m_children.find(name);
+    if ( i == m_priv->m_children.end() ) return false;
+    m_priv->m_children.erase(i);
     return true;
   }
 
   bool Object::has_child(const std::string& name) const
   {
-    return m_children.find(name) != m_children.end();
+    return m_priv->m_children.find(name) != m_priv->m_children.end();
   }
 
   std::string Object::introspect(int space_depth) const
@@ -263,9 +281,9 @@ namespace DBus
          << spaces << "      <arg name=\"data\" type=\"s\" direction=\"out\"/>\n"
          << spaces << "    </method>\n"
          << spaces << "  </interface>\n";
-    for ( i = m_interfaces.begin(); i != m_interfaces.end(); i++ )
+    for ( i = m_priv->m_interfaces.begin(); i != m_priv->m_interfaces.end(); i++ )
       sout << i->second->introspect(space_depth+2);
-    for ( c = m_children.begin(); c != m_children.end(); c++ )
+    for ( c = m_priv->m_children.begin(); c != m_priv->m_children.end(); c++ )
       sout << spaces << "  <node name=\"" << c->first << "\"/>\n";
     sout << spaces << "</node>\n";
     return sout.str();
@@ -273,25 +291,25 @@ namespace DBus
 
   sigc::signal< void(std::shared_ptr<Interface>) > Object::signal_interface_added()
   {
-    return m_signal_interface_added;
+    return m_priv->m_signal_interface_added;
   }
 
   sigc::signal< void(std::shared_ptr<Interface>)> Object::signal_interface_removed()
   {
-    return m_signal_interface_removed;
+    return m_priv->m_signal_interface_removed;
   }
 
   sigc::signal< void(std::shared_ptr<Interface>, std::shared_ptr<Interface>)> Object::signal_default_interface_changed()
   {
-    return m_signal_default_interface_changed;
+    return m_priv->m_signal_default_interface_changed;
   }
 
   HandlerResult Object::handle_message( std::shared_ptr<const Message> message )
   {
-      std::shared_ptr<Connection> connection = m_connection.lock();
+      std::shared_ptr<Connection> conn = connection().lock();
       std::shared_ptr<const CallMessage> msg;
 
-      if( !connection ){
+      if( !conn ){
           SIMPLELOGGER_ERROR(LOGGER_NAME,"Object::handle_call_message: unable to handle call message: invalid connection");
           return HandlerResult::Not_Handled;
       }
@@ -310,17 +328,17 @@ namespace DBus
         std::string introspection = DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE;
         introspection += this->introspect();
         *return_message << introspection;
-        connection << return_message;
+        conn << return_message;
         return HandlerResult::Handled;
       }
 
-      std::shared_lock lock( m_interfaces_rwlock );
+      std::shared_lock lock( m_priv->m_interfaces_rwlock );
       Interfaces::iterator iface_iter;
       std::shared_ptr<Interface> interface;
 
       SIMPLELOGGER_DEBUG(LOGGER_NAME,"Object::handle_message: message is good (it's a call message) for interface '" << msg->interface() << "'");
 
-      iface_iter = m_interfaces.find( msg->interface() );
+      iface_iter = m_priv->m_interfaces.find( msg->interface() );
 
       /*
        * DBus Specification:
@@ -330,16 +348,16 @@ namespace DBus
        * invoked. Implementations may choose to either return an error, or deliver the message
        * as though it had an arbitrary one of those interfaces.
        */
-      if( iface_iter == m_interfaces.end() ){
+      if( iface_iter == m_priv->m_interfaces.end() ){
         // Unable to find an interface to use, try to use the default
-          if( m_default_interface ){
-              return m_default_interface->handle_call_message( connection, msg );
+          if( m_priv->m_default_interface ){
+              return m_priv->m_default_interface->handle_call_message( conn, msg );
           }
 
           return  HandlerResult::Invalid_Interface;
       }else{
           interface = iface_iter->second;
-          return interface->handle_call_message( connection, msg );
+          return interface->handle_call_message( conn, msg );
       }
   }
 

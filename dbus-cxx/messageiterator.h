@@ -380,21 +380,10 @@ namespace DBus
         //dbus_message_iter_get_basic( &m_cobj, &temp );
       }
 
-    protected:
-      struct SubiterInformation {
-          SubiterInformation() :
-              m_subiterDataType( DataType::INVALID ),
-              m_arrayLastPosition( 0 ) {}
+  private:
+    class priv_data;
 
-          DataType m_subiterDataType;
-        uint32_t m_arrayLastPosition;
-        Signature m_variantSignature;
-      };
-
-      const Message* m_message;
-      std::shared_ptr<Demarshaling> m_demarshal;
-      SignatureIterator m_signatureIterator;
-      SubiterInformation m_subiterInfo;
+    std::shared_ptr<priv_data> m_priv;
   };
 }
 

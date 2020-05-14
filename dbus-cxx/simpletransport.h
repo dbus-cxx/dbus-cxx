@@ -19,6 +19,7 @@
 #ifndef DBUS_CXX_SIMPLETRANSPORT_H
 #define DBUS_CXX_SIMPLETRANSPORT_H
 
+#include <dbus-cxx/dbus-cxx-config.h>
 #include <memory>
 #include <vector>
 #include <stdint.h>
@@ -64,21 +65,9 @@ public:
     int fd() const;
 
 private:
-    enum class ReadingState {
-        FirstHeaderPart,
-        SecondHeaderPart,
-        Body
-    };
+    class priv_data;
 
-    int m_fd;
-    bool m_ok;
-    ReadingState m_readingState;
-    std::vector<uint8_t> m_sendBuffer;
-    uint8_t* m_receiveBuffer;
-    uint32_t m_receiveBufferLocation;
-    uint32_t m_receiveBufferSize;
-    uint32_t m_bodyLeftToRead;
-    uint32_t m_headerLeftToRead;
+    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
 };
 
 } /* namespace priv */

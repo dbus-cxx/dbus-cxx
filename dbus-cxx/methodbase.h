@@ -64,8 +64,6 @@ namespace DBus
       
       MethodBase(const std::string& name);
 
-      MethodBase(const MethodBase& other);
-
     protected:
       uint32_t sendMessage( std::shared_ptr<Connection> connection, const std::shared_ptr<const Message> );
 
@@ -83,12 +81,12 @@ namespace DBus
 
       void set_arg_name(size_t i, const std::string& name);
 
-    protected:
+      const std::vector<std::string>& arg_names() const;
 
-      const std::string m_name;
+    private:
+      class priv_data;
 
-      std::vector<std::string> m_arg_names;
-
+      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
   };
 
   template <typename T_type>
@@ -109,7 +107,7 @@ namespace DBus
           DBus::priv::dbus_function_traits<std::function<T_type>> method_sig_gen;
           for(int i = 0; i < space_depth; i++ ) spaces += " ";
           sout << spaces << "<method name=\"" << name() << "\">\n";
-          sout << method_sig_gen.introspect(m_arg_names, 0, spaces + "  " );
+          sout << method_sig_gen.introspect(arg_names(), 0, spaces + "  " );
           sout << spaces << "</method>\n";
           return sout.str();
       }
@@ -162,7 +160,7 @@ namespace DBus
       }
 
 
-    protected:
+    private:
       sigc::slot<T_type> m_slot;
   };
 

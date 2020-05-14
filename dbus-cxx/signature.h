@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <dbus-cxx/path.h>
 #include <dbus-cxx/signatureiterator.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 #include <any>
 #include <map>
 #include <memory>
@@ -83,8 +84,8 @@ namespace priv {
 
       Signature( size_type n, char c );
 
-      template<class InputIterator>
-      Signature( InputIterator first, InputIterator last ): m_signature( first, last ) { }
+//      template<class InputIterator>
+//      Signature( InputIterator first, InputIterator last ): m_signature( first, last ) { }
 
       ~Signature();
 
@@ -96,7 +97,7 @@ namespace priv {
 
       Signature& operator=(const char* s);
 
-      bool operator==(const std::string& s) const { return m_signature == s; }
+      bool operator==(const std::string& s) const { return str() == s; }
 
       iterator begin();
 
@@ -128,11 +129,10 @@ namespace priv {
 
       void print_node( std::ostream* stream, priv::SignatureNode* node, int spaces ) const;
 
-    protected:
-      std::string m_signature;
-      std::shared_ptr<priv::SignatureNode> m_startingNode;
-      bool m_valid;
+    private:
+      class priv_data;
 
+      std::shared_ptr<priv_data> m_priv;
   };
 
   inline std::string signature( std::any )     { return DBUS_TYPE_INVALID_AS_STRING; }

@@ -61,7 +61,7 @@ namespace DBus
 
   bool SignalMessage::set_path( const std::string& p )
   {
-      m_headerMap[ MessageHeaderFields::Path ] = Variant( Path( p ) );
+      set_header_field( MessageHeaderFields::Path, Variant( Path( p ) ) );
       return true;
   }
 
@@ -93,7 +93,7 @@ namespace DBus
   bool SignalMessage::set_interface( const std::string& i )
   {
       if( !Validator::validate_interface_name( i ) ) return false;
-    m_headerMap[ MessageHeaderFields::Interface ] = Variant( i );
+    set_header_field( MessageHeaderFields::Interface, Variant( i ) );
     return true;
   }
 
@@ -107,7 +107,7 @@ namespace DBus
 
   bool SignalMessage::set_member( const std::string& m )
   {
-    m_headerMap[ MessageHeaderFields::Member ] = Variant( m );
+    set_header_field( MessageHeaderFields::Member, Variant( m ) );
     return true;
   }
 

@@ -29,6 +29,17 @@
 
 using DBus::priv::SASL;
 
+class SASL::priv_data{
+public:
+    priv_data( int fd, bool negotiateFDPassing ) :
+        m_fd( fd ),
+        m_negotiateFDpassing( negotiateFDPassing )
+    {}
+
+    int m_fd;
+    bool m_negotiateFDpassing;
+};
+
 static const std::regex OK_REGEX( "OK ([a-z0-9]*)" );
 static const std::regex DATA_REGEX( "DATA ([a-z0-9]*)" );
 static const std::regex ERROR_REGEX( "ERROR(.*)" );
@@ -48,10 +59,11 @@ static int hexchar2int( char c ){
 }
 
 SASL::SASL( int fd, bool negotiateFDPassing ) :
-    m_fd( fd ),
-    m_negotiateFDpassing( negotiateFDPassing ){
+    m_priv( std::make_unique<priv_data>( fd, negotiateFDPassing ) ){
 
 }
+
+SASL::~SASL(){}
 
 std::tuple<bool,bool,std::vector<uint8_t>> SASL::authenticate() {
     bool success = false;
@@ -80,7 +92,7 @@ std::tuple<bool,bool,std::vector<uint8_t>> SASL::authenticate() {
         goto out;
     }
 
-    if( m_negotiateFDpassing ){
+    if( m_priv->m_negotiateFDpassing ){
         write_data_with_newline( "NEGOTIATE_UNIX_FD" );
         line = read_data();
 
@@ -106,7 +118,7 @@ out:
 int SASL::write_data_with_newline( std::string data ){
     SIMPLELOGGER_DEBUG("DBus.priv.SASL", "Sending command: " + data );
     data += "\r\n";
-    return ::write( m_fd, data.c_str(), data.length() );
+    return ::write( m_priv->m_fd, data.c_str(), data.length() );
 }
 
 std::string SASL::read_data(){
@@ -115,7 +127,7 @@ std::string SASL::read_data(){
     ssize_t bytesRead;
 
     pollfd pollfd;
-    pollfd.fd = m_fd;
+    pollfd.fd = m_priv->m_fd;
     pollfd.events = POLLIN;
 
     if( poll( &pollfd, 1, -1 ) < 0 ){
@@ -126,7 +138,7 @@ std::string SASL::read_data(){
 
     // TODO Note that we are making an assumption here that we don't
     // have a short read.  This may need to be fixed in the future.
-    bytesRead = ::read( m_fd, &dataBuffer, 512 );
+    bytesRead = ::read( m_priv->m_fd, &dataBuffer, 512 );
     line_read = std::string( dataBuffer, bytesRead );
 
     SIMPLELOGGER_DEBUG("DBus.priv.SASL", "Received response: " + line_read );

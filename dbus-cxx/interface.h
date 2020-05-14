@@ -20,6 +20,7 @@
 #include "path.h"
 #include <dbus-cxx/methodbase.h>
 #include <dbus-cxx/dbus_signal.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 #include <sigc++/sigc++.h>
 #include <set>
 #include <map>
@@ -197,7 +198,7 @@ namespace DBus {
       create_signal( const std::string& member )
       {
         std::shared_ptr<DBus::signal<T_type...> > sig;
-        sig = DBus::signal<T_type...>::create(path(), m_name, member);
+        sig = DBus::signal<T_type...>::create(path(), name(), member);
         if ( this->add_signal(sig) ) return sig;
         return std::shared_ptr<DBus::signal<T_type...> >();
       }
@@ -220,29 +221,16 @@ namespace DBus {
 
       /** Returns a DBus XML description of this interface */
       std::string introspect(int space_depth=0) const;
+
+    private:
+      void set_path( const std::string& new_path );
       
-    protected:
+    private:
+      class priv_data;
+
+      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
 
       friend class Object;
-
-      const std::string m_name;
-
-      std::string m_path;
-      
-      Methods m_methods;
-
-      Signals m_signals;
-
-      mutable std::shared_mutex m_methods_rwlock;
-
-      mutable std::shared_mutex m_signals_rwlock;
-      
-      sigc::signal<void(std::shared_ptr<MethodBase>)> m_signal_method_added;
-      
-      sigc::signal<void(std::shared_ptr<MethodBase>)> m_signal_method_removed;
-
-      void set_path( const std::string& new_path );
-
   };
 
 } /* namespace DBus */
