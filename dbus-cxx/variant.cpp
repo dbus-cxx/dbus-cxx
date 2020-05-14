@@ -21,7 +21,6 @@
 #include <dbus-cxx/marshaling.h>
 #include <dbus-cxx/dbus-cxx-private.h>
 #include <stdint.h>
-#include <dbus/dbus.h>
 #include "enums.h"
 #include "path.h"
 #include "signature.h"
@@ -262,46 +261,46 @@ std::any Variant::value() const {
 
 DBus::Variant Variant::createFromMessage( MessageIterator iter ){
     std::string signature = iter.signature();
-    if( signature == DBUS_TYPE_BYTE_AS_STRING ){
+    if( signature == DBUSCXX_TYPE_BYTE_AS_STRING ){
         return Variant( (uint8_t)iter );
     }
-    if( signature == DBUS_TYPE_BOOLEAN_AS_STRING ){
+    if( signature == DBUSCXX_TYPE_BOOLEAN_AS_STRING ){
         return Variant( (bool)iter );
     }
-    if( signature == DBUS_TYPE_INT16_AS_STRING ){
+    if( signature == DBUSCXX_TYPE_INT16_AS_STRING ){
         return Variant( (int16_t)iter );
     }
-    if( signature == DBUS_TYPE_UINT16_AS_STRING ){
+    if( signature == DBUSCXX_TYPE_UINT16_AS_STRING ){
         return Variant( (uint16_t)iter );
     }
-    if( signature == DBUS_TYPE_INT32_AS_STRING ){
+    if( signature == DBUSCXX_TYPE_INT32_AS_STRING ){
         return Variant( (int32_t)iter );
     }
-    if( signature == DBUS_TYPE_UINT32_AS_STRING ){
+    if( signature == DBUSCXX_TYPE_UINT32_AS_STRING ){
         return Variant( (uint32_t)iter );
     }
-    if( signature == DBUS_TYPE_INT64_AS_STRING ){
+    if( signature == DBUSCXX_TYPE_INT64_AS_STRING ){
         return Variant( (int64_t)iter );
     }
-    if( signature == DBUS_TYPE_UINT64_AS_STRING ){
+    if( signature == DBUSCXX_TYPE_UINT64_AS_STRING ){
         return Variant( (uint64_t)iter );
     }
-    if( signature == DBUS_TYPE_DOUBLE_AS_STRING ){
+    if( signature == DBUSCXX_TYPE_DOUBLE_AS_STRING ){
         return Variant( (double)iter );
     }
-    if( signature == DBUS_TYPE_STRING_AS_STRING ){
+    if( signature == DBUSCXX_TYPE_STRING_AS_STRING ){
         return Variant( (std::string)iter );
     }
-    if( signature == DBUS_TYPE_SIGNATURE_AS_STRING ){
+    if( signature == DBUSCXX_TYPE_SIGNATURE_AS_STRING ){
         return Variant( (Signature)iter );
     }
-    if( signature == DBUS_TYPE_OBJECT_PATH_AS_STRING ){
+    if( signature == DBUSCXX_TYPE_OBJECT_PATH_AS_STRING ){
         return Variant( (Path)iter );
     }
-    if( signature == DBUS_TYPE_VARIANT_AS_STRING ){
+    if( signature == DBUSCXX_TYPE_VARIANT_AS_STRING ){
         return DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT( iter );
     }
-    if( signature == DBUS_TYPE_UNIX_FD_AS_STRING ){
+    if( signature == DBUSCXX_TYPE_UNIX_FD_AS_STRING ){
         return Variant( (std::shared_ptr<FileDescriptor>)iter );
     }
 

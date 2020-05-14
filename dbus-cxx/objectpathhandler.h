@@ -17,7 +17,6 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/messagehandler.h>
-#include <dbus/dbus.h>
 #include <dbus-cxx/dbus-cxx-config.h>
 #include <memory>
 #include <string>

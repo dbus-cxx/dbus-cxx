@@ -18,7 +18,6 @@
  ***************************************************************************/
 #include "messageiterator.h"
 #include <cstring>
-#include <dbus/dbus.h>
 #include "filedescriptor.h"
 #include "message.h"
 #include "types.h"

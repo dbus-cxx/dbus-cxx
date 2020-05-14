@@ -30,7 +30,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <dbus/dbus.h>
 #include "enums.h"
 #include <sigc++/sigc++.h>
 #include <future>
@@ -45,6 +44,18 @@
 #define DBUSCXX_NAME_FLAG_REPLACE_EXISTING 0x02
 /** Same as DBUS_NAME_FLAG_DO_NOT_QUEUE.  See request_name(). */
 #define DBUSCXX_NAME_FLAG_DO_NOT_QUEUE 0x04
+
+#define DBUSCXX_INTERFACE_INTROSPECTABLE "org.freedesktop.DBus.Introspectable"
+/** XML namespace of the introspection format version 1.0 */
+#define DBUSCXX_INTROSPECT_1_0_XML_NAMESPACE         "http://www.freedesktop.org/standards/dbus"
+/** XML public identifier of the introspection format version 1.0 */
+#define DBUSCXX_INTROSPECT_1_0_XML_PUBLIC_IDENTIFIER "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+/** XML system identifier of the introspection format version 1.0 */
+#define DBUSCXX_INTROSPECT_1_0_XML_SYSTEM_IDENTIFIER "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd"
+/** XML document type declaration of the introspection format version 1.0 */
+#define DBUSCXX_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE "<!DOCTYPE node PUBLIC \""\
+    DBUSCXX_INTROSPECT_1_0_XML_PUBLIC_IDENTIFIER "\"\n\"" DBUSCXX_INTROSPECT_1_0_XML_SYSTEM_IDENTIFIER "\">\n"
+
 
 namespace DBus
 {
@@ -349,8 +360,6 @@ namespace DBus
       //       bool register_object( Object& obj, const std::string & path );
 //
 //       bool register_signal( signal_base& );
-
-      static void set_global_change_sigpipe(bool will_modify_sigpipe=true);
 
       std::string introspect( const std::string& destination, const std::string& path );
 

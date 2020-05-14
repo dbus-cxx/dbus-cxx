@@ -17,7 +17,6 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "signature.h"
-#include <dbus/dbus.h>
 #include <stack>
 #include "dbus-cxx-private.h"
 

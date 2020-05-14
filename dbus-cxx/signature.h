@@ -26,12 +26,30 @@
 #include <ostream>
 #include <string>
 #include <vector>
-#include <dbus/dbus.h>
 #include <stack>
 #include "enums.h"
 
 #ifndef DBUSCXX_SIGNATURE_H
 #define DBUSCXX_SIGNATURE_H
+
+#define DBUSCXX_TYPE_INVALID_AS_STRING "\0"
+#define DBUSCXX_TYPE_BYTE_AS_STRING "y"
+#define DBUSCXX_TYPE_BOOLEAN_AS_STRING "b"
+#define DBUSCXX_TYPE_INT16_AS_STRING "n"
+#define DBUSCXX_TYPE_UINT16_AS_STRING "q"
+#define DBUSCXX_TYPE_INT32_AS_STRING "i"
+#define DBUSCXX_TYPE_UINT32_AS_STRING "u"
+#define DBUSCXX_TYPE_INT64_AS_STRING "x"
+#define DBUSCXX_TYPE_UINT64_AS_STRING "t"
+#define DBUSCXX_TYPE_DOUBLE_AS_STRING "d"
+#define DBUSCXX_TYPE_STRING_AS_STRING "s"
+#define DBUSCXX_TYPE_SIGNATURE_AS_STRING "g"
+#define DBUSCXX_TYPE_OBJECT_PATH_AS_STRING "o"
+#define DBUSCXX_TYPE_VARIANT_AS_STRING "v"
+#define DBUSCXX_TYPE_UNIX_FD_AS_STRING "h"
+#define DBUSCXX_TYPE_ARRAY_AS_STRING "a"
+#define DBUSCXX_DICT_ENTRY_BEGIN_CHAR_AS_STRING "{"
+#define DBUSCXX_DICT_ENTRY_END_CHAR_AS_STRING "}"
 
 namespace DBus
 {
@@ -135,42 +153,32 @@ namespace priv {
       std::shared_ptr<priv_data> m_priv;
   };
 
-  inline std::string signature( std::any )     { return DBUS_TYPE_INVALID_AS_STRING; }
-  inline std::string signature( uint8_t )     { return DBUS_TYPE_BYTE_AS_STRING; }
-  inline std::string signature( bool )        { return DBUS_TYPE_BOOLEAN_AS_STRING; }
-  inline std::string signature( int16_t )     { return DBUS_TYPE_INT16_AS_STRING; }
-  inline std::string signature( uint16_t )    { return DBUS_TYPE_UINT16_AS_STRING; }
-  inline std::string signature( int32_t )     { return DBUS_TYPE_INT32_AS_STRING; }
-  inline std::string signature( uint32_t )    { return DBUS_TYPE_UINT32_AS_STRING; }
-  inline std::string signature( int64_t )     { return DBUS_TYPE_INT64_AS_STRING; }
-  inline std::string signature( uint64_t )    { return DBUS_TYPE_UINT64_AS_STRING;      }
-  inline std::string signature( double )      { return DBUS_TYPE_DOUBLE_AS_STRING;      }
-  inline std::string signature( std::string ) { return DBUS_TYPE_STRING_AS_STRING;      }
-  inline std::string signature( Signature )   { return DBUS_TYPE_SIGNATURE_AS_STRING;   }
-  inline std::string signature( Path )        { return DBUS_TYPE_OBJECT_PATH_AS_STRING; }
-  inline std::string signature( const DBus::Variant& )     { return DBUS_TYPE_VARIANT_AS_STRING; }
-  inline std::string signature( const std::shared_ptr<FileDescriptor> )  { return DBUS_TYPE_UNIX_FD_AS_STRING; }
-
-  inline std::string signature( char )        { return DBUS_TYPE_BYTE_AS_STRING;        }
-  inline std::string signature( int8_t )      { return DBUS_TYPE_BYTE_AS_STRING;        }
+  inline std::string signature( std::any )     { return DBUSCXX_TYPE_INVALID_AS_STRING; }
+  inline std::string signature( uint8_t )     { return DBUSCXX_TYPE_BYTE_AS_STRING; }
+  inline std::string signature( bool )        { return DBUSCXX_TYPE_BOOLEAN_AS_STRING; }
+  inline std::string signature( int16_t )     { return DBUSCXX_TYPE_INT16_AS_STRING; }
+  inline std::string signature( uint16_t )    { return DBUSCXX_TYPE_UINT16_AS_STRING; }
+  inline std::string signature( int32_t )     { return DBUSCXX_TYPE_INT32_AS_STRING; }
+  inline std::string signature( uint32_t )    { return DBUSCXX_TYPE_UINT32_AS_STRING; }
+  inline std::string signature( int64_t )     { return DBUSCXX_TYPE_INT64_AS_STRING; }
+  inline std::string signature( uint64_t )    { return DBUSCXX_TYPE_UINT64_AS_STRING;      }
+  inline std::string signature( double )      { return DBUSCXX_TYPE_DOUBLE_AS_STRING;      }
+  inline std::string signature( std::string ) { return DBUSCXX_TYPE_STRING_AS_STRING;      }
+  inline std::string signature( Signature )   { return DBUSCXX_TYPE_SIGNATURE_AS_STRING;   }
+  inline std::string signature( Path )        { return DBUSCXX_TYPE_OBJECT_PATH_AS_STRING; }
+  inline std::string signature( const DBus::Variant& )     { return DBUSCXX_TYPE_VARIANT_AS_STRING; }
+  inline std::string signature( const std::shared_ptr<FileDescriptor> )  { return DBUSCXX_TYPE_UNIX_FD_AS_STRING; }
   
-#if DBUS_CXX_SIZEOF_LONG_INT == 4
-  inline std::string signature( long int )          { return DBUS_TYPE_INT32_AS_STRING;       }
-  inline std::string signature( long unsigned int ) { return DBUS_TYPE_UINT32_AS_STRING;      }
-#endif
-  
-  inline std::string signature( float )         { return DBUS_TYPE_DOUBLE_AS_STRING; }
-  
-   template <typename T> inline std::string signature( const std::vector<T> ) { T t; return DBUS_TYPE_ARRAY_AS_STRING + signature( t ); }
+   template <typename T> inline std::string signature( const std::vector<T> ) { T t; return DBUSCXX_TYPE_ARRAY_AS_STRING + signature( t ); }
 
    template <typename Key,typename Data> inline std::string signature( const std::map<Key,Data> )
    {
      Key k; Data d;
      std::string sig;
-     sig = DBUS_TYPE_ARRAY_AS_STRING;
-     sig += DBUS_DICT_ENTRY_BEGIN_CHAR_AS_STRING + 
+     sig = DBUSCXX_TYPE_ARRAY_AS_STRING;
+     sig += DBUSCXX_DICT_ENTRY_BEGIN_CHAR_AS_STRING +
            signature(k) + signature(d) + 
-           DBUS_DICT_ENTRY_END_CHAR_AS_STRING;
+           DBUSCXX_DICT_ENTRY_END_CHAR_AS_STRING;
      return sig;
    }
 
@@ -182,9 +190,9 @@ namespace priv {
    {
      Key k; Data d;
      std::string sig;
-     sig = DBUS_DICT_ENTRY_BEGIN_CHAR_AS_STRING + 
+     sig = DBUSCXX_DICT_ENTRY_BEGIN_CHAR_AS_STRING +
            signature(k) + signature(d) + 
-           DBUS_DICT_ENTRY_END_CHAR_AS_STRING;
+           DBUSCXX_DICT_ENTRY_END_CHAR_AS_STRING;
      return sig;
    }
 

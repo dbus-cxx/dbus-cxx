@@ -17,7 +17,6 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "message.h"
-#include <dbus/dbus.h>
 #include "messageappenditerator.h"
 #include "messageiterator.h"
 #include "returnmessage.h"

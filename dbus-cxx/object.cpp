@@ -23,7 +23,6 @@
 #include "callmessage.h"
 #include "connection.h"
 #include "dbus-cxx-private.h"
-#include <dbus/dbus.h>
 #include "interface.h"
 #include "message.h"
 #include "objectpathhandler.h"
@@ -325,7 +324,7 @@ namespace DBus
       {
         SIMPLELOGGER_DEBUG(LOGGER_NAME,"Object::handle_call_message: introspection interface called");
         std::shared_ptr<ReturnMessage> return_message = msg->create_reply();
-        std::string introspection = DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE;
+        std::string introspection = DBUSCXX_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE;
         introspection += this->introspect();
         *return_message << introspection;
         conn << return_message;

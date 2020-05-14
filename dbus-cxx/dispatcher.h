@@ -16,7 +16,6 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <dbus/dbus.h>
 #include <dbus-cxx/dbus-cxx-config.h>
 #include <list>
 #include <map>

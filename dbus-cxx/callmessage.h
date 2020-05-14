@@ -18,7 +18,6 @@
  ***************************************************************************/
 #include <dbus-cxx/message.h>
 #include <dbus-cxx/path.h>
-#include <dbus/dbus.h>
 #include <memory>
 #include <string>
 #include <vector>

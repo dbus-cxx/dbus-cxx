@@ -33,7 +33,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <dbus/dbus.h>
 #include "enums.h"
 #include "error.h"
 #include <sigc++/sigc++.h>

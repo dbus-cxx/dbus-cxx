@@ -747,11 +747,6 @@ public:
     return m_priv->m_filter_signal;
   }
 
-  void Connection::set_global_change_sigpipe(bool will_modify_sigpipe)
-  {
-    dbus_connection_set_change_sigpipe(will_modify_sigpipe);
-  }
-
   std::shared_ptr<Object> Connection::create_object(const std::string & path, ThreadForCalling calling)
   {
     std::shared_ptr<Object> object = Object::create( path );
@@ -1009,7 +1004,7 @@ public:
     
     if ( destination.empty() or path.empty() ) return failed;
     
-    std::shared_ptr<CallMessage> msg = CallMessage::create( destination.c_str(), path.c_str(), DBUS_INTERFACE_INTROSPECTABLE, "Introspect" );
+    std::shared_ptr<CallMessage> msg = CallMessage::create( destination.c_str(), path.c_str(), DBUSCXX_INTERFACE_INTROSPECTABLE, "Introspect" );
     
     std::shared_ptr<Message> retmsg;
     std::shared_ptr<PendingCall> pending;

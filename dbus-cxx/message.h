@@ -20,7 +20,6 @@
 #include <dbus-cxx/error.h>
 #include <dbus-cxx/messageappenditerator.h>
 #include <dbus-cxx/messageiterator.h>
-#include <dbus/dbus.h>
 #include <memory>
 #include <string>
 #include "enums.h"

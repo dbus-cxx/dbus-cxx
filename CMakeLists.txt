@@ -35,8 +35,7 @@ set( DBUS_CXX_PACKAGE_MICRO_VERSION 0 )
 set( PKG_VERSION ${DBUS_CXX_PACKAGE_MAJOR_VERSION}.${DBUS_CXX_PACKAGE_MINOR_VERSION}.${DBUS_CXX_PACKAGE_MICRO_VERSION} )
 set( DBUS_CXX_MAJMIN_VERSION ${DBUS_CXX_PACKAGE_MAJOR_VERSION}.${DBUS_CXX_PACKAGE_MINOR_VERSION} )
 
-# Our required dependencies are libdbus and libsigc++
-pkg_check_modules( dbus REQUIRED dbus-1>=1.3 )
+# Our required dependencies: libsigc++ 3.0
 pkg_check_modules( sigc REQUIRED sigc++-3.0 )
 
 #

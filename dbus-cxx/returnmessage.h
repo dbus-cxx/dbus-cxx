@@ -18,7 +18,6 @@
  ***************************************************************************/
 #include <stdint.h>
 #include <dbus-cxx/message.h>
-#include <dbus/dbus.h>
 #include <memory>
 #include <string>
 

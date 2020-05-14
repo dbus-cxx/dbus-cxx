@@ -16,7 +16,6 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <dbus/dbus.h>
 #include <ostream>
 
 #ifndef DBUSCXX_ENUMS_H
@@ -27,9 +26,9 @@ namespace DBus {
   enum class BusType
   {
     NONE=-1,
-    SESSION=DBUS_BUS_SESSION,     /**< The login session bus */
-    SYSTEM=DBUS_BUS_SYSTEM,      /**< The systemwide bus */
-    STARTER=DBUS_BUS_STARTER     /**< The bus that started us, if any */
+    SESSION,     /**< The login session bus */
+    SYSTEM,      /**< The systemwide bus */
+    STARTER     /**< The bus that started us, if any */
   };
 
 
@@ -41,33 +40,33 @@ namespace DBus {
 
   enum class DataType
   {
-    INVALID = DBUS_TYPE_INVALID,
-    BYTE = DBUS_TYPE_BYTE,
-    BOOLEAN = DBUS_TYPE_BOOLEAN,
-    INT16 = DBUS_TYPE_INT16,
-    UINT16 = DBUS_TYPE_UINT16,
-    INT32 = DBUS_TYPE_INT32,
-    UINT32 = DBUS_TYPE_UINT32,
-    INT64 = DBUS_TYPE_INT64,
-    UINT64 = DBUS_TYPE_UINT64,
-    DOUBLE = DBUS_TYPE_DOUBLE,
-    STRING = DBUS_TYPE_STRING,
-    OBJECT_PATH = DBUS_TYPE_OBJECT_PATH,
-    SIGNATURE = DBUS_TYPE_SIGNATURE,
-    ARRAY = DBUS_TYPE_ARRAY,
-    VARIANT = DBUS_TYPE_VARIANT,
-    STRUCT = DBUS_TYPE_STRUCT,
-    DICT_ENTRY = DBUS_TYPE_DICT_ENTRY,
-    UNIX_FD = DBUS_TYPE_UNIX_FD,
+    INVALID = '\0',
+    BYTE = 'y',
+    BOOLEAN = 'b',
+    INT16 = 'n',
+    UINT16 = 'q',
+    INT32 = 'i',
+    UINT32 = 'u',
+    INT64 = 'x',
+    UINT64 = 't',
+    DOUBLE = 'd',
+    STRING = 's',
+    OBJECT_PATH = 'o',
+    SIGNATURE = 'g',
+    ARRAY = 'a',
+    VARIANT = 'v',
+    STRUCT = 'r',
+    DICT_ENTRY = 'e',
+    UNIX_FD = 'h',
   };
 
   enum class ContainerType
   {
       None,
-    ARRAY = DBUS_TYPE_ARRAY,
-    VARIANT = DBUS_TYPE_VARIANT,
-    STRUCT = DBUS_TYPE_STRUCT,
-    DICT_ENTRY = DBUS_TYPE_DICT_ENTRY,
+    ARRAY = 'a',
+    VARIANT = 'v',
+    STRUCT = 'r',
+    DICT_ENTRY = 'e',
   };
 
   enum class MessageType : int32_t
@@ -81,9 +80,9 @@ namespace DBus {
 
   enum class DispatchStatus
   {
-    DATA_REMAINS = DBUS_DISPATCH_DATA_REMAINS,
-    COMPLETE     = DBUS_DISPATCH_COMPLETE,
-    NEED_MEMORY  = DBUS_DISPATCH_NEED_MEMORY,
+    DATA_REMAINS,
+    COMPLETE,
+    NEED_MEMORY,
   };
 
   enum class HandlerResult
@@ -102,25 +101,18 @@ namespace DBus {
 
   enum class FilterResult
   {
-    FILTER = DBUS_HANDLER_RESULT_HANDLED,
-    DONT_FILTER = DBUS_HANDLER_RESULT_NOT_YET_HANDLED,
-    NEEDS_MEMORY = DBUS_HANDLER_RESULT_NEED_MEMORY
+    FILTER,
+    DONT_FILTER,
+    NEEDS_MEMORY
   };
 
   enum class StartReply
   {
     FAILED = 0,
-    SUCCESS = DBUS_START_REPLY_SUCCESS,
-    ALREADY_RUNNING = DBUS_START_REPLY_ALREADY_RUNNING,
+    SUCCESS,
+    ALREADY_RUNNING,
   };
 
-  enum class WatchStatus
-  {
-    READABLE = DBUS_WATCH_READABLE,
-    WRITABLE = DBUS_WATCH_WRITABLE,
-    ERROR = DBUS_WATCH_ERROR,
-    HANGUP = DBUS_WATCH_HANGUP
-  };
 
   enum class PrimaryFallback
   {

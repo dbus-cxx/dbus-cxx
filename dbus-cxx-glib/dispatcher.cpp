@@ -18,7 +18,6 @@
  ***************************************************************************/
 #include "dispatcher.h"
 #include <iostream>
-#include <dbus/dbus.h>
 
 #include <dbus-cxx/signalmessage.h>
 

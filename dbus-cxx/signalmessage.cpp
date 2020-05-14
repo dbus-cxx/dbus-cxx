@@ -17,7 +17,6 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "signalmessage.h"
-#include <dbus/dbus.h>
 #include "error.h"
 #include "message.h"
 #include "validator.h"

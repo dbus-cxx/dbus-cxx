@@ -17,7 +17,6 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "utility.h"
-#include <dbus/dbus.h>
 #include <stdio.h>
 #include <iostream>
 #include <mutex>

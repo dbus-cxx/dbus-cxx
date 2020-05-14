@@ -21,7 +21,6 @@
 #include <dbus-cxx/signature.h>
 #include <dbus-cxx/marshaling.h>
 #include <dbus-cxx/dbus-cxx-config.h>
-#include <dbus/dbus.h>
 #include <stddef.h>
 #include <map>
 #include <memory>
