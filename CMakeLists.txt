@@ -69,6 +69,13 @@ if( ${DBUS_CXX_HAS_CXXABI_H} )
 	check_cxx_symbol_exists( "abi::__cxa_demangle" "cxxabi.h" DBUS_CXX_HAS_CXA_DEMANGLE )
 endif( ${DBUS_CXX_HAS_CXXABI_H} )
 
+# Check for std::propaogate_const
+try_compile( DBUS_CXX_HAS_PROP_CONST
+    "${CMAKE_BINARY_DIR}/temp"
+    "${CMAKE_SOURCE_DIR}/cmake-tests/propagate-const.cpp"
+    CMAKE_FLAGS -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_STANDARD_REQUIRED=ON
+)
+
 # 
 # All sources
 #
@@ -347,3 +354,4 @@ message(STATUS "  Enable code coverage report ..... : ${ENABLE_CODE_COVERAGE_REP
 if( CMAKE_BUILD_TYPE MATCHES Debug )
 message(STATUS "  libasan enabled ................. : ${ENABLE_ASAN}")
 endif()
+message(STATUS "  propagate_const ................. : ${DBUS_CXX_HAS_PROP_CONST}")

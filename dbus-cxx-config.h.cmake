@@ -28,4 +28,13 @@
 #define DBUS_CXX_PACKAGE_MINOR_VERSION ${DBUS_CXX_PACKAGE_MINOR_VERSION}
 #define DBUS_CXX_PACKAGE_MICRO_VERSION ${DBUS_CXX_PACKAGE_MICRO_VERSION}
 
+#cmakedefine01 DBUS_CXX_HAS_PROP_CONST
+
+#if DBUS_CXX_HAS_PROP_CONST
+#include <experimental/propagate_const>
+#define DBUS_CXX_PROPAGATE_CONST(T) std::experimental::propagate_const<T>
+#else
+#define DBUS_CXX_PROPAGATE_CONST(T) T
+#endif
+
 #endif /* DBUSCXX_CONFIG_H */
