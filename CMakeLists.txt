@@ -50,6 +50,7 @@ option( ENABLE_CODE_COVERAGE_REPORT "Enable code coverage report" OFF )
 if( CMAKE_BUILD_TYPE MATCHES Debug )
 option( ENABLE_ASAN "Enable ASAN for finding memory bugs" OFF )
 endif()
+option( ENABLE_QT_SUPPORT "Build libdbuscxx-qt for integration with Qt applications" OFF )
 
 #
 # Configure our compile options
@@ -215,6 +216,13 @@ if( ENABLE_GLIBMM )
 endif( ENABLE_GLIBMM )
 
 #
+# If Qt should be supported, add in the appropriate code
+#
+if( ENABLE_QT_SUPPORT )
+    add_subdirectory( dbus-cxx-qt )
+endif( ENABLE_QT_SUPPORT )
+
+#
 # Library install information
 #
 set( install_targets ${install_targets} dbus-cxx )
@@ -354,3 +362,6 @@ if( CMAKE_BUILD_TYPE MATCHES Debug )
 message(STATUS "  libasan enabled ................. : ${ENABLE_ASAN}")
 endif()
 message(STATUS "  propagate_const ................. : ${DBUS_CXX_HAS_PROP_CONST}")
+
+message(STATUS "Library Support:" )
+message(STATUS "  Qt .............................. : ${ENABLE_QT_SUPPORT}")
