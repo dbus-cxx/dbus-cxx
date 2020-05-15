@@ -23,7 +23,14 @@ if [ "$CLIENT_EXISTS" -ne "0" ]
 then
 	EXIT_CODE=2
 else
-	kill $CLIENT_PID
+	sleep 6
+	kill -0 $CLIENT_PID
+	CLIENT_EXISTS=$?
+	if [ "$CLIENT_EXISTS" -ne "0" ]
+	then
+		echo "Killing client!"
+		kill $CLIENT_PID
+	fi
 fi
 
 
