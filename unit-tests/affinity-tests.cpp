@@ -54,7 +54,7 @@ public:
     }
 
     bool remove_signal_proxy( std::shared_ptr<DBus::signal_proxy_base> handler ){
-
+        return true;
     }
 
     void add_signal( std::shared_ptr<const DBus::SignalMessage> message ){
