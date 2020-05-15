@@ -9,6 +9,10 @@ include_directories( ${CMAKE_SOURCE_DIR}/dbus-cxx
     ${dbus_INCLUDE_DIRS} 
     ${sigc_INCLUDE_DIRS} )
 
+if( ENABLE_ROBUSTNESS_TESTS )
+    add_subdirectory( robustness-tests )
+endif( ENABLE_ROBUSTNESS_TESTS )
+
 add_executable( test-callmessage callmessagetests.cpp )
 target_link_libraries( test-callmessage ${TEST_LINK} )
 target_include_directories( test-callmessage PUBLIC ${CMAKE_SOURCE_DIR} )
