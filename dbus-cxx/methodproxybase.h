@@ -165,6 +165,19 @@ namespace DBus
         return _retval;
     }
 
+     std::future<T_return> call_async(T_arg... args ){
+          std::ostringstream debug_str;
+          DBus::priv::dbus_function_traits<std::function<void(T_arg...)>> method_sig_gen;
+
+          debug_str << "DBus::MethodProxy<";
+          debug_str << method_sig_gen.debug_string();
+          debug_str << "> calling async method=";
+          debug_str << name();
+          DBUSCXX_DEBUG_STDSTR( "DBus.MethodProxy", debug_str.str() );
+
+          return std::async( std::launch::async, *this, args... );
+     }
+
     static std::shared_ptr<MethodProxy> create(const std::string& name){
       return std::shared_ptr<MethodProxy>( new MethodProxy(name) );
     }
