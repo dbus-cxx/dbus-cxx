@@ -100,6 +100,31 @@ bool data_send_intcustom(){
     return TEST_EQUALS( val, 25 );
 }
 
+bool data_ping(){
+    std::shared_ptr<DBus::MethodProxy<void()>> pingMethod =
+            proxy->create_method<void()>( DBUS_CXX_PEER_INTERFACE, "Ping" );
+
+    (*pingMethod)();
+
+    return true;
+}
+
+bool data_machine_uuid(){
+    std::shared_ptr<DBus::MethodProxy<std::string()>> machineIdMethod =
+            proxy->create_method<std::string()>( DBUS_CXX_PEER_INTERFACE, "GetMachineId" );
+
+    std::string retval = (*machineIdMethod)();
+
+    // DBus Specification:
+    // The hex-encoded string may not contain hyphens or other non-hex-digit characters,
+    // and it must be exactly 32 characters long.
+    if( retval.length() == 32 ){
+        return true;
+    }
+
+    return false;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
   ret = data_##name();\
 } \
@@ -125,6 +150,8 @@ int main(int argc, char** argv){
     ADD_TEST(void_method);
     ADD_TEST(void_custom);
     ADD_TEST(send_intcustom);
+    ADD_TEST(ping);
+    ADD_TEST(machine_uuid);
   }else{
     server_setup();
     ret = true;

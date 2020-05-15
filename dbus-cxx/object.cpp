@@ -19,6 +19,7 @@
 #include "object.h"
 #include <cstring>
 #include <sstream>
+#include <fstream>
 #include <utility>
 #include "callmessage.h"
 #include "connection.h"
@@ -279,6 +280,12 @@ namespace DBus
          << spaces << "    <method name=\"Introspect\">\n"
          << spaces << "      <arg name=\"data\" type=\"s\" direction=\"out\"/>\n"
          << spaces << "    </method>\n"
+         << spaces << "  </interface>\n"
+         << spaces << "  <interface name=\"" << DBUS_CXX_PEER_INTERFACE << "\">\n"
+         << spaces << "    <method name=\"Ping\" />\n"
+         << spaces << "    <method name=\"GetMachineId\">\n"
+         << spaces << "      <arg name=\"machine_uuid\" type=\"s\" direction=\"out\"/>\n"
+         << spaces << "    </method>\n"
          << spaces << "  </interface>\n";
     for ( i = m_priv->m_interfaces.begin(); i != m_priv->m_interfaces.end(); i++ )
       sout << i->second->introspect(space_depth+2);
@@ -329,6 +336,32 @@ namespace DBus
         *return_message << introspection;
         conn << return_message;
         return HandlerResult::Handled;
+      }else if( msg->interface() == DBUS_CXX_PEER_INTERFACE ){
+          SIMPLELOGGER_DEBUG(LOGGER_NAME,"Object::handle_call_message: peer interface called");
+          if( msg->member() == "Ping" ){
+              conn << msg->create_reply();
+              return HandlerResult::Handled;
+          }else if( msg->member() == "GetMachineId" ){
+              std::ifstream inputFile( "/var/lib/dbus/machine-id" );
+              std::string line;
+              std::getline( inputFile, line );
+
+              if( inputFile.eof() ){
+                  SIMPLELOGGER_ERROR(LOGGER_NAME,"Unable to read machine ID.");
+                  std::shared_ptr<ErrorMessage> errmsg = msg->create_error_reply();
+                  errmsg->set_name( DBUSCXX_ERROR_IO_ERROR );
+                  errmsg->set_message( "Unable to read DBus machine ID file" );
+                  conn << errmsg;
+                  return HandlerResult::Handled;
+              }
+
+              std::shared_ptr<ReturnMessage> return_message = msg->create_reply();
+              return_message << line;
+              conn << return_message;
+              return HandlerResult::Handled;
+          }
+
+          return HandlerResult::Invalid_Method;
       }
 
       std::shared_lock lock( m_priv->m_interfaces_rwlock );

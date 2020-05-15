@@ -37,6 +37,7 @@
 #define DBUSCXX_UTILITY_H
 
 #define DBUS_CXX_INTROSPECTABLE_INTERFACE "org.freedesktop.DBus.Introspectable"
+#define DBUS_CXX_PEER_INTERFACE     "org.freedesktop.DBus.Peer"
 
 /**
  * \namespace DBus Global DBus namespace, where everything happens.
