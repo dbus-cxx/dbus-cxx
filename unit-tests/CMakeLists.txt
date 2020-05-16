@@ -250,3 +250,17 @@ add_test( NAME affinity-signal-dispatcher-thread COMMAND dbus-wrapper.sh test-af
 add_test( NAME affinity-signal-main-thread COMMAND dbus-wrapper.sh test-affinity signal_main_thread)
 add_test( NAME affinity-message-dispatcher-thread COMMAND dbus-wrapper.sh test-affinity message_dispatch_thread)
 add_test( NAME affinity-message-main-thread COMMAND dbus-wrapper.sh test-affinity message_main_thread)
+
+#
+# File Descriptor tests - make sure that we can send and receive file descriptors correctly
+#
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper-fd-tests.sh
+    ${CMAKE_CURRENT_BINARY_DIR}/dbus-wrapper-fd-tests.sh COPYONLY)
+add_executable( test-filedescriptor filedescriptor-tests.cpp )
+target_link_libraries( test-filedescriptor ${TEST_LINK} )
+target_include_directories( test-filedescriptor PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( test-filedescriptor PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+set_property( TARGET test-filedescriptor PROPERTY CXX_STANDARD 17 )
+
+add_test( NAME filedescriptor-send COMMAND dbus-wrapper-fd-tests.sh send)
+add_test( NAME filedescriptor-receive COMMAND dbus-wrapper-fd-tests.sh get)

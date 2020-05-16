@@ -159,7 +159,9 @@ namespace DBus
 
     Endianess endianess() const;
 
-    static std::shared_ptr<Message> create_from_data( uint8_t* data, uint32_t data_len );
+    const std::vector<int>& filedescriptors() const;
+
+    static std::shared_ptr<Message> create_from_data( uint8_t* data, uint32_t data_len, std::vector<int> fds = std::vector<int>() );
 
     protected:
 

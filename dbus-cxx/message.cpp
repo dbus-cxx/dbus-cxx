@@ -267,7 +267,7 @@ bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
     return true;
 }
 
-std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data_len ){
+std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data_len, std::vector<int> fds ){
     Demarshaling demarshal( data, data_len, Endianess::Big );
     uint8_t method_type;
     uint8_t flags;
@@ -278,6 +278,7 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
     std::shared_ptr<Message> retmsg;
     std::map<MessageHeaderFields,Variant> headerMap;
     Endianess msgEndian = Endianess::Big;
+    std::vector<int> real_fds;
 
     if( demarshal.demarshal_uint8_t() == 'l' ){
         demarshal.setEndianess( Endianess::Little );
@@ -310,6 +311,13 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
             continue;
         }
 
+        if( key == MessageHeaderFields::Unix_FDs ){
+            int total_fds = std::any_cast<uint32_t>( value.value() );
+            for( int fd_num = 0; fd_num < total_fds; fd_num++ ){
+                real_fds.push_back( fds[ fd_num ] );
+            }
+        }
+
         headerMap[ key ] = value;
     }
 
@@ -335,12 +343,15 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
         break;
     }
 
+    SIMPLELOGGER_DEBUG(LOGGER_NAME, "Message has " << real_fds.size() << " fds" );
+
     retmsg->m_priv->m_serial = serial;
     retmsg->m_priv->m_flags = flags;
     retmsg->m_priv->m_valid = true;
     retmsg->m_priv->m_headerMap = headerMap;
     retmsg->m_priv->m_endianess = msgEndian;
     retmsg->m_priv->m_body.reserve( bodyLen );
+    retmsg->m_priv->m_filedescriptors = real_fds;
     for( uint32_t x = 0; x < bodyLen; x++ ){
         retmsg->m_priv->m_body.push_back( demarshal.demarshal_uint8_t() );
     }
@@ -406,6 +417,9 @@ const std::vector<uint8_t>* Message::body() const{
 
 void Message::add_filedescriptor( int fd ){
     m_priv->m_filedescriptors.push_back( fd );
+
+    uint32_t fds_size = m_priv->m_filedescriptors.size();
+    set_header_field( MessageHeaderFields::Unix_FDs, Variant( fds_size ) );
 }
 
 uint32_t Message::filedescriptors_size() const{
@@ -423,6 +437,10 @@ int Message::filedescriptor_at_location(int location) const {
     }
 
     return -1;
+}
+
+const std::vector<int>& Message::filedescriptors() const {
+    return m_priv->m_filedescriptors;
 }
 
 std::ostream& operator <<( std::ostream& os, const DBus::Message* msg ){

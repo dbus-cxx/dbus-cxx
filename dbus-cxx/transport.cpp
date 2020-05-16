@@ -29,6 +29,7 @@
 #include "dbus-cxx-private.h"
 
 #include "simpletransport.h"
+#include "sendmsgtransport.h"
 #include "sasl.h"
 
 static const char* LOGGER_NAME = "DBus.Transport";
@@ -186,7 +187,7 @@ std::shared_ptr<Transport> Transport::open_transport( std::string address ){
             if( !path.empty() ){
                 fd = open_unix_socket( path, false );
                 if( fd >= 0 ){
-                    retTransport = SimpleTransport::create( fd, true );
+                    retTransport = SendmsgTransport::create( fd, true );
                     if( !retTransport->is_valid() ){
                         retTransport.reset();
                         continue;
@@ -199,7 +200,7 @@ std::shared_ptr<Transport> Transport::open_transport( std::string address ){
             if( !abstractPath.empty() ){
                 fd = open_unix_socket( abstractPath, true );
                 if( fd >= 0 ){
-                    retTransport = SimpleTransport::create( fd, true );
+                    retTransport = SendmsgTransport::create( fd, true );
                     if( !retTransport->is_valid() ){
                         retTransport.reset();
                         continue;
