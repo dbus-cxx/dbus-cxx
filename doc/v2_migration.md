@@ -19,7 +19,7 @@ to method signatures.
 You must also explicitly define what thread methods need to be called from to ensure
 proper multithreading.
 
-## Migratrion Example
+## Migration Example
 Given the following code with version 1:
 ```
     DBus::Object::pointer object = conn->create_object("/dbuscxx/example/Calculator");
@@ -34,7 +34,7 @@ This code now becomes:
     object->create_method<double(double,double)>("Calculator.Basic", "add", sigc::ptr_fun(add) );
 ```
 
-You can use the [library-upgrade.sh](library-upgrade.sh) script to help automate this
+You can use the [auto-upgrade.sh](auto-upgrade.sh) script to help automate this
 
 ## Type Changes
 
