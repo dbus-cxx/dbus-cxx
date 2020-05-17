@@ -166,11 +166,6 @@ namespace DBus
       operator int64_t();
       operator double();
       operator std::string();
-
-      #if DBUS_CXX_SIZEOF_LONG_INT == 4
-        operator long int();
-        operator unsigned long int();
-      #endif
       operator std::shared_ptr<FileDescriptor>();
       operator Variant();
         

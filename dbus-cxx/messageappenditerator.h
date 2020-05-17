@@ -89,12 +89,6 @@ namespace DBus
       MessageAppendIterator& operator<<( const Path& v );
       MessageAppendIterator& operator<<( const std::shared_ptr<FileDescriptor> v );
       MessageAppendIterator& operator<<( const Variant& v );
-/*
-      #if DBUS_CXX_SIZEOF_LONG_INT == 4
-        bool append( long int v );
-        bool append( long unsigned int v );
-      #endif
-*/
 
       template <typename T>
       MessageAppendIterator& operator<<( const std::vector<T>& v){
