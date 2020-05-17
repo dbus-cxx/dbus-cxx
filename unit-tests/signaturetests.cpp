@@ -239,6 +239,14 @@ bool signature_single_bool(){
     return true;
 }
 
+bool signature_create_from_struct_in_array(){
+    std::vector<std::tuple<int32_t,uint64_t>> vector_type;
+
+    std::string sig_output = DBus::signature( vector_type );
+
+    return sig_output == "a(it)";
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
   ret = signature_##name();\
 } \
@@ -265,6 +273,8 @@ int main(int argc, char** argv){
 
   ADD_TEST(unbalanced_struct);
   ADD_TEST(single_bool);
+
+  ADD_TEST(create_from_struct_in_array);
 
   return !ret;
 }

@@ -30,12 +30,32 @@ std::shared_ptr<DBus::MethodProxy<int(int,int)>> int_method_proxy;
 std::shared_ptr<DBus::MethodProxy<void()>> void_method_proxy;
 std::shared_ptr<DBus::MethodProxy<void(struct custom)>> void_custom_method_proxy;
 std::shared_ptr<DBus::MethodProxy<int(int, struct custom)>> int_custom_method_proxy2;
+std::shared_ptr<DBus::MethodProxy<bool(std::tuple<int,double,std::string>)>> tuple_method_proxy;
 
 std::shared_ptr<DBus::Object> object;
 std::shared_ptr<DBus::Method<int(int,int)>> int_method;
 std::shared_ptr<DBus::Method<void()>> void_method;
 std::shared_ptr<DBus::Method<void(struct custom)>> void_custom_method;
 std::shared_ptr<DBus::Method<int(int,struct custom)>> int_custom_method2;
+std::shared_ptr<DBus::Method<bool(std::tuple<int,double,std::string>)>> tuple_method;
+
+bool tuple_method_symbol(std::tuple<int,double,std::string> tup ){
+    bool retval = true;
+
+    if( std::get<0>( tup ) != 26 ){
+        retval = false;
+    }
+
+    if( std::get<1>( tup ) != 1.1 ){
+        retval = false;
+    }
+
+    if( std::get<2>( tup ) != "Tuple Check" ){
+        retval = false;
+    }
+
+    return retval;
+}
 
 int add(int a, int b){
     return a + b;
@@ -57,6 +77,7 @@ void client_setup(){
     void_method_proxy = proxy->create_method<void()>( "foo.what", "void" );
     void_custom_method_proxy = proxy->create_method<void(struct custom)>( "foo.what", "void_custom" );
     int_custom_method_proxy2 = proxy->create_method<int(int,struct custom)>( "foo.what", "int_intcustom" );
+    tuple_method_proxy = proxy->create_method<bool(std::tuple<int,double,std::string>)>( "foo.what", "tuple_method" );
 }
 
 void server_setup(){
@@ -68,6 +89,7 @@ void server_setup(){
     void_method = object->create_method<void()>("foo.what", "void", sigc::ptr_fun( void_method_symbol ) );
     void_custom_method = object->create_method<void(struct custom)>("foo.what", "void_custom", sigc::ptr_fun( void_custom_method_symbol ) );
     int_custom_method2 = object->create_method<int(int,struct custom)>("foo.what", "int_intcustom", sigc::ptr_fun( int_intcustom_symbol ) );
+    tuple_method = object->create_method<bool(std::tuple<int,double,std::string>)>("foo.what", "tuple_method", sigc::ptr_fun( tuple_method_symbol ) );
 }
 
 bool data_send_integers(){
@@ -125,6 +147,12 @@ bool data_machine_uuid(){
     return false;
 }
 
+bool data_tuple(){
+    std::tuple<int,double,std::string> tup = std::make_tuple( 26, 1.1, "Tuple Check" );
+
+    return (*tuple_method_proxy)( tup );
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
   ret = data_##name();\
 } \
@@ -152,6 +180,7 @@ int main(int argc, char** argv){
     ADD_TEST(send_intcustom);
     ADD_TEST(ping);
     ADD_TEST(machine_uuid);
+    ADD_TEST(tuple);
   }else{
     server_setup();
     ret = true;

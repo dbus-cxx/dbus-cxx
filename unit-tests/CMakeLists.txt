@@ -151,6 +151,7 @@ add_test( NAME call-void-custom-method COMMAND dbus-wrapper-data-tests.sh void_c
 add_test( NAME call-int-custom-method COMMAND dbus-wrapper-data-tests.sh send_intcustom)
 add_test( NAME test-ping-method COMMAND dbus-wrapper-data-tests.sh ping)
 add_test( NAME test-machine-uuid-method COMMAND dbus-wrapper-data-tests.sh machine_uuid)
+add_test( NAME tuple-sending COMMAND dbus-wrapper-data-tests.sh tuple)
 
 #
 # Signal tests - make sure we can tx and rx singals correctly
@@ -222,6 +223,8 @@ add_test( NAME signature-struct-and-data COMMAND test-signature iterate_struct_a
 
 add_test( NAME signature-unbalanced-struct COMMAND test-signature unbalanced_struct)
 add_test( NAME signature-single-bool COMMAND test-signature single_bool)
+
+add_test( NAME signature-create-from-struct-in-array COMMAND test-signature create_from_struct_in_array)
 
 #
 # Validation tests - make sure that our validation routines work correctly

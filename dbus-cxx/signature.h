@@ -50,6 +50,8 @@
 #define DBUSCXX_TYPE_ARRAY_AS_STRING "a"
 #define DBUSCXX_DICT_ENTRY_BEGIN_CHAR_AS_STRING "{"
 #define DBUSCXX_DICT_ENTRY_END_CHAR_AS_STRING "}"
+#define DBUSCXX_STRUCT_BEGIN_CHAR_AS_STRING "("
+#define DBUSCXX_STRUCT_END_CHAR_AS_STRING ")"
 
 namespace DBus
 {
@@ -153,7 +155,9 @@ namespace priv {
       std::shared_ptr<priv_data> m_priv;
   };
 
-  inline std::string signature( std::any )     { return DBUSCXX_TYPE_INVALID_AS_STRING; }
+  template <typename... T>
+  inline std::string signature( const std::tuple<T...>& );
+
   inline std::string signature( uint8_t )     { return DBUSCXX_TYPE_BYTE_AS_STRING; }
   inline std::string signature( bool )        { return DBUSCXX_TYPE_BOOLEAN_AS_STRING; }
   inline std::string signature( int16_t )     { return DBUSCXX_TYPE_INT16_AS_STRING; }
@@ -169,9 +173,9 @@ namespace priv {
   inline std::string signature( const DBus::Variant& )     { return DBUSCXX_TYPE_VARIANT_AS_STRING; }
   inline std::string signature( const std::shared_ptr<FileDescriptor> )  { return DBUSCXX_TYPE_UNIX_FD_AS_STRING; }
   
-   template <typename T> inline std::string signature( const std::vector<T> ) { T t; return DBUSCXX_TYPE_ARRAY_AS_STRING + signature( t ); }
+   template <typename T> inline std::string signature( const std::vector<T>& ) { T t; return DBUSCXX_TYPE_ARRAY_AS_STRING + signature( t ); }
 
-   template <typename Key,typename Data> inline std::string signature( const std::map<Key,Data> )
+   template <typename Key,typename Data> inline std::string signature( const std::map<Key,Data>& )
    {
      Key k; Data d;
      std::string sig;
@@ -186,7 +190,7 @@ namespace priv {
    //when introspecting, we need to use the normal signature() so that it comes up properly.
    //However, when we are sending out data, that signature would give us an extra array signature,
    //which is not good.  Hence, this method is only used when we need to send out a dict
-   template <typename Key,typename Data> inline std::string signature_dict_data( const std::map<Key,Data> )
+   template <typename Key,typename Data> inline std::string signature_dict_data( const std::map<Key,Data>& )
    {
      Key k; Data d;
      std::string sig;
@@ -220,6 +224,15 @@ namespace priv {
     };
 
   } /* namespace priv */
+
+  template<typename... T_arg>
+  inline std::string signature( const std::tuple<T_arg...>& ){
+        priv::dbus_signature<T_arg...> sig;
+
+        return DBUSCXX_STRUCT_BEGIN_CHAR_AS_STRING +
+                sig.dbus_sig() +
+                DBUSCXX_STRUCT_END_CHAR_AS_STRING;
+  }
 
 
 inline
