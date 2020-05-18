@@ -209,7 +209,7 @@ int main(int argc, char** argv){
   DBus::setLoggingFunction( DBus::logStdErr );
   DBus::setLogLevel( SL_TRACE );
 
-  dispatch = DBus::Dispatcher::create();
+  dispatch = DBus::StandaloneDispatcher::create();
 
   ADD_TEST(create);
   ADD_TEST(tx_rx);

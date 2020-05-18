@@ -203,7 +203,7 @@ int main(int argc, char** argv){
   DBus::setLogLevel( SL_TRACE );
 
   mainThreadId = std::this_thread::get_id();
-  dispatch = DBus::Dispatcher::create();
+  dispatch = DBus::StandaloneDispatcher::create();
 
   ADD_TEST(signal_dispatcher_thread);
   ADD_TEST(signal_main_thread);

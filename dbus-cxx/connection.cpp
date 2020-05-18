@@ -426,21 +426,30 @@ public:
             }
 
             std::shared_ptr<Message> incoming = m_priv->m_transport->readMessage();
+            {
+                std::ostringstream str;
+                str << incoming.get();
+                SIMPLELOGGER_DEBUG( LOGGER_NAME, "Got incoming " << str.str() );
+            }
             if( incoming ){
-                if( incoming->serial() != replySerialExpceted ){
-                    m_priv->m_incomingMessages.push( incoming );
-                    continue;
-                }
-
-                // At this point, we definitely have a return to our call.
-                // See if it's a returnmessage or an errormessage
+                // Check to see what type of message we have, and if it might be a reply to our
+                // method call.
                 if( incoming->type() == MessageType::ERROR ){
                     std::shared_ptr<ErrorMessage> errmsg = std::static_pointer_cast<ErrorMessage>( incoming );
-                    errmsg->throw_error();
+                    if( errmsg->reply_serial() == replySerialExpceted ){
+                        errmsg->throw_error();
+                    }
                 }else if( incoming->type() == MessageType::RETURN ){
                     retmsg = std::static_pointer_cast<ReturnMessage>( incoming );
-                    gotReply = true;
+                    if( retmsg->reply_serial() == replySerialExpceted ){
+                        gotReply = true;
+                    }
                 }
+
+                if( !gotReply ){
+                    m_priv->m_incomingMessages.push( incoming );
+                }
+
             }
         } while( !gotReply );
 

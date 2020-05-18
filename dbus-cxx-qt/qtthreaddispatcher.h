@@ -16,18 +16,48 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <unistd.h>
-#include <dbus-cxx.h>
-#include <stdlib.h>
+#ifndef DBUS_CXX_QT_THREAD_DISPATCHER
+#define DBUX_CXX_QT_THREAD_DISPATCHER
 
-int main( int argc, char** argv ){
-    DBus::setLoggingFunction( DBus::logStdErr );
-    DBus::setLogLevel( SL_TRACE );
-  std::string dbusAddress = std::string( getenv( "CUSTOM_DBUS_ADDRESS" ) );
-  std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
-  std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( dbusAddress );
+#include <dbus-cxx/threaddispatcher.h>
+#include <dbus-cxx/connection.h>
+#include <dbus-cxx/dbus-cxx-config.h>
+#include <memory>
+#include <QObject>
 
-  if( conn->is_valid() ) return 0;
+namespace DBus {
+namespace Qt {
 
-  return 1;
-}
+class QtThreadDispatcher : public QObject,
+        public DBus::ThreadDispatcher {
+    Q_OBJECT
+
+private:
+    QtThreadDispatcher();
+
+public:
+    ~QtThreadDispatcher();
+
+    void add_message( std::shared_ptr<ObjectPathHandler> object, std::shared_ptr<const CallMessage> message );
+    void add_signal_proxy( std::shared_ptr<signal_proxy_base> handler );
+    bool remove_signal_proxy( std::shared_ptr<signal_proxy_base> handler );
+    void add_signal( std::shared_ptr<const SignalMessage> message );
+
+    static std::shared_ptr<QtThreadDispatcher> create();
+
+Q_SIGNALS:
+    void notifyMainThread();
+
+private Q_SLOTS:
+    void sendMessages();
+
+private:
+    class priv_data;
+
+    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
+};
+
+} /* namespace Qt */
+} /* namespace DBus */
+
+#endif /* DBUX_CXX_QT_THREAD_DISPATCHER */

@@ -16,18 +16,66 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <unistd.h>
-#include <dbus-cxx.h>
-#include <stdlib.h>
+#ifndef DBUSCXX_STANDALONE_DISPATCHER
+#define DBUSCXX_STANDALONE_DISPATCHER
 
-int main( int argc, char** argv ){
-    DBus::setLoggingFunction( DBus::logStdErr );
-    DBus::setLogLevel( SL_TRACE );
-  std::string dbusAddress = std::string( getenv( "CUSTOM_DBUS_ADDRESS" ) );
-  std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
-  std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( dbusAddress );
+#include "dispatcher.h"
 
-  if( conn->is_valid() ) return 0;
+namespace DBus {
 
-  return 1;
-}
+class Connection;
+
+/**
+ * The StandaloneDispatcher creates a new thread that handles all of the
+ * reading and writing to the bus.
+ *
+ * One dispatcher can handle multiple connections.
+ */
+class StandaloneDispatcher : public Dispatcher
+{
+  private:
+
+    StandaloneDispatcher(bool is_running=true);
+
+  public:
+
+    static std::shared_ptr<StandaloneDispatcher> create( bool is_running=true );
+
+    ~StandaloneDispatcher();
+
+    /** @name Managing Connections */
+    //@{
+    std::shared_ptr<Connection> create_connection( BusType type );
+
+    std::shared_ptr<Connection> create_connection( std::string address );
+
+    bool add_connection( std::shared_ptr<Connection> connection );
+
+    //@}
+
+    bool start();
+
+    bool stop();
+
+    bool is_running();
+
+  private:
+
+    void dispatch_thread_main();
+
+    void wakeup_thread();
+
+    /**
+     * Dispatch all of our connections
+     */
+    void dispatch_connections();
+
+private:
+    class priv_data;
+
+    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
+};
+
+} /* namespace DBus */
+
+#endif /* DBUSCXX_STANDALONE_DISPATCHER */

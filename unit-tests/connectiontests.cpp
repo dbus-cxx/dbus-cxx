@@ -119,7 +119,7 @@ int main(int argc, char** argv){
 
   DBus::setLoggingFunction( DBus::logStdErr );
   DBus::setLogLevel( SL_TRACE );
-  dispatch = DBus::Dispatcher::create();
+  dispatch = DBus::StandaloneDispatcher::create();
 
   ADD_TEST(create_signal_proxy);
   ADD_TEST(get_signal_proxy_by_iface);

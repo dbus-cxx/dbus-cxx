@@ -17,39 +17,3 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "dbus-cxx-qt.h"
-
-using DBus::Qt::QtThreadDispatcher;
-
-class QtThreadDispatcher::priv_data{
-public:
-
-};
-
-QtThreadDispatcher::QtThreadDispatcher() :
-    QObject( nullptr ),
-    m_priv( std::make_unique<priv_data>() ){
-}
-
-QtThreadDispatcher::~QtThreadDispatcher(){
-
-}
-
-std::shared_ptr<QtThreadDispatcher> QtThreadDispatcher::create(){
-    return std::shared_ptr<QtThreadDispatcher>( new QtThreadDispatcher() );
-}
-
-void QtThreadDispatcher::add_message( std::shared_ptr<ObjectPathHandler> object, std::shared_ptr<const CallMessage> message ){
-
-}
-
-void QtThreadDispatcher::add_signal_proxy( std::shared_ptr<signal_proxy_base> handler ){
-
-}
-
-bool QtThreadDispatcher::remove_signal_proxy( std::shared_ptr<signal_proxy_base> handler ){
-
-}
-
-void QtThreadDispatcher::add_signal( std::shared_ptr<const SignalMessage> message ){
-
-}

@@ -110,6 +110,7 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/signal_proxy_base.cpp
     dbus-cxx/signature.cpp
     dbus-cxx/signatureiterator.cpp
+    dbus-cxx/standalonedispatcher.cpp
     dbus-cxx/utility.cpp
     dbus-cxx/types.cpp
     dbus-cxx/variant.cpp
@@ -172,6 +173,7 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/transport.h
     dbus-cxx/simpletransport.h
     dbus-cxx/sendmsgtransport.h
+    dbus-cxx/standalonedispatcher.h
     dbus-cxx/marshaling.h
     dbus-cxx/demarshaling.h
     dbus-cxx/sasl.h

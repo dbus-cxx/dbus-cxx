@@ -17,14 +17,8 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/dbus-cxx-config.h>
-#include <list>
-#include <map>
-#include <memory>
-#include <mutex>
 #include <string>
-#include <thread>
-#include <vector>
-#include <poll.h>
+#include <memory>
 #include "enums.h"
 
 #ifndef DBUSCXX_DISPATCHER_H
@@ -35,61 +29,24 @@ namespace DBus
   class Connection;
 
   /**
-   * Handles multi-threaded dispatching of one or more connections.
-   *
-   * This class provides a way to handle multiple connections with one set of
-   * dispatching threads.
-   *
-   * This dispatcher creates a separate thread to handle the reading/writing
-   * of data to the bus.
-   *
-   * @ingroup core
-   *
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+   * A Dispatcher handles all of the reading/writing that a Connection
+   * needs in order to work correctly.  Logically, there should only be
+   * one Dispatcher per application for the lifetime of that application.
    */
   class Dispatcher
   {
-    private:
-
-      Dispatcher(bool is_running=true);
-
     public:
-
-      static std::shared_ptr<Dispatcher> create( bool is_running=true );
-
-      ~Dispatcher();
+      virtual ~Dispatcher();
       
       /** @name Managing Connections */
       //@{
-      std::shared_ptr<Connection> create_connection( BusType type );
+      virtual std::shared_ptr<Connection> create_connection( BusType type ) = 0;
 
-      std::shared_ptr<Connection> create_connection( std::string address );
+      virtual std::shared_ptr<Connection> create_connection( std::string address ) = 0;
 
-      bool add_connection( std::shared_ptr<Connection> connection );
+      virtual bool add_connection( std::shared_ptr<Connection> connection ) = 0;
 
       //@}
-
-      bool start();
-      
-      bool stop();
-      
-      bool is_running();
-
-    private:
-      
-      void dispatch_thread_main();
-
-      void wakeup_thread();
-
-      /**
-       * Dispatch all of our connections
-       */
-      void dispatch_connections();
-
-  private:
-      class priv_data;
-
-      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
   };
 
 }

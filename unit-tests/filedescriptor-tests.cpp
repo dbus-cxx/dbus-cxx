@@ -131,7 +131,7 @@ int main(int argc, char** argv){
 
   DBus::setLoggingFunction( DBus::logStdErr );
   DBus::setLogLevel( SL_TRACE );
-  dispatch = DBus::Dispatcher::create();
+  dispatch = DBus::StandaloneDispatcher::create();
   conn = dispatch->create_connection( DBus::BusType::SESSION );
 
   if( is_client ){

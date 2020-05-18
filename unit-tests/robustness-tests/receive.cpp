@@ -35,7 +35,7 @@ int main(int argc, char** argv){
     DBus::setLoggingFunction( DBus::logStdErr );
 
 	//The dispatcher sends us information.  Make sure that it doesn't go out of scope or bad things will happen.
-    std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
+    std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::StandaloneDispatcher::create();
 	//Create a connection to the session bus
     std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 

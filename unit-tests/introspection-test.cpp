@@ -242,7 +242,7 @@ int main(int argc, char** argv){
   bool ret = false;
   bool is_client = std::string( argv[1] ) == "client";
 
-  dispatch = DBus::Dispatcher::create();
+  dispatch = DBus::StandaloneDispatcher::create();
   conn = dispatch->create_connection(DBus::BusType::SESSION);
 
   if( is_client ){

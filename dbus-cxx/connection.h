@@ -378,7 +378,7 @@ namespace DBus
       /**
        * Add a thread dispatcher that will handle messages for a given thread.
        * This method must be called from the thread that this ThreadDispatcher
-       * is being called from.
+       * is handling messages for.
        *
        * This is a weak_ptr, as the intention is to simply declare a local
        * ThreadDispatcher object inside of the thread.  When the thread exits,

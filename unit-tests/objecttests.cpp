@@ -65,7 +65,7 @@ int main(int argc, char** argv){
   std::string test_name = argv[1];
   bool ret = false;
 
-  dispatch = DBus::Dispatcher::create();
+  dispatch = DBus::StandaloneDispatcher::create();
 
   ADD_TEST(proxy_create);
   ADD_TEST(proxy_create_method1);

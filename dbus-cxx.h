@@ -55,5 +55,6 @@
 #include <dbus-cxx/variant.h>
 #include <dbus-cxx/filedescriptor.h>
 #include <dbus-cxx/simplelogger_defs.h>
+#include <dbus-cxx/standalonedispatcher.h>
 
 #endif

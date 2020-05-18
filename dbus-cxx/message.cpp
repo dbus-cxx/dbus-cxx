@@ -467,6 +467,7 @@ std::ostream& operator <<( std::ostream& os, const DBus::Message* msg ){
     os << std::endl;
     os << "  Message length: " << msg->m_priv->m_body.size() << std::endl;
     os << "  Endianess: " << msg->m_priv->m_endianess << std::endl;
+    os << "  Serial: " << msg->m_priv->m_serial << std::endl;
     os << "  Headers:" << std::endl;
     for( const std::pair<const MessageHeaderFields,DBus::Variant>& set : msg->m_priv->m_headerMap ){
         std::any value = set.second.value();
