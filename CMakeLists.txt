@@ -258,7 +258,7 @@ SET(PKG_CONFIG_CFLAGS
     "-I\${includedir}"
 )
 SET(PKG_CONFIG_REQUIRES
-    "dbus-1 >= 1.3, sigc++-3.0"
+    "sigc++-3.0"
 )
 
 CONFIGURE_FILE(
