@@ -45,7 +45,7 @@ pkg_check_modules( sigc REQUIRED sigc++-3.0 )
 #
 option( ENABLE_EXAMPLES "Enable the examples" OFF )
 option( ENABLE_TOOLS "Enable dbus-cxx tools" OFF )
-option( ENABLE_GLIBMM "Enable GLibMM support" OFF )
+option( ENABLE_GLIB "Enable GLib support" OFF )
 option( BUILD_SITE "Build the dbus-cxx website reference" OFF )
 option( TOOLS_BUNDLED_CPPGENERATE "Use bundled libcppgenerate" ON )
 option( ENABLE_CODE_COVERAGE_REPORT "Enable code coverage report" OFF )
@@ -205,22 +205,11 @@ target_link_libraries( dbus-cxx ${dbus_LIBS} ${sigc_LIBS} Threads::Threads -lrt 
 set_property( TARGET dbus-cxx PROPERTY CXX_STANDARD 17 )
 
 #
-# If GLIBMM is used, add in the appropriate packages
+# If GLIBMM is used, add in the appropriate code
 #
-if( ENABLE_GLIBMM )
-    add_library( dbus-cxx-glib SHARED dbus-cxx-glib/dispatcher.cpp )
-    set_target_properties( dbus-cxx-glib PROPERTIES VERSION 2.0.0 SOVERSION 2 )
-    #target_include_directories( dbus-cxx-glib PRIVATE  )
-    add_dependencies( dbus-cxx-glib dbus-cxx )
-    set_property( TARGET dbus-cxx-glib PROPERTY CXX_STANDARD 17 )
-
-    set( install_targets ${install_targets} dbus-cxx-glib )
-    install( TARGETS ${install_targets}
-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
-    install( FILES dbus-cxx-glib.h DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION} )
-    install( FILES dbus-cxx-glib/dispatcher.h DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/dbus-cxx-glib/ )
-endif( ENABLE_GLIBMM )
+if( ENABLE_GLIB )
+    add_subdirectory( dbus-cxx-glib )
+endif( ENABLE_GLIB )
 
 #
 # If Qt should be supported, add in the appropriate code
@@ -251,9 +240,6 @@ SET(PKG_CONFIG_INCLUDEDIR
 SET(PKG_CONFIG_LIBS
     "-L\${libdir} -ldbus-cxx"
 )
-SET(PKG_CONFIG_LIBS_GLIB
-    "-L\${libdir} -ldbus-cxx-glib"
-)
 SET(PKG_CONFIG_CFLAGS
     "-I\${includedir}"
 )
@@ -267,15 +253,6 @@ CONFIGURE_FILE(
 )
 INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-2.0.pc"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-
-if( ENABLE_GLIBMM )
-    CONFIGURE_FILE(
-        "${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx-glib-2.0.pc.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-glib-2.0.pc"
-    )
-    INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-glib-2.0.pc"
-            DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-endif( ENABLE_GLIBMM )
 
 #
 # Include the directory for the examples

@@ -1,6 +1,8 @@
 /***************************************************************************
  *   Copyright (C) 2007,2008,2009,2010 by Rick L. Vinyard, Jr.             *
  *   rvinyard@cs.nmsu.edu                                                  *
+ *   Copyright (C) 2020 by Robert Middleton                                *
+ *   robert.middleton@rm5248.com                                           *
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
  *                                                                         *
@@ -17,51 +19,45 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/dispatcher.h>
+#include <glib.h>
 
 #ifndef DBUSCXX_GLIB_DISPATCHER_H
 #define DBUSCXX_GLIB_DISPATCHER_H
 
 namespace DBus
 {
-  namespace Glib {
+namespace GLib {
 
-    /**
-     * Reimplements DBus::Dispatcher to conduct all dispatching in
-     * the provided Glib MainContext if one is provided or in the
-     * default context otherwise.
-     *
-     * This class still creates multiple threads for handling I/O file
-     * descriptors and for controlling dispatching. However, the
-     * actual dispatching will occur in the provided context' main loop.
-     *
-     * @ingroup core
-     *
-     * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-     */
-    class Dispatcher : public ::DBus::Dispatcher
-    {
-      public:
-        static std::shared_ptr<Dispatcher> create( bool is_running=true );
+/**
+ * Does all dispatching in the main GLib context.
+ */
+class GLibDispatcher : public ::DBus::Dispatcher
+{
+private:
+    GLibDispatcher();
 
-        static std::shared_ptr<Dispatcher> create( bool is_running, const ::Glib::RefPtr< ::Glib::MainContext >& context );
+public:
+    ~GLibDispatcher();
 
-      private: 
-        Dispatcher(bool is_running=true);
-        
-        Dispatcher(bool is_running, const ::Glib::RefPtr< ::Glib::MainContext >& context );
+    static std::shared_ptr<GLibDispatcher> create();
 
-        virtual ~Dispatcher();
+    std::shared_ptr<Connection> create_connection( BusType type );
 
-      protected:
+    std::shared_ptr<Connection> create_connection( std::string address );
 
-        ::Glib::Dispatcher m_glibmm_dispatcher;
+    bool add_connection( std::shared_ptr<Connection> connection );
 
-        virtual void dispatch_thread_main();
+private:
+    gboolean channel_has_data(GIOChannel* channel, GIOCondition condition );
+    static gboolean channel_data_cb(GIOChannel* channel, GIOCondition condition, gpointer data );
 
-        void on_glibmm_dispatch();
-    };
+private:
+    class priv_data;
 
-  }
-}
+    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
+};
+
+} /* namespace GLib */
+} /* namespace DBus */
 
 #endif
