@@ -32,3 +32,39 @@ set_property( TARGET dbus-cxx-qt PROPERTY CXX_STANDARD 17 )
 if( BUILD_TESTING )
     add_subdirectory( unit-tests )
 endif( BUILD_TESTING )
+
+#
+# pkg-config script creation and install
+#
+SET(PKG_CONFIG_LIBDIR
+    "\${prefix}/lib"
+)
+SET(PKG_CONFIG_INCLUDEDIR
+    "\${prefix}/include/dbus-cxx-qt-${DBUS_CXX_MAJMIN_VERSION}"
+)
+SET(PKG_CONFIG_LIBS
+    "-L\${libdir} -ldbus-cxx-qt"
+)
+SET(PKG_CONFIG_CFLAGS
+    "-I\${includedir}"
+)
+SET(PKG_CONFIG_REQUIRES
+    "dbus-cxx-2.0"
+)
+
+CONFIGURE_FILE(
+    "${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx-qt-2.0.pc.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-qt-2.0.pc"
+)
+
+INSTALL( FILES "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-qt-2.0.pc"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+
+#
+# Library install information
+#
+set( install_targets ${install_targets} dbus-cxx-qt )
+install( TARGETS ${install_targets}
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
+install( FILES ${dbus-cxx-qt-headers} DESTINATION include/dbus-cxx-qt-${DBUS_CXX_MAJMIN_VERSION} )
