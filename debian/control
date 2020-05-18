@@ -9,11 +9,11 @@ Build-Depends: cmake,
                doxygen,
                graphviz,
                libcppgenerate-dev,
-               libdbus-1-dev,
                libexpat1-dev,
                libglib2.0-dev,
                libpopt-dev,
                libsigc++-3.0-dev,
+               qtbase5-dev,
                quilt,
                xsltproc
 Standards-Version: 3.9.5
@@ -30,7 +30,7 @@ Description: C++ bindings for the D-Bus library
 Package: dbus-cxx-dev
 Section: libdevel
 Architecture: any
-Depends: dbus-cxx2 (= ${binary:Version}), libsigc++-3.0-dev, libdbus-1-dev
+Depends: dbus-cxx2 (= ${binary:Version}), libsigc++-3.0-dev
 Description: C++ development headers for dbus-cxx
  This package contains the C++ libraries and header files needed for
  developing dbus-cxx applications.
@@ -66,3 +66,20 @@ Description: Headers for developing programs that will use dbus-cxx-glib
  can also be used to integrate dbus-cxx with gtkmm applications.
  This package contains the libraries and header files needed for
  developing dbus-cxx-glib applications.
+
+Package: dbus-cxx-qt2
+Section: libs
+Architecture: any
+Depends: dbus-cxx2 (= ${binary:Version}), ${misc:Depends}, ${shlibs:Depends}
+Description: Adds support to dbus-cxx (C++ bindings for dbus) for Qt integration
+ Adds support to dbus-cxx (C++ bindings for dbus) for Qt integration
+
+Package: dbus-cxx-qt-dev
+Section: libdevel
+Architecture: any
+Depends: dbus-cxx-qt2 (= ${binary:Version})
+Description: Headers for developing programs that will use dbus-cxx-qt
+ dbus-cxx provides C++ bindings for the dbus library. dbus-cxx-qt
+ provides dbus-cxx a means of integrating with Qt.
+ This package contains the libraries and header files needed for
+ developing dbus-cxx-qt applications.
