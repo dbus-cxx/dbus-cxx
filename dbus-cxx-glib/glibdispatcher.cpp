@@ -21,9 +21,12 @@
 #include "glibdispatcher.h"
 
 #include <dbus-cxx/connection.h>
+#include <dbus-cxx/dbus-cxx-private.h>
 #include <vector>
 #include <map>
 #include <glib.h>
+
+static const char* LOGGER_NAME = "DBus.GLib.GLibDispatcher";
 
 using DBus::GLib::GLibDispatcher;
 
@@ -71,12 +74,16 @@ bool GLibDispatcher::add_connection( std::shared_ptr<Connection> connection ){
     GIOChannel* newChannel = g_io_channel_unix_new( connection->unix_fd() );
     m_priv->m_channelToConnection[ newChannel ] = connection;
     guint sourceId = g_io_add_watch( newChannel, G_IO_IN, &GLibDispatcher::channel_data_cb, this );
+
+    SIMPLELOGGER_TRACE( LOGGER_NAME, "Adding connection" );
     return true;
 }
 
 gboolean GLibDispatcher::channel_has_data(GIOChannel* channel, GIOCondition condition ){
     std::shared_ptr<Connection> conn = m_priv->m_channelToConnection[ channel ];
     DBus::DispatchStatus status;
+
+    SIMPLELOGGER_TRACE( LOGGER_NAME, "channel has data" );
 
     if( !conn ){
         return FALSE;

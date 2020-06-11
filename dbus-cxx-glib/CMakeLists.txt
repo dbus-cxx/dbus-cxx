@@ -30,6 +30,10 @@ install( TARGETS ${install_targets}
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
 install( FILES ${dbus-cxx-glib-headers} DESTINATION include/dbus-cxx-glib-${DBUS_CXX_MAJMIN_VERSION} )
 
+if( BUILD_TESTING )
+    add_subdirectory( unit-tests )
+endif( BUILD_TESTING )
+
 #
 # pkg-config script creation and install
 #

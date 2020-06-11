@@ -205,7 +205,7 @@ target_link_libraries( dbus-cxx ${dbus_LIBS} ${sigc_LIBS} Threads::Threads -lrt 
 set_property( TARGET dbus-cxx PROPERTY CXX_STANDARD 17 )
 
 #
-# If GLIBMM is used, add in the appropriate code
+# If GLIB is used, add in the appropriate code
 #
 if( ENABLE_GLIB )
     add_subdirectory( dbus-cxx-glib )
@@ -339,7 +339,6 @@ message(STATUS "  Build examples .................. : ${ENABLE_EXAMPLES}")
 message(STATUS "  Build tests ..................... : ${BUILD_TESTING}")
 message(STATUS "  Build tools ..................... : ${ENABLE_TOOLS}")
 message(STATUS "  Use bundled cppgenerate ......... : ${TOOLS_BUNDLED_CPPGENERATE}")
-message(STATUS "  Enable GLibmm support ........... : ${ENABLE_GLIBMM}")
 message(STATUS "  Build website ................... : ${BUILD_SITE}")
 message(STATUS "  Enable code coverage report ..... : ${ENABLE_CODE_COVERAGE_REPORT}")
 if( CMAKE_BUILD_TYPE MATCHES Debug )
@@ -352,3 +351,4 @@ endif( BUILD_TESTING )
 
 message(STATUS "Library Support:" )
 message(STATUS "  Qt .............................. : ${ENABLE_QT_SUPPORT}")
+message(STATUS "  GLib ............................ : ${ENABLE_GLIB}")
