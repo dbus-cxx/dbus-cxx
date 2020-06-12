@@ -33,58 +33,58 @@ namespace DBus
    *
    * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
    */
-  class PendingCall: public sigc::trackable
-  {
-    protected:
+//  class PendingCall: public sigc::trackable
+//  {
+//    protected:
 
-      PendingCall( );
+//      PendingCall( );
 
-    public:
-      static std::shared_ptr<PendingCall> create( );
+//    public:
+//      static std::shared_ptr<PendingCall> create( );
 
-      virtual ~PendingCall();
+//      virtual ~PendingCall();
 
-      /**
-       * Cancel the pending call; that is, signal_notify() will not
-       * be emitted if and when the reply eventually comes back.
-       */
-      void cancel();
+//      /**
+//       * Cancel the pending call; that is, signal_notify() will not
+//       * be emitted if and when the reply eventually comes back.
+//       */
+//      void cancel();
 
-      /**
-       * Check to see if the reply has actually come back.
-       */
-      bool completed() const;
+//      /**
+//       * Check to see if the reply has actually come back.
+//       */
+//      bool completed() const;
 
-      /**
-       * Check to see if the
-       * @return
-       */
-//      bool is_timeout() const;
+//      /**
+//       * Check to see if the
+//       * @return
+//       */
+////      bool is_timeout() const;
 
-      /**
-       * Get the reply that this pending call represents.  If
-       * completed() is not true, or this call has been canceled,
-       * returns an invalid pointer.
-       *
-       * @return
-       */
-      std::shared_ptr<Message> reply() const;
+//      /**
+//       * Get the reply that this pending call represents.  If
+//       * completed() is not true, or this call has been canceled,
+//       * returns an invalid pointer.
+//       *
+//       * @return
+//       */
+//      std::shared_ptr<Message> reply() const;
 
-      void block() const;
+//      void block() const;
 
-      sigc::signal<void()> signal_notify() const;
+//      sigc::signal<void()> signal_notify() const;
 
-      void set_reply( std::shared_ptr<Message> msg );
+//      void set_reply( std::shared_ptr<Message> msg );
 
-    private:
+//    private:
 
-      sigc::signal<void()> m_signal_notify;
+//      sigc::signal<void()> m_signal_notify;
 
-      std::shared_ptr<Message> m_reply;
+//      std::shared_ptr<Message> m_reply;
 
-      bool m_canceled;
+//      bool m_canceled;
 
-  };
+//  };
 
 }
 

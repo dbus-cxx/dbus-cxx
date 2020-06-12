@@ -110,7 +110,7 @@ namespace DBus {
 
       std::shared_ptr<const ReturnMessage> call( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
-      std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
+//      std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
       template <class T_return, class... T_arg>
       std::shared_ptr<signal_proxy<T_return,T_arg...> > create_signal( const std::string& sig_name, ThreadForCalling calling )

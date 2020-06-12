@@ -81,11 +81,11 @@ namespace DBus
     return m_priv->m_interface->call(call_message, timeout_milliseconds);
   }
 
-  std::shared_ptr<PendingCall> DBus::MethodProxyBase::call_async(std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds) const
-  {
-    if ( not m_priv->m_interface ) return std::shared_ptr<PendingCall>();
-    return m_priv->m_interface->call_async(call_message, timeout_milliseconds);
-  }
+//  std::shared_ptr<PendingCall> DBus::MethodProxyBase::call_async(std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds) const
+//  {
+//    if ( not m_priv->m_interface ) return std::shared_ptr<PendingCall>();
+//    return m_priv->m_interface->call_async(call_message, timeout_milliseconds);
+//  }
 
   void MethodProxyBase::set_interface(InterfaceProxy *proxy) {
       m_priv->m_interface = proxy;

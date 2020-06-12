@@ -367,15 +367,15 @@ public:
     return *this;
   }
 
-  std::shared_ptr<PendingCall> Connection::send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds )
-  {
-    if ( not this->is_valid() ) throw ErrorDisconnected();
-    if ( not message or not *message ) return std::shared_ptr<PendingCall>();
-    uint32_t reply_serial = send( message );
-    //if ( not dbus_connection_send_with_reply( m_cobj, message->cobj(), &reply, timeout_milliseconds ) )
-      throw ErrorNoMemory( "Unable to start asynchronous call" );
-    return PendingCall::create();
-  }
+//  std::shared_ptr<PendingCall> Connection::send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds )
+//  {
+//    if ( not this->is_valid() ) throw ErrorDisconnected();
+//    if ( not message or not *message ) return std::shared_ptr<PendingCall>();
+//    uint32_t reply_serial = send( message );
+//    //if ( not dbus_connection_send_with_reply( m_cobj, message->cobj(), &reply, timeout_milliseconds ) )
+//      throw ErrorNoMemory( "Unable to start asynchronous call" );
+//    return PendingCall::create();
+//  }
 
   std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking( std::shared_ptr<const CallMessage> message, int timeout_milliseconds )
   {
@@ -1016,12 +1016,6 @@ public:
     std::shared_ptr<CallMessage> msg = CallMessage::create( destination.c_str(), path.c_str(), DBUSCXX_INTERFACE_INTROSPECTABLE, "Introspect" );
     
     std::shared_ptr<Message> retmsg;
-    std::shared_ptr<PendingCall> pending;
-
-    pending = this->send_with_reply_async(msg);
-    this->flush();
-    pending->block();
-    //retmsg = pending->steal_reply();
 
     retmsg = this->send_with_reply_blocking( msg );
 

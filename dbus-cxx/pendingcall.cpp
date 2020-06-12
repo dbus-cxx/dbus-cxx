@@ -25,50 +25,50 @@ namespace DBus
 {
 
 
-  PendingCall::PendingCall() :
-      m_canceled( false )
-  {
-  }
+//  PendingCall::PendingCall() :
+//      m_canceled( false )
+//  {
+//  }
 
-  std::shared_ptr<PendingCall> PendingCall::create()
-  {
-    return std::shared_ptr<PendingCall>( new PendingCall() );
-  }
+//  std::shared_ptr<PendingCall> PendingCall::create()
+//  {
+//    return std::shared_ptr<PendingCall>( new PendingCall() );
+//  }
 
-  PendingCall::~PendingCall()
-  {
-  }
+//  PendingCall::~PendingCall()
+//  {
+//  }
 
-  void PendingCall::cancel()
-  {
-      m_canceled = true;
-  }
+//  void PendingCall::cancel()
+//  {
+//      m_canceled = true;
+//  }
 
-  bool PendingCall::completed() const
-  {
-    return m_reply->is_valid();
-  }
+//  bool PendingCall::completed() const
+//  {
+//    return m_reply->is_valid();
+//  }
 
-  std::shared_ptr<Message> PendingCall::reply() const
-  {
-    return m_reply;
-  }
+//  std::shared_ptr<Message> PendingCall::reply() const
+//  {
+//    return m_reply;
+//  }
 
-  void PendingCall::block() const
-  {
-      if( m_canceled ){
-          return;
-      }
-  }
+//  void PendingCall::block() const
+//  {
+//      if( m_canceled ){
+//          return;
+//      }
+//  }
 
-  sigc::signal<void()> PendingCall::signal_notify() const
-  {
-    return m_signal_notify;
-  }
+//  sigc::signal<void()> PendingCall::signal_notify() const
+//  {
+//    return m_signal_notify;
+//  }
 
-  void PendingCall::set_reply( std::shared_ptr<Message> msg ){
-      m_reply = msg;
-      m_signal_notify.emit();
-  }
+//  void PendingCall::set_reply( std::shared_ptr<Message> msg ){
+//      m_reply = msg;
+//      m_signal_notify.emit();
+//  }
 
 }

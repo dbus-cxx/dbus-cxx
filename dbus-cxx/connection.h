@@ -215,7 +215,7 @@ namespace DBus
        * @param timeout_milliseconds
        * @return
        */
-      std::shared_ptr<PendingCall> send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds=-1 );
+      //std::shared_ptr<PendingCall> send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds=-1 );
 
       /**
        * Send a CallMessage, and wait for the reply.
@@ -227,15 +227,6 @@ namespace DBus
        * @return The return message
        */
       std::shared_ptr<ReturnMessage> send_with_reply_blocking( std::shared_ptr<const CallMessage> msg, int timeout_milliseconds=-1 );
-
-      /**
-       * Send a message, and get a future to the response.
-       *
-       * @param message
-       * @param timeout_milliseconds
-       * @return
-       */
-      std::future<const ReturnMessage> new_send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds=-1 ) const;
 
       /**
        * Flushes all data out to the bus.  This should generally

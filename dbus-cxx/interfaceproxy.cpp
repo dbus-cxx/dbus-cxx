@@ -211,11 +211,11 @@ namespace DBus
     return m_priv->m_object->call( call_message, timeout_milliseconds );
   }
 
-  std::shared_ptr<PendingCall> InterfaceProxy::call_async( std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds ) const
-  {
-    if ( not m_priv->m_object ) return std::shared_ptr<PendingCall>();
-    return m_priv->m_object->call_async( call_message, timeout_milliseconds );
-  }
+//  std::shared_ptr<PendingCall> InterfaceProxy::call_async( std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds ) const
+//  {
+//    if ( not m_priv->m_object ) return std::shared_ptr<PendingCall>();
+//    return m_priv->m_object->call_async( call_message, timeout_milliseconds );
+//  }
 
   const InterfaceProxy::Signals& InterfaceProxy::signals() const
   {
