@@ -267,3 +267,16 @@ set_property( TARGET test-filedescriptor PROPERTY CXX_STANDARD 17 )
 
 add_test( NAME filedescriptor-send COMMAND dbus-wrapper-fd-tests.sh send)
 add_test( NAME filedescriptor-receive COMMAND dbus-wrapper-fd-tests.sh get)
+
+#
+# Recursive tests - make sure that calling another DBus method inside of a current DBus method doesn't lockup
+#
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper-recursive.sh
+    ${CMAKE_CURRENT_BINARY_DIR}/dbus-wrapper-recursive.sh COPYONLY)
+add_executable( test-recursive recursive-test.cpp )
+target_link_libraries( test-recursive ${TEST_LINK} )
+target_include_directories( test-recursive PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( test-recursive PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+set_property( TARGET test-recursive PROPERTY CXX_STANDARD 17 )
+
+add_test( NAME recursive-method-call COMMAND dbus-wrapper-recursive.sh test)
