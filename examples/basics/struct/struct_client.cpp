@@ -21,10 +21,7 @@
 
 int main(int argc, const char** argv)
 {
-
-  DBus::init();
-
-  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::StandaloneDispatcher::create();
 
   std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 

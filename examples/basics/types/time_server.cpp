@@ -47,19 +47,16 @@ struct timeval now() {
 
 int main()
 {
-  DBus::init();
-  
-  int ret;
-  
-  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::StandaloneDispatcher::create();
 
   std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BusType::SESSION);
   
   // request a name on the bus
-  ret = conn->request_name( "dbuscxx.example.time.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
-  if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) return 1;
+  if( conn->request_name( "dbuscxx.example.time.server", DBUSCXX_NAME_FLAG_REPLACE_EXISTING ) !=
+      DBus::RequestNameResponse::PrimaryOwner )
+      return 1;
 
-  std::shared_ptr<DBus::Object> object = conn->create_object("/dbuscxx/example/Time");
+  std::shared_ptr<DBus::Object> object = conn->create_object("/dbuscxx/example/Time", DBus::ThreadForCalling::DispatcherThread);
 
   object->create_method<struct timeval()>("now", sigc::ptr_fun(now) );
 

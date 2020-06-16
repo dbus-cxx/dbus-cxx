@@ -29,26 +29,23 @@
  * dbus signal and extracts the string from the message.
  */
 
-DBus::HandlerResult print( std::shared_ptr<const DBus::SignalMessage> );
+void print( std::string str );
 
 int main()
 {
-  DBus::init();
-
-  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::StandaloneDispatcher::create();
 
   std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 
-/*
   std::shared_ptr<DBus::signal_proxy<std::string>> signal = 
       connection->create_signal_proxy<std::string>(
           DBus::SignalMatchRule::create()
               .setPath("/test/signal/Object")
               .setInterface("test.signal.Type")
-              .setMember("Test") );
+              .setMember("Test"),
+      DBus::ThreadForCalling::DispatcherThread );
 
-  signal->signal_dbus_incoming().connect( sigc::ptr_fun(print) );
-*/
+  signal->connect( sigc::ptr_fun(print) );
 
   std::cout << "Running" << std::flush;
   
@@ -63,10 +60,7 @@ int main()
   return 0;
 }
 
-DBus::HandlerResult print( std::shared_ptr<const DBus::SignalMessage> msg)
+void print( std::string str )
 {
-  std::string val;
-  msg >> val;
-  std::cout << "Got Signal with value " << val << std::endl;
-  return DBus::HandlerResult::HANDLED;
+  std::cout << "Got Signal with value " << str << std::endl;
 }

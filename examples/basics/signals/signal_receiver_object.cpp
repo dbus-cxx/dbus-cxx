@@ -31,7 +31,7 @@ class Calculator: public DBus::ObjectProxy
         m_method_sub = this->create_method<double(double,double)>("Calculator.Basic", "sub");
         m_method_mul = this->create_method<double(double,double)>("Calculator.Basic", "mul");
         m_method_div = this->create_method<double(double,double)>("Calculator.Basic", "div");
-        m_signal_calculation = this->create_signal<std::string,double,double,double>("Calculator.Basic", "calculation");
+        m_signal_calculation = this->create_signal<std::string,double,double,double>("Calculator.Basic", "calculation", DBus::ThreadForCalling::DispatcherThread);
       }
 
   public:
@@ -67,9 +67,7 @@ void print(std::string op, double param1, double param2, double result);
 
 int main()
 {
-  DBus::init();
-
-  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::StandaloneDispatcher::create();
 
   std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 

@@ -21,10 +21,8 @@
 
 int main()
 {
-  DBus::init();
-
   std::shared_ptr<DBus::Dispatcher> dispatcher;
-  dispatcher = DBus::Dispatcher::create();
+  dispatcher = DBus::StandaloneDispatcher::create();
 
   std::shared_ptr<DBus::Connection> connection;
   connection = dispatcher->create_connection( DBus::BusType::SESSION );

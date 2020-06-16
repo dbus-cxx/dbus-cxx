@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <poll.h>
 
 static int pipes[2];
 static char datebuffer[ 128 ];
@@ -47,8 +48,6 @@ int main( int argc, char** argv ){
   /* This program creates a pipe, and sends one end of the pipe to 
    * the client that requests it.  It then reads 10 bytes and exits
    */
-  int ret;
-
   if( pipe( pipes ) < 0 ){
       std::cerr << "Unable to create pipes: " << strerror( errno ) << std::endl;
   }
@@ -56,15 +55,15 @@ int main( int argc, char** argv ){
   //uncomment the following line to enable logging from the library.
   //DBus::setLoggingFunction( mylog );
 
-  DBus::init();
-  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::StandaloneDispatcher::create();
   std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BusType::SESSION);
 
   // request a name on the bus
-  ret = conn->request_name( "dbuscxx.example.filedescriptor.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
-  if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) return 1;
+  if( conn->request_name( "dbuscxx.example.filedescriptor.server", DBUSCXX_NAME_FLAG_REPLACE_EXISTING ) !=
+      DBus::RequestNameResponse::PrimaryOwner )
+      return 1;
 
-  std::shared_ptr<DBus::Object> object = conn->create_object("/dbuscxx/example/FileDescriptor");
+  std::shared_ptr<DBus::Object> object = conn->create_object("/dbuscxx/example/FileDescriptor", DBus::ThreadForCalling::DispatcherThread);
 
   object->create_method<std::shared_ptr<DBus::FileDescriptor>()>("Filedescriptor.basic", "getFiledescriptor", sigc::ptr_fun(getFiledescriptor) );
 

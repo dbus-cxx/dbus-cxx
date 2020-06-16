@@ -66,42 +66,45 @@ int main(int argc, const char** argv)
 
   // Resume example code
 
-  DBus::init();
-  
-  std::shared_ptr<DBus::PendingCall> pending;
   std::shared_ptr<DBus::Message> retmsg;
 
   std::shared_ptr<DBus::Connection> connection = DBus::Connection::create( DBus::BusType::SESSION );
 
   std::shared_ptr<DBus::ObjectProxy> object = connection->create_object_proxy("dbuscxx.example.calculator.server", "/dbuscxx/example/Calculator");
 
+  /* 
+   * Create a non-templated method proxy to represent a remote method.  Since this is not templated,
+   * we can't use operator() to call it.
+   */
   std::shared_ptr<DBus::MethodProxyBase> method = DBus::MethodProxyBase::create(op);
 
   object->add_method( "Calculator.Basic", method );
 
+  /*
+   * Create a CallMessage that we will use to send a remote method call
+   */
   std::shared_ptr<DBus::CallMessage> msg = method->create_call_message();
   
+  /*
+   * Append the parameters to the CallMessage.
+   */
   msg << param1 << param2;
 
-  pending = method->call_async(msg);
+  try{
+      /*
+       * Call the remote method.  If a return comes back, the response will be in the ReturnMessage.
+       * If there is an error, an exception will be thrown.
+       */
+      std::shared_ptr<const DBus::ReturnMessage> retmsg = method->call(msg);
 
-  connection->flush();
+      double answer;
+      retmsg >> answer;
 
-  pending->block();
-
-  retmsg = pending->steal_reply();
-
-  if ( retmsg->type() == DBus::MessageType::ERROR )
-  {
-    std::shared_ptr<DBus::ErrorMessage> errormsg = DBus::ErrorMessage::create(retmsg);
-    std::cout << "Oops... got an error: " << errormsg->name() << std::endl;
-    return 1;
+      std::cout << param1 << " " << opsym << " " << param2 << " = " << answer << std::endl;
+  }catch( DBus::Error err ){
+      std::cout << "Oops... got an error: " << err.name() << std::endl;
+      return 1;
   }
-
-  double answer;
-  retmsg >> answer;
-
-  std::cout << param1 << " " << opsym << " " << param2 << " = " << answer << std::endl;
 
   return 0;
 }

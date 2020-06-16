@@ -47,8 +47,7 @@ int main( int argc, char** argv ){
   //uncomment the following line to enable logging from the library.
   //DBus::setLoggingFunction( mylog );
 
-  DBus::init();
-  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::StandaloneDispatcher::create();
   std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BusType::SESSION);
   std::shared_ptr<DBus::ObjectProxy> object = conn->create_object_proxy("dbuscxx.example.filedescriptor.server", "/dbuscxx/example/FileDescriptor");
 

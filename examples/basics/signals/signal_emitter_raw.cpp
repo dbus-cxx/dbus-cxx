@@ -28,8 +28,6 @@
 
 int main()
 {
-  DBus::init();
-
   std::shared_ptr<DBus::Connection> connection = DBus::Connection::create( DBus::BusType::SESSION );
 
   std::shared_ptr<DBus::SignalMessage> message;

@@ -21,11 +21,7 @@
 #include <unistd.h>
 
 /**
- * This example demonstrates a dispatched signal receiver and takes
- * the signal-receiver example one step further.
- *
- * Like the signal-receiver example, this example is also dispatched.
- * However, this example creates a named signal derived from sigc::signal.
+ * This example demonstrates a dispatched signal receiver.
  *
  * The created signal is connected to the print function, leaving the
  * details of the message unpacking within the created signal.
@@ -35,9 +31,7 @@ void print( std::string s );
 
 int main()
 {
-  DBus::init();
-
-  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::Dispatcher::create();
+  std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::StandaloneDispatcher::create();
 
   std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 
@@ -45,7 +39,8 @@ int main()
                                             DBus::SignalMatchRule::create()
                                             .setPath("/test/signal/Object")
                                             .setInterface("test.signal.Type")
-                                            .setMember("Test") );
+                                            .setMember("Test"),
+                                    DBus::ThreadForCalling::DispatcherThread );
 
   signal->connect( sigc::ptr_fun(print) );
 
