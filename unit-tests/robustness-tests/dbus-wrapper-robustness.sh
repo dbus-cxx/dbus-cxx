@@ -9,10 +9,13 @@ dbus-launch > $TMPFILE
 export DBUS_SESSION_BUS_ADDRESS
 export PATH=$PATH:$(pwd)
 
-./test-robustness-rx &
+dbus-monitor --pcap > /tmp/dbus-mon.pcap &
+DBUS_MON_PID=$!
+
+./test-robustness-rx > /tmp/dbus-rx.txt 2>&1 &
 CLIENT_PID=$!
 sleep .1
-./test-robustness-sender
+./test-robustness-sender > /tmp/dbus-tx.txt 2>&1
 # get the exit code 
 EXIT_CODE=$?
 
@@ -34,6 +37,7 @@ else
 fi
 
 
+kill $DBUS_MON_PID
 kill $DBUS_SESSION_BUS_PID
 rm $TMPFILE
 
