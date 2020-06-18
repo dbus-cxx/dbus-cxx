@@ -356,6 +356,12 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
         retmsg->m_priv->m_body.push_back( demarshal.demarshal_uint8_t() );
     }
 
+    {
+        std::ostringstream debug_str;
+        debug_str << "Following message created from the data: " << retmsg;
+        SIMPLELOGGER_TRACE(LOGGER_NAME, debug_str.str());
+    }
+
     return retmsg;
 }
 
