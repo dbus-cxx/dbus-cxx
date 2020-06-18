@@ -10,12 +10,17 @@ pipeline {
 
 		stage('Checkout'){
 			steps{
-				checkout scm
+				fileOperations([folderCreateOperation('source')])
+				dir('source'){
+					checkout scm
+				}
 			}
 		}
 
 		stage('Build'){
-			buildDebPkg( "amd64", "buster" )
+			steps{
+				buildDebPkg( "amd64", "buster" )
+			}
 		}
 	}
 }
