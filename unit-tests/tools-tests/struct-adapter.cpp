@@ -31,7 +31,7 @@ public:
 };
 
 int main(){
-    std::shared_ptr<DBus::Dispatcher> dispatch = DBus::Dispatcher::create();
+    std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
     MyStructType myStruct;

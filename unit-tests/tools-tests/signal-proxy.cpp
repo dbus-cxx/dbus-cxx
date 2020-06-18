@@ -22,7 +22,7 @@ static void dosomething(std::string){
 }
 
 int main( int argc, char** argv ){
-    std::shared_ptr<DBus::Dispatcher> dispatch = DBus::Dispatcher::create();
+    std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
     std::shared_ptr<signalNameProxy> proxy = signalNameProxy::create( conn );
