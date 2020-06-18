@@ -77,7 +77,6 @@
     <property name="Interfaces" type="as" access="read">
       <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="const"/>
     </property>
-<!--
     <signal name="NameOwnerChanged">
       <arg type="s"/>
       <arg type="s"/>
@@ -89,7 +88,6 @@
     <signal name="NameAcquired">
       <arg type="s"/>
     </signal>
--->
   </interface>
   <interface name="org.freedesktop.DBus.Properties" >
     <method name="Get">
@@ -106,13 +104,11 @@
       <arg direction="in" type="s"/>
       <arg direction="in" type="v"/>
     </method>
-<!--
     <signal name="PropertiesChanged">
       <arg type="s" name="interface_name"/>
       <arg type="a{sv}" name="changed_properties"/>
       <arg type="as" name="invalidated_properties"/>
     </signal>
--->
   </interface>
   <interface name="org.freedesktop.DBus.Introspectable">
     <method name="Introspect">

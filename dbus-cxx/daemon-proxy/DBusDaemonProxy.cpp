@@ -2,7 +2,7 @@
 
 using DBus::DBusDaemonProxy;
 
-DBusDaemonProxy::DBusDaemonProxy(std::shared_ptr<DBus::Connection> conn, std::string dest, std::string path ) : DBus::ObjectProxy( conn, dest, path ){
+DBusDaemonProxy::DBusDaemonProxy(std::shared_ptr<DBus::Connection> conn, std::string dest, std::string path, DBus::ThreadForCalling signalCallingThread ) : DBus::ObjectProxy( conn, dest, path ){
 m_method_Hello = this->create_method<std::string()>("org.freedesktop.DBus","Hello");
 m_method_RequestName = this->create_method<uint32_t(std::string,uint32_t)>("org.freedesktop.DBus","RequestName");
 m_method_ReleaseName = this->create_method<uint32_t(std::string)>("org.freedesktop.DBus","ReleaseName");
@@ -22,9 +22,13 @@ m_method_GetConnectionSELinuxSecurityContext = this->create_method<std::vector<u
 m_method_ReloadConfig = this->create_method<void()>("org.freedesktop.DBus","ReloadConfig");
 m_method_GetId = this->create_method<std::string()>("org.freedesktop.DBus","GetId");
 m_method_GetConnectionCredentials = this->create_method<std::map<std::string,DBus::Variant>(std::string)>("org.freedesktop.DBus","GetConnectionCredentials");
+m_signalproxy_NameOwnerChanged = this->create_signal<std::string,std::string,std::string>( "org.freedesktop.DBus", "NameOwnerChanged", signalCallingThread );
+m_signalproxy_NameLost = this->create_signal<std::string>( "org.freedesktop.DBus", "NameLost", signalCallingThread );
+m_signalproxy_NameAcquired = this->create_signal<std::string>( "org.freedesktop.DBus", "NameAcquired", signalCallingThread );
 m_method_Get = this->create_method<DBus::Variant(std::string,std::string)>("org.freedesktop.DBus.Properties","Get");
 m_method_GetAll = this->create_method<std::map<std::string,DBus::Variant>(std::string)>("org.freedesktop.DBus.Properties","GetAll");
 m_method_Set = this->create_method<void(std::string,std::string,DBus::Variant)>("org.freedesktop.DBus.Properties","Set");
+m_signalproxy_PropertiesChanged = this->create_signal<std::string,std::map<std::string,DBus::Variant>,std::vector<std::string>>( "org.freedesktop.DBus.Properties", "PropertiesChanged", signalCallingThread );
 m_method_Introspect = this->create_method<std::string()>("org.freedesktop.DBus.Introspectable","Introspect");
 m_method_BecomeMonitor = this->create_method<void(std::vector<std::string>,uint32_t)>("org.freedesktop.DBus.Monitoring","BecomeMonitor");
 m_method_GetStats = this->create_method<std::map<std::string,DBus::Variant>()>("org.freedesktop.DBus.Debug.Stats","GetStats");
@@ -34,8 +38,8 @@ m_method_GetMachineId = this->create_method<std::string()>("org.freedesktop.DBus
 m_method_Ping = this->create_method<void()>("org.freedesktop.DBus.Peer","Ping");
 
 }
-std::shared_ptr<DBusDaemonProxy> DBusDaemonProxy::create(std::shared_ptr<DBus::Connection> conn, std::string dest, std::string path ){
-return std::shared_ptr<DBusDaemonProxy>( new DBusDaemonProxy( conn, dest, path ) );
+std::shared_ptr<DBusDaemonProxy> DBusDaemonProxy::create(std::shared_ptr<DBus::Connection> conn, std::string dest, std::string path, DBus::ThreadForCalling signalCallingThread ){
+return std::shared_ptr<DBusDaemonProxy>( new DBusDaemonProxy( conn, dest, path, signalCallingThread ) );
 
 }
 std::string DBusDaemonProxy::Hello( ){
@@ -114,6 +118,18 @@ std::map<std::string,DBus::Variant> DBusDaemonProxy::GetConnectionCredentials(st
 return (*m_method_GetConnectionCredentials)(arg0);
 
 }
+std::shared_ptr<DBus::signal_proxy<std::string,std::string,std::string>> DBusDaemonProxy::signal_NameOwnerChanged( ){
+return m_signalproxy_NameOwnerChanged;
+
+}
+std::shared_ptr<DBus::signal_proxy<std::string>> DBusDaemonProxy::signal_NameLost( ){
+return m_signalproxy_NameLost;
+
+}
+std::shared_ptr<DBus::signal_proxy<std::string>> DBusDaemonProxy::signal_NameAcquired( ){
+return m_signalproxy_NameAcquired;
+
+}
 DBus::Variant DBusDaemonProxy::Get(std::string arg0, std::string arg1 ){
 return (*m_method_Get)(arg0,arg1);
 
@@ -124,6 +140,10 @@ return (*m_method_GetAll)(arg0);
 }
 void DBusDaemonProxy::Set(std::string arg0, std::string arg1, DBus::Variant arg2 ){
 (*m_method_Set)(arg0,arg1,arg2);
+
+}
+std::shared_ptr<DBus::signal_proxy<std::string,std::map<std::string,DBus::Variant>,std::vector<std::string>>> DBusDaemonProxy::signal_PropertiesChanged( ){
+return m_signalproxy_PropertiesChanged;
 
 }
 std::string DBusDaemonProxy::Introspect( ){

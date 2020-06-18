@@ -227,6 +227,7 @@ install( TARGETS ${install_targets}
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
 install( FILES ${DBUS_CXX_HEADERS} DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/dbus-cxx )
 install( FILES ${DBUS_CXX_HEADERS1} DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION} )
+install( FILES dbus-cxx/daemon-proxy/DBusDaemonProxy.h DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/dbus-cxx/daemon-proxy )
 
 #
 # pkg-config script creation and install
