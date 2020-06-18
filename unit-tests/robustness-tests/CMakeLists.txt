@@ -13,4 +13,4 @@ target_include_directories( test-robustness-rx PUBLIC ${CMAKE_SOURCE_DIR} )
 target_include_directories( test-robustness-rx PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
 set_property( TARGET test-robustness-rx PROPERTY CXX_STANDARD 17 )
 
-add_test( NAME robust-test COMMAND dbus-wrapper.sh)
+add_test( NAME robust-test COMMAND dbus-wrapper-robustness.sh)

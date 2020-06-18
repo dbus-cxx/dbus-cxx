@@ -482,7 +482,14 @@ public:
              * the dispatching thread
              */
             std::unique_lock<std::mutex> lock( ex->cv_lock );
-            std::cv_status status = ex->cv.wait_for( lock, std::chrono::milliseconds( msToWait ) );
+            bool status = ex->cv.wait_for( lock, std::chrono::milliseconds( msToWait ), [this, serial]{
+                std::unique_lock<std::mutex> lock( m_priv->m_expectingResponsesLock );
+                std::map<uint32_t,std::shared_ptr<ExpectingResponse>>::iterator it =
+                        m_priv->m_expectingResponses.find( serial );
+
+                // return false if the waiting should be continued
+                return (*it).second->reply.get() != nullptr;
+            } );
             std::shared_ptr<ExpectingResponse> resp;
 
             {
@@ -501,7 +508,7 @@ public:
                 throw ErrorUnexpectedResponse();
             }
 
-            if( status == std::cv_status::no_timeout ){
+            if( status ){
                 std::shared_ptr<Message> gotMessage = resp->reply;
                 if( gotMessage->type() == MessageType::RETURN ){
                     retmsg = std::static_pointer_cast<ReturnMessage>( gotMessage );
