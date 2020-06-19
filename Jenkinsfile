@@ -19,7 +19,7 @@ pipeline {
 
 		stage('Build'){
 			steps{
-				configFileProvider([configFile(fileId: 'f5846b83-6547-46c8-9b33-1dbc94441a3e', targetLocation: 'hookdir/D21-nightly-stretch')]) {
+				configFileProvider([configFile(fileId: '42dd2363-51ed-4972-a382-f25ddbe11b3a', targetLocation: 'hookdir/D21-nightly-dbuscxx')]) {
 					buildDebPkg( "amd64", "buster" )
 				}
 			}
