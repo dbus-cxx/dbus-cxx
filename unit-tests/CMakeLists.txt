@@ -280,3 +280,15 @@ target_include_directories( test-recursive PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
 set_property( TARGET test-recursive PROPERTY CXX_STANDARD 17 )
 
 add_test( NAME recursive-method-call COMMAND dbus-wrapper-recursive.sh test)
+
+#
+# Ensure that unset environment variables don't cause problems
+#
+add_executable( test-unset-envvars unset-envvars.cpp )
+target_link_libraries( test-unset-envvars ${TEST_LINK} )
+target_include_directories( test-unset-envvars PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( test-unset-envvars PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+set_property( TARGET test-unset-envvars PROPERTY CXX_STANDARD 17 )
+
+add_test( NAME unset-session-bus COMMAND test-unset-envvars connect_session_bus )
+add_test( NAME unset-starter-bus COMMAND test-unset-envvars connect_starter_bus )

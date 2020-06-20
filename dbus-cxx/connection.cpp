@@ -127,22 +127,36 @@ public:
       m_priv = std::make_unique<priv_data>();
 
     if( type == BusType::SESSION ){
-        std::string sessionBusAddr = std::string( getenv( "DBUS_SESSION_BUS_ADDRESS" ) );
+        char* env_address = getenv( "DBUS_SESSION_BUS_ADDRESS" );
+        if( env_address == nullptr ){
+            return;
+        }
+        std::string sessionBusAddr = std::string( env_address );
         SIMPLELOGGER_DEBUG(LOGGER_NAME, "Going to open session bus: " + sessionBusAddr );
         m_priv->m_transport = priv::Transport::open_transport( sessionBusAddr );
     }else if( type == BusType::SYSTEM ){
-        std::string systemBusAddr = std::string( getenv( "DBUS_SYSTEM_BUS_ADDRESS" ) );
+        char* env_address = getenv( "DBUS_SYSTEM_BUS_ADDRESS" );
+        std::string systemBusAddr;
+
+        if( env_address != nullptr ){
+            systemBusAddr = std::string( env_address );
+        }
         if( systemBusAddr.empty() ){
             systemBusAddr = "unix:path=/var/run/dbus/system_bus_socket";
         }
         m_priv->m_transport = priv::Transport::open_transport( systemBusAddr );
     }else if( type == BusType::STARTER ){
-         std::string starterBusAddr = std::string( getenv( "DBUS_STARTER_ADDRESS" ) );
-         if( starterBusAddr.empty() ){
-             SIMPLELOGGER_ERROR("dbus.Connection", "Attempting to connect "
+        char* env_address = getenv( "DBUS_STARTER_ADDRESS" );
+        std::string starterBusAddr;
+
+        if( env_address != nullptr ){
+            starterBusAddr = std::string( env_address );
+        }
+        if( starterBusAddr.empty() ){
+             SIMPLELOGGER_ERROR(LOGGER_NAME, "Attempting to connect "
                   "to DBUS_STARTER_ADDRESS, but environment variable not defined or empty" );
-         }
-         m_priv->m_transport = priv::Transport::open_transport( starterBusAddr );
+        }
+        m_priv->m_transport = priv::Transport::open_transport( starterBusAddr );
     }
 
     if( !m_priv->m_transport || !m_priv->m_transport->is_valid() ){
