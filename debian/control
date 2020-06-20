@@ -14,7 +14,6 @@ Build-Depends: cmake,
                libpopt-dev,
                libsigc++-3.0-dev,
                qtbase5-dev,
-               quilt,
                xsltproc
 Standards-Version: 3.9.5
 Section: libs
