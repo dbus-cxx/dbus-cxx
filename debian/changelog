@@ -1,3 +1,9 @@
+dbus-cxx (2.0.0) UNRELEASED; urgency=medium
+
+  * Bumped version of dbus-cxx
+
+ -- robert <robert@debian9>  Sat, 20 Jun 2020 12:19:24 -0400
+
 dbus-cxx (0.11.0) jessie; urgency=medium
 
   * Bumped file for release
