@@ -48,7 +48,8 @@ bool connection_create_signal_proxy(){
                 DBus::ThreadForCalling::DispatcherThread );
 
     std::vector<std::shared_ptr<DBus::signal_proxy_base>> map = conn->get_signal_proxies();
-    TEST_ASSERT_RET_FAIL( map.size() == 1 );
+    // Note: there are a few built-in signal proxies that dbus-cxx uses, so this must be at least 1
+    TEST_ASSERT_RET_FAIL( map.size() >= 1 );
 
     std::vector<std::shared_ptr<DBus::signal_proxy_base>> by_iface_name = conn->get_signal_proxies("interface.name");
     TEST_ASSERT_RET_FAIL( by_iface_name.size() == 1 );

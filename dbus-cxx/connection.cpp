@@ -290,7 +290,9 @@ public:
 
       SIMPLELOGGER_DEBUG(LOGGER_NAME, "Adding the following match: " << rule );
 
-      m_priv->m_daemonProxy->AddMatch( rule );
+      if( m_priv->m_daemonProxy ){
+        m_priv->m_daemonProxy->AddMatch( rule );
+      }
 
     return true;
   }
