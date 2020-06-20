@@ -27,7 +27,7 @@ include /usr/share/dpkg/default.mk
 # debmake generated override targets
 # This is example for Cmake (See http://bugs.debian.org/641051 )
 override_dh_auto_configure:
-	dh_auto_configure -- \
+	dh_auto_configure --builddirectory=build-deb -- \
 	-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH) \
 	-DENABLE_TOOLS=on \
 	-DENABLE_GLIBMM=on \
@@ -35,4 +35,22 @@ override_dh_auto_configure:
 	-DTOOLS_BUNDLED_CPPGENERATE=off \
         -DENABLE_QT_SUPPORT=on \
         -DENABLE_GLIB=on
+
+override_dh_auto_build:
+	dh_auto_build --builddirectory=build-deb
+
+override_dh_auto_install:
+	dh_auto_install --builddirectory=build-deb
+
+override_dh_auto_clean:
+	dh_auto_clean --builddirectory=build-deb
+
+override_dh_auto_test:
+ifeq (, $(findstring nocheck, $(DEB_BUILD_OPTIONS)))
+	# https://github.com/albfan/systemd-ubuntu-with-dbus/blob/89899b365a4fa7f0f60f561430c817666296fa55/debian/rules#L250
+	# some tests hang under fakeroot, so disable fakeroot
+	echo "01234567890123456789012345678901" > build-deb/machine-id
+	env -u LD_PRELOAD SYSTEMD_MACHINE_ID_PATH=$(CURDIR)/build-deb/machine-id \
+		make -C build-deb test
+endif
 
