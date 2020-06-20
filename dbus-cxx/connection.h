@@ -184,8 +184,6 @@ namespace DBus
 
       bool remove_match( const std::string& rule );
 
-      void remove_match_nonblocking( const std::string& rule );
-
       bool is_connected() const;
 
       bool is_authenticated() const;

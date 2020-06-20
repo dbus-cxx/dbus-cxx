@@ -305,19 +305,8 @@ public:
 
   bool Connection::remove_match( const std::string& rule )
   {
-//    Error error = Error();
-
-//    if ( not this->is_valid() ) return false;
-//    dbus_bus_remove_match( m_cobj, rule.c_str(), error.cobj() );
-
-//    if ( error.is_set() ) return false;
-//    return true;
-  }
-
-  void Connection::remove_match_nonblocking( const std::string& rule )
-  {
-//    if ( not this->is_valid() ) return;
-//    dbus_bus_remove_match( m_cobj, rule.c_str(), nullptr );
+      m_priv->m_daemonProxy->RemoveMatch( rule );
+    return true;
   }
 
   bool Connection::is_connected() const
