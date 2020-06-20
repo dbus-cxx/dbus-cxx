@@ -52,7 +52,7 @@ function(add_xml_test xml_file proxy_or_adapter gen_files test_compile)
     add_dependencies( ${test_binary} ${generated_files_target} )
 
     # Finally, add a test for cmake
-    add_test( NAME ${test_name} COMMAND ${test_binary} )
+    add_test( NAME ${test_name} COMMAND dbus-run-session ./${test_binary} )
 endfunction()
 
 add_xml_test( "some.thing.xml" proxy "some_nameProxy.h;some_nameProxy.cpp" some-name-proxy )
