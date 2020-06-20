@@ -32,6 +32,7 @@ override_dh_auto_configure:
 	-DENABLE_TOOLS=on \
 	-DENABLE_GLIBMM=on \
 	-DBUILD_SITE=on \
-	-DTOOLS_BUNDLED_CPPGENERATE=off
-
+	-DTOOLS_BUNDLED_CPPGENERATE=off \
+        -DENABLE_QT_SUPPORT=on \
+        -DENABLE_GLIB=on
 
