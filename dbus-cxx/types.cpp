@@ -184,7 +184,11 @@ namespace DBus {
       case DataType::STRUCT:
       case DataType::DICT_ENTRY:
           return 8;
+      default:
+          break;
       }
+
+      return 0;
   }
 
   char TypeInfo::to_dbus_char() const {

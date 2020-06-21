@@ -24,6 +24,7 @@ include( FindPkgConfig )
 include( CheckTypeSize )
 include( CTest )
 include( CheckCXXSymbolExists )
+include( CheckCXXCompilerFlag )
 IF( CMAKE_BUILD_TYPE MATCHES Debug )
 include( CodeCoverage )
 ENDIF( CMAKE_BUILD_TYPE MATCHES Debug )
@@ -80,6 +81,13 @@ try_compile( DBUS_CXX_HAS_PROP_CONST
     "${CMAKE_SOURCE_DIR}/cmake-tests/propagate-const.cpp"
     CMAKE_FLAGS -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_STANDARD_REQUIRED=ON
 )
+
+# Check for compiler flags that we want
+set( UNUSED_RESULT 0 )
+check_cxx_compiler_flag( "-Wunused-result" UNUSED_RESULT )
+if( ${UNUSED_RESULT} )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-result" )
+endif( ${UNUSED_RESULT} )
 
 # 
 # All sources

@@ -151,7 +151,7 @@ class signal_proxy
       try {
         MessageIterator i = msg->begin();
         std::apply( [i](auto&& ...arg) mutable {
-               (i >> ... >> arg);
+               (void)(i >> ... >> arg);
               },
         tup_args );
         std::apply(&signal_proxy::emit, std::tuple_cat(std::make_tuple(this), tup_args) );

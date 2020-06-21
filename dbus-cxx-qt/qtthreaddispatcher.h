@@ -17,7 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #ifndef DBUS_CXX_QT_THREAD_DISPATCHER
-#define DBUX_CXX_QT_THREAD_DISPATCHER
+#define DBUS_CXX_QT_THREAD_DISPATCHER
 
 #include <dbus-cxx/threaddispatcher.h>
 #include <dbus-cxx/connection.h>

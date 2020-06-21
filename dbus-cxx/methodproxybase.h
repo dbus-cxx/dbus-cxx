@@ -158,7 +158,7 @@ namespace DBus
 
         std::shared_ptr<CallMessage> _callmsg = this->create_call_message();
         MessageAppendIterator iter = _callmsg->append();
-        (iter << ... << args);
+        (void)(iter << ... << args);
         std::shared_ptr<const ReturnMessage> retmsg = this->call( _callmsg, -1 );
         T_return _retval;
         retmsg >> _retval;
