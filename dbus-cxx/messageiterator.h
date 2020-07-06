@@ -168,6 +168,11 @@ namespace DBus
       operator std::string();
       operator std::shared_ptr<FileDescriptor>();
       operator Variant();
+
+      #if DBUS_CXX_SIZEOF_LONG_INT == 4
+      operator usigned long int();
+      operator long int();
+      #endif
         
       template <typename T>
       operator std::vector<T>() {
