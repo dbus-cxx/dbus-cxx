@@ -170,7 +170,7 @@ namespace DBus
       operator Variant();
 
       #if DBUS_CXX_SIZEOF_LONG_INT == 4
-      operator usigned long int();
+      operator unsigned long int();
       operator long int();
       #endif
         
