@@ -143,11 +143,6 @@ namespace DBus
   
   inline DataType type( const char& )               { return DataType::BYTE; }
   inline DataType type( const int8_t& )             { return DataType::BYTE; }
-
-#if DBUS_CXX_SIZEOF_LONG_INT == 4
-  inline DataType type( const long int& )            { return DataType::INT32; }
-  inline DataType type( const long unsigned int& )   { return DataType::UINT32; }
-#endif
   
   inline DataType type( const float& )               { return DataType::DOUBLE; }
 
