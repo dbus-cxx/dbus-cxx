@@ -137,18 +137,6 @@ bool call_message_append_extract_iterator_signature()
   return TEST_EQUALS( v, v2 );
 }
 
-bool call_message_append_extract_iterator_long_int()
-{
-  long int v = -48321;
-  return test_numeric_call_message_append_extract_iterator(v);
-}
-
-bool call_message_append_extract_iterator_unsigned_long_int()
-{
-  unsigned long int v = 95382;
-  return test_numeric_call_message_append_extract_iterator(v);
-}
-
 bool call_message_append_extract_iterator_array_int( )
 {
   std::vector<int> v, v2;
@@ -492,18 +480,6 @@ bool call_message_iterator_insertion_extraction_operator_signature()
   return TEST_EQUALS( v, v2 );
 }
 
-bool call_message_iterator_insertion_extraction_operator_long_int()
-{
-  long int v = -67445;
-  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
-}
-
-bool call_message_iterator_insertion_extraction_operator_unsigned_long_int()
-{
-  unsigned long int v = 343673;
-  return test_numeric_call_message_iterator_insertion_extraction_operator(v);
-}
-
 bool call_message_iterator_insertion_extraction_operator_variant()
 {
   DBus::Variant var1( 99 );
@@ -583,8 +559,6 @@ bool call_message_append_extract_iterator_multiple( )
   uint8_t            c_1    = 'a'         , c_2    = '\0';
   uint8_t          i8_1   = 119         , i8_2   = 0;
   double           f_1    = -222.43212  , f_2    = 0.00;
-  long int        li_1   = -344223     , li_2   = 0;
-  unsigned long int uli_1= 94321       , uli_2  = 0;
   std::vector<double> ad_1             , ad_2;
   
   for ( int i = 0; i < 35; i++ )
@@ -608,8 +582,6 @@ bool call_message_append_extract_iterator_multiple( )
   iter1 << c_1;
   iter1 << i8_1;
   iter1 << f_1;
-  iter1 << li_1;
-  iter1 << uli_1;
   iter1 << ad_1;
 
   DBus::MessageIterator iter2(msg);
@@ -628,8 +600,6 @@ bool call_message_append_extract_iterator_multiple( )
   c_2    = (uint8_t)iter2;              iter2.next();
   i8_2   = (uint8_t)iter2;            iter2.next();
   f_2    = (double)iter2;             iter2.next();
-  li_2   = (long int)iter2;          iter2.next();
-  uli_2  = (unsigned long int)iter2; iter2.next();
   iter2 >> ad_2;
   /*iter2.get_array(ad_2);*/             iter2.next();
 
@@ -648,8 +618,6 @@ bool call_message_append_extract_iterator_multiple( )
   TEST_EQUALS_RET_FAIL( c_1, c_2 );
   TEST_EQUALS_RET_FAIL( i8_1, i8_2 );
   TEST_EQUALS_RET_FAIL( f_1, f_2 );
-  TEST_EQUALS_RET_FAIL( li_1, li_2 );
-  TEST_EQUALS_RET_FAIL( uli_1, uli_2 );
   
   TEST_EQUALS_RET_FAIL( ad_1.size(), ad_2.size() );
   for ( int i=0; i < 35; i++ )
@@ -675,8 +643,6 @@ bool call_message_iterator_insertion_extraction_operator_multiple( )
   uint8_t            c_1    = 'a'         , c_2    = '\0';
   uint8_t          i8_1   = 119         , i8_2   = 0;
   double           f_1    = -222.43212  , f_2    = 0.00;
-  long int        li_1   = -344223     , li_2   = 0;
-  unsigned long int uli_1= 94321       , uli_2  = 0;
   std::vector<double> ad_1             , ad_2;
 
   for ( int i = 0; i < 35; i++ )
@@ -684,10 +650,10 @@ bool call_message_iterator_insertion_extraction_operator_multiple( )
 
   std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
   DBus::MessageAppendIterator iter1(msg);
-  iter1 << b_1 << ui8_1 << i16_1 << ui16_1 << i32_1 << ui32_1 << i64_1 << ui64_1 << d_1 << cs_1 << s_1 << sig_1 << c_1 << i8_1 << f_1 << li_1 << uli_1 << ad_1;
+  iter1 << b_1 << ui8_1 << i16_1 << ui16_1 << i32_1 << ui32_1 << i64_1 << ui64_1 << d_1 << cs_1 << s_1 << sig_1 << c_1 << i8_1 << f_1 << ad_1;
 
   DBus::MessageIterator iter2(msg);
-  iter2 >> b_2 >> ui8_2 >> i16_2 >> ui16_2 >> i32_2 >> ui32_2 >> i64_2 >> ui64_2 >> d_2 >> cs_2 >> s_2 >> sig_2 >> c_2 >> i8_2 >> f_2 >> li_2 >> uli_2 >> ad_2;
+  iter2 >> b_2 >> ui8_2 >> i16_2 >> ui16_2 >> i32_2 >> ui32_2 >> i64_2 >> ui64_2 >> d_2 >> cs_2 >> s_2 >> sig_2 >> c_2 >> i8_2 >> f_2 >> ad_2;
 
   TEST_EQUALS_RET_FAIL( b_1, b_2 );
   TEST_EQUALS_RET_FAIL( ui8_1, ui8_2 );
@@ -704,8 +670,6 @@ bool call_message_iterator_insertion_extraction_operator_multiple( )
   TEST_EQUALS_RET_FAIL( c_1, c_2 );
   TEST_EQUALS_RET_FAIL( i8_1, i8_2 );
   TEST_EQUALS_RET_FAIL( f_1, f_2 );
-  TEST_EQUALS_RET_FAIL( li_1, li_2 );
-  TEST_EQUALS_RET_FAIL( uli_1, uli_2 );
   
   TEST_EQUALS_RET_FAIL( ad_1.size(), ad_2.size() );
   for ( int i=0; i < 35; i++ )
@@ -760,8 +724,6 @@ int main(int argc, char** argv){
   ADD_TEST(cstring);
   ADD_TEST(string);
   ADD_TEST(signature);
-  ADD_TEST(long_int);
-  ADD_TEST(unsigned_long_int);
   ADD_TEST(array_int);
   ADD_TEST(array_string);
   ADD_TEST(array_array_string);
@@ -784,8 +746,6 @@ int main(int argc, char** argv){
   ADD_TEST2(cstring);
   ADD_TEST2(string);
   ADD_TEST2(signature);
-  ADD_TEST2(long_int);
-  ADD_TEST2(unsigned_long_int);
   ADD_TEST2(array_int);
   ADD_TEST2(array_string);
   ADD_TEST2(filedescriptor);
