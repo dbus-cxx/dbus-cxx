@@ -63,7 +63,7 @@ namespace DBus
 
       ~MethodProxyBase();
 
-      InterfaceProxy* interface() const;
+      InterfaceProxy* interface_name() const;
 
       const std::string& name() const;
 

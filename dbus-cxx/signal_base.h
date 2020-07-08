@@ -48,13 +48,13 @@ namespace DBus
   {
     protected:
       
-      signal_base(const std::string& path, const std::string& interface, const std::string& name);
+      signal_base(const std::string& path, const std::string& interface_name, const std::string& name);
 
-      signal_base(const std::string& interface, const std::string& name);
+      signal_base(const std::string& interface_name, const std::string& name);
 
-      signal_base(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface, const std::string& name);
+      signal_base(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface_name, const std::string& name);
 
-      signal_base(std::shared_ptr<Connection> connection, const std::string& interface, const std::string& name);
+      signal_base(std::shared_ptr<Connection> connection, const std::string& interface_name, const std::string& name);
 
     public:
       virtual ~signal_base();
@@ -67,7 +67,7 @@ namespace DBus
 
       void set_sender(const std::string& s);
 
-      const std::string& interface() const;
+      const std::string& interface_name() const;
 
       void set_interface(const std::string& i);
 

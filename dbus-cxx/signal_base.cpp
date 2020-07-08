@@ -37,35 +37,35 @@ namespace DBus
       std::string m_match_rule;
   };
 
-  signal_base::signal_base(const std::string& path, const std::string& interface, const std::string& name):
+  signal_base::signal_base(const std::string& path, const std::string& interface_name, const std::string& name):
       m_priv( std::make_unique<priv_data>() )
   {
       m_priv->m_path = path;
-      m_priv->m_interface = interface;
+      m_priv->m_interface = interface_name;
       m_priv->m_name = name;
   }
 
-  signal_base::signal_base(const std::string& interface, const std::string& name):
+  signal_base::signal_base(const std::string& interface_name, const std::string& name):
       m_priv( std::make_unique<priv_data>() )
   {
-      m_priv->m_interface = interface;
+      m_priv->m_interface = interface_name;
       m_priv->m_name = name;
   }
 
-  signal_base::signal_base(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface, const std::string& name):
+  signal_base::signal_base(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface_name, const std::string& name):
       m_priv( std::make_unique<priv_data>() )
   {
       m_priv->m_connection = connection;
       m_priv->m_path = path;
-      m_priv->m_interface = interface;
+      m_priv->m_interface = interface_name;
       m_priv->m_name = name;
   }
 
-  signal_base::signal_base(std::shared_ptr<Connection> connection, const std::string& interface, const std::string& name):
+  signal_base::signal_base(std::shared_ptr<Connection> connection, const std::string& interface_name, const std::string& name):
       m_priv( std::make_unique<priv_data>() )
   {
       m_priv->m_connection = connection;
-      m_priv->m_interface = interface;
+      m_priv->m_interface = interface_name;
       m_priv->m_name = name;
   }
 
@@ -93,7 +93,7 @@ namespace DBus
     m_priv->m_sender = s;
   }
 
-  const std::string & signal_base::interface() const
+  const std::string & signal_base::interface_name() const
   {
     return m_priv->m_interface;
   }

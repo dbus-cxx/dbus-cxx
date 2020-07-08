@@ -723,13 +723,13 @@ public:
           strErrMsg << "dbus-cxx: unable to find method named "
                     << callmsg->member()
                     << " on interface "
-                    << callmsg->interface();
+                    << callmsg->interface_name();
           errMsg->set_name( DBUSCXX_ERROR_UNKNOWN_METHOD );
           errMsg->set_message( strErrMsg.str() );
           break;
       case HandlerResult::Invalid_Interface:
           strErrMsg << "dbus-cxx: unable to find interface named "
-                    << callmsg->interface();
+                    << callmsg->interface_name();
           errMsg->set_name( DBUSCXX_ERROR_UNKNOWN_INTERFACE );
           errMsg->set_message( strErrMsg.str() );
           break;
@@ -832,7 +832,7 @@ public:
   {
     if ( not signal ) return std::shared_ptr<signal_proxy_base>();
     
-    SIMPLELOGGER_DEBUG( LOGGER_NAME, "Adding signal " << signal->interface() << ":" << signal->name() );
+    SIMPLELOGGER_DEBUG( LOGGER_NAME, "Adding signal " << signal->interface_name() << ":" << signal->name() );
 
     if ( signal->connection() ) signal->connection()->remove_signal_proxy(signal);
 
@@ -951,12 +951,12 @@ public:
     return m_priv->m_proxySignals;
   }
 
-  std::vector<std::shared_ptr<signal_proxy_base>> Connection::get_signal_proxies(const std::string & interface)
+  std::vector<std::shared_ptr<signal_proxy_base>> Connection::get_signal_proxies(const std::string & interface_name)
   {
     std::vector<std::shared_ptr<signal_proxy_base>> ret;
 
     for( std::shared_ptr<signal_proxy_base> base : m_priv->m_allProxySignals ){
-        if( base->interface().compare( interface ) == 0 ){
+        if( base->interface_name().compare( interface_name ) == 0 ){
             ret.push_back( base );
         }
     }
@@ -964,12 +964,12 @@ public:
     return ret;
   }
 
-  std::vector<std::shared_ptr<signal_proxy_base>> Connection::get_signal_proxies(const std::string & interface, const std::string & member)
+  std::vector<std::shared_ptr<signal_proxy_base>> Connection::get_signal_proxies(const std::string & interface_name, const std::string & member)
   {
     std::vector<std::shared_ptr<signal_proxy_base>> ret;
 
     for( std::shared_ptr<signal_proxy_base> base : m_priv->m_allProxySignals ){
-        if( base->interface().compare( interface ) == 0 &&
+        if( base->interface_name().compare( interface_name ) == 0 &&
             base->name().compare( member ) == 0 ){
             ret.push_back( base );
         }

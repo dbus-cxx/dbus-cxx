@@ -47,7 +47,7 @@ class SignalMatchRule {
 
     SignalMatchRule& setPath( const std::string& path );
 
-    SignalMatchRule& setInterface( const std::string& interface );
+    SignalMatchRule& setInterface( const std::string& interface_name );
 
     SignalMatchRule& setMember( const std::string& member );
 

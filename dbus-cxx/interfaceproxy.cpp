@@ -111,7 +111,7 @@ namespace DBus
 
     if ( this->has_method(method) ) return false;
 
-    if ( method->interface() ) method->interface()->remove_method(method);
+    if ( method->interface_name() ) method->interface_name()->remove_method(method);
     
     {
       std::unique_lock lock( m_priv->m_methods_rwlock );

@@ -53,17 +53,17 @@ class signal
   : public sigc::signal<void(T_type...)>, public signal_base
 {
 private:
-  signal(const std::string& path, const std::string& interface, const std::string& member):
-    signal_base(path, interface, member)
+  signal(const std::string& path, const std::string& interface_name, const std::string& member):
+    signal_base(path, interface_name, member)
   {
     m_internal_callback_connection =
       this->connect( sigc::mem_fun(*this, &signal::internal_callback) );
   }
 
 public:
-  static std::shared_ptr<signal> create(const std::string& path, const std::string& interface, const std::string& member)
+  static std::shared_ptr<signal> create(const std::string& path, const std::string& interface_name, const std::string& member)
   {
-    return std::shared_ptr<signal>( new signal(path, interface, member) );
+    return std::shared_ptr<signal>( new signal(path, interface_name, member) );
   }
 
 //  virtual std::shared_ptr<signal_base> clone()
@@ -104,11 +104,11 @@ public:
 
   void internal_callback(T_type... args)
   {
-    std::shared_ptr<SignalMessage> __msg = SignalMessage::create(path(), interface(), name());
-    DBUSCXX_DEBUG_STDSTR( "dbus.signal", "Sending following signal: " 
+    std::shared_ptr<SignalMessage> __msg = SignalMessage::create(path(), interface_name(), name());
+    DBUSCXX_DEBUG_STDSTR( "DBus.signal", "Sending following signal: "
         << __msg->path()
         << " "
-        << __msg->interface()
+        << __msg->interface_name()
         << " "
         << __msg->member() );
     if ( not destination().empty() ) __msg->set_destination( destination() );

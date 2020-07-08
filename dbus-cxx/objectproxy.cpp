@@ -119,7 +119,7 @@ namespace DBus
     return m_priv->m_interfaces;
   }
 
-  std::shared_ptr<InterfaceProxy> ObjectProxy::interface( const std::string & name ) const
+  std::shared_ptr<InterfaceProxy> ObjectProxy::interface_by_name( const std::string & name ) const
   {
     Interfaces::const_iterator iter;
 
@@ -134,34 +134,34 @@ namespace DBus
     return iter->second;
   }
 
-  bool ObjectProxy::add_interface( std::shared_ptr<InterfaceProxy> interface )
+  bool ObjectProxy::add_interface( std::shared_ptr<InterfaceProxy> interface_ptr )
   {
     bool result = true;
 
-    if ( not interface ) return false;
+    if ( not interface_ptr ) return false;
 
-    if ( interface->object() ) interface->object()->remove_interface( interface );
+    if ( interface_ptr->object() ) interface_ptr->object()->remove_interface( interface_ptr );
     
     {
       std::unique_lock lock( m_priv->m_interfaces_rwlock );
-        m_priv->m_interfaces.insert(std::make_pair(interface->name(), interface));
+        m_priv->m_interfaces.insert(std::make_pair(interface_ptr->name(), interface_ptr));
 
-        interface->set_object( this );
+        interface_ptr->set_object( this );
 
     }
 
-    m_priv->m_signal_interface_added.emit( interface );
+    m_priv->m_signal_interface_added.emit( interface_ptr );
 
     return result;
   }
 
   std::shared_ptr<InterfaceProxy> ObjectProxy::create_interface(const std::string & name)
   {
-    std::shared_ptr<InterfaceProxy> interface;
+    std::shared_ptr<InterfaceProxy> interface_ptr;
 
-    interface = InterfaceProxy::create(name);
+    interface_ptr = InterfaceProxy::create(name);
 
-    if ( this->add_interface(interface) ) return interface;
+    if ( this->add_interface(interface_ptr) ) return interface_ptr;
 
     return std::shared_ptr<InterfaceProxy>();
   }
@@ -169,7 +169,7 @@ namespace DBus
   void ObjectProxy::remove_interface( const std::string & name )
   {
     Interfaces::iterator iter;
-    std::shared_ptr<InterfaceProxy> interface, old_default;
+    std::shared_ptr<InterfaceProxy> interface_ptr, old_default;
 
 
     {
@@ -178,28 +178,28 @@ namespace DBus
       iter = m_priv->m_interfaces.find( name );
       if ( iter != m_priv->m_interfaces.end() )
       {
-        interface = iter->second;
+        interface_ptr = iter->second;
         m_priv->m_interfaces.erase(iter);
       }
 
     }
 
-    if ( interface ) m_priv->m_signal_interface_removed.emit( interface );
+    if ( interface_ptr ) m_priv->m_signal_interface_removed.emit( interface_ptr );
   }
 
-  void ObjectProxy::remove_interface( std::shared_ptr<InterfaceProxy> interface )
+  void ObjectProxy::remove_interface( std::shared_ptr<InterfaceProxy> interface_ptr )
   {
     Interfaces::iterator location;
     std::shared_ptr<InterfaceProxy> old_default;
 
     bool interface_removed = false;
 
-    if ( not interface ) return;
+    if ( not interface_ptr ) return;
 
     {
       std::unique_lock lock( m_priv->m_interfaces_rwlock );
 
-      location = m_priv->m_interfaces.find( interface->name() );
+      location = m_priv->m_interfaces.find( interface_ptr->name() );
       if( location != m_priv->m_interfaces.end() ){
           m_priv->m_interfaces.erase( location );
           interface_removed = true;
@@ -207,7 +207,7 @@ namespace DBus
 
     }
 
-    if ( interface_removed ) m_priv->m_signal_interface_removed.emit( interface );
+    if ( interface_removed ) m_priv->m_signal_interface_removed.emit( interface_ptr );
   }
 
   bool ObjectProxy::has_interface( const std::string & name ) const
@@ -220,22 +220,22 @@ namespace DBus
     return ( i != m_priv->m_interfaces.end() );
   }
 
-  bool ObjectProxy::has_interface( std::shared_ptr<InterfaceProxy> interface ) const
+  bool ObjectProxy::has_interface( std::shared_ptr<InterfaceProxy> interface_ptr ) const
   {
-    if ( not interface ) return false;
+    if ( not interface_ptr ) return false;
     
     Interfaces::const_iterator current, upper;
     bool result = false;
     std::shared_lock lock( m_priv->m_interfaces_rwlock );
 
-    current = m_priv->m_interfaces.lower_bound(interface->name());
+    current = m_priv->m_interfaces.lower_bound(interface_ptr->name());
 
     if ( current != m_priv->m_interfaces.end() )
     {
-      upper = m_priv->m_interfaces.upper_bound(interface->name());
+      upper = m_priv->m_interfaces.upper_bound(interface_ptr->name());
       for ( ; current != upper; current++)
       {
-        if ( current->second == interface )
+        if ( current->second == interface_ptr )
         {
           result = true;
           break;
@@ -250,7 +250,7 @@ namespace DBus
   {
     if ( not method ) return false;
     
-    std::shared_ptr<InterfaceProxy> iface = this->interface(ifacename);
+    std::shared_ptr<InterfaceProxy> iface = this->interface_by_name(ifacename);
 
     if ( not iface ) iface = this->create_interface(ifacename);
 

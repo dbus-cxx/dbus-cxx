@@ -35,11 +35,11 @@ namespace DBus
     this->set_member( name );
   }
 
-  SignalMessage::SignalMessage( const std::string& path, const std::string& interface, const std::string& name ) :
+  SignalMessage::SignalMessage( const std::string& path, const std::string& interface_name, const std::string& name ) :
       Message()
   {
     set_path( path );
-    set_interface( interface );
+    set_interface( interface_name );
     set_member( name );
   }
 
@@ -53,9 +53,9 @@ namespace DBus
     return std::shared_ptr<SignalMessage>( new SignalMessage(name) );
   }
 
-  std::shared_ptr<SignalMessage> SignalMessage::create(const std::string & path, const std::string & interface, const std::string & name)
+  std::shared_ptr<SignalMessage> SignalMessage::create(const std::string & path, const std::string & interface_name, const std::string & name)
   {
-    return std::shared_ptr<SignalMessage>( new SignalMessage(path, interface, name) );
+    return std::shared_ptr<SignalMessage>( new SignalMessage(path, interface_name, name) );
   }
 
   bool SignalMessage::set_path( const std::string& p )
@@ -96,7 +96,7 @@ namespace DBus
     return true;
   }
 
-  std::string SignalMessage::interface() const {
+  std::string SignalMessage::interface_name() const {
       DBus::Variant memberName = header_field( MessageHeaderFields::Interface );
       if( memberName.currentType() == DataType::STRING ){
           return std::any_cast<std::string>( memberName.value() );

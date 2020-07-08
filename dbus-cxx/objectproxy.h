@@ -96,10 +96,10 @@ namespace DBus
       const Interfaces& interfaces() const;
 
       /** Returns the first interface with the given name */
-      std::shared_ptr<InterfaceProxy> interface( const std::string& name ) const;
+      std::shared_ptr<InterfaceProxy> interface_by_name( const std::string& name ) const;
 
       /** Adds the interface to this object */
-      bool add_interface( std::shared_ptr<InterfaceProxy> interface );
+      bool add_interface( std::shared_ptr<InterfaceProxy> interface_ptr );
 
       /**
        * Creates and adds the named interface to this object
@@ -112,14 +112,14 @@ namespace DBus
       void remove_interface( const std::string& name );
 
       /** Removes the given interface */
-      void remove_interface( std::shared_ptr<InterfaceProxy> interface );
+      void remove_interface( std::shared_ptr<InterfaceProxy> interface_ptr );
 
       bool has_interface( const std::string& name ) const;
 
-      bool has_interface( std::shared_ptr<InterfaceProxy> interface ) const;
+      bool has_interface( std::shared_ptr<InterfaceProxy> interface_ptr ) const;
 
       /** Adds the method to the named interface */
-      bool add_method( const std::string& interface, std::shared_ptr<MethodProxyBase> method );
+      bool add_method( const std::string& interface_name, std::shared_ptr<MethodProxyBase> method );
 
       std::shared_ptr<CallMessage> create_call_message( const std::string& interface_name, const std::string& method_name ) const;
 
@@ -146,9 +146,9 @@ namespace DBus
       std::shared_ptr<MethodProxy<T_type>>
       create_method( const std::string& interface_name, const std::string& method_name )
       {
-        std::shared_ptr<InterfaceProxy> interface = this->interface(interface_name);
-        if ( not interface ) interface = this->create_interface( interface_name );
-        return interface->create_method<T_type>(method_name);
+        std::shared_ptr<InterfaceProxy> interface_ptr = this->interface_by_name(interface_name);
+        if ( not interface_ptr ) interface_ptr = this->create_interface( interface_name );
+        return interface_ptr->create_method<T_type>(method_name);
       }
 
       /**
@@ -161,9 +161,9 @@ namespace DBus
       std::shared_ptr<signal_proxy<T_type...> >
       create_signal( const std::string& interface_name, const std::string& sig_name, ThreadForCalling calling )
       {
-        std::shared_ptr<InterfaceProxy> interface = this->interface(interface_name);
-        if ( not interface ) interface = this->create_interface( interface_name );
-        return interface->create_signal<T_type...>(sig_name, calling);
+        std::shared_ptr<InterfaceProxy> interface_ptr = this->interface_by_name(interface_name);
+        if ( not interface_ptr ) interface_ptr = this->create_interface( interface_name );
+        return interface_ptr->create_signal<T_type...>(sig_name, calling);
       }
 
       /**

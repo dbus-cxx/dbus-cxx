@@ -57,7 +57,7 @@ namespace DBus
   {
   }
 
-  InterfaceProxy* MethodProxyBase::interface() const
+  InterfaceProxy* MethodProxyBase::interface_name() const
   {
     return m_priv->m_interface;
   }

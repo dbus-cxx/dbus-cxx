@@ -66,6 +66,13 @@ if( ${ENABLE_ASAN} )
 	set( CMAKE_CXX_FLAGS "-fsanitize=address -fsanitize=null -fsanitize=return -fsanitize=object-size -fsanitize=bool -fsanitize=enum" )
 endif()
 
+if( UNIX )
+    # WIN32 has '#define interface struct', so we'll do the same thing.
+    # This should not affect anything in the code, but it will cause it to not compile on
+    # non-Windows systems
+    add_compile_definitions( interface=struct )
+endif( UNIX )
+
 # Check for cxxabi.h so we can demangle symbols
 check_include_file_cxx( "cxxabi.h" DBUS_CXX_HAS_CXXABI_H )
 # Check to make sure the demangle symbol exists

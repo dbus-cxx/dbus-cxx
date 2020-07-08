@@ -93,7 +93,7 @@ namespace DBus
 
       void set_interface( const std::string& i );
 
-      std::string interface() const;
+      std::string interface_name() const;
 
       void set_member( const std::string& m );
 

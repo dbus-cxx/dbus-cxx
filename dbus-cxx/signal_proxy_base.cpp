@@ -31,8 +31,8 @@ SignalMatchRule& SignalMatchRule::setPath( const std::string& path ){
     return *this;
 }
 
-SignalMatchRule& SignalMatchRule::setInterface( const std::string& interface ){
-    m_interface = interface;
+SignalMatchRule& SignalMatchRule::setInterface( const std::string& interface_name ){
+    m_interface = interface_name;
     return *this;
 }
 
@@ -114,7 +114,7 @@ public:
   {
     if ( not msg or not msg->is_valid() ) return false;
 
-    if ( not interface().empty() && interface() != msg->interface() ) return false;
+    if ( not interface_name().empty() && interface_name() != msg->interface_name() ) return false;
 
     if ( not name().empty() && name() != msg->member() ) return false;
 

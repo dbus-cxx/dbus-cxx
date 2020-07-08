@@ -331,17 +331,17 @@ namespace DBus
       const std::vector<std::shared_ptr<signal_proxy_base>>& get_signal_proxies();
 
       /** Gets the signal handlers for a specific interface */
-      std::vector<std::shared_ptr<signal_proxy_base>> get_signal_proxies( const std::string& interface );
+      std::vector<std::shared_ptr<signal_proxy_base>> get_signal_proxies( const std::string& interface_name );
 
       /** Gets the signal handlers for a specific interface and member */
-      std::vector<std::shared_ptr<signal_proxy_base>> get_signal_proxies( const std::string& interface, const std::string& member );
+      std::vector<std::shared_ptr<signal_proxy_base>> get_signal_proxies( const std::string& interface_name, const std::string& member );
 
       /** Create a signal, that when it is emitted will send that signal over the DBus  */
       template <class... T_arg>
-      std::shared_ptr<signal<T_arg...> > create_signal( const std::string& path, const std::string& interface, const std::string& member )
+      std::shared_ptr<signal<T_arg...> > create_signal( const std::string& path, const std::string& interface_name, const std::string& member )
       {
         std::shared_ptr<signal<T_arg...> > sig;
-        sig = signal<T_arg...>::create(path, interface, member);
+        sig = signal<T_arg...>::create(path, interface_name, member);
         sig->set_connection( shared_from_this() );
         return sig;
       }

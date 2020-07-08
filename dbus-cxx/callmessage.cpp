@@ -123,7 +123,7 @@ namespace DBus
     set_header_field( MessageHeaderFields::Interface, Variant( i ) );
   }
 
-  std::string CallMessage::interface() const {
+  std::string CallMessage::interface_name() const {
       Variant iface = header_field( MessageHeaderFields::Interface );
       if( iface.currentType() == DataType::STRING ){
           return std::any_cast<std::string>( iface.value() );

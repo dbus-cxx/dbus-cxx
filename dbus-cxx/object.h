@@ -109,10 +109,10 @@ namespace DBus
       const Interfaces& interfaces() const;
 
       /** Returns the interface with the given name */
-      std::shared_ptr<Interface> interface( const std::string& name ) const;
+      std::shared_ptr<Interface> interface_by_name( const std::string& name ) const;
 
       /** Adds the interface to this object */
-      bool add_interface( std::shared_ptr<Interface> interface );
+      bool add_interface( std::shared_ptr<Interface> interface_by_name );
 
       /**
        * Creates and adds the named interface to this object.
@@ -162,13 +162,13 @@ namespace DBus
       std::shared_ptr<Method<T_type> >
       create_method( const std::string& interface_name, const std::string& method_name, sigc::slot<T_type> slot )
       {
-        std::shared_ptr<Interface> interface;
-        interface = this->interface(interface_name);
-        if ( not interface ) interface = this->create_interface(interface_name);
+        std::shared_ptr<Interface> interface_ptr;
+        interface_ptr = this->interface_by_name(interface_name);
+        if ( not interface_ptr ) interface_ptr = this->create_interface(interface_name);
         // TODO throw an error if the interface still doesn't exist
 
         std::shared_ptr< Method<T_type> > method;
-        method = interface->create_method<T_type>(method_name);
+        method = interface_ptr->create_method<T_type>(method_name);
         method->set_method( slot );
         return method;
       }
@@ -211,7 +211,7 @@ namespace DBus
        *
        * @param interface True if the default interface was updated, false otherwise.
        */
-      bool set_default_interface( std::shared_ptr<Interface> interface );
+      bool set_default_interface( std::shared_ptr<Interface> interface_by_name );
 
       /**
        * Removes the currently set (if any) default interface. There wil not
@@ -256,7 +256,7 @@ namespace DBus
       {
         std::shared_ptr<DBus::signal<T_type...> > sig;
         if ( not has_interface(iface) ) this->create_interface(iface);
-        sig = this->interface(iface)->create_signal<T_type...>(name);
+        sig = this->interface_by_name(iface)->create_signal<T_type...>(name);
         return sig;
       }
 
