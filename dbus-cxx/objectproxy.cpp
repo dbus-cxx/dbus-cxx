@@ -138,7 +138,7 @@ namespace DBus
   {
     bool result = true;
 
-    if ( not interface_ptr ) return false;
+    if ( !interface_ptr ) return false;
 
     if ( interface_ptr->object() ) interface_ptr->object()->remove_interface( interface_ptr );
     
@@ -194,7 +194,7 @@ namespace DBus
 
     bool interface_removed = false;
 
-    if ( not interface_ptr ) return;
+    if ( !interface_ptr ) return;
 
     {
       std::unique_lock lock( m_priv->m_interfaces_rwlock );
@@ -222,7 +222,7 @@ namespace DBus
 
   bool ObjectProxy::has_interface( std::shared_ptr<InterfaceProxy> interface_ptr ) const
   {
-    if ( not interface_ptr ) return false;
+    if ( !interface_ptr ) return false;
     
     Interfaces::const_iterator current, upper;
     bool result = false;
@@ -248,11 +248,11 @@ namespace DBus
 
   bool ObjectProxy::add_method( const std::string& ifacename, std::shared_ptr<MethodProxyBase> method )
   {
-    if ( not method ) return false;
+    if ( !method ) return false;
     
     std::shared_ptr<InterfaceProxy> iface = this->interface_by_name(ifacename);
 
-    if ( not iface ) iface = this->create_interface(ifacename);
+    if ( !iface ) iface = this->create_interface(ifacename);
 
     return iface->add_method( method );
   }

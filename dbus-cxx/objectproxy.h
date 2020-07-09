@@ -147,7 +147,7 @@ namespace DBus
       create_method( const std::string& interface_name, const std::string& method_name )
       {
         std::shared_ptr<InterfaceProxy> interface_ptr = this->interface_by_name(interface_name);
-        if ( not interface_ptr ) interface_ptr = this->create_interface( interface_name );
+        if ( !interface_ptr ) interface_ptr = this->create_interface( interface_name );
         return interface_ptr->create_method<T_type>(method_name);
       }
 
@@ -162,7 +162,7 @@ namespace DBus
       create_signal( const std::string& interface_name, const std::string& sig_name, ThreadForCalling calling )
       {
         std::shared_ptr<InterfaceProxy> interface_ptr = this->interface_by_name(interface_name);
-        if ( not interface_ptr ) interface_ptr = this->create_interface( interface_name );
+        if ( !interface_ptr ) interface_ptr = this->create_interface( interface_name );
         return interface_ptr->create_signal<T_type...>(sig_name, calling);
       }
 

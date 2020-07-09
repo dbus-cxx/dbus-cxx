@@ -69,7 +69,7 @@ namespace DBus
 
   std::shared_ptr<CallMessage> DBus::MethodProxyBase::create_call_message() const
   {
-    if ( not m_priv->m_interface ) return std::shared_ptr<CallMessage>();
+    if ( !m_priv->m_interface ) return std::shared_ptr<CallMessage>();
     std::shared_ptr<CallMessage> cm = m_priv->m_interface->create_call_message( m_priv->m_name );
     cm->set_no_reply(false);
     return cm;
@@ -77,7 +77,7 @@ namespace DBus
 
   std::shared_ptr<const ReturnMessage> DBus::MethodProxyBase::call(std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds) const
   {
-    if ( not m_priv->m_interface ) return std::shared_ptr<const ReturnMessage>();
+    if ( !m_priv->m_interface ) return std::shared_ptr<const ReturnMessage>();
     return m_priv->m_interface->call(call_message, timeout_milliseconds);
   }
 

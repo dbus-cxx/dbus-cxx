@@ -111,7 +111,7 @@ public:
         << __msg->interface_name()
         << " "
         << __msg->member() );
-    if ( not destination().empty() ) __msg->set_destination( destination() );
+    if ( !destination().empty() ) __msg->set_destination( destination() );
     (*__msg << ... << args);
     bool result = this->handle_dbus_outgoing(__msg);
     DBUSCXX_DEBUG_STDSTR( "dbus.signal", "signal::internal_callback: result=" << result );

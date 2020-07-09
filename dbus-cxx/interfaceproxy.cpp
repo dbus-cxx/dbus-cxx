@@ -107,7 +107,7 @@ namespace DBus
   {
     bool result = true;
     
-    if ( not method ) return false;
+    if ( !method ) return false;
 
     if ( this->has_method(method) ) return false;
 
@@ -145,7 +145,7 @@ namespace DBus
     Methods::iterator location;
     bool erased = false;
 
-    if ( not method ) return;
+    if ( !method ) return;
 
     {
       std::unique_lock lock( m_priv->m_methods_rwlock );
@@ -177,7 +177,7 @@ namespace DBus
     Methods::const_iterator current, upper;
     bool found = false;
 
-    if ( not method ) return false;
+    if ( !method ) return false;
     
     std::shared_lock lock( m_priv->m_methods_rwlock );
 
@@ -201,13 +201,13 @@ namespace DBus
 
   std::shared_ptr<CallMessage> InterfaceProxy::create_call_message( const std::string& method_name ) const
   {
-    if ( not m_priv->m_object ) return std::shared_ptr<CallMessage>();
+    if ( !m_priv->m_object ) return std::shared_ptr<CallMessage>();
     return m_priv->m_object->create_call_message( m_priv->m_name, method_name );
   }
 
   std::shared_ptr<const ReturnMessage> InterfaceProxy::call( std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds ) const
   {
-    if ( not m_priv->m_object ) return std::shared_ptr<const ReturnMessage>();
+    if ( !m_priv->m_object ) return std::shared_ptr<const ReturnMessage>();
     return m_priv->m_object->call( call_message, timeout_milliseconds );
   }
 
@@ -234,7 +234,7 @@ namespace DBus
   bool InterfaceProxy::add_signal(std::shared_ptr<signal_proxy_base> sig, ThreadForCalling calling )
   {
     // is it a valid signal?
-    if ( not sig ) return false;
+    if ( !sig ) return false;
 
     // is it already added?
     if ( m_priv->m_signals.find(sig) != m_priv->m_signals.end() ) return false;
@@ -248,7 +248,7 @@ namespace DBus
 
     // connect it
     std::shared_ptr<Connection> conn = connection().lock();
-    if ( conn and conn->is_valid() ){
+    if ( conn && conn->is_valid() ){
       conn->add_signal_proxy(sig, calling);
     }else{
         return false;
@@ -266,8 +266,8 @@ namespace DBus
 
   bool InterfaceProxy::remove_signal(std::shared_ptr<signal_proxy_base> sig)
   {
-    if ( not sig ) return false;
-    if ( not this->has_signal(sig) ) return false;
+    if ( !sig ) return false;
+    if ( !this->has_signal(sig) ) return false;
     std::shared_ptr<Connection> conn = connection().lock();
     if( conn ){
         conn->remove_signal_proxy(sig);

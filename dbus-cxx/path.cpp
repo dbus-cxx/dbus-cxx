@@ -64,14 +64,14 @@ namespace DBus
     if ( this->find("//") != npos ) return false;
 
     char last = *(this->rbegin());
-    if ( this->size() > 1 and last == '/' ) return false;
+    if ( this->size() > 1 && last == '/' ) return false;
     
     return true;
   }
 
   std::vector<std::string> Path::decomposed() const
   {
-    if ( not this->is_valid() ) return std::vector<std::string>();
+    if ( !this->is_valid() ) return std::vector<std::string>();
 
     std::vector<std::string> decomposed;
     std::string current;
@@ -112,7 +112,7 @@ namespace DBus
     if ( element.empty() ) return false;
     if ( element.find_first_not_of(DBUSCXX_VALID_PATH_CHARACTERS) != npos ) return false;
     if ( element.find("//") != npos ) return false;
-    if ( element.size() == 1 and element[0] == '/' ) return false;
+    if ( element.size() == 1 && element[0] == '/' ) return false;
 
     // Do we have a leading /? If not we'll put one in place
     if ( element[0] != '/' ) this->append("/");

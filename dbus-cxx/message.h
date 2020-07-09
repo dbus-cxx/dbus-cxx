@@ -197,7 +197,7 @@ template <typename T>
 inline
 DBus::MessageIterator operator>>( std::shared_ptr<const DBus::Message> ptr, T& value )
 {
-  if ( not ptr ) throw DBus::ErrorInvalidSharedPtr();
+  if ( !ptr ) throw DBus::ErrorInvalidSharedPtr();
   return (*ptr) >> value;
 }
 
@@ -205,7 +205,7 @@ template <typename T>
 inline
 DBus::MessageAppendIterator operator<<( std::shared_ptr<DBus::Message> ptr, const T& value )
 {
-  if ( not ptr ) throw DBus::ErrorInvalidSharedPtr();
+  if ( !ptr ) throw DBus::ErrorInvalidSharedPtr();
   return (*ptr) << value;
 }
 

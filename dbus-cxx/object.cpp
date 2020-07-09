@@ -103,7 +103,7 @@ namespace DBus
   {
     bool result = true;
 
-    if ( not interface_ptr ) return false;
+    if ( !interface_ptr ) return false;
     
     SIMPLELOGGER_DEBUG(LOGGER_NAME,"Object::add_interface " << interface_ptr->name() );
 
@@ -141,7 +141,7 @@ namespace DBus
 
     if ( !this->add_interface(interface_ptr) ) return std::shared_ptr<Interface>();
 
-    if ( not m_priv->m_default_interface && name.empty() ) this->set_default_interface( interface_ptr->name() );
+    if ( !m_priv->m_default_interface && name.empty() ) this->set_default_interface( interface_ptr->name() );
     return interface_ptr;
   }
 
@@ -222,7 +222,7 @@ namespace DBus
 
   void Object::remove_default_interface()
   {
-    if ( not m_priv->m_default_interface ) return;
+    if ( !m_priv->m_default_interface ) return;
 
     std::shared_ptr<Interface> old_default = m_priv->m_default_interface;
     m_priv->m_default_interface = std::shared_ptr<Interface>();
@@ -243,8 +243,8 @@ namespace DBus
 
   bool Object::add_child(const std::string& name, std::shared_ptr<Object> child, bool force)
   {
-    if ( not child ) return false;
-    if ( not force and this->has_child(name) ) return false;
+    if ( !child ) return false;
+    if ( !force && this->has_child(name) ) return false;
     std::shared_ptr<Connection> conn = connection().lock();
     if ( conn ){
         m_priv->m_children[name] = child;

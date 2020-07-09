@@ -419,7 +419,7 @@ namespace DBus
 inline
 std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<DBus::Message> msg)
 {
-  if (not ptr) return ptr;
+  if (!ptr) return ptr;
   *ptr << msg;
   return ptr;
 }
@@ -427,7 +427,7 @@ std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> p
 inline
 std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<const DBus::Message> msg)
 {
-  if (not ptr) return ptr;
+  if (!ptr) return ptr;
   *ptr << msg;
   return ptr;
 }
@@ -435,7 +435,7 @@ std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> p
 inline
 std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<DBus::ReturnMessage> msg)
 {
-  if (not ptr) return ptr;
+  if (!ptr) return ptr;
   *ptr << msg;
   return ptr;
 }
@@ -443,7 +443,7 @@ std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> p
 inline
 std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<const DBus::ReturnMessage> msg)
 {
-  if (not ptr) return ptr;
+  if (!ptr) return ptr;
   *ptr << msg;
   return ptr;
 }
@@ -451,7 +451,7 @@ std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> p
 inline
 std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<DBus::SignalMessage> msg)
 {
-  if (not ptr) return ptr;
+  if (!ptr) return ptr;
   *ptr << msg;
   return ptr;
 }
@@ -459,7 +459,7 @@ std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> p
 inline
 std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<const DBus::SignalMessage> msg)
 {
-  if (not ptr) return ptr;
+  if (!ptr) return ptr;
   *ptr << msg;
   return ptr;
 }
@@ -467,7 +467,7 @@ std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> p
 inline
 std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<DBus::ErrorMessage> msg)
 {
-  if (not ptr) return ptr;
+  if (!ptr) return ptr;
   *ptr << msg;
   return ptr;
 }
@@ -475,7 +475,7 @@ std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> p
 inline
 std::shared_ptr<DBus::Connection> operator<<(std::shared_ptr<DBus::Connection> ptr, std::shared_ptr<const DBus::ErrorMessage> msg)
 {
-  if (not ptr) return ptr;
+  if (!ptr) return ptr;
   *ptr << msg;
   return ptr;
 }

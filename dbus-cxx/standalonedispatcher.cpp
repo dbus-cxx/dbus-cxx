@@ -97,7 +97,7 @@ public:
 
   bool StandaloneDispatcher::add_connection( std::shared_ptr<Connection> connection )
   {
-    if ( not connection or not connection->is_valid() ) return false;
+    if ( !connection || !connection->is_valid() ) return false;
 
     connection->set_dispatching_thread( m_priv->m_dispatch_thread.get_id() );
     connection->signal_needs_dispatch().connect( sigc::mem_fun(*this, &StandaloneDispatcher::wakeup_thread) );
@@ -120,7 +120,7 @@ public:
 
   bool StandaloneDispatcher::stop()
   {
-    if ( not m_priv->m_running ) return false;
+    if ( !m_priv->m_running ) return false;
 
     m_priv->m_running = false;
 

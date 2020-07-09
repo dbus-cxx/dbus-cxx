@@ -61,7 +61,7 @@ int main( int argc, const char** argv )
 
   while ( (c = poptGetNextOpt(opt_context)) >= 0) { }
 
-  if ( not (poptPeekArg(opt_context) == NULL) or not (make_proxy or make_adapter) or not xml_file )
+  if ( !(poptPeekArg(opt_context) == NULL) || !(make_proxy || make_adapter) || !xml_file )
   {
     poptPrintUsage(opt_context, stderr, 0);
     return 1;

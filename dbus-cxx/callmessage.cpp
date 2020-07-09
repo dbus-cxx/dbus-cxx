@@ -82,7 +82,7 @@ namespace DBus
 
   std::shared_ptr<ReturnMessage> CallMessage::create_reply() const
   {
-    if ( not this->is_valid() ) return std::shared_ptr<ReturnMessage>();
+    if ( !this->is_valid() ) return std::shared_ptr<ReturnMessage>();
     std::shared_ptr<ReturnMessage> retmsg = ReturnMessage::create();
     retmsg->set_reply_serial( serial() );
     retmsg->set_destination( sender() );
@@ -94,7 +94,7 @@ namespace DBus
 
   std::shared_ptr<ErrorMessage> CallMessage::create_error_reply() const
   {
-    if ( not this->is_valid() ) return std::shared_ptr<ErrorMessage>();
+    if ( !this->is_valid() ) return std::shared_ptr<ErrorMessage>();
     std::shared_ptr<ErrorMessage> retmsg = ErrorMessage::create();
     retmsg->set_reply_serial( serial() );
     if( flags() & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED ){

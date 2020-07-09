@@ -229,7 +229,7 @@ public:
 
   std::string Connection::unique_name() const
   {
-    if ( not this->is_valid() ) return std::string("");
+    if ( !this->is_valid() ) return std::string("");
     return m_priv->m_uniqueName;
   }
 
@@ -349,7 +349,7 @@ public:
 
   uint32_t Connection::send( std::shared_ptr<const Message> msg )
   {
-    if ( not this->is_valid() ) throw ErrorDisconnected();
+    if ( !this->is_valid() ) throw ErrorDisconnected();
     if ( !msg ) return 0;
     if( m_priv->m_currentSerial == 0 ) m_priv->m_currentSerial = 1;
 
@@ -385,9 +385,9 @@ public:
   std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking( std::shared_ptr<const CallMessage> message, int timeout_milliseconds )
   {
 
-    if ( not this->is_valid() ) throw ErrorDisconnected();
+    if ( !this->is_valid() ) throw ErrorDisconnected();
 
-    if ( not message or not *message ) return std::shared_ptr<ReturnMessage>();
+    if ( !message ) return std::shared_ptr<ReturnMessage>();
 
     std::shared_ptr<ReturnMessage> retmsg;
     int msToWait = timeout_milliseconds;
@@ -535,7 +535,7 @@ public:
 
   void Connection::flush()
   {
-    if ( not this->is_valid() ) return;
+    if ( !this->is_valid() ) return;
     {
         std::unique_lock lock( m_priv->m_outgoingLock );
         while( !m_priv->m_outgoingMessages.empty() ){
@@ -555,7 +555,7 @@ public:
 
   DispatchStatus Connection::dispatch_status( ) const
   {
-    if ( not this->is_valid() ) return DispatchStatus::COMPLETE;
+    if ( !this->is_valid() ) return DispatchStatus::COMPLETE;
     return m_priv->m_dispatchStatus;
   }
 
@@ -564,7 +564,7 @@ public:
       if( std::this_thread::get_id() != m_priv->m_dispatchingThread ){
           throw ErrorIncorrectDispatchThread( "Calling Connection::dispatch from non-dispatching thread" );
       }
-    if ( not this->is_valid() ){
+    if ( !this->is_valid() ){
         m_priv->m_dispatchStatus = DispatchStatus::COMPLETE;
         return DispatchStatus::COMPLETE;
     }
@@ -742,19 +742,19 @@ public:
 
   int Connection::unix_fd() const
   {
-    if ( not this->is_valid() ) return -1;
+    if ( !this->is_valid() ) return -1;
     return m_priv->m_transport->fd();
   }
 
   int Connection::socket() const
   {
-      if ( not this->is_valid() ) return -1;
+      if ( !this->is_valid() ) return -1;
       return m_priv->m_transport->fd();
   }
 
   bool Connection::has_messages_to_send()
   {
-    if ( not this->is_valid() ) return false;
+    if ( !this->is_valid() ) return false;
     return !m_priv->m_outgoingMessages.empty();
   }
 
@@ -771,7 +771,7 @@ public:
   std::shared_ptr<Object> Connection::create_object(const std::string & path, ThreadForCalling calling)
   {
     std::shared_ptr<Object> object = Object::create( path );
-    if (not object) return object;
+    if (!object) return object;
     if( register_object( object, calling ) != RegistrationStatus::Success ){
         return std::shared_ptr<Object>();
     }
@@ -780,7 +780,7 @@ public:
 
   RegistrationStatus Connection::register_object(std::shared_ptr<ObjectPathHandler> object, ThreadForCalling calling)
   {
-    if ( not object ) return RegistrationStatus::Failed_Invalid_Object;
+    if ( !object ) return RegistrationStatus::Failed_Invalid_Object;
 
     SIMPLELOGGER_DEBUG("dbus.Connection", "Connection::register_object at path " << object->path() );
 
@@ -830,7 +830,7 @@ public:
 
   std::shared_ptr<signal_proxy_base> Connection::add_signal_proxy(std::shared_ptr<signal_proxy_base> signal, ThreadForCalling calling)
   {
-    if ( not signal ) return std::shared_ptr<signal_proxy_base>();
+    if ( !signal ) return std::shared_ptr<signal_proxy_base>();
     
     SIMPLELOGGER_DEBUG( LOGGER_NAME, "Adding signal " << signal->interface_name() << ":" << signal->name() );
 
@@ -873,7 +873,7 @@ public:
 
   bool Connection::remove_signal_proxy( std::shared_ptr<signal_proxy_base> signal )
   {
-    if ( not signal ) return false;
+    if ( !signal ) return false;
 
     SIMPLELOGGER_DEBUG( LOGGER_NAME, "remove_signal_proxy with match rule " << signal->match_rule() );
 
@@ -1023,7 +1023,7 @@ public:
     
     failed = sout.str();
     
-    if ( destination.empty() or path.empty() ) return failed;
+    if ( destination.empty() || path.empty() ) return failed;
     
     std::shared_ptr<CallMessage> msg = CallMessage::create( destination.c_str(), path.c_str(), DBUSCXX_INTERFACE_INTROSPECTABLE, "Introspect" );
     
@@ -1031,7 +1031,7 @@ public:
 
     retmsg = this->send_with_reply_blocking( msg );
 
-    if (not retmsg) return failed;
+    if (!retmsg) return failed;
     
     std::string retval;
     retmsg >> retval;

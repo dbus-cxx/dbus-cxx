@@ -100,7 +100,7 @@ public:
 
   HandlerResult signal_proxy_base::handle_signal( std::shared_ptr<const SignalMessage> msg )
   {
-    if ( not this->matches( msg ) ) return HandlerResult::Not_Handled;
+    if ( !this->matches( msg ) ) return HandlerResult::Not_Handled;
 
     return on_dbus_incoming( msg );
   }
@@ -112,17 +112,17 @@ public:
 
   bool signal_proxy_base::matches( std::shared_ptr<const SignalMessage> msg )
   {
-    if ( not msg or not msg->is_valid() ) return false;
+    if ( !msg || !msg->is_valid() ) return false;
 
-    if ( not interface_name().empty() && interface_name() != msg->interface_name() ) return false;
+    if ( !interface_name().empty() && interface_name() != msg->interface_name() ) return false;
 
-    if ( not name().empty() && name() != msg->member() ) return false;
+    if ( !name().empty() && name() != msg->member() ) return false;
 
-    if ( not sender().empty() and sender() != msg->sender() ) return false;
+    if ( !sender().empty() && sender() != msg->sender() ) return false;
 
-    if ( not destination().empty() and destination() != msg->destination() ) return false;
+    if ( !destination().empty() && destination() != msg->destination() ) return false;
 
-    if ( not path().empty() and path() != msg->path() ) return false;
+    if ( !path().empty() && path() != msg->path() ) return false;
 
     return true;
   }

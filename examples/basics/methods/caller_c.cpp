@@ -51,7 +51,7 @@ int main(int argc, const char** argv)
 
   if ( std::isnan(param2) ) param2 = 4.4;
 
-  if ( not (strcmp(op,"add")==0 or strcmp(op,"sub")==0 or strcmp(op,"mul")==0 or strcmp(op,"div")==0) ) {
+  if ( !(strcmp(op,"add")==0 || strcmp(op,"sub")==0 || strcmp(op,"mul")==0 || strcmp(op,"div")==0) ) {
     fprintf( stderr, "ERROR: Operation '%s' is invalid.\n\nOperation is case sensitive and must be one of:\n\tadd\n\tsub\n\tmul\n\tdiv\n", op );
     return 1;
   }

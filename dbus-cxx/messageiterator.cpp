@@ -116,7 +116,7 @@ public:
 
   bool MessageIterator::is_valid() const
   {
-    if ( not (m_priv->m_message and m_priv->m_message->is_valid() ) ) return false;
+    if ( !(m_priv->m_message && m_priv->m_message->is_valid() ) ) return false;
     if ( this->arg_type() == DataType::INVALID ) return false;
     if ( m_priv->m_subiterInfo.m_subiterDataType == DataType::ARRAY ){
         // We are in a subiter here, figure out if we're at the end of the array yet
@@ -136,7 +136,7 @@ public:
 
   bool MessageIterator::next()
   {
-    if ( not this->is_valid() ) return false;
+    if ( !this->is_valid() ) return false;
 
     // Check to see if we are a subiterator.  If we are, it depends on the type we are.
     // Arrays are valid until they can read no more data,
@@ -150,7 +150,7 @@ public:
 
     bool result = m_priv->m_signatureIterator.next();
 
-    if ( not result or this->arg_type() == DataType::INVALID )
+    if ( !result || this->arg_type() == DataType::INVALID )
     {
       this->invalidate();
       return false;
@@ -215,7 +215,7 @@ public:
 
   MessageIterator MessageIterator::recurse()
   {
-    if ( not this->is_container() ) return MessageIterator();
+    if ( !this->is_container() ) return MessageIterator();
 
     MessageIterator iter( m_priv->m_signatureIterator.type(),
                           m_priv->m_signatureIterator.recurse(),
@@ -507,7 +507,7 @@ public:
 
   std::string MessageIterator::get_string()
   {
-    if ( not ( this->arg_type() == DataType::STRING or this->arg_type() == DataType::OBJECT_PATH or this->arg_type() == DataType::SIGNATURE ) )
+    if ( !( this->arg_type() == DataType::STRING || this->arg_type() == DataType::OBJECT_PATH || this->arg_type() == DataType::SIGNATURE ) )
       throw ErrorInvalidTypecast("MessageIterator: getting char* and type is not one of DataType::STRING, DataType::OBJECT_PATH or DataType::SIGNATURE");
     if( this->arg_type() == DataType::SIGNATURE ){
         return m_priv->m_demarshal->demarshal_signature();

@@ -135,7 +135,7 @@ namespace DBus
       std::shared_ptr<Method<T_type> >
       create_method( const std::string& method_name, sigc::slot<T_type> slot )
       {
-        if ( not default_interface() )
+        if ( !default_interface() )
         {
           this->create_interface("");
           this->set_default_interface("");
@@ -164,7 +164,7 @@ namespace DBus
       {
         std::shared_ptr<Interface> interface_ptr;
         interface_ptr = this->interface_by_name(interface_name);
-        if ( not interface_ptr ) interface_ptr = this->create_interface(interface_name);
+        if ( !interface_ptr ) interface_ptr = this->create_interface(interface_name);
         // TODO throw an error if the interface still doesn't exist
 
         std::shared_ptr< Method<T_type> > method;
@@ -236,7 +236,7 @@ namespace DBus
       {
         std::shared_ptr<DBus::signal<T_type...> > sig;
         std::shared_ptr<Interface> iface = this->default_interface();
-        if ( not iface ) iface = this->create_interface("");
+        if ( !iface ) iface = this->create_interface("");
         sig = iface->create_signal<T_type...>(name);
         return sig;
       }
@@ -255,7 +255,7 @@ namespace DBus
       create_signal( const std::string& iface, const std::string& name )
       {
         std::shared_ptr<DBus::signal<T_type...> > sig;
-        if ( not has_interface(iface) ) this->create_interface(iface);
+        if ( !has_interface(iface) ) this->create_interface(iface);
         sig = this->interface_by_name(iface)->create_signal<T_type...>(name);
         return sig;
       }

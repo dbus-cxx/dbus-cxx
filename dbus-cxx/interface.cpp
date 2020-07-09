@@ -96,7 +96,7 @@ namespace DBus
   {
     bool result = true;
     
-    if ( not method ) return false;
+    if ( !method ) return false;
 
     if( has_method( method->name() ) ) return false;
     
@@ -175,7 +175,7 @@ namespace DBus
   {
     bool result = false;
 
-    if ( not sig ) return false;
+    if ( !sig ) return false;
 
     SIMPLELOGGER_DEBUG("dbus.Interface", "Interface(" << this->name() << ")::add_signal (" << sig->name() << ")");
     

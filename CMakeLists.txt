@@ -71,6 +71,13 @@ if( UNIX )
     # This should not affect anything in the code, but it will cause it to not compile on
     # non-Windows systems
     add_compile_definitions( interface=struct )
+
+    # MSVC doesn't allow for keywords like 'and' and 'not', so check to see if we
+    # can turn that on with GCC/Clang
+    check_cxx_compiler_flag( "-fno-operator-names" NO_OP_NAMES )
+    if( ${NO_OP_NAMES} )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-operator-names" )
+    endif( ${NO_OP_NAMES} )
 endif( UNIX )
 
 # Check for cxxabi.h so we can demangle symbols

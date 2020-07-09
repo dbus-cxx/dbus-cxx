@@ -97,7 +97,7 @@ namespace DBus
 
         success = this->open_container( ContainerType::ARRAY, DBus::signature(type) );
 
-        if( not success ){
+        if( !success ){
           throw ErrorNoMemory();
         }
 
@@ -105,7 +105,7 @@ namespace DBus
           *sub_iterator() << v[i];
 
         success = this->close_container();
-        if( not success ){
+        if( !success ){
           throw ErrorNoMemory();
         }
 

@@ -136,7 +136,7 @@ namespace DBus
   bool signal_base::handle_dbus_outgoing(std::shared_ptr<const Message> msg)
   {
     std::shared_ptr<Connection> conn = m_priv->m_connection.lock();
-    if ( not conn or not conn->is_valid() ) return false;
+    if ( !conn || !conn->is_valid() ) return false;
     conn << msg;
     return true;
   }

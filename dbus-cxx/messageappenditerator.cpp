@@ -94,7 +94,7 @@ public:
 
   bool MessageAppendIterator::is_valid() const
   {
-    if ( not( m_priv->m_message and m_priv->m_message->is_valid() ) ) return false;
+    if ( !( m_priv->m_message && m_priv->m_message->is_valid() ) ) return false;
     return true;
   }
 
@@ -105,7 +105,7 @@ public:
 
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const bool& v ){
-    if ( not this->is_valid() ) return *this;
+    if ( !this->is_valid() ) return *this;
 
     if( m_priv->m_currentContainer == ContainerType::None ){
         m_priv->m_message->append_signature( signature( v ) );
@@ -116,7 +116,7 @@ public:
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint8_t& v ){
-      if ( not this->is_valid() ) return *this;
+      if ( !this->is_valid() ) return *this;
 
       if( m_priv->m_currentContainer == ContainerType::None ){
           m_priv->m_message->append_signature( signature( v ) );
@@ -127,7 +127,7 @@ public:
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const int16_t& v ){
-      if ( not this->is_valid() ) return *this;
+      if ( !this->is_valid() ) return *this;
 
       if( m_priv->m_currentContainer == ContainerType::None ){
           m_priv->m_message->append_signature( signature( v ) );
@@ -138,7 +138,7 @@ public:
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint16_t& v ){
-      if ( not this->is_valid() ) return *this;
+      if ( !this->is_valid() ) return *this;
 
       if( m_priv->m_currentContainer == ContainerType::None ){
           m_priv->m_message->append_signature( signature( v ) );
@@ -149,7 +149,7 @@ public:
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const int32_t& v ){
-      if ( not this->is_valid() ) return *this;
+      if ( !this->is_valid() ) return *this;
 
       if( m_priv->m_currentContainer == ContainerType::None ){
           m_priv->m_message->append_signature( signature( v ) );
@@ -160,7 +160,7 @@ public:
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint32_t& v ){
-      if ( not this->is_valid() ) return *this;
+      if ( !this->is_valid() ) return *this;
 
       if( m_priv->m_currentContainer == ContainerType::None ){
           m_priv->m_message->append_signature( signature( v ) );
@@ -171,7 +171,7 @@ public:
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const int64_t& v ){
-      if ( not this->is_valid() ) return *this;
+      if ( !this->is_valid() ) return *this;
 
       if( m_priv->m_currentContainer == ContainerType::None ){
           m_priv->m_message->append_signature( signature( v ) );
@@ -182,7 +182,7 @@ public:
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const uint64_t& v ){
-      if ( not this->is_valid() ) return *this;
+      if ( !this->is_valid() ) return *this;
 
       if( m_priv->m_currentContainer == ContainerType::None ){
           m_priv->m_message->append_signature( signature( v ) );
@@ -193,7 +193,7 @@ public:
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const double& v ){
-      if ( not this->is_valid() ) return *this;
+      if ( !this->is_valid() ) return *this;
 
       if( m_priv->m_currentContainer == ContainerType::None ){
           m_priv->m_message->append_signature( signature( v ) );
@@ -206,7 +206,7 @@ public:
   MessageAppendIterator& MessageAppendIterator::operator<<( const char* v ){
     uint32_t len = strlen( v ) & UINT32_MAX;
 
-    if ( not this->is_valid() ) return *this;
+    if ( !this->is_valid() ) return *this;
 
     if( m_priv->m_currentContainer == ContainerType::None ){
         m_priv->m_message->append_signature( signature( std::string() ) );
@@ -218,7 +218,7 @@ public:
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const std::string& v ){
-      if ( not this->is_valid() ) return *this;
+      if ( !this->is_valid() ) return *this;
 
       if( m_priv->m_currentContainer == ContainerType::None ){
           m_priv->m_message->append_signature( signature( std::string() ) );
@@ -229,8 +229,7 @@ public:
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const Signature& v ){
-
-    if ( not this->is_valid() ) return *this;
+    if ( !this->is_valid() ) return *this;
 
     std::string realSig = v.str();
     if( realSig.length() > UINT8_MAX ){
@@ -251,7 +250,7 @@ public:
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const Path& v ){
-    if ( not this->is_valid() ) return *this;
+    if ( !this->is_valid() ) return *this;
 
     if( m_priv->m_currentContainer == ContainerType::None ){
         m_priv->m_message->append_signature( signature( v ) );
@@ -265,8 +264,8 @@ public:
     int raw_fd;
     uint32_t array_location;
 
-    if ( not this->is_valid() ) return *this;
-    if ( not v ) return *this;
+    if ( !this->is_valid() ) return *this;
+    if ( !v ) return *this;
 
     raw_fd = v->getDescriptor();
     if( m_priv->m_currentContainer == ContainerType::None ){
@@ -289,7 +288,7 @@ public:
   }
 
   MessageAppendIterator& MessageAppendIterator::operator<<( const Variant& v ){
-    if ( not this->is_valid() ) return *this;
+    if ( !this->is_valid() ) return *this;
     if( v.currentType() == DataType::INVALID ){
         return *this;
     }

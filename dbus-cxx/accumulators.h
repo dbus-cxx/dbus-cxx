@@ -41,7 +41,7 @@ namespace DBus
     result_type operator()( T_iterator first, T_iterator last ) const {
       bool result = true;
       while ( first != last ) {
-        result = result and( *first );
+        result = result && ( *first );
       }
       return result;
     }
@@ -137,7 +137,7 @@ namespace DBus
     result_type operator()( T_iterator first, T_iterator last ) const {
       bool result = false;
       while ( first != last ) {
-        result = result or( *first );
+        result = result || ( *first );
         ++first;
       }
       return result;

@@ -68,7 +68,7 @@ namespace DBus
 
   bool SignatureIterator::is_valid() const
   {
-    return ( m_priv->m_valid and this->type() != DataType::INVALID );
+    return ( m_priv->m_valid && this->type() != DataType::INVALID );
   }
 
   SignatureIterator::operator bool() const
@@ -78,7 +78,7 @@ namespace DBus
 
   bool SignatureIterator::next()
   {
-    if ( not this->is_valid() ) return false;
+    if ( !this->is_valid() ) return false;
 
     if( m_priv->m_current->m_next == nullptr ){
         m_priv->m_current = nullptr;
@@ -112,7 +112,7 @@ namespace DBus
 
   DataType SignatureIterator::type() const
   {
-    if ( not m_priv->m_valid ) return DataType::INVALID;
+    if ( !m_priv->m_valid ) return DataType::INVALID;
     
     return m_priv->m_current->m_dataType;
   }
@@ -156,7 +156,7 @@ namespace DBus
   {
     std::string substr;
 
-    if ( not this->is_container() ) return SignatureIterator();
+    if ( !this->is_container() ) return SignatureIterator();
 
     SignatureIterator subiter = SignatureIterator( m_priv->m_current->m_sub );
     
