@@ -147,7 +147,6 @@ set( DBUS_CXX_HEADERS1
 set( DBUS_CXX_HEADERS
     dbus-cxx/accumulators.h
     dbus-cxx/callmessage.h
-    dbus-cxx/dbus-cxx-private.h
     dbus-cxx/dispatcher.h
     dbus-cxx/enums.h
     dbus-cxx/error.h
