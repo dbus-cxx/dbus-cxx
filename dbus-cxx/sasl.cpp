@@ -18,14 +18,14 @@
  ***************************************************************************/
 #include "sasl.h"
 
-#include <unistd.h>
-#include <ostream>
-#include <sstream>
-#include <string>
-#include <poll.h>
+#include "dbus-cxx-private.h"
+
 #include <cstring>
-#include <dbus-cxx/dbus-cxx-private.h>
+#include <ostream>
+#include <poll.h>
 #include <regex>
+#include <sstream>
+#include <unistd.h>
 
 using DBus::priv::SASL;
 

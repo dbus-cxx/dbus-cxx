@@ -16,59 +16,51 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef DBUSCXX_SASL_H
-#define DBUSCXX_SASL_H
-
-#include <dbus-cxx-config.h>
-
-#include <memory>
-#include <stdint.h>
-#include <string>
-#include <tuple>
-#include <vector>
-
-namespace DBus {
-namespace priv{
-
-/**
- * Implements the authentication routines for connection to the bus
+/*
+ * fcntl.h compatibility shim
  */
-class SASL {
-public:
-    /**
-     * Create a new SASL authenticator
-     *
-     * @param fd The FD to authenticate on
-     * @param negotiateFDPassing True if we should try to negotiate
-     * FD passing, false otherwise
-     */
-    SASL( int fd, bool negotiateFDPassing );
+#ifndef _WIN32
+#include_next <fcntl.h>
+#else
 
-    ~SASL();
+#ifdef _MSC_VER
+#if _MSC_VER >= 1900
+#include <../ucrt/fcntl.h>
+#else
+#include <../include/fcntl.h>
+#endif
+#else
+#include_next <fcntl.h>
+#endif /* _MSC_VER */
 
-    /**
-     * Perform the authentication with the server.
-     *
-     * @return A tuple containing the following:
-     * - bool Success of authentication
-     * - bool If this supports FD passing
-     * - vector The GUID of the server
-     */
-    std::tuple<bool,bool,std::vector<uint8_t>> authenticate();
+/* fcntl(2) requests */
+#define F_DUPFD         0 /* Duplicate fildes */
+#define F_GETFD         1 /* Get fildes flags (close on exec) */
+#define F_SETFD         2 /* Set fildes flags (close on exec) */
+#define F_GETFL         3 /* Get file flags */
+#define F_SETFL         4 /* Set file flags */
+#define F_DUPFD_CLOEXEC 1030
 
-private:
-    int write_data_with_newline( std::string data );
-    std::string read_data();
-    std::string encode_as_hex( int num );
-    std::vector<uint8_t> hex_to_vector( std::string hexData );
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-private:
-    class priv_data;
+int fcntl( int fd, int action, /* arg */... );
 
-    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
-};
+#ifdef __cplusplus
+}
+#endif
 
-} /* namespace priv */
-} /* namespace DBus */
+#endif /* _WIN32 */
 
-#endif /* DBUSCXX_SASL_H */
+#ifndef O_NONBLOCK
+#define O_NONBLOCK      0x100000
+#endif
+
+#ifndef O_CLOEXEC
+#define O_CLOEXEC       0x200000
+#endif
+
+#ifndef FD_CLOEXEC
+#define FD_CLOEXEC      1
+#endif

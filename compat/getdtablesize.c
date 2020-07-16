@@ -16,59 +16,44 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef DBUSCXX_SASL_H
-#define DBUSCXX_SASL_H
 
-#include <dbus-cxx-config.h>
+/*  Written by Bruno Haible <bruno@clisp.org>, 2008. */
 
-#include <memory>
-#include <stdint.h>
-#include <string>
-#include <tuple>
-#include <vector>
+#include <unistd.h>
+#include <stdio.h>
 
-namespace DBus {
-namespace priv{
+/* Cache for the previous getdtablesize () result.  Safe to cache because
+   Windows also lacks setrlimit.  */
+static int dtablesize;
 
-/**
- * Implements the authentication routines for connection to the bus
- */
-class SASL {
-public:
-    /**
-     * Create a new SASL authenticator
-     *
-     * @param fd The FD to authenticate on
-     * @param negotiateFDPassing True if we should try to negotiate
-     * FD passing, false otherwise
-     */
-    SASL( int fd, bool negotiateFDPassing );
+int getdtablesize (void)
+{
+  if (dtablesize == 0)
+    {
+      /* We are looking for the number N such that the valid file descriptors
+         are 0..N-1.  It can be obtained through a loop as follows:
+           {
+             int fd;
+             for (fd = 3; fd < 65536; fd++)
+               if (dup2 (0, fd) == -1)
+                 break;
+             return fd;
+           }
+         On Windows XP, the result is 2048.
+         The drawback of this loop is that it allocates memory for a libc
+         internal array that is never freed.
 
-    ~SASL();
-
-    /**
-     * Perform the authentication with the server.
-     *
-     * @return A tuple containing the following:
-     * - bool Success of authentication
-     * - bool If this supports FD passing
-     * - vector The GUID of the server
-     */
-    std::tuple<bool,bool,std::vector<uint8_t>> authenticate();
-
-private:
-    int write_data_with_newline( std::string data );
-    std::string read_data();
-    std::string encode_as_hex( int num );
-    std::vector<uint8_t> hex_to_vector( std::string hexData );
-
-private:
-    class priv_data;
-
-    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
-};
-
-} /* namespace priv */
-} /* namespace DBus */
-
-#endif /* DBUSCXX_SASL_H */
+         The number N can also be obtained as the upper bound for
+         _getmaxstdio ().  _getmaxstdio () returns the maximum number of open
+         FILE objects.  The sanity check in _setmaxstdio reveals the maximum
+         number of file descriptors.  This too allocates memory, but it is
+         freed when we call _setmaxstdio with the original value.  */
+      int orig_max_stdio = _getmaxstdio ();
+      unsigned int bound;
+      for (bound = 0x10000; _setmaxstdio (bound) < 0; bound = bound / 2)
+        ;
+      _setmaxstdio (orig_max_stdio);
+      dtablesize = bound;
+    }
+  return dtablesize;
+}

@@ -45,12 +45,12 @@
 #include "utility.h"
 #include "daemon-proxy/DBusDaemonProxy.h"
 
-#include <fcntl.h>
 #include <cstring>
-#include <sys/socket.h>
-#include <sys/un.h>
+#include <fcntl.h>
 #include <unistd.h>
+
 #include <sys/ioctl.h>
+#include <sys/socket.h>
 
 #define DBUSCXX_REQUEST_NAME_REPLY_PRIMARY_OWNER 0x01
 #define DBUSCXX_REQUEST_NAME_REPLY_IN_QUEUE 0x02
@@ -63,6 +63,10 @@
 
 #define DBUSCXX_START_REPLY_SUCCESS 0x01
 #define DBUSCXX_START_REPLY_ALREADY_RUNNING 0x02
+
+#if defined( _WIN32 ) && defined( ERROR )
+#undef ERROR
+#endif
 
 namespace sigc { template <typename T_return, typename ...T_arg> class signal; }
 namespace sigc { template <typename T_return, typename ...T_arg> class slot; }
@@ -327,24 +331,28 @@ public:
   {
 //    if ( not this->is_valid() ) return false;
 //    return dbus_connection_get_is_connected( m_cobj );
+      return false;
   }
 
   bool Connection::is_authenticated() const
   {
 //    if ( not this->is_valid() ) return false;
 //    return dbus_connection_get_is_authenticated( m_cobj );
+      return false;
   }
 
   bool Connection::is_anonymous() const
   {
 //    if ( not this->is_valid() ) return false;
 //    return dbus_connection_get_is_anonymous( m_cobj );
+      return false;
   }
 
   const char* Connection::server_id() const
   {
 //    if ( not this->is_valid() ) return nullptr;
 //    return dbus_connection_get_server_id( m_cobj );
+      return "";
   }
 
   uint32_t Connection::send( std::shared_ptr<const Message> msg )

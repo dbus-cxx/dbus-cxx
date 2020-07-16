@@ -1,0 +1,4 @@
+This folder contains a minimal POSIX compatibility layer required for dbus-cxx
+to compile on non-POSIX platforms. The implementation was largely taken from
+LibreSSL Portable project which is in Public Domain and can be found at:
+https://github.com/libressl-portable/portable
