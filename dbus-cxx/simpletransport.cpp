@@ -16,17 +16,17 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-
 #include "simpletransport.h"
+
+#include <dbus-cxx-private.h>
+#include "demarshaling.h"
+#include "message.h"
+#include "utility.h"
+
+#include <cstring>
 #include <memory>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <dbus-cxx-private.h>
-#include <cstring>
-#include "message.h"
-#include "utility.h"
-#include "demarshaling.h"
-#include "utility.h"
 
 using DBus::priv::SimpleTransport;
 

@@ -14,7 +14,7 @@
 
 project( dbus-cxx )
 
-cmake_minimum_required( VERSION 3.8 )
+cmake_minimum_required( VERSION 3.12 )
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake-modules")
 
@@ -28,8 +28,6 @@ include( CheckCXXCompilerFlag )
 IF( CMAKE_BUILD_TYPE MATCHES Debug )
 include( CodeCoverage )
 ENDIF( CMAKE_BUILD_TYPE MATCHES Debug )
-
-find_package( Threads REQUIRED )
 
 # version information
 set( DBUS_CXX_PACKAGE_MAJOR_VERSION 2 )
@@ -213,12 +211,52 @@ include_directories( ${DBUS_CXX_INCLUDE_DIRECTORIES}
 
 
 #
+# Dependencies
+#
+set( THREADS_PREFER_PTHREAD_FLAG ON )
+find_package( Threads REQUIRED )
+set( DBUS_CXX_LIBRARIES ${sigc_LIBRARIES} Threads::Threads )
+
+find_library( LIBRT rt )
+if( LIBRT )
+	list( APPEND DBUS_CXX_LIBRARIES ${LIBRT} )
+endif( LIBRT )
+
+if( WIN32 )
+    if( CMAKE_SYSTEM_VERSION )
+        set( ver ${CMAKE_SYSTEM_VERSION} )
+        string( REGEX MATCH "^([0-9]+).([0-9])" ver ${ver} )
+        string( REGEX MATCH "^([0-9]+)" verMajor ${ver} )
+        # Check for Windows 10, b/c we'll need to convert to hex 'A'.
+        if( "${verMajor}" MATCHES "10" )
+            set( verMajor "A" )
+            string( REGEX REPLACE "^([0-9]+)" ${verMajor} ver ${ver} )
+        endif()
+        # Remove all remaining '.' characters.
+        string( REPLACE "." "" ver ${ver} )
+        # Prepend each digit with a zero.
+        string( REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver} )
+        set( WIN32_VER "0x${ver}" )
+    endif( CMAKE_SYSTEM_VERSION )
+    add_definitions( -D_WIN32_WINNT=${WIN32_VER} )
+    set( CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON )
+
+    if( MSVC AND (MSVC_VERSION GREATER_EQUAL 1914) )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:__cplusplus" )
+    endif( MSVC AND (MSVC_VERSION GREATER_EQUAL 1914) )
+
+    add_subdirectory( compat )
+    list( APPEND DBUS_CXX_LIBRARIES dbus-cxx-compat )
+endif( WIN32 )
+
+#
 # Target for the library
 #
+link_directories( ${sigc_LIBRARY_DIRS} )
 add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} )
 #add_library( dbus-cxx-static STATIC ${DBUS_CXX_SOURCES} )
 set_target_properties( dbus-cxx PROPERTIES VERSION 2.0.0 SOVERSION 2 )
-target_link_libraries( dbus-cxx ${dbus_LIBS} ${sigc_LIBS} Threads::Threads -lrt )
+target_link_libraries( dbus-cxx ${DBUS_CXX_LIBRARIES} )
 
 # Dbus-cxx requires at least C++17 due to libsigc++-3.0
 set_property( TARGET dbus-cxx PROPERTY CXX_STANDARD 17 )

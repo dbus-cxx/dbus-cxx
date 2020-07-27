@@ -30,6 +30,10 @@
 
 #include "standalonedispatcher.h"
 
+#if defined( _WIN32 ) && defined( connect )
+#undef connect
+#endif
+
 using DBus::StandaloneDispatcher;
 
 static const char* LOGGER_NAME = "DBus.StandaloneDispatcher";

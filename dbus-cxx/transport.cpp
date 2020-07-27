@@ -17,20 +17,22 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "transport.h"
-#include <vector>
-#include <string>
-#include <map>
-#include <fcntl.h>
-#include <cstring>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
-#include "dbus-cxx-private.h"
 
+#include "dbus-cxx-private.h"
 #include "simpletransport.h"
 #include "sendmsgtransport.h"
 #include "sasl.h"
+
+#include <cstring>
+#include <fcntl.h>
+#include <map>
+#include <vector>
+#include <string>
+#include <unistd.h>
+
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
 static const char* LOGGER_NAME = "DBus.Transport";
 
