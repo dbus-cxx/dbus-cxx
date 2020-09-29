@@ -1,4 +1,4 @@
-Dispatching in dbus-cxx
+Dispatching in dbus-cxx {#dispatching}
 ===
 
 Within the context of dbus-cxx, the concept of 'dispatching' refers

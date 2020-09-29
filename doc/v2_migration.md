@@ -1,4 +1,4 @@
-dbus-cxx 2.0 Migration Guide
+dbus-cxx 2.0 Migration Guide #{dbus-cxx-2.0-migration}
 ===
 
 # Migration
