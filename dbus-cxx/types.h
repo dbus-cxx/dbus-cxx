@@ -19,7 +19,6 @@
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/path.h>
 #include <dbus-cxx/signature.h>
-#include <dbus-cxx/variant.h>
 #include <dbus-cxx/filedescriptor.h>
 #include <stdint.h>
 #include <string>
@@ -31,6 +30,8 @@
 
 namespace DBus
 {
+
+class Variant;
 
   inline int typeToDBusType( DataType t ){
       return static_cast<int>( t );

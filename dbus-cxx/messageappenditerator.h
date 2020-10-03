@@ -143,6 +143,7 @@ namespace DBus
         return *this;
       }
 
+  private:
       bool open_container( ContainerType t, const std::string& contained_signature );
 
       bool close_container( );

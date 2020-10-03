@@ -21,13 +21,14 @@
 
 #include <stdint.h>
 #include <vector>
-#include <dbus-cxx/variant.h>
 #include <dbus-cxx/path.h>
 #include <dbus-cxx/signature.h>
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/dbus-cxx-config.h>
 
 namespace DBus{
+
+class Variant;
 
 /**
  * Implements the marshaling algorithms on a given vector of data.
