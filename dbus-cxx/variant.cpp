@@ -166,8 +166,7 @@ DBus::DataType Variant::currentType() const {
 
 DBus::Variant Variant::createFromMessage( MessageIterator iter ){
     Variant v;
-    SignatureIterator it = Signature( iter.signature() ).begin();
-    DBus::DataType dt = it.type();
+    DBus::DataType dt = iter.signature_iterator().type();
     TypeInfo ti( dt );
     Marshaling marshal( &v.m_marshaled, Endianess::Big );
 
@@ -230,8 +229,7 @@ DBus::Variant Variant::createFromMessage( MessageIterator iter ){
 }
 
 void Variant::recurseArray(MessageIterator iter, Marshaling *marshal){
-    SignatureIterator si = Signature( iter.signature() ).begin();
-    DataType dt = si.type();
+    DataType dt = iter.signature_iterator().type();
     TypeInfo ti( dt );
     uint32_t offset = marshal->currentOffset();
 
@@ -277,6 +275,9 @@ void Variant::recurseArray(MessageIterator iter, Marshaling *marshal){
         case DataType::ARRAY:
             recurseArray( iter.recurse(), marshal );
             break;
+        case DataType::DICT_ENTRY:
+            recurseDictEntry( iter.recurse(), marshal );
+            break;
         }
 
         iter++;
@@ -285,6 +286,66 @@ void Variant::recurseArray(MessageIterator iter, Marshaling *marshal){
     uint32_t totalSize = marshal->currentOffset() - offset - 4;
     marshal->marshalAtOffset( offset, totalSize );
 }
+
+void Variant::recurseDictEntry( MessageIterator iter, Marshaling* marshal ){
+    marshal->align( 8 );
+    iter.align( 8 );
+    SignatureIterator sigit = iter.signature_iterator();
+
+    while( sigit.is_valid() ){
+        DataType dt = sigit.type();
+        TypeInfo ti( dt );
+
+        switch( dt ){
+        case DataType::BYTE:
+            marshal->marshal( iter.get_uint8() );
+            break;
+        case  DataType::BOOLEAN:
+            marshal->marshal( iter.get_bool() );
+            break;
+        case  DataType::INT16:
+            marshal->marshal( iter.get_int16() );
+            break;
+        case  DataType::UINT16:
+            marshal->marshal( iter.get_uint16() );
+            break;
+        case  DataType::INT32:
+            marshal->marshal( iter.get_int32() );
+            break;
+        case  DataType::UINT32:
+            marshal->marshal( iter.get_uint32() );
+            break;
+        case  DataType::INT64:
+            marshal->marshal( iter.get_int64() );
+            break;
+        case  DataType::UINT64:
+            marshal->marshal( iter.get_uint64() );
+            break;
+        case  DataType::DOUBLE:
+            marshal->marshal( iter.get_double() );
+            break;
+        case  DataType::STRING:
+            marshal->marshal( iter.get_string() );
+            break;
+        case  DataType::OBJECT_PATH:
+            marshal->marshal( iter.get_string() );
+            break;
+        case  DataType::SIGNATURE:
+            marshal->marshal( iter.get_signature() );
+            break;
+        case DataType::ARRAY:
+            recurseArray( iter.recurse(), marshal );
+            break;
+        case DataType::DICT_ENTRY:
+            recurseDictEntry( iter.recurse(), marshal );
+            break;
+        }
+
+        sigit++;
+        iter++;
+    }
+}
+
 
 //void Variant::createRecurse(MessageIterator iter, Marshaling* marshal ){
 //    SignatureIterator si = Signature( iter.signature() ).begin();
@@ -477,56 +538,56 @@ namespace DBus {
 std::ostream& operator<<( std::ostream& os, const Variant& var ){
     os << "DBus::Variant[" << var.currentType() << "=";
     switch( var.currentType() ){
-//    case DataType::BYTE:
-//      os << std::any_cast<uint8_t>( var.value() );
-//      break;
-//    case DataType::BOOLEAN:
-//      os << std::any_cast<bool>( var.value() );
-//      break;
-//    case DataType::INT16:
-//      os << std::any_cast<int16_t>( var.value() );
-//      break;
-//    case DataType::UINT16:
-//      os << std::any_cast<uint16_t>( var.value() );
-//      break;
-//    case DataType::INT32:
-//      os << std::any_cast<int32_t>( var.value() );
-//      break;
-//    case DataType::UINT32:
-//      os << std::any_cast<uint32_t>( var.value() );
-//      break;
-//    case DataType::INT64:
-//      os << std::any_cast<int64_t>( var.value() );
-//      break;
-//    case DataType::UINT64:
-//      os << std::any_cast<uint64_t>( var.value() );
-//      break;
-//    case DataType::DOUBLE:
-//      os << std::any_cast<double>( var.value() );
-//      break;
-//    case DataType::STRING:
-//      os << std::any_cast<std::string>( var.value() );
-//      break;
-//    case DataType::OBJECT_PATH:
-//      os << std::any_cast<Path>( var.value() );
-//      break;
-//    case DataType::SIGNATURE:
-//      os << std::any_cast<Signature>( var.value() );
-//      break;
+    case DataType::BYTE:
+      os << var.to_uint8();
+      break;
+    case DataType::BOOLEAN:
+      os << var.to_bool();
+      break;
+    case DataType::INT16:
+      os << var.to_int16();
+      break;
+    case DataType::UINT16:
+      os << var.to_uint16();
+      break;
+    case DataType::INT32:
+      os << var.to_int32();
+      break;
+    case DataType::UINT32:
+      os << var.to_uint32();
+      break;
+    case DataType::INT64:
+      os << var.to_int64();
+      break;
+    case DataType::UINT64:
+      os << var.to_uint64();
+      break;
+    case DataType::DOUBLE:
+      os << var.to_double();
+      break;
+    case DataType::STRING:
+      os << var.to_string();
+      break;
+    case DataType::OBJECT_PATH:
+      os << var.to_path();
+      break;
+    case DataType::SIGNATURE:
+      os << var.to_signature();
+      break;
     case DataType::ARRAY:
-      os << "array TODO";
+      os << "array";
       break;
     case DataType::VARIANT:
-//      os << std::any_cast<Variant>( var.value() );
+        os << "variant";
       break;
     case DataType::STRUCT:
-      os << "struct TODO";
+      os << "struct";
       break;
     case DataType::DICT_ENTRY:
-      os << "dict_entry TODO";
+      os << "dict_entry";
       break;
     case DataType::UNIX_FD:
-      os << "unix_fd TODO";
+      os << "unix_fd";
       break;
   case DataType::INVALID:
         break;

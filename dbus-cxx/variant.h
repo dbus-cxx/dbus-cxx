@@ -32,6 +32,8 @@
 #include <any>
 #include <stdint.h>
 #include <ostream>
+#include <vector>
+#include <map>
 
 namespace DBus {
 
@@ -71,6 +73,16 @@ class Variant {
         it << vec;
     }
 
+    template<typename Key, typename Value>
+    Variant( std::map<Key,Value> map ) :
+        m_currentType( DataType::DICT_ENTRY ),
+        m_signature( DBus::signature( map ) ),
+        m_dataAlignment( 8 ){
+        VariantAppendIterator it(this);
+
+        it << map;
+    }
+
     Variant( const Variant& other );
     ~Variant();
 
@@ -86,25 +98,22 @@ class Variant {
 
     Variant& operator=( const Variant& other );
 
-//    operator bool();
-//    operator uint8_t();
-//    operator uint16_t();
-//    operator int16_t();
-//    operator uint32_t();
-//    operator int32_t();
-//    operator uint64_t();
-//    operator int64_t();
-//    operator double();
-//    operator std::string();
-//    operator DBus::Path();
-
     template <typename T>
-    operator std::vector<T>() {
+    std::vector<T> to_vector() {
       VariantIterator vi( this );
 
       std::vector<T> retval = vi;
 
       return retval;
+    }
+
+    template <typename Key, typename Value>
+    std::map<Key,Value> to_map() {
+        VariantIterator vi( this );
+
+        std::map<Key,Value> retval = vi;
+
+        return retval;
     }
 
     bool        to_bool() const;
@@ -125,6 +134,7 @@ class Variant {
   private:
     void createRecurse( MessageIterator iter, Marshaling* marshal );
     void recurseArray( MessageIterator iter, Marshaling* marshal );
+    void recurseDictEntry( MessageIterator iter, Marshaling* marshal );
 
   private:
     DataType m_currentType;

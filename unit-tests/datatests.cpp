@@ -18,6 +18,7 @@
  ***************************************************************************/
 //#include <dbus-cxx.h>
 #include <unistd.h>
+#include <iostream>
 
 #include "test_macros.h"
 #include "custom-type.h"
@@ -31,7 +32,8 @@ std::shared_ptr<DBus::MethodProxy<void()>> void_method_proxy;
 std::shared_ptr<DBus::MethodProxy<void(struct custom)>> void_custom_method_proxy;
 std::shared_ptr<DBus::MethodProxy<int(int, struct custom)>> int_custom_method_proxy2;
 std::shared_ptr<DBus::MethodProxy<bool(std::tuple<int,double,std::string>)>> tuple_method_proxy;
-std::shared_ptr<DBus::MethodProxy<void(DBus::Variant)>> variant_array_proxy;
+std::shared_ptr<DBus::MethodProxy<void(DBus::Variant)>> variant_proxy;
+std::shared_ptr<DBus::MethodProxy<void()>> nonexistant_proxy;
 
 std::shared_ptr<DBus::Object> object;
 std::shared_ptr<DBus::Method<int(int,int)>> int_method;
@@ -39,7 +41,7 @@ std::shared_ptr<DBus::Method<void()>> void_method;
 std::shared_ptr<DBus::Method<void(struct custom)>> void_custom_method;
 std::shared_ptr<DBus::Method<int(int,struct custom)>> int_custom_method2;
 std::shared_ptr<DBus::Method<bool(std::tuple<int,double,std::string>)>> tuple_method;
-std::shared_ptr<DBus::Method<void(DBus::Variant)>> variant_array_method;
+std::shared_ptr<DBus::Method<void(DBus::Variant)>> variant_method;
 
 bool tuple_method_symbol(std::tuple<int,double,std::string> tup ){
     bool retval = true;
@@ -72,8 +74,8 @@ int int_intcustom_symbol(int i, struct custom c){
   return i + c.first + c.second;
 }
 
-void variant_array_symbol( DBus::Variant v ){
-
+void variant_method_symbol( DBus::Variant v ){
+    std::cerr << "Got incoming variant: " << v << std::endl;
 }
 
 void client_setup(){
@@ -84,7 +86,8 @@ void client_setup(){
     void_custom_method_proxy = proxy->create_method<void(struct custom)>( "foo.what", "void_custom" );
     int_custom_method_proxy2 = proxy->create_method<int(int,struct custom)>( "foo.what", "int_intcustom" );
     tuple_method_proxy = proxy->create_method<bool(std::tuple<int,double,std::string>)>( "foo.what", "tuple_method" );
-    variant_array_proxy = proxy->create_method<void(DBus::Variant)>( "foo.what", "variant_array" );
+    variant_proxy = proxy->create_method<void(DBus::Variant)>( "foo.what", "variant_method" );
+    nonexistant_proxy = proxy->create_method<void()>( "foo.what", "nonexistant" );
 }
 
 void server_setup(){
@@ -97,7 +100,7 @@ void server_setup(){
     void_custom_method = object->create_method<void(struct custom)>("foo.what", "void_custom", sigc::ptr_fun( void_custom_method_symbol ) );
     int_custom_method2 = object->create_method<int(int,struct custom)>("foo.what", "int_intcustom", sigc::ptr_fun( int_intcustom_symbol ) );
     tuple_method = object->create_method<bool(std::tuple<int,double,std::string>)>("foo.what", "tuple_method", sigc::ptr_fun( tuple_method_symbol ) );
-    variant_array_method = object->create_method<void(DBus::Variant)>( "foo.what", "variant_array", sigc::ptr_fun( variant_array_symbol ) );
+    variant_method = object->create_method<void(DBus::Variant)>( "foo.what", "variant_method", sigc::ptr_fun( variant_method_symbol ) );
 }
 
 bool data_send_integers(){
@@ -168,7 +171,25 @@ bool data_variant_array(){
     vec.push_back( 8888 );
     DBus::Variant send( vec );
 
-    (*variant_array_proxy)( send );
+    (*variant_proxy)( send );
+
+    return true;
+}
+
+bool data_variant_map(){
+    std::map<uint16_t,int> good;
+    good[ 1 ] = 1001;
+    good[ 2 ] = 1002;
+    good[ 3 ] = 1003;
+    DBus::Variant send( good );
+
+    (*variant_proxy)( send );
+
+    return true;
+}
+
+bool data_nonexistant_method(){
+    (*nonexistant_proxy)();
 
     return true;
 }
@@ -202,10 +223,12 @@ int main(int argc, char** argv){
     ADD_TEST(machine_uuid);
     ADD_TEST(tuple);
     ADD_TEST(variant_array);
+    ADD_TEST(variant_map);
+    ADD_TEST(nonexistant_method);
   }else{
     server_setup();
     ret = true;
-    sleep( 1 );
+    sleep( 1000 );
   }
 
 

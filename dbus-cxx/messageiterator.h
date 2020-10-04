@@ -384,9 +384,14 @@ namespace DBus
       }
 
   private:
+      SignatureIterator signature_iterator();
+
+  private:
     class priv_data;
 
     std::shared_ptr<priv_data> m_priv;
+
+    friend class Variant;
   };
 }
 

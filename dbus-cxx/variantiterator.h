@@ -54,7 +54,7 @@ public:
   template <typename T>
   VariantIterator& operator>>( T& v )
   {
-      v = (T)(*this);
+      v = static_cast<T>(*this);
       this->next();
       return *this;
   }
@@ -90,6 +90,31 @@ public:
 
       return retval;
     }
+
+  template <typename Key, typename Data>
+  operator std::map<Key,Data>() {
+    if ( !this->is_dict() )
+      throw ErrorInvalidTypecast( "MessageIterator: Extracting non dict into std::map" );
+
+    std::map<Key,Data> dict;
+    Key val_key;
+    Data val_data;
+
+    VariantIterator subiter = this->recurse();
+    while( subiter.is_valid() ) {
+      VariantIterator subSubiter = subiter.recurse();
+      while( subSubiter.is_valid() )
+      {
+        subSubiter >> val_key;
+        subSubiter >> val_data;
+        dict[ val_key ] = val_data;
+        subSubiter.next();
+      }
+     subiter.next();
+   }
+
+    return dict;
+  }
 
   bool        get_bool();
   uint8_t     get_uint8();

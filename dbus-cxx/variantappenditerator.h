@@ -70,7 +70,16 @@ public:
 
     template <typename Key, typename Data>
     void operator<<( const std::map<Key,Data>& dictionary ){
-
+        std::string sig = signature_dict_data( dictionary );
+        typename std::map<Key,Data>::const_iterator it;
+        this->open_container( ContainerType::ARRAY, sig );
+        for ( it = dictionary.begin(); it != dictionary.end(); it++ ) {
+          sub_iterator()->open_container( ContainerType::DICT_ENTRY, std::string() );
+          *(sub_iterator()->sub_iterator()) << it->first;
+          *(sub_iterator()->sub_iterator()) << it->second;
+          sub_iterator()->close_container();
+        }
+        this->close_container();
     }
 
     template <typename... T>

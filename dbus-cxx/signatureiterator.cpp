@@ -173,14 +173,20 @@ namespace DBus
     }
 
     TypeInfo ti( m_priv->m_first->m_dataType );
-    signature += ti.to_dbus_char();
+    char dbusChar = ti.to_dbus_char();
+    if( dbusChar ){
+        signature += dbusChar;
+    }
     signature += iterate_over_subsig( m_priv->m_first->m_sub );
 
     for( tmpCurrent = m_priv->m_first->m_next;
          tmpCurrent != nullptr;
          tmpCurrent = tmpCurrent->m_next ){
         TypeInfo ti( tmpCurrent->m_dataType );
-        signature += ti.to_dbus_char();
+        dbusChar = ti.to_dbus_char();
+        if( dbusChar ){
+            signature += dbusChar;
+        }
         signature += iterate_over_subsig( tmpCurrent->m_sub );
     }
 
@@ -194,12 +200,23 @@ namespace DBus
           return "";
       }
 
+      if( start->m_dataType == DataType::DICT_ENTRY ){
+          retval += "{";
+      }
+
       for( std::shared_ptr<priv::SignatureNode> current = start;
            current != nullptr;
            current = current->m_next ){
           TypeInfo ti( current->m_dataType );
-          retval += ti.to_dbus_char();
+          char dbusChar = ti.to_dbus_char();
+          if( dbusChar ){
+              retval += dbusChar;
+          }
           retval += iterate_over_subsig( current->m_sub );
+      }
+
+      if( start->m_dataType == DataType::DICT_ENTRY ){
+          retval += "}";
       }
 
       return retval;

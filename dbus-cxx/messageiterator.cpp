@@ -547,5 +547,9 @@ public:
       m_priv->m_demarshal->align(alignment);
   }
 
+  SignatureIterator MessageIterator::signature_iterator(){
+      return m_priv->m_signatureIterator;
+  }
+
 }
 

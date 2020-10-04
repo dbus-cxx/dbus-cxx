@@ -58,8 +58,13 @@ add_test( NAME messageiterator-filedescriptor COMMAND test-messageiterator filed
 add_test( NAME messageiterator-multiple COMMAND test-messageiterator multiple)
 add_test( NAME messageiterator-struct COMMAND test-messageiterator struct)
 add_test( NAME messageiterator-variant COMMAND test-messageiterator variant)
+add_test( NAME messageiterator-variant-vector COMMAND test-messageiterator variant_vector)
+add_test( NAME messageiterator-variant-map COMMAND test-messageiterator variant_map)
 add_test( NAME messageiterator-map-string-variant COMMAND test-messageiterator map_string_variant)
+add_test( NAME messageiterator-map-string-variant-many COMMAND test-messageiterator map_string_variant_many)
 add_test( NAME messageiterator-map-string-string COMMAND test-messageiterator map_string_string)
+add_test( NAME messageiterator-map-string-string_many COMMAND test-messageiterator map_string_string_many)
+add_test( NAME messageiterator-map-correct-signature COMMAND test-messageiterator correct_variant_signature)
 
 add_test( NAME messageiterator-Bool2 COMMAND test-messageiterator bool-2)
 add_test( NAME messageiterator-Byte2 COMMAND test-messageiterator byte-2)
@@ -149,6 +154,8 @@ add_test( NAME test-ping-method COMMAND dbus-wrapper-data-tests.sh ping)
 add_test( NAME test-machine-uuid-method COMMAND dbus-wrapper-data-tests.sh machine_uuid)
 add_test( NAME tuple-sending COMMAND dbus-wrapper-data-tests.sh tuple)
 add_test( NAME variant-array COMMAND dbus-wrapper-data-tests.sh variant_array)
+add_test( NAME variant-map COMMAND dbus-wrapper-data-tests.sh variant_map)
+add_test( NAME nonexistant-method COMMAND dbus-wrapper-data-tests.sh nonexistant_method )
 
 #
 # Signal tests - make sure we can tx and rx singals correctly

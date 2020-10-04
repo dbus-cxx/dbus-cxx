@@ -337,8 +337,30 @@ bool call_message_append_extract_iterator_variant_vector(){
     DBus::MessageIterator iter2(msg);
     var2 = DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter2);
 
-    std::vector<int> casted = var2.operator std::vector<int>();
+    std::vector<int> casted = var2.to_vector<int>();
     std::cerr << "good size: " << good.size() << "\n";
+    TEST_EQUALS_RET_FAIL(good.size(), casted.size());
+    TEST_EQUALS_RET_FAIL(good[0], casted[0]);
+
+    return true;
+}
+
+bool call_message_append_extract_iterator_variant_map(){
+    std::map<uint16_t,int> good;
+    good[ 1 ] = 1001;
+    good[ 2 ] = 1002;
+    good[ 3 ] = 1003;
+    DBus::Variant var1( good );
+    DBus::Variant var2;
+
+    std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+    DBus::MessageAppendIterator iter1(msg);
+    iter1 << var1;
+
+    DBus::MessageIterator iter2(msg);
+    var2 = DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter2);
+
+    std::map<uint16_t,int> casted = var2.to_map<uint16_t,int>();
     TEST_EQUALS_RET_FAIL(good.size(), casted.size());
     TEST_EQUALS_RET_FAIL(good[0], casted[0]);
 
@@ -365,6 +387,32 @@ bool call_message_append_extract_iterator_map_string_string(){
   return true;
 }
 
+bool call_message_append_extract_iterator_map_string_string_many(){
+  std::map<std::string,std::string> themap;
+  std::map<std::string,std::string> extracted_map;
+
+  themap[ "first" ] = "what";
+  themap[ "second" ] = "hi";
+  themap[ "RANDOM TEXT" ] = "7";
+  themap[ "f" ] = "6";
+  themap[ "2" ] = "xkcd";
+
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  DBus::MessageAppendIterator iter1(msg);
+  iter1 << themap;
+
+  DBus::MessageIterator iter2(msg);
+  extracted_map = (std::map<std::string,std::string>)iter2;
+
+  TEST_EQUALS_RET_FAIL( extracted_map["first"], "what" );
+  TEST_EQUALS_RET_FAIL( extracted_map["second"], "hi" );
+  TEST_EQUALS_RET_FAIL( extracted_map["RANDOM TEXT"], "7" );
+  TEST_EQUALS_RET_FAIL( extracted_map["f"], "6" );
+  TEST_EQUALS_RET_FAIL( extracted_map["2"], "xkcd" );
+
+  return true;
+}
+
 bool call_message_append_extract_iterator_map_string_variant(){
   DBus::Variant var1( 0x12345678 );
   DBus::Variant var2( "hi" );
@@ -378,13 +426,60 @@ bool call_message_append_extract_iterator_map_string_variant(){
   DBus::MessageAppendIterator iter1(msg);
   iter1 << themap;
 
-  std::cerr << msg;
+  DBus::MessageIterator iter2(msg);
+  extracted_map = (std::map<std::string,DBus::Variant>)iter2;
+
+  TEST_EQUALS_RET_FAIL( extracted_map["one"].to_int32(), 0x12345678 );
+  TEST_EQUALS_RET_FAIL( extracted_map["xcom"].to_string(), "hi" );
+
+  return true;
+}
+
+bool call_message_append_extract_iterator_map_string_variant_many(){
+  DBus::Variant var1( 0x12345678 );
+  DBus::Variant var2( "hi" );
+  DBus::Variant var3( static_cast<uint16_t>( 45 ) );
+  DBus::Variant var4( "m" );
+  DBus::Variant var5( 5.1234 );
+  std::map<std::string,DBus::Variant> themap;
+  std::map<std::string,DBus::Variant> extracted_map;
+
+  themap[ "one" ] = var1;
+  themap[ "xcom" ] = var2;
+  themap[ "longstring" ] = var3;
+  themap[ "a" ] = var4;
+  themap[ "abcd" ] = var5;
+
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  DBus::MessageAppendIterator iter1(msg);
+  iter1 << themap;
 
   DBus::MessageIterator iter2(msg);
   extracted_map = (std::map<std::string,DBus::Variant>)iter2;
 
   TEST_EQUALS_RET_FAIL( extracted_map["one"].to_int32(), 0x12345678 );
   TEST_EQUALS_RET_FAIL( extracted_map["xcom"].to_string(), "hi" );
+  TEST_EQUALS_RET_FAIL( extracted_map["longstring"].to_uint16(), 45 );
+  TEST_EQUALS_RET_FAIL( extracted_map["a"].to_string(), "m" );
+  TEST_EQUALS_RET_FAIL( extracted_map["abcd"].to_double(), 5.1234 );
+
+  return true;
+}
+
+bool call_message_append_extract_iterator_correct_variant_signature(){
+  DBus::Variant var1( 0x12345678 );
+  DBus::Variant var2( "hi" );
+  std::map<std::string,DBus::Variant> themap;
+  std::map<std::string,DBus::Variant> extracted_map;
+
+  themap[ "one" ] = var1;
+  themap[ "xcom" ] = var2;
+
+  std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+  DBus::MessageAppendIterator iter1(msg);
+  iter1 << themap;
+
+  TEST_EQUALS_RET_FAIL( msg->signature(), "a{sv}" );
 
   return true;
 }
@@ -758,8 +853,12 @@ int main(int argc, char** argv){
   ADD_TEST(struct);
   ADD_TEST(variant);
   ADD_TEST(variant_vector);
+  ADD_TEST(variant_map);
   ADD_TEST(map_string_variant);
+  ADD_TEST(map_string_variant_many);
   ADD_TEST(map_string_string);
+  ADD_TEST(map_string_string_many);
+  ADD_TEST(correct_variant_signature);
 
   ADD_TEST2(bool);
   ADD_TEST2(byte);
