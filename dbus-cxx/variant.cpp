@@ -231,60 +231,63 @@ DBus::Variant Variant::createFromMessage( MessageIterator iter ){
 void Variant::recurseArray(MessageIterator iter, Marshaling *marshal){
     DataType dt = iter.signature_iterator().type();
     TypeInfo ti( dt );
-    uint32_t offset = marshal->currentOffset();
+    std::vector<uint8_t> workingData;
+    Marshaling workingMarshal( &workingData, Endianess::Big );
 
-    marshal->marshal( static_cast<uint32_t>( 0 ) ); // Array size.
     while( iter.is_valid() ){
         switch( dt ){
         case DataType::BYTE:
-            marshal->marshal( iter.get_uint8() );
+            workingMarshal.marshal( iter.get_uint8() );
             break;
         case  DataType::BOOLEAN:
-            marshal->marshal( iter.get_bool() );
+            workingMarshal.marshal( iter.get_bool() );
             break;
         case  DataType::INT16:
-            marshal->marshal( iter.get_int16() );
+            workingMarshal.marshal( iter.get_int16() );
             break;
         case  DataType::UINT16:
-            marshal->marshal( iter.get_uint16() );
+            workingMarshal.marshal( iter.get_uint16() );
             break;
         case  DataType::INT32:
-            marshal->marshal( iter.get_int32() );
+            workingMarshal.marshal( iter.get_int32() );
             break;
         case  DataType::UINT32:
-            marshal->marshal( iter.get_uint32() );
+            workingMarshal.marshal( iter.get_uint32() );
             break;
         case  DataType::INT64:
-            marshal->marshal( iter.get_int64() );
+            workingMarshal.marshal( iter.get_int64() );
             break;
         case  DataType::UINT64:
-            marshal->marshal( iter.get_uint64() );
+            workingMarshal.marshal( iter.get_uint64() );
             break;
         case  DataType::DOUBLE:
-            marshal->marshal( iter.get_double() );
+            workingMarshal.marshal( iter.get_double() );
             break;
         case  DataType::STRING:
-            marshal->marshal( iter.get_string() );
+            workingMarshal.marshal( iter.get_string() );
             break;
         case  DataType::OBJECT_PATH:
-            marshal->marshal( iter.get_string() );
+            workingMarshal.marshal( iter.get_string() );
             break;
         case  DataType::SIGNATURE:
-            marshal->marshal( iter.get_signature() );
+            workingMarshal.marshal( iter.get_signature() );
             break;
         case DataType::ARRAY:
-            recurseArray( iter.recurse(), marshal );
+            recurseArray( iter.recurse(), &workingMarshal );
             break;
         case DataType::DICT_ENTRY:
-            recurseDictEntry( iter.recurse(), marshal );
+            recurseDictEntry( iter.recurse(), &workingMarshal );
             break;
         }
 
         iter++;
     }
 
-    uint32_t totalSize = marshal->currentOffset() - offset - 4;
-    marshal->marshalAtOffset( offset, totalSize );
+    marshal->marshal( static_cast<uint32_t>( workingData.size() ) );
+    marshal->align( ti.alignment() );
+    for( uint8_t byte : workingData ){
+        marshal->marshal( byte );
+    }
 }
 
 void Variant::recurseDictEntry( MessageIterator iter, Marshaling* marshal ){

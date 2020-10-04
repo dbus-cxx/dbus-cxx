@@ -21,6 +21,7 @@
 #include "marshaling.h"
 #include <dbus-cxx/types.h>
 #include <dbus-cxx/marshaling.h>
+#include <dbus-cxx/validator.h>
 
 using DBus::VariantAppendIterator;
 
@@ -29,20 +30,26 @@ public:
     priv_data( Variant* variant ) :
         m_variant( variant ),
         m_subiter( nullptr ),
-        m_type( ContainerType::None )
+        m_currentContainer( ContainerType::None )
     {}
 
     Variant* m_variant;
     VariantAppendIterator* m_subiter;
-    ContainerType m_type;
+    ContainerType m_currentContainer;
+    std::vector<uint8_t> m_workingBuffer;
+    int32_t m_arrayAlignment;
+    Marshaling m_marshaling;
 };
 
 VariantAppendIterator::VariantAppendIterator( Variant* variant ):
-    m_priv( std::make_shared<priv_data>( variant ) ){}
+    m_priv( std::make_shared<priv_data>( variant ) ){
+    m_priv->m_marshaling = Marshaling( &variant->m_marshaled, Endianess::Big );
+}
 
 VariantAppendIterator::VariantAppendIterator( Variant* variant, ContainerType t ) :
     m_priv( std::make_shared<priv_data>( variant ) ){
-    m_priv->m_type = t;
+    m_priv->m_currentContainer = t;
+    m_priv->m_marshaling = Marshaling( &m_priv->m_workingBuffer, Endianess::Big );
 }
 
 VariantAppendIterator::~VariantAppendIterator(){
@@ -50,101 +57,105 @@ VariantAppendIterator::~VariantAppendIterator(){
 }
 
 void VariantAppendIterator::operator<<( const bool& v ){
-    Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-    marshal.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 }
 
 void VariantAppendIterator::operator<<( const uint8_t& v ){
-    Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-    marshal.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 }
 
 void VariantAppendIterator::operator<<( const int16_t& v ){
-    Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-    marshal.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 }
 
 void VariantAppendIterator::operator<<( const uint16_t& v ){
-    Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-    marshal.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 }
 
 void VariantAppendIterator::operator<<( const int32_t& v ){
-    Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-    marshal.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 }
 
 void VariantAppendIterator::operator<<( const uint32_t& v ){
-    Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-    marshal.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 }
 
 void VariantAppendIterator::operator<<( const int64_t& v ){
-    Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-    marshal.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 }
 
 void VariantAppendIterator::operator<<( const uint64_t& v ){
-    Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-    marshal.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 }
 
 void VariantAppendIterator::operator<<( const double& v ){
-    Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-    marshal.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 }
 
 void VariantAppendIterator::operator<<( const char* v ){
-    Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-    marshal.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 }
 
 void VariantAppendIterator::operator<<( const std::string& v ){
-    Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-    marshal.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 }
 
 void VariantAppendIterator::operator<<( const Signature& v ){
-    Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-    marshal.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 }
 
 void VariantAppendIterator::operator<<( const Path& v ){
-    Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-    marshal.marshal( v );
+    m_priv->m_marshaling.marshal( v );
 }
 
 bool VariantAppendIterator::open_container( ContainerType t, const std::string& sig ){
-    if( t == ContainerType::ARRAY ) {
-        Signature tmpSig( sig );
-        SignatureIterator tmpSigIter = tmpSig.begin();
-        TypeInfo ti( tmpSigIter.type() );
-        int array_align = ti.alignment();
-        Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-        marshal.marshal( static_cast<uint32_t>( 0 ) );
-        marshal.align( array_align );
-    }
+    std::string signature;
+    int32_t array_align = 0;
 
     if ( m_priv->m_subiter ) this->close_container();
 
-    m_priv->m_subiter = new VariantAppendIterator( m_priv->m_variant, t );
+    if( t == ContainerType::ARRAY ){
+            Signature tmpSig( sig );
+            SignatureIterator tmpSigIter = tmpSig.begin();
+            TypeInfo ti( tmpSigIter.type() );
+            array_align = ti.alignment();
+    }
+
+      m_priv->m_subiter = new VariantAppendIterator( m_priv->m_variant, t );
+      m_priv->m_subiter->m_priv->m_arrayAlignment = array_align;
 
     return true;
 }
 
 bool VariantAppendIterator::close_container( ){
-    if( !m_priv->m_subiter ){
-        return false;
+    if ( ! m_priv->m_subiter ) return false;
+
+    switch( m_priv->m_subiter->m_priv->m_currentContainer ){
+    case ContainerType::None: return false;
+    case ContainerType::ARRAY:
+    {
+        uint32_t arraySize = static_cast<uint32_t>( m_priv->m_subiter->m_priv->m_workingBuffer.size() );
+        if( arraySize > Validator::maximum_array_size() ){
+            return true;
+        }
+        m_priv->m_marshaling.marshal( arraySize );
+        m_priv->m_marshaling.align( m_priv->m_subiter->m_priv->m_arrayAlignment );
+    }
+        break;
+    case ContainerType::DICT_ENTRY:
+    case ContainerType::STRUCT:
+        m_priv->m_marshaling.align( 8 );
+        break;
+    case ContainerType::VARIANT:
+        break;
     }
 
-    if( m_priv->m_subiter->m_priv->m_type == ContainerType::ARRAY ){
-        Marshaling marshal( &m_priv->m_variant->m_marshaled, Endianess::Big );
-        marshal.marshalAtOffset( 0, m_priv->m_variant->m_marshaled.size() - 4 );
+    for( const uint8_t& dataByte : m_priv->m_subiter->m_priv->m_workingBuffer ){
+        m_priv->m_marshaling.marshal( dataByte );
     }
 
     delete m_priv->m_subiter;
     m_priv->m_subiter = nullptr;
-
     return true;
 }
 
