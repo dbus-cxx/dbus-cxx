@@ -75,9 +75,9 @@ class Variant {
 
     template<typename Key, typename Value>
     Variant( std::map<Key,Value> map ) :
-        m_currentType( DataType::DICT_ENTRY ),
+        m_currentType( DataType::ARRAY ),
         m_signature( DBus::signature( map ) ),
-        m_dataAlignment( 8 ){
+        m_dataAlignment( 4 ){
         VariantAppendIterator it(this);
 
         it << map;
