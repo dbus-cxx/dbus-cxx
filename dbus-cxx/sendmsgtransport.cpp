@@ -400,7 +400,7 @@ std::shared_ptr<DBus::Message> SendmsgTransport::readMessage(){
 
     /* Do the real reading of the data */
     ret = m_priv->receive( total_len, m_priv->rx_control_capacity, 0, 0 );
-    if( ret < 0 ){
+    if( ret <= 0 ){
         m_priv->m_ok = false;
         return std::shared_ptr<DBus::Message>();
     }
