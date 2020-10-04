@@ -189,9 +189,13 @@ bool data_variant_map(){
 }
 
 bool data_nonexistant_method(){
-    (*nonexistant_proxy)();
+    try{
+        (*nonexistant_proxy)();
+    }catch( DBus::ErrorUnknownMethod ex ){
+        return true;
+    }
 
-    return true;
+    return false;
 }
 
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
@@ -228,7 +232,7 @@ int main(int argc, char** argv){
   }else{
     server_setup();
     ret = true;
-    sleep( 1000 );
+    sleep( 1 );
   }
 
 

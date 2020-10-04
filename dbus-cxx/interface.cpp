@@ -324,7 +324,7 @@ namespace DBus
 
     if ( method_it == m_priv->m_methods.end() )
     {
-      return HandlerResult::Not_Handled;
+      return HandlerResult::Invalid_Method;
     }
 
     return method_it->second->handle_call_message( conn, message );

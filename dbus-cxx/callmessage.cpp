@@ -97,6 +97,7 @@ namespace DBus
     if ( !this->is_valid() ) return std::shared_ptr<ErrorMessage>();
     std::shared_ptr<ErrorMessage> retmsg = ErrorMessage::create();
     retmsg->set_reply_serial( serial() );
+    retmsg->set_destination( sender() );
     if( flags() & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED ){
         retmsg->invalidate();
     }
