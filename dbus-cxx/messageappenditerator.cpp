@@ -294,8 +294,8 @@ public:
     }
 
     this->open_container( ContainerType::VARIANT, v.signature()  );
-    *this << v.signature();
-    m_priv->m_marshaling.align( v.data_alignment() );
+    (*m_priv->m_subiter) << v.signature();
+    m_priv->m_subiter->m_priv->m_marshaling.align( v.data_alignment() );
     for( const uint8_t& data : *(v.marshaled()) ){
         m_priv->m_subiter->m_priv->m_workingBuffer.push_back( data );
     }

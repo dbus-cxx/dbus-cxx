@@ -51,7 +51,7 @@ namespace DBus
   {
     Variant field = header_field( MessageHeaderFields::Reply_Serial );
     if( field.currentType() == DataType::UINT32 ){
-        return std::any_cast<uint32_t>( field.value() );
+        return field.to_uint32();
     }
     return 0;
   }

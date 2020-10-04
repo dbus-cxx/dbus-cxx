@@ -81,6 +81,8 @@ public:
      */
     void marshalAtOffset( uint32_t offset, uint32_t value );
 
+    uint32_t currentOffset() const;
+
 private:
 	void marshalShortBig( uint16_t toMarshal );
 	void marshalIntBig( uint32_t toMarshal );

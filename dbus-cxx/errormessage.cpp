@@ -60,7 +60,7 @@ namespace DBus
   {
       Variant msgName = header_field( MessageHeaderFields::Error_Name );
       if( msgName.currentType() == DataType::STRING ){
-          return std::any_cast<std::string>( msgName.value() );
+          return msgName.to_string();
       }
     return "";
   }
@@ -79,7 +79,7 @@ namespace DBus
       std::string retval;
 
       if( signature.currentType() == DataType::SIGNATURE ){
-        Signature value = std::any_cast<Signature>( signature.value() );
+        Signature value = signature.to_signature();
         if( value.begin().type() == DataType::STRING ){
             begin() >> retval;
         }
@@ -103,7 +103,7 @@ namespace DBus
   {
     Variant field = header_field( MessageHeaderFields::Reply_Serial );
     if( field.currentType() == DataType::UINT32 ){
-        return std::any_cast<uint32_t>( field.value() );
+        return field.to_uint32();
     }
     return 0;
   }

@@ -543,5 +543,9 @@ public:
       return m_priv->m_demarshal->demarshal_signature();
   }
 
+  void MessageIterator::align(int alignment){
+      m_priv->m_demarshal->align(alignment);
+  }
+
 }
 

@@ -31,6 +31,7 @@ std::shared_ptr<DBus::MethodProxy<void()>> void_method_proxy;
 std::shared_ptr<DBus::MethodProxy<void(struct custom)>> void_custom_method_proxy;
 std::shared_ptr<DBus::MethodProxy<int(int, struct custom)>> int_custom_method_proxy2;
 std::shared_ptr<DBus::MethodProxy<bool(std::tuple<int,double,std::string>)>> tuple_method_proxy;
+std::shared_ptr<DBus::MethodProxy<void(DBus::Variant)>> variant_array_proxy;
 
 std::shared_ptr<DBus::Object> object;
 std::shared_ptr<DBus::Method<int(int,int)>> int_method;
@@ -38,6 +39,7 @@ std::shared_ptr<DBus::Method<void()>> void_method;
 std::shared_ptr<DBus::Method<void(struct custom)>> void_custom_method;
 std::shared_ptr<DBus::Method<int(int,struct custom)>> int_custom_method2;
 std::shared_ptr<DBus::Method<bool(std::tuple<int,double,std::string>)>> tuple_method;
+std::shared_ptr<DBus::Method<void(DBus::Variant)>> variant_array_method;
 
 bool tuple_method_symbol(std::tuple<int,double,std::string> tup ){
     bool retval = true;
@@ -70,6 +72,10 @@ int int_intcustom_symbol(int i, struct custom c){
   return i + c.first + c.second;
 }
 
+void variant_array_symbol( DBus::Variant v ){
+
+}
+
 void client_setup(){
     proxy = conn->create_object_proxy( "dbuscxx.test", "/test" );
 
@@ -78,6 +84,7 @@ void client_setup(){
     void_custom_method_proxy = proxy->create_method<void(struct custom)>( "foo.what", "void_custom" );
     int_custom_method_proxy2 = proxy->create_method<int(int,struct custom)>( "foo.what", "int_intcustom" );
     tuple_method_proxy = proxy->create_method<bool(std::tuple<int,double,std::string>)>( "foo.what", "tuple_method" );
+    variant_array_proxy = proxy->create_method<void(DBus::Variant)>( "foo.what", "variant_array" );
 }
 
 void server_setup(){
@@ -90,6 +97,7 @@ void server_setup(){
     void_custom_method = object->create_method<void(struct custom)>("foo.what", "void_custom", sigc::ptr_fun( void_custom_method_symbol ) );
     int_custom_method2 = object->create_method<int(int,struct custom)>("foo.what", "int_intcustom", sigc::ptr_fun( int_intcustom_symbol ) );
     tuple_method = object->create_method<bool(std::tuple<int,double,std::string>)>("foo.what", "tuple_method", sigc::ptr_fun( tuple_method_symbol ) );
+    variant_array_method = object->create_method<void(DBus::Variant)>( "foo.what", "variant_array", sigc::ptr_fun( variant_array_symbol ) );
 }
 
 bool data_send_integers(){
@@ -153,6 +161,18 @@ bool data_tuple(){
     return (*tuple_method_proxy)( tup );
 }
 
+bool data_variant_array(){
+    std::vector<int> vec;
+    vec.push_back( 5 );
+    vec.push_back( 5248 );
+    vec.push_back( 8888 );
+    DBus::Variant send( vec );
+
+    (*variant_array_proxy)( send );
+
+    return true;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
   ret = data_##name();\
 } \
@@ -181,6 +201,7 @@ int main(int argc, char** argv){
     ADD_TEST(ping);
     ADD_TEST(machine_uuid);
     ADD_TEST(tuple);
+    ADD_TEST(variant_array);
   }else{
     server_setup();
     ret = true;

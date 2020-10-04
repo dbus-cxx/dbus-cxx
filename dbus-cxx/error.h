@@ -436,6 +436,12 @@ namespace DBus
       : Error( nullptr, message ) {}
   };
 
+  class ErrorBadVariantCast : public Error {
+  public:
+      ErrorBadVariantCast( const char* message = nullptr )
+          : Error( nullptr, message ) {}
+  };
+
 }
 
 #endif

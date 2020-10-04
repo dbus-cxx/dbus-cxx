@@ -141,6 +141,8 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/sasl.cpp
     dbus-cxx/validator.cpp
     dbus-cxx/daemon-proxy/DBusDaemonProxy.cpp
+    dbus-cxx/variantappenditerator.cpp
+    dbus-cxx/variantiterator.cpp
 )
 
 # headers that need to go in the include/ directory
@@ -197,6 +199,8 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/dbus-error.h
     dbus-cxx/threaddispatcher.h
     dbus-cxx/validator.h
+    dbus-cxx/variantappenditerator.h
+    dbus-cxx/variantiterator.h
     ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
 )
 

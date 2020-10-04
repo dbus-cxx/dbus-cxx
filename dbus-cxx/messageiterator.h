@@ -208,6 +208,14 @@ namespace DBus
       Signature get_signature();
 
       /**
+       * Align our memory to the specified location.  This skips bytes.
+       * This is for internal use only; don't call it in client code!
+       *
+       * @param alignment
+       */
+      void align( int alignment );
+
+      /**
        * get_array for simple types - arithmetic types where the array is fixed and thus
        * we can use dbus_message_iter_get_fixed_array.
        */

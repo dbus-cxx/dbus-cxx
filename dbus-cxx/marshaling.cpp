@@ -239,3 +239,7 @@ void Marshaling::marshalAtOffset(uint32_t offset, uint32_t value){
         (*m_priv->m_data)[offset++] = (value & 0x000000FF) >> 0;
     }
 }
+
+uint32_t Marshaling::currentOffset() const {
+    return m_priv->m_data->size();
+}

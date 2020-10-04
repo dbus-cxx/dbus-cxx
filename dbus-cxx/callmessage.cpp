@@ -112,7 +112,7 @@ namespace DBus
   {
     Variant field = header_field( MessageHeaderFields::Path );
     if( field.currentType() == DataType::OBJECT_PATH ){
-        return std::any_cast<Path>( field.value() );
+        return field.to_path();
     }
 
     return Path();
@@ -126,7 +126,7 @@ namespace DBus
   std::string CallMessage::interface_name() const {
       Variant iface = header_field( MessageHeaderFields::Interface );
       if( iface.currentType() == DataType::STRING ){
-          return std::any_cast<std::string>( iface.value() );
+          return iface.to_string();
       }
     return "";
     }
@@ -140,7 +140,7 @@ namespace DBus
   {
       Variant member = header_field( MessageHeaderFields::Member );
       if( member.currentType() == DataType::STRING ){
-          return std::any_cast<std::string>( member.value() );
+          return member.to_string();
       }
     return "";
   }

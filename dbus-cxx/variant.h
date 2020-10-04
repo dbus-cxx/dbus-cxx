@@ -23,6 +23,11 @@
 #include <dbus-cxx/path.h>
 #include <dbus-cxx/signature.h>
 #include <dbus-cxx/dbus-cxx-config.h>
+#include <dbus-cxx/variantappenditerator.h>
+#include <dbus-cxx/variantiterator.h>
+#include <dbus-cxx/marshaling.h>
+#include <dbus-cxx/types.h>
+#include <dbus-cxx/error.h>
 #include <string>
 #include <any>
 #include <stdint.h>
@@ -55,15 +60,23 @@ class Variant {
     Variant( std::string str );
     explicit Variant( Signature sig );
     explicit Variant( Path path );
-    explicit Variant( std::shared_ptr<FileDescriptor> fd );
+
+    template<typename T>
+    Variant( std::vector<T> vec ) :
+        m_currentType( DataType::ARRAY ),
+        m_signature( DBus::signature( vec ) ),
+        m_dataAlignment( 4 ){
+        VariantAppendIterator it(this);
+
+        it << vec;
+    }
+
     Variant( const Variant& other );
     ~Variant();
 
     Signature signature() const;
 
     DataType currentType() const;
-
-    std::any value() const;
 
     const std::vector<uint8_t>* marshaled() const;
 
@@ -73,14 +86,55 @@ class Variant {
 
     Variant& operator=( const Variant& other );
 
+//    operator bool();
+//    operator uint8_t();
+//    operator uint16_t();
+//    operator int16_t();
+//    operator uint32_t();
+//    operator int32_t();
+//    operator uint64_t();
+//    operator int64_t();
+//    operator double();
+//    operator std::string();
+//    operator DBus::Path();
+
+    template <typename T>
+    operator std::vector<T>() {
+      VariantIterator vi( this );
+
+      std::vector<T> retval = vi;
+
+      return retval;
+    }
+
+    bool        to_bool() const;
+    uint8_t     to_uint8() const;
+    uint16_t    to_uint16() const;
+    int16_t     to_int16() const;
+    uint32_t    to_uint32() const;
+    int32_t     to_int32() const;
+    uint64_t    to_uint64() const;
+    int64_t     to_int64() const;
+    double      to_double() const;
+    std::string to_string() const;
+    DBus::Path  to_path() const;
+    DBus::Signature to_signature() const;
+
     static Variant createFromMessage( MessageIterator iter );
 
   private:
-    class priv_data;
+    void createRecurse( MessageIterator iter, Marshaling* marshal );
+    void recurseArray( MessageIterator iter, Marshaling* marshal );
 
-    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
+  private:
+    DataType m_currentType;
+    Signature m_signature;
+    std::vector<uint8_t> m_marshaled;
+    int m_dataAlignment;
 
     friend std::ostream& operator<<( std::ostream& os, const Variant& var );
+    friend class VariantAppendIterator;
+    friend class VariantIterator;
 };
 
 } /* namespace DBus */

@@ -20,299 +20,340 @@
 #include <dbus-cxx/messageiterator.h>
 #include <dbus-cxx/marshaling.h>
 #include <dbus-cxx/dbus-cxx-private.h>
+#include <dbus-cxx/signatureiterator.h>
 #include <stdint.h>
 #include "enums.h"
 #include "path.h"
 #include "signature.h"
 
+static const char* LOGGER_NAME = "DBus.Variant";
+
 namespace DBus { class FileDescriptor; }
 
 using DBus::Variant;
 
-class Variant::priv_data {
-public:
-    priv_data() :
-        m_currentType( DataType::INVALID )
-    {}
-
-    priv_data( uint8_t byte ) :
-        m_currentType( DataType::BYTE ),
-        m_signature( DBus::signature( byte ) ),
-        m_data( byte ),
-        m_dataAlignment( 1 )
-    {
-        Marshaling marshal( &m_marshaled, Endianess::Big );
-        marshal.marshal( byte );
-    }
-
-    priv_data( bool b ) :
-        m_currentType( DataType::BOOLEAN ),
-        m_signature( DBus::signature( b ) ),
-        m_data( b ),
-        m_dataAlignment( 4 )
-    {
-        Marshaling marshal( &m_marshaled, Endianess::Big );
-        marshal.marshal( b );
-    }
-
-    priv_data( int16_t i ) :
-        m_currentType( DataType::INT16 ),
-        m_signature( DBus::signature( i ) ),
-        m_data( i ),
-        m_dataAlignment( 2 )
-    {
-        Marshaling marshal( &m_marshaled, Endianess::Big );
-        marshal.marshal( i );
-    }
-
-    priv_data( uint16_t i ) :
-        m_currentType( DataType::UINT16 ),
-        m_signature( DBus::signature( i ) ),
-        m_data( i ),
-        m_dataAlignment( 2 )
-    {
-        Marshaling marshal( &m_marshaled, Endianess::Big );
-        marshal.marshal( i );
-    }
-
-    priv_data( int32_t i ) :
-        m_currentType( DataType::INT32 ),
-        m_signature( DBus::signature( i ) ),
-        m_data( i ),
-        m_dataAlignment( 4 )
-    {
-        Marshaling marshal( &m_marshaled, Endianess::Big );
-        marshal.marshal( i );
-    }
-
-    priv_data( uint32_t i ) :
-        m_currentType( DataType::UINT32 ),
-        m_signature( DBus::signature( i ) ),
-        m_data( i ),
-        m_dataAlignment( 4 )
-    {
-        Marshaling marshal( &m_marshaled, Endianess::Big );
-        marshal.marshal( i );
-    }
-
-    priv_data( int64_t i ) :
-        m_currentType( DataType::INT64 ),
-        m_signature( DBus::signature( i ) ),
-        m_data( i ),
-        m_dataAlignment( 8 )
-    {
-        Marshaling marshal( &m_marshaled, Endianess::Big );
-        marshal.marshal( i );
-    }
-
-   priv_data( uint64_t i ) :
-        m_currentType( DataType::UINT64 ),
-        m_signature( DBus::signature( i ) ),
-        m_data( i ),
-        m_dataAlignment( 8 )
-    {
-        Marshaling marshal( &m_marshaled, Endianess::Big );
-        marshal.marshal( i );
-    }
-
-    priv_data( double i ) :
-        m_currentType( DataType::DOUBLE ),
-        m_signature( DBus::signature( i ) ),
-        m_data( i ),
-        m_dataAlignment( 8 )
-    {
-        Marshaling marshal( &m_marshaled, Endianess::Big );
-        marshal.marshal( i );
-    }
-
-    priv_data( const char* cstr ) :
-        priv_data( std::string( cstr ) ){}
-
-    priv_data( std::string str ) :
-        m_currentType( DataType::STRING ),
-        m_signature( DBus::signature( str ) ),
-        m_data( str ),
-        m_dataAlignment( 4 )
-    {
-        Marshaling marshal( &m_marshaled, Endianess::Big );
-        marshal.marshal( str );
-    }
-
-    priv_data( DBus::Signature sig ) :
-        m_currentType( DataType::SIGNATURE ),
-        m_signature( DBus::signature( sig ) ),
-        m_data( sig ),
-        m_dataAlignment( 1 )
-    {
-        Marshaling marshal( &m_marshaled, Endianess::Big );
-        marshal.marshal( sig );
-    }
-
-    priv_data( DBus::Path path ) :
-        m_currentType( DataType::OBJECT_PATH ),
-        m_signature( DBus::signature( path ) ),
-        m_data( path ),
-        m_dataAlignment( 4 )
-    {
-        Marshaling marshal( &m_marshaled, Endianess::Big );
-        marshal.marshal( path );
-    }
-
-    priv_data( std::shared_ptr<FileDescriptor> fd ) :
-        m_currentType( DataType::UNIX_FD ),
-        m_signature( DBus::signature( fd ) ),
-        m_data( fd ),
-        m_dataAlignment( 4 )
-    {}
-
-//    priv_data( const priv_data& other ) = default;
-//    priv_data( const priv_data& other ) :
-//        m_currentType( other.m_currentType ),
-//        m_signature( other.m_signature ),
-//        m_data( other.m_data ),
-//        m_marshaled( other.m_marshaled ),
-//        m_dataAlignment( other.m_dataAlignment ) {
-//    }
-
-public:
-    DataType m_currentType;
-    Signature m_signature;
-    std::any m_data;
-    std::vector<uint8_t> m_marshaled;
-    int m_dataAlignment;
-};
-
-Variant::Variant() :
-    m_priv( std::make_unique<priv_data>() )
+Variant::Variant():
+    m_currentType( DataType::INVALID )
 {}
 
 Variant::Variant( uint8_t byte ) :
-    m_priv( std::make_unique<priv_data>( byte ) )
-{}
+    m_currentType( DataType::BYTE ),
+    m_signature( DBus::signature( byte ) ),
+    m_dataAlignment( 1 )
+{
+    Marshaling marshal( &m_marshaled, Endianess::Big );
+    marshal.marshal( byte );
+}
 
 Variant::Variant( bool b ) :
-    m_priv( std::make_unique<priv_data>( b ) )
-{}
+    m_currentType( DataType::BOOLEAN ),
+    m_signature( DBus::signature( b ) ),
+    m_dataAlignment( 4 )
+{
+    Marshaling marshal( &m_marshaled, Endianess::Big );
+    marshal.marshal( b );
+}
 
 Variant::Variant( int16_t i ) :
-    m_priv( std::make_unique<priv_data>( i ) )
-{}
+    m_currentType( DataType::INT16 ),
+    m_signature( DBus::signature( i ) ),
+    m_dataAlignment( 2 )
+{
+    Marshaling marshal( &m_marshaled, Endianess::Big );
+    marshal.marshal( i );
+}
 
-Variant::Variant( uint16_t i ) :
-    m_priv( std::make_unique<priv_data>( i ) )
-{}
+Variant::Variant( uint16_t i ):
+    m_currentType( DataType::UINT16 ),
+    m_signature( DBus::signature( i ) ),
+    m_dataAlignment( 2 )
+{
+    Marshaling marshal( &m_marshaled, Endianess::Big );
+    marshal.marshal( i );
+}
 
 Variant::Variant( int32_t i ) :
-    m_priv( std::make_unique<priv_data>( i ) )
-{}
+    m_currentType( DataType::INT32 ),
+    m_signature( DBus::signature( i ) ),
+    m_dataAlignment( 4 )
+{
+    Marshaling marshal( &m_marshaled, Endianess::Big );
+    marshal.marshal( i );
+}
 
 Variant::Variant( uint32_t i ) :
-    m_priv( std::make_unique<priv_data>( i ) )
-{}
+    m_currentType( DataType::UINT32 ),
+    m_signature( DBus::signature( i ) ),
+    m_dataAlignment( 4 )
+{
+    Marshaling marshal( &m_marshaled, Endianess::Big );
+    marshal.marshal( i );
+}
 
 Variant::Variant( int64_t i ) :
-    m_priv( std::make_unique<priv_data>( i ) )
-{}
+    m_currentType( DataType::INT64 ),
+    m_signature( DBus::signature( i ) ),
+    m_dataAlignment( 8 )
+{
+    Marshaling marshal( &m_marshaled, Endianess::Big );
+    marshal.marshal( i );
+}
 
 Variant::Variant( uint64_t i ) :
-    m_priv( std::make_unique<priv_data>( i ) )
-{}
+    m_currentType( DataType::UINT64 ),
+    m_signature( DBus::signature( i ) ),
+    m_dataAlignment( 8 )
+{
+    Marshaling marshal( &m_marshaled, Endianess::Big );
+    marshal.marshal( i );
+}
 
 Variant::Variant( double i ) :
-    m_priv( std::make_unique<priv_data>( i ) )
-{}
+    m_currentType( DataType::DOUBLE ),
+    m_signature( DBus::signature( i ) ),
+    m_dataAlignment( 8 )
+{
+    Marshaling marshal( &m_marshaled, Endianess::Big );
+    marshal.marshal( i );
+}
 
 Variant::Variant( const char* cstr ) :
     Variant( std::string( cstr ) ){}
 
 Variant::Variant( std::string str ) :
-    m_priv( std::make_unique<priv_data>( str ) )
-{}
+    m_currentType( DataType::STRING ),
+    m_signature( DBus::signature( str ) ),
+    m_dataAlignment( 4 )
+{
+    Marshaling marshal( &m_marshaled, Endianess::Big );
+    marshal.marshal( str );
+}
 
 Variant::Variant( DBus::Signature sig ) :
-    m_priv( std::make_unique<priv_data>( sig ) )
-{}
+    m_currentType( DataType::SIGNATURE ),
+    m_signature( DBus::signature( sig ) ),
+    m_dataAlignment( 1 )
+{
+    Marshaling marshal( &m_marshaled, Endianess::Big );
+    marshal.marshal( sig );
+}
 
-Variant::Variant( DBus::Path path ) :
-    m_priv( std::make_unique<priv_data>( path ) )
-{}
-
-Variant::Variant( std::shared_ptr<FileDescriptor> fd ) :
-    m_priv( std::make_unique<priv_data>( fd ) )
-{}
+Variant::Variant( DBus::Path path )  :
+    m_currentType( DataType::OBJECT_PATH ),
+    m_signature( DBus::signature( path ) ),
+    m_dataAlignment( 4 )
+{
+    Marshaling marshal( &m_marshaled, Endianess::Big );
+    marshal.marshal( path );
+}
 
 Variant::Variant( const Variant& other ) :
-    m_priv( std::make_unique<priv_data>( *other.m_priv ) )
+    m_currentType( other.m_currentType ),
+    m_signature( other.m_signature ),
+    m_marshaled( other.m_marshaled ),
+    m_dataAlignment( other.m_dataAlignment )
 {}
 
 Variant::~Variant(){}
 
 DBus::Signature Variant::signature() const {
-    return m_priv->m_signature;
+    return m_signature;
 }
 
 DBus::DataType Variant::currentType() const {
-    return m_priv->m_currentType;
-}
-
-std::any Variant::value() const {
-    return m_priv->m_data;
+    return m_currentType;
 }
 
 DBus::Variant Variant::createFromMessage( MessageIterator iter ){
-    std::string signature = iter.signature();
-    if( signature == DBUSCXX_TYPE_BYTE_AS_STRING ){
-        return Variant( (uint8_t)iter );
-    }
-    if( signature == DBUSCXX_TYPE_BOOLEAN_AS_STRING ){
-        return Variant( (bool)iter );
-    }
-    if( signature == DBUSCXX_TYPE_INT16_AS_STRING ){
-        return Variant( (int16_t)iter );
-    }
-    if( signature == DBUSCXX_TYPE_UINT16_AS_STRING ){
-        return Variant( (uint16_t)iter );
-    }
-    if( signature == DBUSCXX_TYPE_INT32_AS_STRING ){
-        return Variant( (int32_t)iter );
-    }
-    if( signature == DBUSCXX_TYPE_UINT32_AS_STRING ){
-        return Variant( (uint32_t)iter );
-    }
-    if( signature == DBUSCXX_TYPE_INT64_AS_STRING ){
-        return Variant( (int64_t)iter );
-    }
-    if( signature == DBUSCXX_TYPE_UINT64_AS_STRING ){
-        return Variant( (uint64_t)iter );
-    }
-    if( signature == DBUSCXX_TYPE_DOUBLE_AS_STRING ){
-        return Variant( (double)iter );
-    }
-    if( signature == DBUSCXX_TYPE_STRING_AS_STRING ){
-        return Variant( (std::string)iter );
-    }
-    if( signature == DBUSCXX_TYPE_SIGNATURE_AS_STRING ){
-        return Variant( (Signature)iter );
-    }
-    if( signature == DBUSCXX_TYPE_OBJECT_PATH_AS_STRING ){
-        return Variant( (Path)iter );
-    }
-    if( signature == DBUSCXX_TYPE_VARIANT_AS_STRING ){
-        return DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT( iter );
-    }
-    if( signature == DBUSCXX_TYPE_UNIX_FD_AS_STRING ){
-        return Variant( (std::shared_ptr<FileDescriptor>)iter );
+    Variant v;
+    SignatureIterator it = Signature( iter.signature() ).begin();
+    DBus::DataType dt = it.type();
+    TypeInfo ti( dt );
+    Marshaling marshal( &v.m_marshaled, Endianess::Big );
+
+    v.m_signature = DBus::Signature( iter.signature() );
+    v.m_currentType = dt;
+    v.m_dataAlignment = ti.alignment();
+    iter.align( ti.alignment() );
+
+    switch( dt ){
+    case DataType::BYTE:
+        marshal.marshal( iter.get_uint8() );
+        break;
+    case  DataType::BOOLEAN:
+        marshal.marshal( iter.get_bool() );
+        break;
+    case  DataType::INT16:
+        marshal.marshal( iter.get_int16() );
+        break;
+    case  DataType::UINT16:
+        marshal.marshal( iter.get_uint16() );
+        break;
+    case  DataType::INT32:
+        marshal.marshal( iter.get_int32() );
+        break;
+    case  DataType::UINT32:
+        marshal.marshal( iter.get_uint32() );
+        break;
+    case  DataType::INT64:
+        marshal.marshal( iter.get_int64() );
+        break;
+    case  DataType::UINT64:
+        marshal.marshal( iter.get_uint64() );
+        break;
+    case  DataType::DOUBLE:
+        marshal.marshal( iter.get_double() );
+        break;
+    case  DataType::STRING:
+        marshal.marshal( iter.get_string() );
+        break;
+    case  DataType::OBJECT_PATH:
+        marshal.marshal( iter.get_string() );
+        break;
+    case  DataType::SIGNATURE:
+        marshal.marshal( iter.get_signature() );
+        break;
+    case  DataType::ARRAY:
+        v.recurseArray( iter.recurse(), &marshal );
+        break;
+    case  DataType::VARIANT:
+        break;
+    case  DataType::STRUCT:
+        break;
+    case  DataType::DICT_ENTRY:
+    case  DataType::UNIX_FD:
+    case  DataType::INVALID:
+        break;
     }
 
-    return Variant();
+    return v;
 }
 
+void Variant::recurseArray(MessageIterator iter, Marshaling *marshal){
+    SignatureIterator si = Signature( iter.signature() ).begin();
+    DataType dt = si.type();
+    TypeInfo ti( dt );
+    uint32_t offset = marshal->currentOffset();
+
+    marshal->marshal( static_cast<uint32_t>( 0 ) ); // Array size.
+    while( iter.is_valid() ){
+        switch( dt ){
+        case DataType::BYTE:
+            marshal->marshal( iter.get_uint8() );
+            break;
+        case  DataType::BOOLEAN:
+            marshal->marshal( iter.get_bool() );
+            break;
+        case  DataType::INT16:
+            marshal->marshal( iter.get_int16() );
+            break;
+        case  DataType::UINT16:
+            marshal->marshal( iter.get_uint16() );
+            break;
+        case  DataType::INT32:
+            marshal->marshal( iter.get_int32() );
+            break;
+        case  DataType::UINT32:
+            marshal->marshal( iter.get_uint32() );
+            break;
+        case  DataType::INT64:
+            marshal->marshal( iter.get_int64() );
+            break;
+        case  DataType::UINT64:
+            marshal->marshal( iter.get_uint64() );
+            break;
+        case  DataType::DOUBLE:
+            marshal->marshal( iter.get_double() );
+            break;
+        case  DataType::STRING:
+            marshal->marshal( iter.get_string() );
+            break;
+        case  DataType::OBJECT_PATH:
+            marshal->marshal( iter.get_string() );
+            break;
+        case  DataType::SIGNATURE:
+            marshal->marshal( iter.get_signature() );
+            break;
+        case DataType::ARRAY:
+            recurseArray( iter.recurse(), marshal );
+            break;
+        }
+
+        iter++;
+    }
+
+    uint32_t totalSize = marshal->currentOffset() - offset - 4;
+    marshal->marshalAtOffset( offset, totalSize );
+}
+
+//void Variant::createRecurse(MessageIterator iter, Marshaling* marshal ){
+//    SignatureIterator si = Signature( iter.signature() ).begin();
+//    DataType dt = si.type();
+//    TypeInfo ti( dt );
+
+//    switch( dt ){
+//    case DataType::BYTE:
+//        marshal->marshal( iter.get_uint8() );
+//        break;
+//    case  DataType::BOOLEAN:
+//        marshal.marshal( iter.get_bool() );
+//        break;
+//    case  DataType::INT16:
+//        marshal.marshal( iter.get_int16() );
+//        break;
+//    case  DataType::UINT16:
+//        marshal.marshal( iter.get_uint16() );
+//        break;
+//    case  DataType::INT32:
+//        marshal.marshal( iter.get_int32() );
+//        break;
+//    case  DataType::UINT32:
+//        marshal.marshal( iter.get_uint32() );
+//        break;
+//    case  DataType::INT64:
+//        marshal.marshal( iter.get_int64() );
+//        break;
+//    case  DataType::UINT64:
+//        marshal.marshal( iter.get_uint64() );
+//        break;
+//    case  DataType::DOUBLE:
+//        marshal.marshal( iter.get_double() );
+//        break;
+//    case  DataType::STRING:
+//        marshal.marshal( iter.get_string() );
+//        break;
+//    case  DataType::OBJECT_PATH:
+//        marshal.marshal( iter.get_string() );
+//        break;
+//    case  DataType::SIGNATURE:
+//        marshal.marshal( iter.get_signature() );
+//        break;
+//    case  DataType::ARRAY:
+//        v.createRecurse( iter.recurse(), &marshal );
+//        break;
+//    case  DataType::VARIANT:
+//        break;
+//    case  DataType::STRUCT:
+//        break;
+//    case  DataType::DICT_ENTRY:
+//        break;
+//    case  DataType::UNIX_FD:
+//    case  DataType::INVALID:
+//        break;
+//    }
+//    if( si.type() == DataType::ARRAY ){
+//        // marshal array size for temp purposes...
+//        marshal->marshal( static_cast<uint32_t>( 0 ) );
+
+//    }
+//}
+
 const std::vector<uint8_t>* Variant::marshaled() const {
-    return &m_priv->m_marshaled;
+    return &m_marshaled;
 }
 
 int Variant::data_alignment() const {
-    return m_priv->m_dataAlignment;
+    return m_dataAlignment;
 }
 
 bool Variant::operator==( const Variant& other ) const {
@@ -320,16 +361,115 @@ bool Variant::operator==( const Variant& other ) const {
     bool vectorsEqual = false;
 
     if( sameType ){
-        vectorsEqual = other.m_priv->m_marshaled == m_priv->m_marshaled;
+        vectorsEqual = other.m_marshaled == m_marshaled;
     }
 
     return sameType && vectorsEqual;
 }
 
 Variant& Variant::operator=(const Variant &other) {
-    *m_priv = *other.m_priv;
+    m_currentType = other.m_currentType;
+    m_signature = other.m_signature;
+    m_marshaled = other.m_marshaled;
+    m_dataAlignment = other.m_dataAlignment;
 
     return *this;
+}
+
+bool Variant::to_bool() const {
+    if( m_currentType != DataType::BOOLEAN ){
+        throw ErrorBadVariantCast();
+    }
+    VariantIterator vi(this);
+    return vi.get_bool();
+}
+
+uint8_t Variant::to_uint8() const {
+    if( m_currentType != DataType::BYTE ){
+        throw ErrorBadVariantCast();
+    }
+    VariantIterator vi(this);
+    return vi.get_uint8();
+}
+
+uint16_t Variant::to_uint16() const {
+    if( m_currentType != DataType::UINT16 ){
+        throw ErrorBadVariantCast();
+    }
+    VariantIterator vi(this);
+    return vi.get_uint16();
+}
+
+int16_t Variant::to_int16() const {
+    if( m_currentType != DataType::INT16 ){
+        throw ErrorBadVariantCast();
+    }
+    VariantIterator vi(this);
+    return vi.get_int16();
+}
+
+uint32_t Variant::to_uint32() const {
+    if( m_currentType != DataType::UINT32 ){
+        throw ErrorBadVariantCast();
+    }
+    VariantIterator vi(this);
+    return vi.get_uint32();
+}
+
+int32_t Variant::to_int32() const {
+    if( m_currentType != DataType::INT32 ){
+        throw ErrorBadVariantCast();
+    }
+    VariantIterator vi(this);
+    return vi.get_int32();
+}
+
+uint64_t Variant::to_uint64() const {
+    if( m_currentType != DataType::UINT64 ){
+        throw ErrorBadVariantCast();
+    }
+    VariantIterator vi(this);
+    return vi.get_uint64();
+}
+
+int64_t Variant::to_int64() const {
+    if( m_currentType != DataType::INT64 ){
+        throw ErrorBadVariantCast();
+    }
+    VariantIterator vi(this);
+    return vi.get_int64();
+}
+
+double Variant::to_double() const {
+    if( m_currentType != DataType::DOUBLE ){
+        throw ErrorBadVariantCast();
+    }
+    VariantIterator vi(this);
+    return vi.get_double();
+}
+
+std::string Variant::to_string() const {
+    if( m_currentType != DataType::STRING ){
+        throw ErrorBadVariantCast();
+    }
+    VariantIterator vi(this);
+    return vi.get_string();
+}
+
+DBus::Path Variant::to_path() const {
+    if( m_currentType != DataType::OBJECT_PATH ){
+        throw ErrorBadVariantCast();
+    }
+    VariantIterator vi(this);
+    return vi.get_string();
+}
+
+DBus::Signature Variant::to_signature() const {
+    if( m_currentType != DataType::SIGNATURE ){
+        throw ErrorBadVariantCast();
+    }
+    VariantIterator vi(this);
+    return vi.get_signature();
 }
 
 namespace DBus {
@@ -337,47 +477,47 @@ namespace DBus {
 std::ostream& operator<<( std::ostream& os, const Variant& var ){
     os << "DBus::Variant[" << var.currentType() << "=";
     switch( var.currentType() ){
-    case DataType::BYTE:
-      os << std::any_cast<uint8_t>( var.value() );
-      break;
-    case DataType::BOOLEAN:
-      os << std::any_cast<bool>( var.value() );
-      break;
-    case DataType::INT16:
-      os << std::any_cast<int16_t>( var.value() );
-      break;
-    case DataType::UINT16:
-      os << std::any_cast<uint16_t>( var.value() );
-      break;
-    case DataType::INT32:
-      os << std::any_cast<int32_t>( var.value() );
-      break;
-    case DataType::UINT32:
-      os << std::any_cast<uint32_t>( var.value() );
-      break;
-    case DataType::INT64:
-      os << std::any_cast<int64_t>( var.value() );
-      break;
-    case DataType::UINT64:
-      os << std::any_cast<uint64_t>( var.value() );
-      break;
-    case DataType::DOUBLE:
-      os << std::any_cast<double>( var.value() );
-      break;
-    case DataType::STRING:
-      os << std::any_cast<std::string>( var.value() );
-      break;
-    case DataType::OBJECT_PATH:
-      os << std::any_cast<Path>( var.value() );
-      break;
-    case DataType::SIGNATURE:
-      os << std::any_cast<Signature>( var.value() );
-      break;
+//    case DataType::BYTE:
+//      os << std::any_cast<uint8_t>( var.value() );
+//      break;
+//    case DataType::BOOLEAN:
+//      os << std::any_cast<bool>( var.value() );
+//      break;
+//    case DataType::INT16:
+//      os << std::any_cast<int16_t>( var.value() );
+//      break;
+//    case DataType::UINT16:
+//      os << std::any_cast<uint16_t>( var.value() );
+//      break;
+//    case DataType::INT32:
+//      os << std::any_cast<int32_t>( var.value() );
+//      break;
+//    case DataType::UINT32:
+//      os << std::any_cast<uint32_t>( var.value() );
+//      break;
+//    case DataType::INT64:
+//      os << std::any_cast<int64_t>( var.value() );
+//      break;
+//    case DataType::UINT64:
+//      os << std::any_cast<uint64_t>( var.value() );
+//      break;
+//    case DataType::DOUBLE:
+//      os << std::any_cast<double>( var.value() );
+//      break;
+//    case DataType::STRING:
+//      os << std::any_cast<std::string>( var.value() );
+//      break;
+//    case DataType::OBJECT_PATH:
+//      os << std::any_cast<Path>( var.value() );
+//      break;
+//    case DataType::SIGNATURE:
+//      os << std::any_cast<Signature>( var.value() );
+//      break;
     case DataType::ARRAY:
       os << "array TODO";
       break;
     case DataType::VARIANT:
-      os << std::any_cast<Variant>( var.value() );
+//      os << std::any_cast<Variant>( var.value() );
       break;
     case DataType::STRUCT:
       os << "struct TODO";

@@ -319,9 +319,30 @@ bool call_message_append_extract_iterator_variant(){
   DBus::MessageIterator iter2(msg);
   var2 = DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter2);
 
-  TEST_EQUALS_RET_FAIL( std::any_cast<int>(var2.value()), 99 );
+  TEST_EQUALS_RET_FAIL( var2.to_int32(), 99 );
 
   return true;
+}
+
+bool call_message_append_extract_iterator_variant_vector(){
+    std::vector<int> good;
+    good.push_back( 5 );
+    DBus::Variant var1( good );
+    DBus::Variant var2;
+
+    std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+    DBus::MessageAppendIterator iter1(msg);
+    iter1 << var1;
+
+    DBus::MessageIterator iter2(msg);
+    var2 = DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter2);
+
+    std::vector<int> casted = var2.operator std::vector<int>();
+    std::cerr << "good size: " << good.size() << "\n";
+    TEST_EQUALS_RET_FAIL(good.size(), casted.size());
+    TEST_EQUALS_RET_FAIL(good[0], casted[0]);
+
+    return true;
 }
 
 bool call_message_append_extract_iterator_map_string_string(){
@@ -345,7 +366,7 @@ bool call_message_append_extract_iterator_map_string_string(){
 }
 
 bool call_message_append_extract_iterator_map_string_variant(){
-  DBus::Variant var1( 99 );
+  DBus::Variant var1( 0x12345678 );
   DBus::Variant var2( "hi" );
   std::map<std::string,DBus::Variant> themap;
   std::map<std::string,DBus::Variant> extracted_map;
@@ -357,11 +378,13 @@ bool call_message_append_extract_iterator_map_string_variant(){
   DBus::MessageAppendIterator iter1(msg);
   iter1 << themap;
 
+  std::cerr << msg;
+
   DBus::MessageIterator iter2(msg);
   extracted_map = (std::map<std::string,DBus::Variant>)iter2;
 
-  TEST_EQUALS_RET_FAIL( std::any_cast<int>(extracted_map["one"].value()), 99 );
-  TEST_EQUALS_RET_FAIL( std::any_cast<std::string>(extracted_map["xcom"].value()), "hi" );
+  TEST_EQUALS_RET_FAIL( extracted_map["one"].to_int32(), 0x12345678 );
+  TEST_EQUALS_RET_FAIL( extracted_map["xcom"].to_string(), "hi" );
 
   return true;
 }
@@ -492,7 +515,7 @@ bool call_message_iterator_insertion_extraction_operator_variant()
   DBus::MessageIterator iter2(msg);
   iter2 >> var2;
 
-  TEST_EQUALS_RET_FAIL( std::any_cast<int>(var2.value()), 99 );
+  TEST_EQUALS_RET_FAIL( var2.to_int32(), 99 );
 
   return true;
 }
@@ -712,6 +735,9 @@ int main(int argc, char** argv){
   std::string test_name = argv[1];
   bool ret = false;
 
+  DBus::setLoggingFunction( DBus::logStdErr );
+  DBus::setLogLevel( SL_DEBUG );
+
   ADD_TEST(bool);
   ADD_TEST(byte);
   ADD_TEST(int16);
@@ -731,6 +757,7 @@ int main(int argc, char** argv){
   ADD_TEST(multiple);
   ADD_TEST(struct);
   ADD_TEST(variant);
+  ADD_TEST(variant_vector);
   ADD_TEST(map_string_variant);
   ADD_TEST(map_string_string);
 

@@ -68,7 +68,7 @@ namespace DBus
   {
       DBus::Variant memberName = header_field( MessageHeaderFields::Path );
       if( memberName.currentType() == DataType::OBJECT_PATH ){
-          return std::any_cast<Path>( memberName.value() );
+          return memberName.to_path();
       }
     return std::string( "" );
   }
@@ -99,7 +99,7 @@ namespace DBus
   std::string SignalMessage::interface_name() const {
       DBus::Variant memberName = header_field( MessageHeaderFields::Interface );
       if( memberName.currentType() == DataType::STRING ){
-          return std::any_cast<std::string>( memberName.value() );
+          return memberName.to_string();
       }
     return std::string( "" );
     }
@@ -114,7 +114,7 @@ namespace DBus
   {
       DBus::Variant memberName = header_field( MessageHeaderFields::Member );
       if( memberName.currentType() == DataType::STRING ){
-          return std::any_cast<std::string>( memberName.value() );
+          return memberName.to_string();
       }
     return std::string( "" );
   }

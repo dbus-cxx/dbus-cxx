@@ -148,6 +148,7 @@ add_test( NAME call-int-custom-method COMMAND dbus-wrapper-data-tests.sh send_in
 add_test( NAME test-ping-method COMMAND dbus-wrapper-data-tests.sh ping)
 add_test( NAME test-machine-uuid-method COMMAND dbus-wrapper-data-tests.sh machine_uuid)
 add_test( NAME tuple-sending COMMAND dbus-wrapper-data-tests.sh tuple)
+add_test( NAME variant-array COMMAND dbus-wrapper-data-tests.sh variant_array)
 
 #
 # Signal tests - make sure we can tx and rx singals correctly

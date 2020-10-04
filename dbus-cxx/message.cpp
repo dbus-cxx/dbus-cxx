@@ -151,7 +151,7 @@ public:
   {
     Variant destination = header_field( MessageHeaderFields::Destination );
     if( destination.currentType() == DataType::STRING ){
-        return std::any_cast<std::string>( destination.value() );
+        return destination.to_string();
     }
     return "";
   }
@@ -160,7 +160,7 @@ public:
   {
       Variant sender = header_field( MessageHeaderFields::Sender );
       if( sender.currentType() == DataType::STRING ){
-          return std::any_cast<std::string>( sender.value() );
+          return sender.to_string();
       }
       return "";
   }
@@ -184,7 +184,7 @@ public:
   {
       Variant v = header_field( MessageHeaderFields::Signature );
       if( v.currentType() == DataType::SIGNATURE ){
-          return std::any_cast<Signature>( v.value() );
+          return v.to_signature();
       }
     return Signature();
   }
@@ -227,7 +227,7 @@ bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
     if( mustHaveSerial ){
         // Make sure that we have a header for our serial and it is not 0
         if( serialHeader.currentType() == DataType::UINT32 ){
-            uint32_t tmpSerial = std::any_cast<uint32_t>( serialHeader.value() );
+            uint32_t tmpSerial = serialHeader.to_uint32();
             if( tmpSerial == 0 ){
                 SIMPLELOGGER_ERROR( LOGGER_NAME, "Unable to serialize message: invalid return serial provided!" );
                 return false;
@@ -312,7 +312,7 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
         }
 
         if( key == MessageHeaderFields::Unix_FDs ){
-            int total_fds = std::any_cast<uint32_t>( value.value() );
+            int total_fds = value.to_uint32();
             for( int fd_num = 0; fd_num < total_fds; fd_num++ ){
                 real_fds.push_back( fds[ fd_num ] );
             }
@@ -370,7 +370,7 @@ void Message::append_signature(std::string toappend){
     std::string newval;
 
     if( val.currentType() != DataType::INVALID ){
-        Signature sig = std::any_cast<Signature>( val.value() );
+        Signature sig = val.to_signature();
         newval += sig.str();
     }
 
@@ -476,38 +476,37 @@ std::ostream& operator <<( std::ostream& os, const DBus::Message* msg ){
     os << "  Serial: " << msg->m_priv->m_serial << std::endl;
     os << "  Headers:" << std::endl;
     for( const std::pair<const MessageHeaderFields,DBus::Variant>& set : msg->m_priv->m_headerMap ){
-        std::any value = set.second.value();
         os << "    ";
         switch( set.first ){
         case MessageHeaderFields::Invalid:
             os << "!! Invalid message header has been stored !!";
             break;
         case MessageHeaderFields::Path:
-            os << "Path: " << std::any_cast<Path>( value );
+            os << "Path: " << set.second.to_path();
             break;
         case MessageHeaderFields::Interface:
-            os << "Interface: " << std::any_cast<std::string>( value );
+            os << "Interface: " << set.second.to_string();
             break;
         case MessageHeaderFields::Member:
-            os << "Member: " << std::any_cast<std::string>( value );
+            os << "Member: " << set.second.to_string();
             break;
         case MessageHeaderFields::Error_Name:
-            os << "Error Name: " << std::any_cast<std::string>( value );
+            os << "Error Name: " << set.second.to_string();
             break;
         case MessageHeaderFields::Reply_Serial:
-            os << "Reply Serial: " << std::any_cast<uint32_t>( value );
+            os << "Reply Serial: " << set.second.to_uint32();
             break;
         case MessageHeaderFields::Destination:
-            os << "Destination: " << std::any_cast<std::string>( value );
+            os << "Destination: " << set.second.to_string();
             break;
         case MessageHeaderFields::Sender:
-            os << "Sender: " << std::any_cast<std::string>( value );
+            os << "Sender: " << set.second.to_string();
             break;
         case MessageHeaderFields::Signature:
-            os << "Signature: " << std::any_cast<Signature>( value );
+            os << "Signature: " << set.second.to_signature();
             break;
         case MessageHeaderFields::Unix_FDs:
-            os << "# Unix FDs: " << std::any_cast<uint32_t>( value );
+            os << "# Unix FDs: " << set.second.to_uint32();
             break;
         }
         os << std::endl;
