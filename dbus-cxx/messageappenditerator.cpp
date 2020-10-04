@@ -293,11 +293,12 @@ public:
         return *this;
     }
 
-    this->open_container( ContainerType::VARIANT, v.signature()  );
-    (*m_priv->m_subiter) << v.signature();
-    m_priv->m_subiter->m_priv->m_marshaling.align( v.data_alignment() );
+    this->open_container( ContainerType::VARIANT, v.signature() );
+    DBus::Signature sig = v.signature();
+    m_priv->m_marshaling.marshal( sig );
+    m_priv->m_marshaling.align( v.data_alignment() );
     for( const uint8_t& data : *(v.marshaled()) ){
-        m_priv->m_subiter->m_priv->m_workingBuffer.push_back( data );
+        m_priv->m_marshaling.marshal( data );
     }
     this->close_container();
 
@@ -339,9 +340,11 @@ public:
     if ( m_priv->m_subiter ) this->close_container();
 
     if ( m_priv->m_message ){
-        m_priv->m_message->append_signature( signature );
-      m_priv->m_subiter = new MessageAppendIterator( *m_priv->m_message, t );
-      m_priv->m_subiter->m_priv->m_arrayAlignment = array_align;
+        if( m_priv->m_currentContainer == ContainerType::None ){
+            m_priv->m_message->append_signature( signature );
+        }
+          m_priv->m_subiter = new MessageAppendIterator( *m_priv->m_message, t );
+          m_priv->m_subiter->m_priv->m_arrayAlignment = array_align;
     } else
       m_priv->m_subiter = new MessageAppendIterator( t );
 
