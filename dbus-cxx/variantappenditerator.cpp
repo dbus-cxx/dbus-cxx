@@ -56,56 +56,82 @@ VariantAppendIterator::~VariantAppendIterator(){
     delete m_priv->m_subiter;
 }
 
-void VariantAppendIterator::operator<<( const bool& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const bool& v ){
     m_priv->m_marshaling.marshal( v );
+
+    return *this;
 }
 
-void VariantAppendIterator::operator<<( const uint8_t& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const uint8_t& v ){
     m_priv->m_marshaling.marshal( v );
+
+    return *this;
 }
 
-void VariantAppendIterator::operator<<( const int16_t& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const int16_t& v ){
     m_priv->m_marshaling.marshal( v );
+
+    return *this;
 }
 
-void VariantAppendIterator::operator<<( const uint16_t& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const uint16_t& v ){
     m_priv->m_marshaling.marshal( v );
+
+    return *this;
 }
 
-void VariantAppendIterator::operator<<( const int32_t& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const int32_t& v ){
     m_priv->m_marshaling.marshal( v );
+
+    return *this;
 }
 
-void VariantAppendIterator::operator<<( const uint32_t& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const uint32_t& v ){
     m_priv->m_marshaling.marshal( v );
+
+    return *this;
 }
 
-void VariantAppendIterator::operator<<( const int64_t& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const int64_t& v ){
     m_priv->m_marshaling.marshal( v );
+
+    return *this;
 }
 
-void VariantAppendIterator::operator<<( const uint64_t& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const uint64_t& v ){
     m_priv->m_marshaling.marshal( v );
+
+    return *this;
 }
 
-void VariantAppendIterator::operator<<( const double& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const double& v ){
     m_priv->m_marshaling.marshal( v );
+
+    return *this;
 }
 
-void VariantAppendIterator::operator<<( const char* v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const char* v ){
     m_priv->m_marshaling.marshal( v );
+
+    return *this;
 }
 
-void VariantAppendIterator::operator<<( const std::string& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const std::string& v ){
     m_priv->m_marshaling.marshal( v );
+
+    return *this;
 }
 
-void VariantAppendIterator::operator<<( const Signature& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const Signature& v ){
     m_priv->m_marshaling.marshal( v );
+
+    return *this;
 }
 
-void VariantAppendIterator::operator<<( const Path& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const Path& v ){
     m_priv->m_marshaling.marshal( v );
+
+    return *this;
 }
 
 bool VariantAppendIterator::open_container( ContainerType t, const std::string& sig ){

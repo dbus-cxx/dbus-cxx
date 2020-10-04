@@ -34,6 +34,7 @@
 #include <ostream>
 #include <vector>
 #include <map>
+#include <tuple>
 
 namespace DBus {
 
@@ -64,7 +65,7 @@ class Variant {
     explicit Variant( Path path );
 
     template<typename T>
-    Variant( std::vector<T> vec ) :
+    Variant( const std::vector<T>& vec ) :
         m_currentType( DataType::ARRAY ),
         m_signature( DBus::signature( vec ) ),
         m_dataAlignment( 4 ){
@@ -74,13 +75,22 @@ class Variant {
     }
 
     template<typename Key, typename Value>
-    Variant( std::map<Key,Value> map ) :
+    Variant( const std::map<Key,Value>& map ) :
         m_currentType( DataType::ARRAY ),
         m_signature( DBus::signature( map ) ),
         m_dataAlignment( 4 ){
         VariantAppendIterator it(this);
 
         it << map;
+    }
+
+    template<typename ...T>
+    Variant( const std::tuple<T...>& tup ) :
+        m_currentType( DataType::STRUCT ),
+        m_signature( DBus::signature( tup ) ),
+        m_dataAlignment( 8 ){
+        VariantAppendIterator it(this);
+        it << tup;
     }
 
     Variant( const Variant& other );
@@ -116,6 +126,16 @@ class Variant {
         return retval;
     }
 
+    template <typename ...T>
+    std::tuple<T...> to_tuple() {
+        std::tuple<T...> tup;
+        VariantIterator vi(this);
+
+        tup = vi;
+
+        return tup;
+    }
+
     bool        to_bool() const;
     uint8_t     to_uint8() const;
     uint16_t    to_uint16() const;
@@ -132,9 +152,9 @@ class Variant {
     static Variant createFromMessage( MessageIterator iter );
 
   private:
-    void createRecurse( MessageIterator iter, Marshaling* marshal );
     void recurseArray( MessageIterator iter, Marshaling* marshal );
     void recurseDictEntry( MessageIterator iter, Marshaling* marshal );
+    void recurseStruct( MessageIterator iter, Marshaling* marshal );
 
   private:
     DataType m_currentType;

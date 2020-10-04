@@ -73,7 +73,6 @@ public:
 
     template <typename T>
     operator std::vector<T>() {
-      //SignatureIterator si = get_signature().begin();
       if( !is_array() )
         throw ErrorInvalidTypecast( "VariantIterator: Extracting non array into std::vector" );
 
@@ -94,7 +93,7 @@ public:
   template <typename Key, typename Data>
   operator std::map<Key,Data>() {
     if ( !this->is_dict() )
-      throw ErrorInvalidTypecast( "MessageIterator: Extracting non dict into std::map" );
+      throw ErrorInvalidTypecast( "VariantIterator: Extracting non dict into std::map" );
 
     std::map<Key,Data> dict;
     Key val_key;
@@ -114,6 +113,19 @@ public:
    }
 
     return dict;
+  }
+
+  template <typename ...T>
+  operator std::tuple<T...>(){
+      std::tuple<T...> tup;
+
+      //VariantIterator subiter = this->recurse();
+      std::apply( [this](auto&& ...arg) mutable {
+             (*this >> ... >> arg);
+            },
+      tup );
+
+      return tup;
   }
 
   bool        get_bool();

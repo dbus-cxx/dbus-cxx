@@ -60,6 +60,7 @@ add_test( NAME messageiterator-struct COMMAND test-messageiterator struct)
 add_test( NAME messageiterator-variant COMMAND test-messageiterator variant)
 add_test( NAME messageiterator-variant-vector COMMAND test-messageiterator variant_vector)
 add_test( NAME messageiterator-variant-map COMMAND test-messageiterator variant_map)
+add_test( NAME messageiterator-variant-struct COMMAND test-messageiterator variant_struct)
 add_test( NAME messageiterator-map-string-variant COMMAND test-messageiterator map_string_variant)
 add_test( NAME messageiterator-map-string-variant-many COMMAND test-messageiterator map_string_variant_many)
 add_test( NAME messageiterator-map-string-string COMMAND test-messageiterator map_string_string)
@@ -155,6 +156,7 @@ add_test( NAME test-machine-uuid-method COMMAND dbus-wrapper-data-tests.sh machi
 add_test( NAME tuple-sending COMMAND dbus-wrapper-data-tests.sh tuple)
 add_test( NAME variant-array COMMAND dbus-wrapper-data-tests.sh variant_array)
 add_test( NAME variant-map COMMAND dbus-wrapper-data-tests.sh variant_map)
+add_test( NAME variant-tuple COMMAND dbus-wrapper-data-tests.sh variant_tuple)
 add_test( NAME nonexistant-method COMMAND dbus-wrapper-data-tests.sh nonexistant_method )
 
 #

@@ -32,9 +32,6 @@ class Variant;
 /**
  * Used to append a single, complete value to a Variant.
  *
- * Note that all `operator<<` intentionally return void, as a
- * Variant can only hold a single complete type and cannot be chained.
- *
  * This is essentially a variant-specific version of MessageAppendIterator
  */
 class VariantAppendIterator {
@@ -44,32 +41,34 @@ public:
     VariantAppendIterator( Variant* variant );
     ~VariantAppendIterator();
 
-    void operator<<( const bool& v );
-    void operator<<( const uint8_t& v );
-    void operator<<( const int16_t& v );
-    void operator<<( const uint16_t& v );
-    void operator<<( const int32_t& v );
-    void operator<<( const uint32_t& v );
-    void operator<<( const int64_t& v );
-    void operator<<( const uint64_t& v );
-    void operator<<( const double& v );
-    void operator<<( const char* v );
-    void operator<<( const std::string& v );
-    void operator<<( const Signature& v );
-    void operator<<( const Path& v );
+    VariantAppendIterator& operator<<( const bool& v );
+    VariantAppendIterator& operator<<( const uint8_t& v );
+    VariantAppendIterator& operator<<( const int16_t& v );
+    VariantAppendIterator& operator<<( const uint16_t& v );
+    VariantAppendIterator& operator<<( const int32_t& v );
+    VariantAppendIterator& operator<<( const uint32_t& v );
+    VariantAppendIterator& operator<<( const int64_t& v );
+    VariantAppendIterator& operator<<( const uint64_t& v );
+    VariantAppendIterator& operator<<( const double& v );
+    VariantAppendIterator& operator<<( const char* v );
+    VariantAppendIterator& operator<<( const std::string& v );
+    VariantAppendIterator& operator<<( const Signature& v );
+    VariantAppendIterator& operator<<( const Path& v );
 
     template <typename T>
-    void operator<<( const std::vector<T>& v){
+    VariantAppendIterator& operator<<( const std::vector<T>& v){
         open_container( ContainerType::ARRAY, DBus::signature( v ) );
         VariantAppendIterator* sub = sub_iterator();
         for( T t : v ){
             (*sub) << t;
         }
         close_container();
+
+        return *this;
     }
 
     template <typename Key, typename Data>
-    void operator<<( const std::map<Key,Data>& dictionary ){
+    VariantAppendIterator& operator<<( const std::map<Key,Data>& dictionary ){
         std::string sig = signature_dict_data( dictionary );
         typename std::map<Key,Data>::const_iterator it;
         this->open_container( ContainerType::ARRAY, sig );
@@ -80,11 +79,23 @@ public:
           sub_iterator()->close_container();
         }
         this->close_container();
+
+        return *this;
     }
 
     template <typename... T>
-    void operator<<( const std::tuple<T...>& tup){
+    VariantAppendIterator& operator<<( const std::tuple<T...>& tup){
+        bool success;
+        std::string signature = DBus::signature(tup);
+        success = this->open_container( ContainerType::STRUCT, signature.c_str() );
+        VariantAppendIterator* subiter = sub_iterator();
+        std::apply( [subiter](auto&& ...arg) mutable {
+               (*subiter << ... << arg);
+              },
+        tup );
+        this->close_container();
 
+        return *this;
     }
 
 private:

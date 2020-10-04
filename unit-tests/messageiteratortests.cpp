@@ -338,7 +338,6 @@ bool call_message_append_extract_iterator_variant_vector(){
     var2 = DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter2);
 
     std::vector<int> casted = var2.to_vector<int>();
-    std::cerr << "good size: " << good.size() << "\n";
     TEST_EQUALS_RET_FAIL(good.size(), casted.size());
     TEST_EQUALS_RET_FAIL(good[0], casted[0]);
 
@@ -363,6 +362,26 @@ bool call_message_append_extract_iterator_variant_map(){
     std::map<uint16_t,int> casted = var2.to_map<uint16_t,int>();
     TEST_EQUALS_RET_FAIL(good.size(), casted.size());
     TEST_EQUALS_RET_FAIL(good[0], casted[0]);
+
+    return true;
+}
+
+bool call_message_append_extract_iterator_variant_struct(){
+    std::tuple<int,std::string,uint16_t> good = { 5, "hi there", 66 };
+    DBus::Variant var1( good );
+    DBus::Variant var2;
+
+    std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+    DBus::MessageAppendIterator iter1(msg);
+    iter1 << var1;
+
+    DBus::MessageIterator iter2(msg);
+    var2 = DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter2);
+
+    std::tuple<int,std::string,uint16_t> casted = var2.to_tuple<int,std::string,uint16_t>();
+    TEST_EQUALS_RET_FAIL(std::get<0>(casted), std::get<0>(good));
+    TEST_EQUALS_RET_FAIL(std::get<1>(casted), std::get<1>(good));
+    TEST_EQUALS_RET_FAIL(std::get<2>(casted), std::get<2>(good));
 
     return true;
 }
@@ -854,6 +873,7 @@ int main(int argc, char** argv){
   ADD_TEST(variant);
   ADD_TEST(variant_vector);
   ADD_TEST(variant_map);
+  ADD_TEST(variant_struct);
   ADD_TEST(map_string_variant);
   ADD_TEST(map_string_variant_many);
   ADD_TEST(map_string_string);

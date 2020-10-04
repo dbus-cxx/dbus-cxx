@@ -188,6 +188,15 @@ bool data_variant_map(){
     return true;
 }
 
+bool data_variant_tuple(){
+    std::tuple<uint16_t,int> good = { 5, 0x0b12cd67 };
+    DBus::Variant send( good );
+
+    (*variant_proxy)( send );
+
+    return true;
+}
+
 bool data_nonexistant_method(){
     try{
         (*nonexistant_proxy)();
@@ -228,6 +237,7 @@ int main(int argc, char** argv){
     ADD_TEST(tuple);
     ADD_TEST(variant_array);
     ADD_TEST(variant_map);
+    ADD_TEST(variant_tuple);
     ADD_TEST(nonexistant_method);
   }else{
     server_setup();

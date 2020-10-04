@@ -218,6 +218,7 @@ DBus::Variant Variant::createFromMessage( MessageIterator iter ){
     case  DataType::VARIANT:
         break;
     case  DataType::STRUCT:
+        v.recurseStruct( iter.recurse(), &marshal );
         break;
     case  DataType::DICT_ENTRY:
     case  DataType::UNIX_FD:
@@ -277,6 +278,9 @@ void Variant::recurseArray(MessageIterator iter, Marshaling *marshal){
             break;
         case DataType::DICT_ENTRY:
             recurseDictEntry( iter.recurse(), &workingMarshal );
+            break;
+        case DataType::STRUCT:
+            recurseStruct( iter.recurse(), &workingMarshal );
             break;
         }
 
@@ -349,68 +353,64 @@ void Variant::recurseDictEntry( MessageIterator iter, Marshaling* marshal ){
     }
 }
 
+void Variant::recurseStruct( MessageIterator iter, Marshaling* marshal ){
+    marshal->align( 8 );
+    iter.align( 8 );
+    SignatureIterator sigit = iter.signature_iterator();
 
-//void Variant::createRecurse(MessageIterator iter, Marshaling* marshal ){
-//    SignatureIterator si = Signature( iter.signature() ).begin();
-//    DataType dt = si.type();
-//    TypeInfo ti( dt );
+    while( sigit.is_valid() ){
+        DataType dt = sigit.type();
+        TypeInfo ti( dt );
 
-//    switch( dt ){
-//    case DataType::BYTE:
-//        marshal->marshal( iter.get_uint8() );
-//        break;
-//    case  DataType::BOOLEAN:
-//        marshal.marshal( iter.get_bool() );
-//        break;
-//    case  DataType::INT16:
-//        marshal.marshal( iter.get_int16() );
-//        break;
-//    case  DataType::UINT16:
-//        marshal.marshal( iter.get_uint16() );
-//        break;
-//    case  DataType::INT32:
-//        marshal.marshal( iter.get_int32() );
-//        break;
-//    case  DataType::UINT32:
-//        marshal.marshal( iter.get_uint32() );
-//        break;
-//    case  DataType::INT64:
-//        marshal.marshal( iter.get_int64() );
-//        break;
-//    case  DataType::UINT64:
-//        marshal.marshal( iter.get_uint64() );
-//        break;
-//    case  DataType::DOUBLE:
-//        marshal.marshal( iter.get_double() );
-//        break;
-//    case  DataType::STRING:
-//        marshal.marshal( iter.get_string() );
-//        break;
-//    case  DataType::OBJECT_PATH:
-//        marshal.marshal( iter.get_string() );
-//        break;
-//    case  DataType::SIGNATURE:
-//        marshal.marshal( iter.get_signature() );
-//        break;
-//    case  DataType::ARRAY:
-//        v.createRecurse( iter.recurse(), &marshal );
-//        break;
-//    case  DataType::VARIANT:
-//        break;
-//    case  DataType::STRUCT:
-//        break;
-//    case  DataType::DICT_ENTRY:
-//        break;
-//    case  DataType::UNIX_FD:
-//    case  DataType::INVALID:
-//        break;
-//    }
-//    if( si.type() == DataType::ARRAY ){
-//        // marshal array size for temp purposes...
-//        marshal->marshal( static_cast<uint32_t>( 0 ) );
+        switch( dt ){
+        case DataType::BYTE:
+            marshal->marshal( iter.get_uint8() );
+            break;
+        case  DataType::BOOLEAN:
+            marshal->marshal( iter.get_bool() );
+            break;
+        case  DataType::INT16:
+            marshal->marshal( iter.get_int16() );
+            break;
+        case  DataType::UINT16:
+            marshal->marshal( iter.get_uint16() );
+            break;
+        case  DataType::INT32:
+            marshal->marshal( iter.get_int32() );
+            break;
+        case  DataType::UINT32:
+            marshal->marshal( iter.get_uint32() );
+            break;
+        case  DataType::INT64:
+            marshal->marshal( iter.get_int64() );
+            break;
+        case  DataType::UINT64:
+            marshal->marshal( iter.get_uint64() );
+            break;
+        case  DataType::DOUBLE:
+            marshal->marshal( iter.get_double() );
+            break;
+        case  DataType::STRING:
+            marshal->marshal( iter.get_string() );
+            break;
+        case  DataType::OBJECT_PATH:
+            marshal->marshal( iter.get_string() );
+            break;
+        case  DataType::SIGNATURE:
+            marshal->marshal( iter.get_signature() );
+            break;
+        case DataType::ARRAY:
+            recurseArray( iter.recurse(), marshal );
+            break;
+        case DataType::DICT_ENTRY:
+            recurseDictEntry( iter.recurse(), marshal );
+            break;
+        }
 
-//    }
-//}
+        sigit++;
+        iter++;
+    }
+}
 
 const std::vector<uint8_t>* Variant::marshaled() const {
     return &m_marshaled;
