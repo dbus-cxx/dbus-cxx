@@ -321,6 +321,9 @@ void Demarshaling::is_valid( uint32_t bytesWanted ) {
 }
 
 void Demarshaling::align( int alignment ) {
+    if( alignment == 0 ){
+        return;
+    }
     int bytesToAlign = alignment - ( m_priv->m_dataPos % alignment );
 
     if( bytesToAlign == alignment ) {
