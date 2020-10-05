@@ -30,6 +30,8 @@ namespace DBus {
 class Variant;
 class Demarshaling;
 
+namespace priv {
+
 class VariantIterator {
 private:
     /**
@@ -195,6 +197,8 @@ private:
 
     std::shared_ptr<priv_data> m_priv;
 };
+
+} /* namespace priv */
 
 } /* namespace DBus */
 

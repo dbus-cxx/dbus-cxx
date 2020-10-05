@@ -489,7 +489,7 @@ bool Variant::to_bool() const {
         throw ErrorBadVariantCast();
     }
 
-    VariantIterator vi( this );
+    priv::VariantIterator vi( this );
     return vi.get_bool();
 }
 
@@ -498,7 +498,7 @@ uint8_t Variant::to_uint8() const {
         throw ErrorBadVariantCast();
     }
 
-    VariantIterator vi( this );
+    priv::VariantIterator vi( this );
     return vi.get_uint8();
 }
 
@@ -507,7 +507,7 @@ uint16_t Variant::to_uint16() const {
         throw ErrorBadVariantCast();
     }
 
-    VariantIterator vi( this );
+    priv::VariantIterator vi( this );
     return vi.get_uint16();
 }
 
@@ -516,7 +516,7 @@ int16_t Variant::to_int16() const {
         throw ErrorBadVariantCast();
     }
 
-    VariantIterator vi( this );
+    priv::VariantIterator vi( this );
     return vi.get_int16();
 }
 
@@ -525,7 +525,7 @@ uint32_t Variant::to_uint32() const {
         throw ErrorBadVariantCast();
     }
 
-    VariantIterator vi( this );
+    priv::VariantIterator vi( this );
     return vi.get_uint32();
 }
 
@@ -534,7 +534,7 @@ int32_t Variant::to_int32() const {
         throw ErrorBadVariantCast();
     }
 
-    VariantIterator vi( this );
+    priv::VariantIterator vi( this );
     return vi.get_int32();
 }
 
@@ -543,7 +543,7 @@ uint64_t Variant::to_uint64() const {
         throw ErrorBadVariantCast();
     }
 
-    VariantIterator vi( this );
+    priv::VariantIterator vi( this );
     return vi.get_uint64();
 }
 
@@ -552,7 +552,7 @@ int64_t Variant::to_int64() const {
         throw ErrorBadVariantCast();
     }
 
-    VariantIterator vi( this );
+    priv::VariantIterator vi( this );
     return vi.get_int64();
 }
 
@@ -561,7 +561,7 @@ double Variant::to_double() const {
         throw ErrorBadVariantCast();
     }
 
-    VariantIterator vi( this );
+    priv::VariantIterator vi( this );
     return vi.get_double();
 }
 
@@ -570,7 +570,7 @@ std::string Variant::to_string() const {
         throw ErrorBadVariantCast();
     }
 
-    VariantIterator vi( this );
+    priv::VariantIterator vi( this );
     return vi.get_string();
 }
 
@@ -579,7 +579,7 @@ DBus::Path Variant::to_path() const {
         throw ErrorBadVariantCast();
     }
 
-    VariantIterator vi( this );
+    priv::VariantIterator vi( this );
     return vi.get_string();
 }
 
@@ -588,7 +588,7 @@ DBus::Signature Variant::to_signature() const {
         throw ErrorBadVariantCast();
     }
 
-    VariantIterator vi( this );
+    priv::VariantIterator vi( this );
     return vi.get_signature();
 }
 

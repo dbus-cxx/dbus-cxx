@@ -23,7 +23,7 @@
 #include <dbus-cxx/marshaling.h>
 #include <dbus-cxx/validator.h>
 
-using DBus::VariantAppendIterator;
+using DBus::priv::VariantAppendIterator;
 
 class VariantAppendIterator::priv_data {
 public:

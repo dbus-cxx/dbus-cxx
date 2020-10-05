@@ -29,6 +29,8 @@ namespace DBus {
 
 class Variant;
 
+namespace priv {
+
 /**
  * Used to append a single, complete value to a Variant.
  *
@@ -114,6 +116,8 @@ private:
 
     std::shared_ptr<priv_data> m_priv;
 };
+
+} /* namespace priv */
 
 } /* namespace DBus */
 

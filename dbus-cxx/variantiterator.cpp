@@ -22,7 +22,7 @@
 
 static const char* LOGGER_NAME = "DBus.VariantIterator";
 
-using DBus::VariantIterator;
+using DBus::priv::VariantIterator;
 
 class VariantIterator::priv_data {
 public:

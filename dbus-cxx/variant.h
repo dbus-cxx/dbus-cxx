@@ -69,7 +69,7 @@ public:
         m_currentType( DataType::ARRAY ),
         m_signature( DBus::signature( vec ) ),
         m_dataAlignment( 4 ) {
-        VariantAppendIterator it( this );
+        priv::VariantAppendIterator it( this );
 
         it << vec;
     }
@@ -79,7 +79,7 @@ public:
         m_currentType( DataType::ARRAY ),
         m_signature( DBus::signature( map ) ),
         m_dataAlignment( 4 ) {
-        VariantAppendIterator it( this );
+        priv::VariantAppendIterator it( this );
 
         it << map;
     }
@@ -89,7 +89,7 @@ public:
         m_currentType( DataType::STRUCT ),
         m_signature( DBus::signature( tup ) ),
         m_dataAlignment( 8 ) {
-        VariantAppendIterator it( this );
+        priv::VariantAppendIterator it( this );
         it << tup;
     }
 
@@ -110,7 +110,7 @@ public:
 
     template <typename T>
     std::vector<T> to_vector() {
-        VariantIterator vi( this );
+        priv::VariantIterator vi( this );
 
         std::vector<T> retval = vi;
 
@@ -119,7 +119,7 @@ public:
 
     template <typename Key, typename Value>
     std::map<Key, Value> to_map() {
-        VariantIterator vi( this );
+        priv::VariantIterator vi( this );
 
         std::map<Key, Value> retval = vi;
 
@@ -129,7 +129,7 @@ public:
     template <typename ...T>
     std::tuple<T...> to_tuple() {
         std::tuple<T...> tup;
-        VariantIterator vi( this );
+        priv::VariantIterator vi( this );
 
         tup = vi;
 
@@ -163,8 +163,8 @@ private:
     int m_dataAlignment;
 
     friend std::ostream& operator<<( std::ostream& os, const Variant& var );
-    friend class VariantAppendIterator;
-    friend class VariantIterator;
+    friend class priv::VariantAppendIterator;
+    friend class priv::VariantIterator;
 };
 
 } /* namespace DBus */
