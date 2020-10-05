@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include "transport.h"
 
-namespace DBus{
+namespace DBus {
 
 class Message;
 
@@ -69,7 +69,7 @@ public:
 private:
     class priv_data;
 
-    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
+    DBUS_CXX_PROPAGATE_CONST( std::unique_ptr<priv_data> ) m_priv;
 };
 
 } /* namespace priv */

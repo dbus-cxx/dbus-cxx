@@ -41,7 +41,7 @@ using DBus::priv::Transport;
 class ParsedTransport {
 public:
     std::string m_transportName;
-    std::map<std::string,std::string> m_config;
+    std::map<std::string, std::string> m_config;
 };
 
 enum class ParsingState {
@@ -50,34 +50,36 @@ enum class ParsingState {
     Parsing_Value
 };
 
-static std::vector<ParsedTransport> parseTransports( std::string address_str ){
+static std::vector<ParsedTransport> parseTransports( std::string address_str ) {
     std::string tmpTransportName;
     std::string tmpKey;
     std::string tmpValue;
-    std::map<std::string,std::string> tmpConfig;
+    std::map<std::string, std::string> tmpConfig;
     ParsedTransport tmpTransport;
     std::vector<ParsedTransport> retval;
     ParsingState state = ParsingState::Parsing_Transport_Name;
 
-    for( const char& c : address_str ){
-        if( state == ParsingState::Parsing_Transport_Name ){
-            if( c == ':' ){
+    for( const char& c : address_str ) {
+        if( state == ParsingState::Parsing_Transport_Name ) {
+            if( c == ':' ) {
                 state = ParsingState::Parsing_Key;
                 continue;
             }
+
             tmpTransportName += c;
         }
 
-        if( state == ParsingState::Parsing_Key ){
-            if( c == '=' ){
+        if( state == ParsingState::Parsing_Key ) {
+            if( c == '=' ) {
                 state = ParsingState::Parsing_Value;
                 continue;
             }
+
             tmpKey += c;
         }
 
-        if( state == ParsingState::Parsing_Value ){
-            if( c == ',' ){
+        if( state == ParsingState::Parsing_Value ) {
+            if( c == ',' ) {
                 state = ParsingState::Parsing_Key;
                 tmpConfig[ tmpKey ] = tmpValue;
                 tmpKey = "";
@@ -85,7 +87,7 @@ static std::vector<ParsedTransport> parseTransports( std::string address_str ){
                 continue;
             }
 
-            if( c == ';' ){
+            if( c == ';' ) {
                 state = ParsingState::Parsing_Transport_Name;
                 tmpConfig[ tmpKey ] = tmpValue;
 
@@ -108,7 +110,7 @@ static std::vector<ParsedTransport> parseTransports( std::string address_str ){
 
     tmpConfig[ tmpKey ] = tmpValue;
 
-    if( !tmpTransportName.empty() ){
+    if( !tmpTransportName.empty() ) {
         tmpTransport.m_transportName = tmpTransportName;
         tmpTransport.m_config = tmpConfig;
 
@@ -118,7 +120,7 @@ static std::vector<ParsedTransport> parseTransports( std::string address_str ){
     return retval;
 }
 
-static int open_unix_socket( std::string socketAddress, bool is_abstract ){
+static int open_unix_socket( std::string socketAddress, bool is_abstract ) {
     struct sockaddr_un addr;
     int fd;
     int stat;
@@ -127,86 +129,97 @@ static int open_unix_socket( std::string socketAddress, bool is_abstract ){
 
     memset( &addr, 0, sizeof( struct sockaddr_un ) );
     fd = ::socket( AF_UNIX, SOCK_STREAM, 0 );
-    if( fd < 0 ){
+
+    if( fd < 0 ) {
         std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG(LOGGER_NAME, "Unable to create socket: " + errmsg );
+        SIMPLELOGGER_DEBUG( LOGGER_NAME, "Unable to create socket: " + errmsg );
         return fd;
     }
 
     addr.sun_family = AF_UNIX;
-    if( is_abstract ){
+
+    if( is_abstract ) {
         memcpy( &addr.sun_path[ 1 ], socketAddress.c_str(), socketAddress.size() );
         data_len = offsetof( struct sockaddr_un, sun_path ) + socketAddress.size() + 1;
-    }else{
+    } else {
         memcpy( addr.sun_path, socketAddress.c_str(), socketAddress.size() );
         data_len = sizeof( addr );
     }
 
-    stat = ::connect( fd, (struct sockaddr*)&addr, data_len );
-    if( stat < 0 ){
+    stat = ::connect( fd, ( struct sockaddr* )&addr, data_len );
+
+    if( stat < 0 ) {
         int my_errno = errno;
         std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG(LOGGER_NAME, "Unable to connect: " + errmsg );
+        SIMPLELOGGER_DEBUG( LOGGER_NAME, "Unable to connect: " + errmsg );
         errno = my_errno;
         return stat;
     }
 
-    SIMPLELOGGER_DEBUG(LOGGER_NAME, "Opened dbus connection to " + socketAddress );
+    SIMPLELOGGER_DEBUG( LOGGER_NAME, "Opened dbus connection to " + socketAddress );
 
     stat = ::setsockopt( fd, SOL_SOCKET, SO_PASSCRED, &passcred, sizeof( int ) );
-    if( stat < 0 ){
+
+    if( stat < 0 ) {
         int my_errno = errno;
         std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG(LOGGER_NAME, "Unable to set passcred: " + errmsg );
+        SIMPLELOGGER_DEBUG( LOGGER_NAME, "Unable to set passcred: " + errmsg );
         errno = my_errno;
         return stat;
     }
 
     // Turn the FD into non-blocking
     {
-        int flags = fcntl(fd, F_GETFL, 0);
-        if( fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0 ){
-            SIMPLELOGGER_ERROR(LOGGER_NAME, "Unable to set non-blocking" );
+        int flags = fcntl( fd, F_GETFL, 0 );
+
+        if( fcntl( fd, F_SETFL, flags | O_NONBLOCK ) < 0 ) {
+            SIMPLELOGGER_ERROR( LOGGER_NAME, "Unable to set non-blocking" );
         }
     }
 
     return fd;
 }
 
-Transport::~Transport(){}
+Transport::~Transport() {}
 
-std::shared_ptr<Transport> Transport::open_transport( std::string address ){
+std::shared_ptr<Transport> Transport::open_transport( std::string address ) {
     std::vector<ParsedTransport> transports = parseTransports( address );
     std::shared_ptr<Transport> retTransport;
     bool negotiateFD = false;
 
-    for( ParsedTransport param : transports ){
-        if( param.m_transportName == "unix" ){
+    for( ParsedTransport param : transports ) {
+        if( param.m_transportName == "unix" ) {
             std::string path = param.m_config[ "path" ];
             std::string abstractPath = param.m_config[ "abstract" ];
             int fd;
 
-            if( !path.empty() ){
+            if( !path.empty() ) {
                 fd = open_unix_socket( path, false );
-                if( fd >= 0 ){
+
+                if( fd >= 0 ) {
                     retTransport = SendmsgTransport::create( fd, true );
-                    if( !retTransport->is_valid() ){
+
+                    if( !retTransport->is_valid() ) {
                         retTransport.reset();
                         continue;
                     }
+
                     negotiateFD = true;
                     break;
                 }
             }
 
-            if( !abstractPath.empty() ){
+            if( !abstractPath.empty() ) {
                 fd = open_unix_socket( abstractPath, true );
-                if( fd >= 0 ){
+
+                if( fd >= 0 ) {
                     retTransport = SendmsgTransport::create( fd, true );
-                    if( !retTransport->is_valid() ){
+
+                    if( !retTransport->is_valid() ) {
                         retTransport.reset();
                         continue;
                     }
+
                     negotiateFD = true;
                     break;
                 }
@@ -214,15 +227,15 @@ std::shared_ptr<Transport> Transport::open_transport( std::string address ){
         }
     }
 
-    if( retTransport ){
+    if( retTransport ) {
         priv::SASL saslAuth( retTransport->fd(), negotiateFD );
-        std::tuple<bool,bool,std::vector<uint8_t>> resp =
+        std::tuple<bool, bool, std::vector<uint8_t>> resp =
                 saslAuth.authenticate();
 
         retTransport->m_serverAddress = std::get<2>( resp );
 
-        if( std::get<0>( resp ) == false ){
-            SIMPLELOGGER_DEBUG(LOGGER_NAME, "Did not authenticate with server" );
+        if( std::get<0>( resp ) == false ) {
+            SIMPLELOGGER_DEBUG( LOGGER_NAME, "Did not authenticate with server" );
             retTransport.reset();
         }
     }

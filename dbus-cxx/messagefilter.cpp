@@ -18,16 +18,13 @@
  ***************************************************************************/
 #include "messagefilter.h"
 
-namespace DBus
-{
+namespace DBus {
 
-  MessageFilter::MessageFilter()
-  {
-  }
+MessageFilter::MessageFilter() {
+}
 
-  MessageFilter::~MessageFilter()
-  {
-  }
+MessageFilter::~MessageFilter() {
+}
 
 //   HandlerResult MessageFilter::handle_message(Connection::pointer conn, Message::const_pointer msg)
 //   {

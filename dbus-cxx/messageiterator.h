@@ -35,364 +35,367 @@
 #define DBUSCXX_MESSAGEITERATOR_H
 
 #if defined(__GNUC__) && (__GNUC__ <= 8)
-/*
- * There seems to be a bug with G++ on versions <= 8 where the operator Variant()
- * is trying to call the constructor instead of actually calling the operator on
- * the iterator.  This macro works around this bug
- */
-#define DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter) iter.operator DBus::Variant()
-#define DBUSCXX_MESSAGEITERATOR_OPERATOR_SIGNATURE(iter) iter.operator DBus::Signature()
+    /*
+    * There seems to be a bug with G++ on versions <= 8 where the operator Variant()
+    * is trying to call the constructor instead of actually calling the operator on
+    * the iterator.  This macro works around this bug
+    */
+    #define DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter) iter.operator DBus::Variant()
+    #define DBUSCXX_MESSAGEITERATOR_OPERATOR_SIGNATURE(iter) iter.operator DBus::Signature()
 #else
-#define DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(x) (DBus::Variant)iter
-#define DBUSCXX_MESSAGEITERATOR_OPERATOR_SIGNATURE(x) (DBus::Signature)iter
+    #define DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(x) (DBus::Variant)iter
+    #define DBUSCXX_MESSAGEITERATOR_OPERATOR_SIGNATURE(x) (DBus::Signature)iter
 #endif
 
-namespace DBus
-{
+namespace DBus {
 
-  class FileDescriptor;
-  class Message;
+class FileDescriptor;
+class Message;
 
-  /**
-   * Extraction iterator allowing values to be retrieved from a message
-   * 
-   * @ingroup message
-   *
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  class MessageIterator
-  {
+/**
+ * Extraction iterator allowing values to be retrieved from a message
+ *
+ * @ingroup message
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+class MessageIterator {
 
-    private:
-      /**
-       * Create a new sub-iterator
-       *
-       * @param d The data type we are iterating over
-       * @param sig The signature within the data type
-       * @param message Our parent message
-       * @param demarshal The demarshaller
-       */
-      MessageIterator( DataType d,
-                       SignatureIterator sig,
-                       const Message* message,
-                       std::shared_ptr<Demarshaling> demarshal );
+private:
+    /**
+     * Create a new sub-iterator
+     *
+     * @param d The data type we are iterating over
+     * @param sig The signature within the data type
+     * @param message Our parent message
+     * @param demarshal The demarshaller
+     */
+    MessageIterator( DataType d,
+        SignatureIterator sig,
+        const Message* message,
+        std::shared_ptr<Demarshaling> demarshal );
 
-    public:
+public:
 
-      MessageIterator();
+    MessageIterator();
 
-      MessageIterator( const Message& message );
-      
-      MessageIterator( std::shared_ptr<Message> message );
+    MessageIterator( const Message& message );
 
-      /**
-       * Returns a pointer to the message associated with this iterator or NULL
-       * if no message is associated.
-       */
-      const Message* message() const;
+    MessageIterator( std::shared_ptr<Message> message );
 
-      /** Invalidates the iterator */
-      void invalidate();
+    /**
+     * Returns a pointer to the message associated with this iterator or NULL
+     * if no message is associated.
+     */
+    const Message* message() const;
 
-      /** True if this is a valid iterator */
-      bool is_valid() const;
+    /** Invalidates the iterator */
+    void invalidate();
 
-      /** True if there are any more fields left to iterate over */
-      bool has_next() const;
+    /** True if this is a valid iterator */
+    bool is_valid() const;
 
-      /**
-       * Moves the iterator to the next field and invalidates it if it moves beyond the last field.
-       * It is an error to call this function more than once in a row without a corresponding call
-       * to get_XXX/operator XXX.
-       *
-       * @return true if the iterator moves forward, false if there is no next field and the iterator
-       *         has been invalidated
-       */
-      bool next();
+    /** True if there are any more fields left to iterate over */
+    bool has_next() const;
 
-      MessageIterator& operator ++();
+    /**
+     * Moves the iterator to the next field and invalidates it if it moves beyond the last field.
+     * It is an error to call this function more than once in a row without a corresponding call
+     * to get_XXX/operator XXX.
+     *
+     * @return true if the iterator moves forward, false if there is no next field and the iterator
+     *         has been invalidated
+     */
+    bool next();
 
-      MessageIterator operator ++( int );
+    MessageIterator& operator ++();
 
-      bool operator==( const MessageIterator& other );
+    MessageIterator operator ++( int );
 
-      /** Returns the argument type that the iterator points to */
-      DataType arg_type() const;
+    bool operator==( const MessageIterator& other );
 
-      /**
-       * Returns the element type of the array that the iterator points to
-       *
-       * If the iterator does not point to an array TYPE_INVALID is returned.
-       */
-      DataType element_type() const;
+    /** Returns the argument type that the iterator points to */
+    DataType arg_type() const;
 
-      /** True if the element type is a fixed type */
-      bool is_fixed() const;
+    /**
+     * Returns the element type of the array that the iterator points to
+     *
+     * If the iterator does not point to an array TYPE_INVALID is returned.
+     */
+    DataType element_type() const;
 
-      /** True if the iterator points to a container */
-      bool is_container() const;
+    /** True if the element type is a fixed type */
+    bool is_fixed() const;
 
-      /** True if the iterator points to an array */
-      bool is_array() const;
+    /** True if the iterator points to a container */
+    bool is_container() const;
 
-      /** True if the iterator points to a dictionary */
-      bool is_dict() const;
+    /** True if the iterator points to an array */
+    bool is_array() const;
 
-      /**
-       * If the iterator points to a container recurses into the container returning a sub-iterator.
-       *
-       * If the iterator does not point to a container returns an empty (invalid) iterator.
-       */
-      MessageIterator recurse();
+    /** True if the iterator points to a dictionary */
+    bool is_dict() const;
 
-      /** Returns the current signature of the iterator */
-      std::string signature() const;
+    /**
+     * If the iterator points to a container recurses into the container returning a sub-iterator.
+     *
+     * If the iterator does not point to a container returns an empty (invalid) iterator.
+     */
+    MessageIterator recurse();
 
-      /**
-       * TODO
-       *
-       * Add support for:
-       * - dbus_message_iter_get_fixed_array
-       * - dbus_message_iter_get_array_len
-       */
+    /** Returns the current signature of the iterator */
+    std::string signature() const;
 
-      operator bool();
-      operator uint8_t();
-      operator uint16_t();
-      operator int16_t();
-      operator uint32_t();
-      operator int32_t();
-      operator uint64_t();
-      operator int64_t();
-      operator double();
-      operator std::string();
-      operator std::shared_ptr<FileDescriptor>();
-      operator Variant();
-        
-      template <typename T>
-      operator std::vector<T>() {
-        if ( !this->is_array() )
-          throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
+    /**
+     * TODO
+     *
+     * Add support for:
+     * - dbus_message_iter_get_fixed_array
+     * - dbus_message_iter_get_array_len
+     */
+
+    operator bool();
+    operator uint8_t();
+    operator uint16_t();
+    operator int16_t();
+    operator uint32_t();
+    operator int32_t();
+    operator uint64_t();
+    operator int64_t();
+    operator double();
+    operator std::string();
+    operator std::shared_ptr<FileDescriptor>();
+    operator Variant();
+
+    template <typename T>
+    operator std::vector<T>() {
+        if( !this->is_array() ) {
+            throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
+        }
 
         return get_array<T>();
-      }
+    }
 
-      template <typename Key, typename Data>
-      operator std::map<Key,Data>() {
-        if ( !this->is_dict() )
-          throw ErrorInvalidTypecast( "MessageIterator: Extracting non dict into std::map" );
+    template <typename Key, typename Data>
+    operator std::map<Key, Data>() {
+        if( !this->is_dict() ) {
+            throw ErrorInvalidTypecast( "MessageIterator: Extracting non dict into std::map" );
+        }
 
-        return get_dict<Key,Data>();
-      }
+        return get_dict<Key, Data>();
+    }
 
-      template <typename... T>
-      operator std::tuple<T...>() {
+    template <typename... T>
+    operator std::tuple<T...>() {
         std::tuple<T...> tup;
-        get_struct<T...>(tup);
+        get_struct<T...>( tup );
         return tup;
-      }
+    }
 
 
-      bool        get_bool();
-      uint8_t     get_uint8();
-      uint16_t    get_uint16();
-      int16_t     get_int16();
-      uint32_t    get_uint32();
-      int32_t     get_int32();
-      uint64_t    get_uint64();
-      int64_t     get_int64();
-      double      get_double();
-      std::string get_string();
-      std::shared_ptr<FileDescriptor> get_filedescriptor();
-      Variant get_variant();
-      Signature get_signature();
+    bool        get_bool();
+    uint8_t     get_uint8();
+    uint16_t    get_uint16();
+    int16_t     get_int16();
+    uint32_t    get_uint32();
+    int32_t     get_int32();
+    uint64_t    get_uint64();
+    int64_t     get_int64();
+    double      get_double();
+    std::string get_string();
+    std::shared_ptr<FileDescriptor> get_filedescriptor();
+    Variant get_variant();
+    Signature get_signature();
 
-      /**
-       * Align our memory to the specified location.  This skips bytes.
-       * This is for internal use only; don't call it in client code!
-       *
-       * @param alignment
-       */
-      void align( int alignment );
+    /**
+     * Align our memory to the specified location.  This skips bytes.
+     * This is for internal use only; don't call it in client code!
+     *
+     * @param alignment
+     */
+    void align( int alignment );
 
-      /**
-       * get_array for simple types - arithmetic types where the array is fixed and thus
-       * we can use dbus_message_iter_get_fixed_array.
-       */
-//      template <typename T,
-//          typename std::enable_if<std::is_arithmetic<T>::value>::type>
-//      void get_array( std::vector<T>& array ) {
-//        if ( not this->is_fixed() ) /* This should never happen */
-//          throw ErrorInvalidTypecast( "MessageIterator: Extracting non fixed array into std::vector" );
-        
-//        T type;
-//        if ( this->element_type() != DBus::type( type ) ) {
-//          TypeInfo t( DBus::type( type ) );
-//          std::string s = "MessageIterator: Extracting DBus array type ";
-//          s += t.cppType();
-//          s += " into C++ vector with type ";
-//          s += demangle<T>();
-//	  throw ErrorInvalidTypecast( s.c_str() );
-//        }
-        
-//        int elements;
-//        T* values;
-        
-//        MessageIterator subiter = this->recurse();
+    /**
+     * get_array for simple types - arithmetic types where the array is fixed and thus
+     * we can use dbus_message_iter_get_fixed_array.
+     */
+    //      template <typename T,
+    //          typename std::enable_if<std::is_arithmetic<T>::value>::type>
+    //      void get_array( std::vector<T>& array ) {
+    //        if ( not this->is_fixed() ) /* This should never happen */
+    //          throw ErrorInvalidTypecast( "MessageIterator: Extracting non fixed array into std::vector" );
 
-//        array.clear();
-        
-//        // Get the underlying array
-//        //dbus_message_iter_get_fixed_array( subiter.cobj(), &values, &elements );
-        
-//        // Iteratively add the elements to the array
-//        for ( int i=0; i < elements; i++ )
-//          array.push_back( values[i] );
-//      }
-      
-      /**
-       * Get values in an array, pushing them back one at a time
-       */
-      template <typename T>
-      void get_array(std::vector<T> &array) {
-        if ( !this->is_array() ) /* Should never happen */
-          throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
+    //        T type;
+    //        if ( this->element_type() != DBus::type( type ) ) {
+    //          TypeInfo t( DBus::type( type ) );
+    //          std::string s = "MessageIterator: Extracting DBus array type ";
+    //          s += t.cppType();
+    //          s += " into C++ vector with type ";
+    //          s += demangle<T>();
+    //    throw ErrorInvalidTypecast( s.c_str() );
+    //        }
+
+    //        int elements;
+    //        T* values;
+
+    //        MessageIterator subiter = this->recurse();
+
+    //        array.clear();
+
+    //        // Get the underlying array
+    //        //dbus_message_iter_get_fixed_array( subiter.cobj(), &values, &elements );
+
+    //        // Iteratively add the elements to the array
+    //        for ( int i=0; i < elements; i++ )
+    //          array.push_back( values[i] );
+    //      }
+
+    /**
+     * Get values in an array, pushing them back one at a time
+     */
+    template <typename T>
+    void get_array( std::vector<T>& array ) {
+        if( !this->is_array() ) { /* Should never happen */
+            throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
+        }
 
         array.clear();
 
         MessageIterator subiter = this->recurse();
-        while( subiter.is_valid() )
-        {
-          //NOTE: we don't need to do subiter.next() here, because
-          //operator>> does that for us
-          T val;
-          subiter >> val;
-          array.push_back( val );
+
+        while( subiter.is_valid() ) {
+            //NOTE: we don't need to do subiter.next() here, because
+            //operator>> does that for us
+            T val;
+            subiter >> val;
+            array.push_back( val );
         }
-     }
+    }
 
-      template <typename... T>
-      void get_struct(std::tuple<T...> &tup) {
+    template <typename... T>
+    void get_struct( std::tuple<T...>& tup ) {
         MessageIterator subiter = this->recurse();
-        std::apply( [subiter](auto&& ...arg) mutable {
-               (subiter >> ... >> arg);
-              },
+        std::apply( [subiter]( auto&& ...arg ) mutable {
+            ( subiter >> ... >> arg );
+        },
         tup );
-     }
+    }
 
-     template <typename Key, typename Data>
-     void get_dict( std::map<Key,Data>& dict ){
-	Key val_key;
+    template <typename Key, typename Data>
+    void get_dict( std::map<Key, Data>& dict ) {
+        Key val_key;
         Data val_data;
 
         MessageIterator subiter = this->recurse();
+
         while( subiter.is_valid() ) {
-          MessageIterator subSubiter = subiter.recurse();
-          while( subSubiter.is_valid() )
-          {
-            subSubiter >> val_key;
-            subSubiter >> val_data;
-            dict[ val_key ] = val_data;
-            subSubiter.next();
-          }
-         subiter.next();
-       }
-     }
+            MessageIterator subSubiter = subiter.recurse();
 
-     template <typename Key, typename Data>
-     std::map<Key,Data> get_dict(){
-       std::map<Key,Data> newMap;
-       get_dict( newMap );
-       return newMap;
-     }
+            while( subSubiter.is_valid() ) {
+                subSubiter >> val_key;
+                subSubiter >> val_data;
+                dict[ val_key ] = val_data;
+                subSubiter.next();
+            }
 
-      template <typename Key, typename Data>
-      MessageIterator& operator>>( std::map<Key,Data>& m )
-      {
-        if ( !this->is_dict() )
-          throw ErrorInvalidTypecast( "MessageIterator: Extracting non dict into std::map" );
-        try{
-          get_dict<Key,Data>( m );
-          this->next();
-          return *this;
-	}catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
-          //TODO make sure we don't need this? it doesn't make much sense
-	  throw (ErrorInvalidTypecast)*e;
-	}
-      }
-       
-      template <typename... T>
-      MessageIterator& operator>>( std::tuple<T...>& v )
-      {
-	try{
-          this->get_struct<T...>(v);
-          this->next();
-          return *this;
-	}catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
-	  throw (ErrorInvalidTypecast)*e;
-	}
-      }
-
-      template <typename T>
-      MessageIterator& operator>>( std::vector<T>& v )
-      {
-        if ( !this->is_array() )
-          throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
-	try{
-          this->get_array<T>(v);
-          this->next();
-          return *this;
-	}catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
-	  throw (ErrorInvalidTypecast)*e;
-	}
-      }
-
-      MessageIterator& operator>>( Variant& v )
-      {
-	try{
-          v = this->get_variant();
-          this->next();
-          return *this;
-        }catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
-          throw (ErrorInvalidTypecast)*e;
+            subiter.next();
         }
-      }
+    }
 
-      template <typename T>
-      MessageIterator& operator>>( T& v )
-      {
-	try{
-          v = (T)(*this);
-          this->next();
-          return *this;
-        }catch(std::shared_ptr<DBus::ErrorInvalidTypecast> e){
-          throw (ErrorInvalidTypecast)*e;
-        }
-      }
+    template <typename Key, typename Data>
+    std::map<Key, Data> get_dict() {
+        std::map<Key, Data> newMap;
+        get_dict( newMap );
+        return newMap;
+    }
 
-      template <typename T>
-      void value( T& temp ) {
-        if ( this->arg_type() != DBus::type( temp ) ) {
-          TypeInfo t( DBus::type( temp ) );
-          std::string s = "MessageIterator: Extracting DBus type ";
-          s += t.cppType();
-          s += " into C++ type ";
-          s += demangle<T>();
-          throw ErrorInvalidTypecast( s.c_str() );
+    template <typename Key, typename Data>
+    MessageIterator& operator>>( std::map<Key, Data>& m ) {
+        if( !this->is_dict() ) {
+            throw ErrorInvalidTypecast( "MessageIterator: Extracting non dict into std::map" );
         }
+
+        try {
+            get_dict<Key, Data>( m );
+            this->next();
+            return *this;
+        } catch( std::shared_ptr<DBus::ErrorInvalidTypecast> e ) {
+            //TODO make sure we don't need this? it doesn't make much sense
+            throw( ErrorInvalidTypecast )*e;
+        }
+    }
+
+    template <typename... T>
+    MessageIterator& operator>>( std::tuple<T...>& v ) {
+        try {
+            this->get_struct<T...>( v );
+            this->next();
+            return *this;
+        } catch( std::shared_ptr<DBus::ErrorInvalidTypecast> e ) {
+            throw( ErrorInvalidTypecast )*e;
+        }
+    }
+
+    template <typename T>
+    MessageIterator& operator>>( std::vector<T>& v ) {
+        if( !this->is_array() ) {
+            throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
+        }
+
+        try {
+            this->get_array<T>( v );
+            this->next();
+            return *this;
+        } catch( std::shared_ptr<DBus::ErrorInvalidTypecast> e ) {
+            throw( ErrorInvalidTypecast )*e;
+        }
+    }
+
+    MessageIterator& operator>>( Variant& v ) {
+        try {
+            v = this->get_variant();
+            this->next();
+            return *this;
+        } catch( std::shared_ptr<DBus::ErrorInvalidTypecast> e ) {
+            throw( ErrorInvalidTypecast )*e;
+        }
+    }
+
+    template <typename T>
+    MessageIterator& operator>>( T& v ) {
+        try {
+            v = ( T )( *this );
+            this->next();
+            return *this;
+        } catch( std::shared_ptr<DBus::ErrorInvalidTypecast> e ) {
+            throw( ErrorInvalidTypecast )*e;
+        }
+    }
+
+    template <typename T>
+    void value( T& temp ) {
+        if( this->arg_type() != DBus::type( temp ) ) {
+            TypeInfo t( DBus::type( temp ) );
+            std::string s = "MessageIterator: Extracting DBus type ";
+            s += t.cppType();
+            s += " into C++ type ";
+            s += demangle<T>();
+            throw ErrorInvalidTypecast( s.c_str() );
+        }
+
         //dbus_message_iter_get_basic( &m_cobj, &temp );
-      }
+    }
 
-  private:
-      SignatureIterator signature_iterator();
+private:
+    SignatureIterator signature_iterator();
 
-  private:
+private:
     class priv_data;
 
     std::shared_ptr<priv_data> m_priv;
 
     friend class Variant;
-  };
+};
 }
 
 #endif

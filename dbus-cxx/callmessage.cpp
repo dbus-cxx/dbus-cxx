@@ -26,17 +26,14 @@
 #include "returnmessage.h"
 #include "errormessage.h"
 
-namespace DBus
-{
+namespace DBus {
 
-  CallMessage::CallMessage() : Message()
-  {
+CallMessage::CallMessage() : Message() {
 
-  }
+}
 
-  CallMessage::CallMessage( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method ) :
-      Message ()
-  {
+CallMessage::CallMessage( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method ) :
+    Message() {
     std::ostringstream debug_msg;
     debug_msg << "Creating call message to " << dest << " path: " << path << " " << iface << "." << method;
     SIMPLELOGGER_DEBUG( "DBus.CallMessage", debug_msg.str() );
@@ -44,127 +41,125 @@ namespace DBus
     set_interface( iface );
     set_member( method );
     set_destination( dest );
-  }
+}
 
-  CallMessage::CallMessage( const std::string& path, const std::string& iface, const std::string& method ) :
-      Message()
-  {
-      set_path( path );
-      set_interface( iface );
-      set_member( method );
-  }
+CallMessage::CallMessage( const std::string& path, const std::string& iface, const std::string& method ) :
+    Message() {
+    set_path( path );
+    set_interface( iface );
+    set_member( method );
+}
 
-  CallMessage::CallMessage( const std::string& path, const std::string& method )
-  {
-      set_path( path );
-      set_member( method );
-  }
+CallMessage::CallMessage( const std::string& path, const std::string& method ) {
+    set_path( path );
+    set_member( method );
+}
 
-  std::shared_ptr<CallMessage> CallMessage::create()
-  {
+std::shared_ptr<CallMessage> CallMessage::create() {
     return std::shared_ptr<CallMessage>( new CallMessage() );
-  }
+}
 
-  std::shared_ptr<CallMessage> CallMessage::create(const std::string & dest, const std::string & path, const std::string & iface, const std::string & method)
-  {
-    return std::shared_ptr<CallMessage>( new CallMessage(dest, path, iface, method) );
-  }
+std::shared_ptr<CallMessage> CallMessage::create( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method ) {
+    return std::shared_ptr<CallMessage>( new CallMessage( dest, path, iface, method ) );
+}
 
-  std::shared_ptr<CallMessage> CallMessage::create(const std::string & path, const std::string & iface, const std::string & method)
-  {
-    return std::shared_ptr<CallMessage>( new CallMessage(path, iface, method) );
-  }
+std::shared_ptr<CallMessage> CallMessage::create( const std::string& path, const std::string& iface, const std::string& method ) {
+    return std::shared_ptr<CallMessage>( new CallMessage( path, iface, method ) );
+}
 
-  std::shared_ptr<CallMessage> CallMessage::create(const std::string & path, const std::string & method)
-  {
-    return std::shared_ptr<CallMessage>( new CallMessage(path, method) );
-  }
+std::shared_ptr<CallMessage> CallMessage::create( const std::string& path, const std::string& method ) {
+    return std::shared_ptr<CallMessage>( new CallMessage( path, method ) );
+}
 
-  std::shared_ptr<ReturnMessage> CallMessage::create_reply() const
-  {
-    if ( !this->is_valid() ) return std::shared_ptr<ReturnMessage>();
+std::shared_ptr<ReturnMessage> CallMessage::create_reply() const {
+    if( !this->is_valid() ) { return std::shared_ptr<ReturnMessage>(); }
+
     std::shared_ptr<ReturnMessage> retmsg = ReturnMessage::create();
     retmsg->set_reply_serial( serial() );
     retmsg->set_destination( sender() );
-    if( flags() & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED ){
+
+    if( flags() & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED ) {
         retmsg->invalidate();
     }
-    return retmsg;
-  }
 
-  std::shared_ptr<ErrorMessage> CallMessage::create_error_reply() const
-  {
-    if ( !this->is_valid() ) return std::shared_ptr<ErrorMessage>();
+    return retmsg;
+}
+
+std::shared_ptr<ErrorMessage> CallMessage::create_error_reply() const {
+    if( !this->is_valid() ) { return std::shared_ptr<ErrorMessage>(); }
+
     std::shared_ptr<ErrorMessage> retmsg = ErrorMessage::create();
     retmsg->set_reply_serial( serial() );
     retmsg->set_destination( sender() );
-    if( flags() & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED ){
+
+    if( flags() & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED ) {
         retmsg->invalidate();
     }
+
     return retmsg;
-  }
+}
 
-  void CallMessage::set_path( const std::string& p )
-  {
+void CallMessage::set_path( const std::string& p ) {
     set_header_field( MessageHeaderFields::Path, Variant( Path( p ) ) );
-  }
+}
 
-  Path CallMessage::path() const
-  {
+Path CallMessage::path() const {
     Variant field = header_field( MessageHeaderFields::Path );
-    if( field.currentType() == DataType::OBJECT_PATH ){
+
+    if( field.currentType() == DataType::OBJECT_PATH ) {
         return field.to_path();
     }
 
     return Path();
-  }
+}
 
-  void CallMessage::set_interface( const std::string& i )
-  {
+void CallMessage::set_interface( const std::string& i ) {
     set_header_field( MessageHeaderFields::Interface, Variant( i ) );
-  }
+}
 
-  std::string CallMessage::interface_name() const {
-      Variant iface = header_field( MessageHeaderFields::Interface );
-      if( iface.currentType() == DataType::STRING ){
-          return iface.to_string();
-      }
-    return "";
+std::string CallMessage::interface_name() const {
+    Variant iface = header_field( MessageHeaderFields::Interface );
+
+    if( iface.currentType() == DataType::STRING ) {
+        return iface.to_string();
     }
 
-  void CallMessage::set_member( const std::string& m )
-  {
-    set_header_field( MessageHeaderFields::Member, Variant( m ) );
-  }
-
-  std::string CallMessage::member() const
-  {
-      Variant member = header_field( MessageHeaderFields::Member );
-      if( member.currentType() == DataType::STRING ){
-          return member.to_string();
-      }
     return "";
-  }
+}
 
-  void CallMessage::set_no_reply( bool no_reply )
-  {
-      uint8_t newflags = flags();
-      if( no_reply ){
+void CallMessage::set_member( const std::string& m ) {
+    set_header_field( MessageHeaderFields::Member, Variant( m ) );
+}
+
+std::string CallMessage::member() const {
+    Variant member = header_field( MessageHeaderFields::Member );
+
+    if( member.currentType() == DataType::STRING ) {
+        return member.to_string();
+    }
+
+    return "";
+}
+
+void CallMessage::set_no_reply( bool no_reply ) {
+    uint8_t newflags = flags();
+
+    if( no_reply ) {
         newflags |= DBUSCXX_MESSAGE_NO_REPLY_EXPECTED;
-      }else{
-          newflags &= (~DBUSCXX_MESSAGE_NO_REPLY_EXPECTED);
-      }
-      set_flags( newflags );
-  }
+    } else {
+        newflags &= ( ~DBUSCXX_MESSAGE_NO_REPLY_EXPECTED );
+    }
 
-  bool CallMessage::expects_reply() const
-  {
+    set_flags( newflags );
+}
+
+bool CallMessage::expects_reply() const {
     return flags() & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED;
-  }
+}
 
-  MessageType CallMessage::type() const {
-      return MessageType::CALL;
-  }
+MessageType CallMessage::type() const {
+    return MessageType::CALL;
+}
 
 }
 

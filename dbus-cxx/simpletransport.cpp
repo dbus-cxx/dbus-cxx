@@ -36,7 +36,7 @@ enum class ReadingState {
     Body
 };
 
-class SimpleTransport::priv_data{
+class SimpleTransport::priv_data {
 public:
     priv_data( int fd ):
         m_fd( fd ),
@@ -59,14 +59,14 @@ public:
 };
 
 SimpleTransport::SimpleTransport( int fd, bool initialize ) :
-    m_priv( std::make_unique<priv_data>( fd ) ){
+    m_priv( std::make_unique<priv_data>( fd ) ) {
     uint8_t nulbyte = 0;
 
-    if( initialize ){
-        if( ::write( m_priv->m_fd, &nulbyte, 1 ) < 0 ){
+    if( initialize ) {
+        if( ::write( m_priv->m_fd, &nulbyte, 1 ) < 0 ) {
             int my_errno = errno;
             std::string errmsg = strerror( errno );
-            SIMPLELOGGER_DEBUG("dbus.SimpleTransport", "Unable to write nul byte: " + errmsg );
+            SIMPLELOGGER_DEBUG( "dbus.SimpleTransport", "Unable to write nul byte: " + errmsg );
             m_priv->m_ok = false;
             close( m_priv->m_fd );
             errno = my_errno;
@@ -78,20 +78,21 @@ SimpleTransport::SimpleTransport( int fd, bool initialize ) :
     m_priv->m_ok = true;
 }
 
-SimpleTransport::~SimpleTransport(){
+SimpleTransport::~SimpleTransport() {
     close( m_priv->m_fd );
     delete[] m_priv->m_receiveBuffer;
 }
 
 
-std::shared_ptr<SimpleTransport> SimpleTransport::create( int fd, bool initialize ){
+std::shared_ptr<SimpleTransport> SimpleTransport::create( int fd, bool initialize ) {
     return std::shared_ptr<SimpleTransport>( new SimpleTransport( fd, initialize ) );
 }
 
-ssize_t SimpleTransport::writeMessage( std::shared_ptr<const Message> message, uint32_t serial ){
+ssize_t SimpleTransport::writeMessage( std::shared_ptr<const Message> message, uint32_t serial ) {
     std::ostringstream debug_str;
     m_priv->m_sendBuffer.clear();
-    if( !message->serialize_to_vector( &m_priv->m_sendBuffer, serial ) ){
+
+    if( !message->serialize_to_vector( &m_priv->m_sendBuffer, serial ) ) {
         return 0;
     }
 
@@ -100,55 +101,59 @@ ssize_t SimpleTransport::writeMessage( std::shared_ptr<const Message> message, u
     SIMPLELOGGER_TRACE( "dbus.SimpleTransport", debug_str.str() );
 
     ssize_t bytesWritten = ::write( m_priv->m_fd, m_priv->m_sendBuffer.data(), m_priv->m_sendBuffer.size() );
-    if( bytesWritten < 0 ){
+
+    if( bytesWritten < 0 ) {
         int my_errno = errno;
         std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG("dbus.SimpleTransport", "Unable to send message: " + errmsg );
+        SIMPLELOGGER_DEBUG( "dbus.SimpleTransport", "Unable to send message: " + errmsg );
         errno = my_errno;
     }
 
     return bytesWritten;
 }
 
-std::shared_ptr<DBus::Message> SimpleTransport::readMessage(){
+std::shared_ptr<DBus::Message> SimpleTransport::readMessage() {
     ssize_t bytesRead;
     std::shared_ptr<Message> retmsg;
 
-    if( m_priv->m_readingState == ReadingState::FirstHeaderPart ){
+    if( m_priv->m_readingState == ReadingState::FirstHeaderPart ) {
         /*
          * First part of the reading: read the first 16 bytes, which include the
          * important data(including the size of the variable-length array)
          */
         bytesRead = ::read( m_priv->m_fd,
-                            m_priv->m_receiveBuffer + m_priv->m_receiveBufferLocation,
-                            16 - m_priv->m_receiveBufferLocation );
-        if( bytesRead < 0 ){
+                m_priv->m_receiveBuffer + m_priv->m_receiveBufferLocation,
+                16 - m_priv->m_receiveBufferLocation );
+
+        if( bytesRead < 0 ) {
             return std::shared_ptr<DBus::Message>();
         }
-        if( bytesRead == 0 ){
+
+        if( bytesRead == 0 ) {
             // End of the stream
             SIMPLELOGGER_TRACE( "dbus.SimpleTransport", "End of stream: closing transport" );
             m_priv->m_ok = false;
             return std::shared_ptr<DBus::Message>();
         }
+
         m_priv->m_receiveBufferLocation += bytesRead;
 
-        if( m_priv->m_receiveBufferLocation == 16 ){
+        if( m_priv->m_receiveBufferLocation == 16 ) {
             m_priv->m_readingState = ReadingState::SecondHeaderPart;
         }
     }
 
-    if( m_priv->m_readingState == ReadingState::SecondHeaderPart ){
+    if( m_priv->m_readingState == ReadingState::SecondHeaderPart ) {
         /*
          * Next part of the reading: read the variable-sized array in the header
          */
-        if( m_priv->m_headerLeftToRead == 0 ){
+        if( m_priv->m_headerLeftToRead == 0 ) {
             Demarshaling m( m_priv->m_receiveBuffer, 16, Endianess::Big );
             uint32_t totalMessageSize;
             uint32_t headerArraySize;
             int bytesToAdd;
 
-            if( m.demarshal_uint8_t() == 'l' ){
+            if( m.demarshal_uint8_t() == 'l' ) {
                 m.setEndianess( Endianess::Little );
             }
 
@@ -158,17 +163,20 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage(){
             headerArraySize = m.demarshal_uint32_t();
 
             // Make sure that the header would align to a multiple of 8
-            bytesToAdd = 8 - ((16 + headerArraySize) % 8);
-            if( bytesToAdd != 8 ){
+            bytesToAdd = 8 - ( ( 16 + headerArraySize ) % 8 );
+
+            if( bytesToAdd != 8 ) {
                 headerArraySize += bytesToAdd;
             }
-           m_priv-> m_headerLeftToRead = headerArraySize;
+
+            m_priv-> m_headerLeftToRead = headerArraySize;
 
             totalMessageSize = ( 12 /* Basic header size */
-                                 + m_priv->m_headerLeftToRead
-                                 + m_priv->m_bodyLeftToRead
-                                 + 12 /* Extra padding */ );
-            if( m_priv->m_receiveBufferSize < totalMessageSize ){
+                    + m_priv->m_headerLeftToRead
+                    + m_priv->m_bodyLeftToRead
+                    + 12 /* Extra padding */ );
+
+            if( m_priv->m_receiveBufferSize < totalMessageSize ) {
                 m_priv->m_receiveBufferSize = totalMessageSize;
                 uint8_t* newbuffer = new uint8_t[ m_priv->m_receiveBufferSize ];
                 std::memcpy( newbuffer, m_priv->m_receiveBuffer, m_priv->m_receiveBufferLocation );
@@ -182,33 +190,38 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage(){
          * try to read that number of bytes(to keep the number of read() calls down)
          */
         bytesRead = ::read( m_priv->m_fd,
-                            m_priv->m_receiveBuffer + m_priv->m_receiveBufferLocation,
-                            m_priv->m_headerLeftToRead + m_priv->m_bodyLeftToRead );
+                m_priv->m_receiveBuffer + m_priv->m_receiveBufferLocation,
+                m_priv->m_headerLeftToRead + m_priv->m_bodyLeftToRead );
 
-        if( bytesRead < 0 ){
+        if( bytesRead < 0 ) {
             return std::shared_ptr<DBus::Message>();
         }
+
         m_priv->m_receiveBufferLocation += bytesRead;
-        if( m_priv->m_headerLeftToRead - bytesRead <= 0 ){
+
+        if( m_priv->m_headerLeftToRead - bytesRead <= 0 ) {
             bytesRead -= m_priv->m_headerLeftToRead;
             m_priv->m_headerLeftToRead = 0;
         }
+
         m_priv->m_bodyLeftToRead -= bytesRead;
 
-        if( m_priv->m_headerLeftToRead == 0 ){
+        if( m_priv->m_headerLeftToRead == 0 ) {
             // We have at least full header at this point
             m_priv->m_readingState = ReadingState::Body;
         }
     }
 
-    if( m_priv->m_readingState == ReadingState::Body ){
-        if( m_priv->m_bodyLeftToRead ){
+    if( m_priv->m_readingState == ReadingState::Body ) {
+        if( m_priv->m_bodyLeftToRead ) {
             bytesRead = ::read( m_priv->m_fd,
-                                m_priv->m_receiveBuffer + m_priv->m_receiveBufferLocation,
-                                m_priv->m_bodyLeftToRead );
-            if( bytesRead < 0 ){
+                    m_priv->m_receiveBuffer + m_priv->m_receiveBufferLocation,
+                    m_priv->m_bodyLeftToRead );
+
+            if( bytesRead < 0 ) {
                 return std::shared_ptr<DBus::Message>();
             }
+
             m_priv->m_bodyLeftToRead -= bytesRead;
         }
 

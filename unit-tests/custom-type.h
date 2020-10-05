@@ -24,20 +24,20 @@
 #include <string>
 
 struct custom {
-   int first;
-   int second;
+    int first;
+    int second;
 };
 
 namespace DBus {
-  inline std::string signature(struct custom)     { return "ii";        }
+inline std::string signature( struct custom )     { return "ii";        }
 }
 
 #include <dbus-cxx/messageiterator.h>
 #include <dbus-cxx/messageappenditerator.h>
 
-DBus::MessageIterator& operator>>(DBus::MessageIterator& i, struct custom& c);
+DBus::MessageIterator& operator>>( DBus::MessageIterator& i, struct custom& c );
 
-DBus::MessageAppendIterator& operator<<(DBus::MessageAppendIterator& i, const struct custom& c);
+DBus::MessageAppendIterator& operator<<( DBus::MessageAppendIterator& i, const struct custom& c );
 
 #include <dbus-cxx.h>
 

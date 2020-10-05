@@ -21,8 +21,7 @@
 #include "message.h"
 #include <sigc++/sigc++.h>
 
-namespace DBus
-{
+namespace DBus {
 
 
 //  PendingCall::PendingCall() :

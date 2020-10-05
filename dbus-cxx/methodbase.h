@@ -40,128 +40,129 @@
 #ifndef DBUSCXX_METHODBASE_H
 #define DBUSCXX_METHODBASE_H
 
-namespace DBus
-{
+namespace DBus {
 
-  class Connection;
-  class Message;
-  class ReturnMessage;
+class Connection;
+class Message;
+class ReturnMessage;
 
-  /**
-   * Base class for all methods(proxy and local).
-   *
-   * Note that the name of the method is immutable and cannot be changed once a method is created.
-   *
-   * @ingroup local
-   * @ingroup objects
-   * 
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  class MethodBase
-  {
-    protected:
-      
-      MethodBase(const std::string& name);
+/**
+ * Base class for all methods(proxy and local).
+ *
+ * Note that the name of the method is immutable and cannot be changed once a method is created.
+ *
+ * @ingroup local
+ * @ingroup objects
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+class MethodBase {
+protected:
 
-    protected:
-      uint32_t sendMessage( std::shared_ptr<Connection> connection, const std::shared_ptr<const Message> );
+    MethodBase( const std::string& name );
 
-    public:
-      virtual ~MethodBase();
+protected:
+    uint32_t sendMessage( std::shared_ptr<Connection> connection, const std::shared_ptr<const Message> );
 
-      const std::string& name() const;
+public:
+    virtual ~MethodBase();
 
-      virtual HandlerResult handle_call_message( std::shared_ptr<Connection> connection, std::shared_ptr<const CallMessage> message ) = 0;
+    const std::string& name() const;
 
-      /** Returns a DBus XML description of this interface */
-      virtual std::string introspect(int space_depth=0) const { return std::string(); };
+    virtual HandlerResult handle_call_message( std::shared_ptr<Connection> connection, std::shared_ptr<const CallMessage> message ) = 0;
 
-      std::string arg_name(size_t i) const;
+    /** Returns a DBus XML description of this interface */
+    virtual std::string introspect( int space_depth = 0 ) const { return std::string(); };
 
-      void set_arg_name(size_t i, const std::string& name);
+    std::string arg_name( size_t i ) const;
 
-      const std::vector<std::string>& arg_names() const;
+    void set_arg_name( size_t i, const std::string& name );
 
-    private:
-      class priv_data;
+    const std::vector<std::string>& arg_names() const;
 
-      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
-  };
+private:
+    class priv_data;
 
-  template <typename T_type>
-  class Method : public MethodBase {
-  private:
-      Method(const std::string& name) : MethodBase(name){}
+    DBUS_CXX_PROPAGATE_CONST( std::unique_ptr<priv_data> ) m_priv;
+};
 
-  public:
-      static std::shared_ptr<Method<T_type>> create(const std::string& name){
-          return std::shared_ptr<Method<T_type>>( new Method<T_type>(name) );
-      }
+template <typename T_type>
+class Method : public MethodBase {
+private:
+    Method( const std::string& name ) : MethodBase( name ) {}
 
-      void set_method( sigc::slot<T_type> slot ){ m_slot = slot; }
+public:
+    static std::shared_ptr<Method<T_type>> create( const std::string& name ) {
+        return std::shared_ptr<Method<T_type>>( new Method<T_type>( name ) );
+    }
 
-      virtual std::string introspect(int space_depth=0) const {
-          std::ostringstream sout;
-          std::string spaces;
-          DBus::priv::dbus_function_traits<std::function<T_type>> method_sig_gen;
-          for(int i = 0; i < space_depth; i++ ) spaces += " ";
-          sout << spaces << "<method name=\"" << name() << "\">\n";
-          sout << method_sig_gen.introspect(arg_names(), 0, spaces + "  " );
-          sout << spaces << "</method>\n";
-          return sout.str();
-      }
+    void set_method( sigc::slot<T_type> slot ) { m_slot = slot; }
 
-      virtual HandlerResult handle_call_message( std::shared_ptr<Connection> connection, std::shared_ptr<const CallMessage> message ){
-          std::ostringstream debug_str;
-          DBus::priv::dbus_function_traits<std::function<T_type>> method_sig_gen;
+    virtual std::string introspect( int space_depth = 0 ) const {
+        std::ostringstream sout;
+        std::string spaces;
+        DBus::priv::dbus_function_traits<std::function<T_type>> method_sig_gen;
 
-          debug_str << "DBus::Method<";
-          debug_str << method_sig_gen.debug_string();
-          debug_str << ">::handle_call_message method=";
-          debug_str << name();
-          DBUSCXX_DEBUG_STDSTR( "DBus.Method", debug_str.str() );
+        for( int i = 0; i < space_depth; i++ ) { spaces += " "; }
 
-          if( !connection || !message ) return HandlerResult::Not_Handled;
+        sout << spaces << "<method name=\"" << name() << "\">\n";
+        sout << method_sig_gen.introspect( arg_names(), 0, spaces + "  " );
+        sout << spaces << "</method>\n";
+        return sout.str();
+    }
 
-          try{
-              std::shared_ptr<ReturnMessage> retmsg = message->create_reply();
-              if( !retmsg ) return HandlerResult::Not_Handled;
+    virtual HandlerResult handle_call_message( std::shared_ptr<Connection> connection, std::shared_ptr<const CallMessage> message ) {
+        std::ostringstream debug_str;
+        DBus::priv::dbus_function_traits<std::function<T_type>> method_sig_gen;
 
-              method_sig_gen.extractAndCall(message, retmsg, m_slot );
+        debug_str << "DBus::Method<";
+        debug_str << method_sig_gen.debug_string();
+        debug_str << ">::handle_call_message method=";
+        debug_str << name();
+        DBUSCXX_DEBUG_STDSTR( "DBus.Method", debug_str.str() );
 
-              sendMessage( connection, retmsg );
-          }catch( ErrorInvalidTypecast &e ){
-              std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUSCXX_ERROR_INVALID_SIGNATURE, e.what() );
+        if( !connection || !message ) { return HandlerResult::Not_Handled; }
 
-              if( !errmsg ) return HandlerResult::Not_Handled;
+        try {
+            std::shared_ptr<ReturnMessage> retmsg = message->create_reply();
 
-              sendMessage( connection, errmsg );
-         }catch( const std::exception &e ){
+            if( !retmsg ) { return HandlerResult::Not_Handled; }
+
+            method_sig_gen.extractAndCall( message, retmsg, m_slot );
+
+            sendMessage( connection, retmsg );
+        } catch( ErrorInvalidTypecast& e ) {
+            std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUSCXX_ERROR_INVALID_SIGNATURE, e.what() );
+
+            if( !errmsg ) { return HandlerResult::Not_Handled; }
+
+            sendMessage( connection, errmsg );
+        } catch( const std::exception& e ) {
             std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUSCXX_ERROR_FAILED, e.what() );
 
-            if( !errmsg ) return HandlerResult::Not_Handled;
+            if( !errmsg ) { return HandlerResult::Not_Handled; }
 
             sendMessage( connection, errmsg );
-         }catch( ... ){
+        } catch( ... ) {
             std::ostringstream stream;
             stream << "DBus-cxx " << DBUS_CXX_PACKAGE_MAJOR_VERSION << "."
-                   << DBUS_CXX_PACKAGE_MINOR_VERSION << "."
-                   << DBUS_CXX_PACKAGE_MICRO_VERSION
-                   << ": unknown error(uncaught exception)";
+                << DBUS_CXX_PACKAGE_MINOR_VERSION << "."
+                << DBUS_CXX_PACKAGE_MICRO_VERSION
+                << ": unknown error(uncaught exception)";
             std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUSCXX_ERROR_FAILED, stream.str() );
 
-            if( !errmsg ) return HandlerResult::Not_Handled;
+            if( !errmsg ) { return HandlerResult::Not_Handled; }
 
             sendMessage( connection, errmsg );
-         }
+        }
 
-         return HandlerResult::Handled;
-      }
+        return HandlerResult::Handled;
+    }
 
 
-    private:
-      sigc::slot<T_type> m_slot;
-  };
+private:
+    sigc::slot<T_type> m_slot;
+};
 
 }
 

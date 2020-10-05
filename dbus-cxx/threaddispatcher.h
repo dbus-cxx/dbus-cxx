@@ -21,7 +21,7 @@
 
 #include <memory>
 
-namespace DBus{
+namespace DBus {
 
 class Message;
 class ObjectPathHandler;

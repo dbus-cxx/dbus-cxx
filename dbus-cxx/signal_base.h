@@ -25,85 +25,83 @@
 #ifndef DBUSCXX_SIGNALBASE_H
 #define DBUSCXX_SIGNALBASE_H
 
-namespace DBus
-{
-  class Connection;
-  class Message;
+namespace DBus {
+class Connection;
+class Message;
 
-  /**
-   * @defgroup signals Signals 
-   * Classes for interacting with signals(sending and receiving)
-   */
+/**
+ * @defgroup signals Signals
+ * Classes for interacting with signals(sending and receiving)
+ */
 
-  /**
-   * Base class of all signals(proxy and adapter).  This is required to interact with signals
-   * in a generic manner, as the actual signal implementation class is templated.
-   *
-   * @ingroup signals
-   * @ingroup local
-   * 
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  class signal_base
-  {
-    protected:
-      
-      signal_base(const std::string& path, const std::string& interface_name, const std::string& name);
+/**
+ * Base class of all signals(proxy and adapter).  This is required to interact with signals
+ * in a generic manner, as the actual signal implementation class is templated.
+ *
+ * @ingroup signals
+ * @ingroup local
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+class signal_base {
+protected:
 
-      signal_base(const std::string& interface_name, const std::string& name);
+    signal_base( const std::string& path, const std::string& interface_name, const std::string& name );
 
-      signal_base(std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface_name, const std::string& name);
+    signal_base( const std::string& interface_name, const std::string& name );
 
-      signal_base(std::shared_ptr<Connection> connection, const std::string& interface_name, const std::string& name);
+    signal_base( std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface_name, const std::string& name );
 
-    public:
-      virtual ~signal_base();
+    signal_base( std::shared_ptr<Connection> connection, const std::string& interface_name, const std::string& name );
 
-      std::shared_ptr<Connection> connection();
+public:
+    virtual ~signal_base();
 
-      void set_connection(std::shared_ptr<Connection> connection);
+    std::shared_ptr<Connection> connection();
 
-      const std::string& sender() const;
+    void set_connection( std::shared_ptr<Connection> connection );
 
-      void set_sender(const std::string& s);
+    const std::string& sender() const;
 
-      const std::string& interface_name() const;
+    void set_sender( const std::string& s );
 
-      void set_interface(const std::string& i);
+    const std::string& interface_name() const;
 
-      const std::string& name() const;
+    void set_interface( const std::string& i );
 
-      void set_name( const std::string& n );
+    const std::string& name() const;
 
-      const Path& path() const;
+    void set_name( const std::string& n );
 
-      void set_path(const std::string& s);
+    const Path& path() const;
 
-      const std::string& destination() const;
+    void set_path( const std::string& s );
 
-      void set_destination(const std::string& s);
+    const std::string& destination() const;
 
-      /**
-       * This method is needed to be able to create a duplicate of a child
-       * capable of parsing their specific template type message.
-       */
-//      virtual std::shared_ptr<signal_base> clone() = 0;
+    void set_destination( const std::string& s );
 
-      /** Returns a DBus XML description of this interface */
-      virtual std::string introspect(int space_depth=0) const { return std::string(); }
+    /**
+     * This method is needed to be able to create a duplicate of a child
+     * capable of parsing their specific template type message.
+     */
+    //      virtual std::shared_ptr<signal_base> clone() = 0;
 
-      virtual std::string arg_name(size_t i) { return std::string(); }
+    /** Returns a DBus XML description of this interface */
+    virtual std::string introspect( int space_depth = 0 ) const { return std::string(); }
 
-      virtual void set_arg_name(size_t i, const std::string& name) { }
+    virtual std::string arg_name( size_t i ) { return std::string(); }
 
-    protected:
-      bool handle_dbus_outgoing( std::shared_ptr<const Message> );
+    virtual void set_arg_name( size_t i, const std::string& name ) { }
 
-  private:
-      class priv_data;
+protected:
+    bool handle_dbus_outgoing( std::shared_ptr<const Message> );
 
-      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
-  };
+private:
+    class priv_data;
+
+    DBUS_CXX_PROPAGATE_CONST( std::unique_ptr<priv_data> ) m_priv;
+};
 
 }
 

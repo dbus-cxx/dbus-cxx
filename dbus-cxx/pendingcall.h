@@ -22,17 +22,16 @@
 #ifndef DBUSCXX_PENDING_CALL_H
 #define DBUSCXX_PENDING_CALL_H
 
-namespace DBus
-{
-  class Message;
+namespace DBus {
+class Message;
 
-  /**
-   * Monitors an asynchronous call, emitting a signal when a response is received
-   *
-   * @ingroup message
-   *
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
+/**
+ * Monitors an asynchronous call, emitting a signal when a response is received
+ *
+ * @ingroup message
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
 //  class PendingCall: public sigc::trackable
 //  {
 //    protected:

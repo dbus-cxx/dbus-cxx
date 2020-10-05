@@ -24,40 +24,38 @@
 #ifndef DBUSCXX_RETURNMESSAGE_H
 #define DBUSCXX_RETURNMESSAGE_H
 
-namespace DBus
-{
+namespace DBus {
 
 class CallMessage;
 
-  /**
-   * Represents a DBus call return message
-   *
-   * This class inherits from Message and uses the dbus_message_* methods to
-   * create an interface for a return message that is a response to a call
-   * message.
-   *
-   * @ingroup message
-   *
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  class ReturnMessage : public Message
-  {
-    protected:
-      
-      ReturnMessage( );
+/**
+ * Represents a DBus call return message
+ *
+ * This class inherits from Message and uses the dbus_message_* methods to
+ * create an interface for a return message that is a response to a call
+ * message.
+ *
+ * @ingroup message
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+class ReturnMessage : public Message {
+protected:
 
-    public:
-      static std::shared_ptr<ReturnMessage> create();
+    ReturnMessage( );
 
-      static std::shared_ptr<ReturnMessage> create( std::shared_ptr<const CallMessage> callee );
+public:
+    static std::shared_ptr<ReturnMessage> create();
 
-      bool set_reply_serial( uint32_t );
+    static std::shared_ptr<ReturnMessage> create( std::shared_ptr<const CallMessage> callee );
 
-      uint32_t reply_serial() const;
+    bool set_reply_serial( uint32_t );
 
-      virtual MessageType type() const;
-  
-  };
+    uint32_t reply_serial() const;
+
+    virtual MessageType type() const;
+
+};
 
 
 }

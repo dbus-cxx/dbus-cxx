@@ -23,14 +23,14 @@
 
 #include "test_macros.h"
 
-static bool envvars_connect_session_bus(){
+static bool envvars_connect_session_bus() {
     unsetenv( "DBUS_SESSION_BUS_ADDRESS" );
     std::shared_ptr<DBus::Connection> conn = DBus::Connection::create( DBus::BusType::SESSION );
 
     return !conn->is_valid();
 }
 
-static bool envvars_connect_starter_bus(){
+static bool envvars_connect_starter_bus() {
     unsetenv( "DBUS_STARTER_ADDRESS" );
     std::shared_ptr<DBus::Connection> conn = DBus::Connection::create( DBus::BusType::STARTER );
 
@@ -38,22 +38,23 @@ static bool envvars_connect_starter_bus(){
 }
 
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
-  ret = envvars_##name();\
-} \
-} while( 0 )
+            ret = envvars_##name();\
+        } \
+    } while( 0 )
 
-int main(int argc, char** argv){
-  if(argc < 1)
-    return 1;
+int main( int argc, char** argv ) {
+    if( argc < 1 ) {
+        return 1;
+    }
 
-  std::string test_name = argv[1];
-  bool ret = false;
+    std::string test_name = argv[1];
+    bool ret = false;
 
-  DBus::setLoggingFunction( DBus::logStdErr );
-  DBus::setLogLevel( SL_TRACE );
+    DBus::setLoggingFunction( DBus::logStdErr );
+    DBus::setLogLevel( SL_TRACE );
 
-  ADD_TEST(connect_session_bus);
-  ADD_TEST(connect_starter_bus);
+    ADD_TEST( connect_session_bus );
+    ADD_TEST( connect_starter_bus );
 
-  return !ret;
+    return !ret;
 }

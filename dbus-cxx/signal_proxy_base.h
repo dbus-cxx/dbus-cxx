@@ -32,9 +32,8 @@
 #ifndef DBUSCXX_SIGNALPROXYBASE_H
 #define DBUSCXX_SIGNALPROXYBASE_H
 
-namespace DBus
-{
-  struct MessageHandlerAccumulator;
+namespace DBus {
+struct MessageHandlerAccumulator;
 
 /**
  * A builder class to build up a match rule for a signal.  Define
@@ -42,7 +41,7 @@ namespace DBus
  * and then pass it into the signal_proxy.
  */
 class SignalMatchRule {
-  public:
+public:
     SignalMatchRule();
 
     SignalMatchRule& setPath( const std::string& path );
@@ -65,7 +64,7 @@ class SignalMatchRule {
 
     static SignalMatchRule create();
 
-  private:
+private:
     std::string m_path;
     std::string m_interface;
     std::string m_member;
@@ -73,42 +72,41 @@ class SignalMatchRule {
     std::string m_destination;
 };
 
-  /**
-   * Base class for a signal proxy that allows you to listen for signals.  This is required
-   * to use signals in a generic manner, as the subclasses are all templated.
-   *
-   * @ingroup proxy
-   * @ingroup signals
-   * 
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  class signal_proxy_base: public signal_base
-  {
-    public:
-      virtual HandlerResult handle_signal( std::shared_ptr<const SignalMessage> );
+/**
+ * Base class for a signal proxy that allows you to listen for signals.  This is required
+ * to use signals in a generic manner, as the subclasses are all templated.
+ *
+ * @ingroup proxy
+ * @ingroup signals
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+class signal_proxy_base: public signal_base {
+public:
+    virtual HandlerResult handle_signal( std::shared_ptr<const SignalMessage> );
 
-      const std::string& match_rule() const;
+    const std::string& match_rule() const;
 
-    protected:
-      signal_proxy_base(const SignalMatchRule& matchRule);
+protected:
+    signal_proxy_base( const SignalMatchRule& matchRule );
 
-      virtual ~signal_proxy_base();
+    virtual ~signal_proxy_base();
 
-      bool matches(std::shared_ptr<const SignalMessage> msg);
+    bool matches( std::shared_ptr<const SignalMessage> msg );
 
-      /**
-       * This method is needed to be able to create a duplicate of a child
-       * capable of parsing their specific template type message.
-       */
-//      virtual std::shared_ptr<signal_base> clone() = 0;
+    /**
+     * This method is needed to be able to create a duplicate of a child
+     * capable of parsing their specific template type message.
+     */
+    //      virtual std::shared_ptr<signal_base> clone() = 0;
 
-      virtual HandlerResult on_dbus_incoming( std::shared_ptr<const SignalMessage> msg ) = 0;
+    virtual HandlerResult on_dbus_incoming( std::shared_ptr<const SignalMessage> msg ) = 0;
 
-  private:
-      class priv_data;
+private:
+    class priv_data;
 
-      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
-  };
+    DBUS_CXX_PROPAGATE_CONST( std::unique_ptr<priv_data> ) m_priv;
+};
 
 /**
  * Subclass of the sigc::signal templates.
@@ -122,48 +120,46 @@ class SignalMatchRule {
  */
 template <class... T_arg>
 class signal_proxy
-  : public sigc::signal<void(T_arg...)>, public signal_proxy_base
-{
-  public:
-    signal_proxy(const SignalMatchRule& matchRule):
-      signal_proxy_base(matchRule)
+    : public sigc::signal<void( T_arg... )>, public signal_proxy_base {
+public:
+    signal_proxy( const SignalMatchRule& matchRule ):
+        signal_proxy_base( matchRule )
     {  }
 
-    static std::shared_ptr<signal_proxy> create(const SignalMatchRule& matchRule)
-    { return std::shared_ptr<signal_proxy>( new signal_proxy(matchRule) ); }
+    static std::shared_ptr<signal_proxy> create( const SignalMatchRule& matchRule )
+    { return std::shared_ptr<signal_proxy>( new signal_proxy( matchRule ) ); }
 
-//    virtual std::shared_ptr<signal_base> clone()
-//    { return std::shared_ptr<signal_base>( new signal_proxy(*this) ); }
+    //    virtual std::shared_ptr<signal_base> clone()
+    //    { return std::shared_ptr<signal_base>( new signal_proxy(*this) ); }
 
-  protected:
-    HandlerResult on_dbus_incoming( std::shared_ptr<const SignalMessage> msg )
-    {
-      std::tuple<T_arg...> tup_args;
-      std::ostringstream debug_str;
-      DBus::priv::dbus_function_traits<std::function<void(T_arg...)>> method_sig_gen;
+protected:
+    HandlerResult on_dbus_incoming( std::shared_ptr<const SignalMessage> msg ) {
+        std::tuple<T_arg...> tup_args;
+        std::ostringstream debug_str;
+        DBus::priv::dbus_function_traits<std::function<void( T_arg... )>> method_sig_gen;
 
-      debug_str << "DBus::signal_proxy<";
-      debug_str << method_sig_gen.debug_string();
-      debug_str << ">::on_dbus_incoming method=";
-      debug_str << msg->member();
-      DBUSCXX_DEBUG_STDSTR( "DBus.signal_proxy", debug_str.str() );
+        debug_str << "DBus::signal_proxy<";
+        debug_str << method_sig_gen.debug_string();
+        debug_str << ">::on_dbus_incoming method=";
+        debug_str << msg->member();
+        DBUSCXX_DEBUG_STDSTR( "DBus.signal_proxy", debug_str.str() );
 
-      try {
-        MessageIterator i = msg->begin();
-        std::apply( [i](auto&& ...arg) mutable {
-               (void)(i >> ... >> arg);
-              },
-        tup_args );
-        std::apply(&signal_proxy::emit, std::tuple_cat(std::make_tuple(this), tup_args) );
-      }catch ( ErrorInvalidTypecast& e ) {
-          DBUSCXX_DEBUG_STDSTR( "DBus.signal_proxy", "Caught error invalid typecast" );
-          return HandlerResult::Not_Handled;
-      }catch( ... ){
-          DBUSCXX_DEBUG_STDSTR( "DBus.signal_proxy", "Unknown exception" );
-          return HandlerResult::Not_Handled;
-      }
-    
-      return HandlerResult::Handled;
+        try {
+            MessageIterator i = msg->begin();
+            std::apply( [i]( auto&& ...arg ) mutable {
+                ( void )( i >> ... >> arg );
+            },
+            tup_args );
+            std::apply( &signal_proxy::emit, std::tuple_cat( std::make_tuple( this ), tup_args ) );
+        } catch( ErrorInvalidTypecast& e ) {
+            DBUSCXX_DEBUG_STDSTR( "DBus.signal_proxy", "Caught error invalid typecast" );
+            return HandlerResult::Not_Handled;
+        } catch( ... ) {
+            DBUSCXX_DEBUG_STDSTR( "DBus.signal_proxy", "Unknown exception" );
+            return HandlerResult::Not_Handled;
+        }
+
+        return HandlerResult::Handled;
     }
 
 };

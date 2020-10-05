@@ -1,12 +1,12 @@
 #include "DbusTacoAdapter.h"
 
 class TacoAdaptee : public DbusTacoAdaptee {
-    std::string OrderTaco(std::string meatType ) {
+    std::string OrderTaco( std::string meatType ) {
         return "ordering " + meatType;
     }
 };
 
-int main(){
+int main() {
     std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 

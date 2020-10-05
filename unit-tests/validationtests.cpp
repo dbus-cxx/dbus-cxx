@@ -23,33 +23,34 @@
 
 #include "test_macros.h"
 
-bool validate_one_section_bus_name(){
+bool validate_one_section_bus_name() {
     return !DBus::Validator::validate_bus_name( "dbuscxx" );
 }
 
-bool validate_two_section_bus_name(){
+bool validate_two_section_bus_name() {
     return DBus::Validator::validate_bus_name( "dbuscxx.test" );
 }
 
-bool validate_three_section_bus_name(){
+bool validate_three_section_bus_name() {
     return DBus::Validator::validate_bus_name( "dbuscxx.test.foo" );
 }
 
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
-  ret = validate_##name();\
-} \
-} while( 0 )
+            ret = validate_##name();\
+        } \
+    } while( 0 )
 
-int main(int argc, char** argv){
-  if(argc < 1)
-    return 1;
+int main( int argc, char** argv ) {
+    if( argc < 1 ) {
+        return 1;
+    }
 
-  std::string test_name = argv[1];
-  bool ret = false;
+    std::string test_name = argv[1];
+    bool ret = false;
 
-  ADD_TEST(one_section_bus_name);
-  ADD_TEST(two_section_bus_name);
-  ADD_TEST(three_section_bus_name);
+    ADD_TEST( one_section_bus_name );
+    ADD_TEST( two_section_bus_name );
+    ADD_TEST( three_section_bus_name );
 
-  return !ret;
+    return !ret;
 }

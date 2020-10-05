@@ -24,74 +24,66 @@
 #include "message.h"
 namespace sigc { template <typename T_return, typename ...T_arg> class signal; }
 
-namespace DBus
-{
-  
+namespace DBus {
+
 class ObjectPathHandler::priv_data {
 public:
-    priv_data(){}
+    priv_data() {}
 
     std::weak_ptr<Connection> m_connection;
     Path m_path;
     PrimaryFallback m_primary_fallback;
-    sigc::signal<void(std::shared_ptr<Connection>) > m_signal_registered;
-    sigc::signal<void(std::shared_ptr<Connection>) > m_signal_unregistered;
+    sigc::signal<void( std::shared_ptr<Connection> ) > m_signal_registered;
+    sigc::signal<void( std::shared_ptr<Connection> ) > m_signal_unregistered;
 };
 
-  ObjectPathHandler::ObjectPathHandler(const std::string& path, PrimaryFallback pf):
-      m_priv( std::make_unique<priv_data>() )
-  {
-      m_priv->m_path = path;
-      m_priv->m_primary_fallback = pf;
-  }
+ObjectPathHandler::ObjectPathHandler( const std::string& path, PrimaryFallback pf ):
+    m_priv( std::make_unique<priv_data>() ) {
+    m_priv->m_path = path;
+    m_priv->m_primary_fallback = pf;
+}
 
-  ObjectPathHandler::~ObjectPathHandler()
-  {
-  }
+ObjectPathHandler::~ObjectPathHandler() {
+}
 
-  const Path& ObjectPathHandler::path() const
-  {
+const Path& ObjectPathHandler::path() const {
     return m_priv->m_path;
-  }
+}
 
-  PrimaryFallback ObjectPathHandler::is_primary_or_fallback()
-  {
+PrimaryFallback ObjectPathHandler::is_primary_or_fallback() {
     return m_priv->m_primary_fallback;
-  }
+}
 
-  std::weak_ptr< Connection > ObjectPathHandler::connection() const
-  {
+std::weak_ptr< Connection > ObjectPathHandler::connection() const {
     return m_priv->m_connection;
-  }
+}
 
-  bool ObjectPathHandler::register_with_connection(std::shared_ptr<Connection> conn)
-  {
+bool ObjectPathHandler::register_with_connection( std::shared_ptr<Connection> conn ) {
     m_priv->m_connection = conn;
-    
+
     return true;
-  }
+}
 
-  bool ObjectPathHandler::unregister()
-  {
-      std::shared_ptr connection = m_priv->m_connection.lock();
-    if( !connection ) return true;
+bool ObjectPathHandler::unregister() {
+    std::shared_ptr connection = m_priv->m_connection.lock();
+
+    if( !connection ) { return true; }
+
     return connection->unregister_object( m_priv->m_path );
-  }
+}
 
-  sigc::signal< void(std::shared_ptr<Connection>)> & ObjectPathHandler::signal_registered()
-  {
+sigc::signal< void( std::shared_ptr<Connection> )>& ObjectPathHandler::signal_registered() {
     return m_priv->m_signal_registered;
-  }
+}
 
-  sigc::signal< void(std::shared_ptr<Connection>)> & ObjectPathHandler::signal_unregistered()
-  {
+sigc::signal< void( std::shared_ptr<Connection> )>& ObjectPathHandler::signal_unregistered() {
     return m_priv->m_signal_unregistered;
-  }
+}
 
-  void ObjectPathHandler::set_connection(std::shared_ptr<Connection> conn){
-      unregister();
-      m_priv->m_connection = conn;
-  }
+void ObjectPathHandler::set_connection( std::shared_ptr<Connection> conn ) {
+    unregister();
+    m_priv->m_connection = conn;
+}
 
 }
 

@@ -18,14 +18,14 @@
  ***************************************************************************/
 #include "signalNameProxy.h"
 
-static void dosomething(std::string){
+static void dosomething( std::string ) {
 }
 
-int main( int argc, char** argv ){
+int main( int argc, char** argv ) {
     std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
     std::shared_ptr<signalNameProxy> proxy = signalNameProxy::create( conn );
     std::shared_ptr<DBus::signal_proxy<std::string>> signalProxy = proxy->signal_exampleSignal();
-    signalProxy->connect( sigc::ptr_fun(dosomething) );
+    signalProxy->connect( sigc::ptr_fun( dosomething ) );
 }

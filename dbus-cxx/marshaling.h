@@ -26,7 +26,7 @@
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/dbus-cxx-config.h>
 
-namespace DBus{
+namespace DBus {
 
 class Variant;
 
@@ -37,13 +37,13 @@ class Variant;
  */
 class Marshaling {
 public:
-	Marshaling();
+    Marshaling();
 
-	/**
-	 * Create a new Marshaling class that operates on the given
-	 * vector of data, with the given endianess.
-	 */
-	Marshaling( std::vector<uint8_t>* data, Endianess endian );
+    /**
+     * Create a new Marshaling class that operates on the given
+     * vector of data, with the given endianess.
+     */
+    Marshaling( std::vector<uint8_t>* data, Endianess endian );
 
     ~Marshaling();
 
@@ -52,23 +52,23 @@ public:
      *
      * @param data
      */
-	void setData( std::vector<uint8_t>* data );
+    void setData( std::vector<uint8_t>* data );
 
     void setEndianess( Endianess endian );
 
-	void marshal( bool v );
-	void marshal( uint8_t v );
-	void marshal( int16_t v );
-	void marshal( uint16_t v );
-	void marshal( int32_t v );
-	void marshal( uint32_t v );
-	void marshal( int64_t v );
-	void marshal( uint64_t v );
-	void marshal( double v );
-	void marshal( std::string v );
-	void marshal( Path v );
-	void marshal( Signature v );
-	void marshal( const Variant& v );
+    void marshal( bool v );
+    void marshal( uint8_t v );
+    void marshal( int16_t v );
+    void marshal( uint16_t v );
+    void marshal( int32_t v );
+    void marshal( uint32_t v );
+    void marshal( int64_t v );
+    void marshal( uint64_t v );
+    void marshal( double v );
+    void marshal( std::string v );
+    void marshal( Path v );
+    void marshal( Signature v );
+    void marshal( const Variant& v );
 
     void align( int alignment );
 
@@ -84,12 +84,12 @@ public:
     uint32_t currentOffset() const;
 
 private:
-	void marshalShortBig( uint16_t toMarshal );
-	void marshalIntBig( uint32_t toMarshal );
-	void marshalLongBig( uint64_t toMarshal );
-	void marshalShortLittle( uint16_t toMarshal );
-	void marshalIntLittle( uint32_t toMarshal );
-	void marshalLongLittle( uint64_t toMarshal );
+    void marshalShortBig( uint16_t toMarshal );
+    void marshalIntBig( uint32_t toMarshal );
+    void marshalLongBig( uint64_t toMarshal );
+    void marshalShortLittle( uint16_t toMarshal );
+    void marshalIntLittle( uint32_t toMarshal );
+    void marshalLongLittle( uint64_t toMarshal );
 
 private:
     class priv_data;

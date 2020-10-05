@@ -35,19 +35,18 @@
 /* Extern function for logging in headers */
 simplelogger_log_function dbuscxx_log_function = nullptr;
 
-namespace DBus
-{
+namespace DBus {
 
-  static enum SL_LogLevel log_level = SL_INFO;
+static enum SL_LogLevel log_level = SL_INFO;
 
-  void setLoggingFunction( simplelogger_log_function function ){
+void setLoggingFunction( simplelogger_log_function function ) {
     dbuscxx_log_function = function;
-  }
+}
 
-  void logStdErr( const char* logger_name, const struct SL_LogLocation* location,
-      const enum SL_LogLevel level,
-      const char* log_string ){
-    if( level < log_level ) return;
+void logStdErr( const char* logger_name, const struct SL_LogLocation* location,
+    const enum SL_LogLevel level,
+    const char* log_string ) {
+    if( level < log_level ) { return; }
 
     char buffer[ 4096 ];
     const char* stringLevel;
@@ -55,31 +54,33 @@ namespace DBus
 
     SL_LOGLEVEL_TO_STRING( stringLevel, level );
 
-    snprintf( buffer, 4096, "0x%08X %s [%s] - %s(%s:%d)", this_id, logger_name, stringLevel, log_string, 
-      location->file,
-      location->line_number );
+    snprintf( buffer, 4096, "0x%08X %s [%s] - %s(%s:%d)", this_id, logger_name, stringLevel, log_string,
+        location->file,
+        location->line_number );
     std::cerr << buffer << std::endl;
-  }
+}
 
-  void setLogLevel( const enum SL_LogLevel level ){
+void setLogLevel( const enum SL_LogLevel level ) {
     log_level = level;
-  }
+}
 
-  void hexdump( const std::vector<uint8_t>* vec, std::ostream* stream ) {
+void hexdump( const std::vector<uint8_t>* vec, std::ostream* stream ) {
     // Original C code: https://stackoverflow.com/a/29865/624483
-        hexdump( vec->data(), vec->size(), stream );
-  }
+    hexdump( vec->data(), vec->size(), stream );
+}
 
-  void hexdump( const uint8_t* vec, uint32_t len, std::ostream* stream ) {
+void hexdump( const uint8_t* vec, uint32_t len, std::ostream* stream ) {
     // Original C code: https://stackoverflow.com/a/29865/624483
     char line_buffer[ 12 ];
 
-    for ( uint32_t i = 0; i < len; i += 16 ) {
-        snprintf( line_buffer, 12, "%06x: ", i);
+    for( uint32_t i = 0; i < len; i += 16 ) {
+        snprintf( line_buffer, 12, "%06x: ", i );
         *stream << line_buffer;
-        for (int j = 0; j < 16; j++ ){
-            if( j == 8 ) *stream << "  ";
-            if ( (i + j) < len ){
+
+        for( int j = 0; j < 16; j++ ) {
+            if( j == 8 ) { *stream << "  "; }
+
+            if( ( i + j ) < len ) {
                 snprintf( line_buffer, 12, "%02x ", vec[ i + j ] );
                 *stream << line_buffer;
             } else {
@@ -88,57 +89,64 @@ namespace DBus
         }
 
         *stream << "  ";
-        for (int j = 0; j < 16; j++ ){
-            if( j == 8 ) *stream << "  ";
-            if ( (i + j) < len ){
-                snprintf( line_buffer, 12, "%c", std::isprint(vec[i+j]) ? vec[i+j] : '.');
+
+        for( int j = 0; j < 16; j++ ) {
+            if( j == 8 ) { *stream << "  "; }
+
+            if( ( i + j ) < len ) {
+                snprintf( line_buffer, 12, "%c", std::isprint( vec[i + j] ) ? vec[i + j] : '.' );
                 *stream << line_buffer;
             }
         }
+
         *stream << std::endl;
     }
-  }
+}
 
-  std::tuple<bool,int,std::vector<int>,std::chrono::milliseconds> priv::wait_for_fd_activity( std::vector<int> fds, int timeout_ms ){
-      std::vector<pollfd> toListen;
-      bool timeout;
-      int poll_ret;
-      std::chrono::milliseconds ms_waited;
-      std::vector<int> fdsToRead;
+std::tuple<bool, int, std::vector<int>, std::chrono::milliseconds> priv::wait_for_fd_activity( std::vector<int> fds, int timeout_ms ) {
+    std::vector<pollfd> toListen;
+    bool timeout;
+    int poll_ret;
+    std::chrono::milliseconds ms_waited;
+    std::vector<int> fdsToRead;
 
-      toListen.reserve( fds.size() );
-      for( int fd : fds ){
-          struct pollfd pollfd;
-          pollfd.fd = fd;
-          pollfd.events = POLLIN;
-          pollfd.revents = 0;
-          toListen.push_back( pollfd );
-      }
+    toListen.reserve( fds.size() );
 
-      std::chrono::time_point start = std::chrono::high_resolution_clock::now();
-      do {
-          poll_ret = ::poll( toListen.data(), toListen.size(), timeout_ms );
-          if( poll_ret >= 0 ){
-              timeout = poll_ret == 0 ? true : false;
-              ms_waited = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::high_resolution_clock::now() - start
-                          );
+    for( int fd : fds ) {
+        struct pollfd pollfd;
+        pollfd.fd = fd;
+        pollfd.events = POLLIN;
+        pollfd.revents = 0;
+        toListen.push_back( pollfd );
+    }
 
-              for( pollfd pollentry : toListen ){
-                  if( pollentry.revents & POLLIN ){
-                      fdsToRead.push_back( pollentry.fd );
-                  }
-              }
+    std::chrono::time_point start = std::chrono::high_resolution_clock::now();
+
+    do {
+        poll_ret = ::poll( toListen.data(), toListen.size(), timeout_ms );
+
+        if( poll_ret >= 0 ) {
+            timeout = poll_ret == 0 ? true : false;
+            ms_waited = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::high_resolution_clock::now() - start
+                );
+
+            for( pollfd pollentry : toListen ) {
+                if( pollentry.revents & POLLIN ) {
+                    fdsToRead.push_back( pollentry.fd );
+                }
+            }
 
             break;
-          }
-          if( poll_ret < 0 && errno == EINTR ){
-              continue;
-          }
-      } while( true );
+        }
 
-      return std::make_tuple( timeout, poll_ret, fdsToRead, ms_waited );
-  }
+        if( poll_ret < 0 && errno == EINTR ) {
+            continue;
+        }
+    } while( true );
+
+    return std::make_tuple( timeout, poll_ret, fdsToRead, ms_waited );
+}
 }
 
 

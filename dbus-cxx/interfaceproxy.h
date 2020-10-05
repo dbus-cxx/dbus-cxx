@@ -32,127 +32,126 @@
 
 namespace DBus {
 
-  class CallMessage;
-  class Connection;
-  class ObjectProxy;
-  class PendingCall;
-  class ReturnMessage;
-  template <typename signature> class MethodProxy;
+class CallMessage;
+class Connection;
+class ObjectProxy;
+class PendingCall;
+class ReturnMessage;
+template <typename signature> class MethodProxy;
 
-  /**
-   * An InterfaceProxy represents a remote Interface in another application on the DBus.
-   *
-   * Note that the interface name is immutable and cannot be changed once the interface
-   * has been created.
-   *
-   * @ingroup objects
-   * @ingroup proxy
-   * 
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  class InterfaceProxy
-  {
-    protected:
-      InterfaceProxy(const std::string& name);
+/**
+ * An InterfaceProxy represents a remote Interface in another application on the DBus.
+ *
+ * Note that the interface name is immutable and cannot be changed once the interface
+ * has been created.
+ *
+ * @ingroup objects
+ * @ingroup proxy
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+class InterfaceProxy {
+protected:
+    InterfaceProxy( const std::string& name );
 
-    public:
-      typedef std::multimap<std::string, std::shared_ptr<MethodProxyBase>> Methods;
+public:
+    typedef std::multimap<std::string, std::shared_ptr<MethodProxyBase>> Methods;
 
-      typedef std::set<std::shared_ptr<signal_proxy_base>> Signals;
+    typedef std::set<std::shared_ptr<signal_proxy_base>> Signals;
 
-      static std::shared_ptr<InterfaceProxy> create( const std::string& name = std::string() );
+    static std::shared_ptr<InterfaceProxy> create( const std::string& name = std::string() );
 
-      virtual ~InterfaceProxy();
+    virtual ~InterfaceProxy();
 
-      ObjectProxy* object() const;
+    ObjectProxy* object() const;
 
-      Path path() const;
+    Path path() const;
 
-      std::weak_ptr<Connection> connection() const;
+    std::weak_ptr<Connection> connection() const;
 
-      const std::string& name() const;
+    const std::string& name() const;
 
-      const Methods& methods() const;
+    const Methods& methods() const;
 
-      /** Returns the first method with the given name */
-      std::shared_ptr<MethodProxyBase> method( const std::string& name ) const;
+    /** Returns the first method with the given name */
+    std::shared_ptr<MethodProxyBase> method( const std::string& name ) const;
 
-      template <class T_type>
-      std::shared_ptr<MethodProxy<T_type>> create_method( const std::string& name )
-      {
+    template <class T_type>
+    std::shared_ptr<MethodProxy<T_type>> create_method( const std::string& name ) {
         std::shared_ptr< MethodProxy<T_type> > method;
-        method = MethodProxy<T_type>::create(name);
-        if( !this->add_method(method) ){
+        method = MethodProxy<T_type>::create( name );
+
+        if( !this->add_method( method ) ) {
             return std::shared_ptr< MethodProxy<T_type> >();
         }
+
         return method;
-      }
+    }
 
-      /**
-       * Adds the named method.  If a method with the same name already exists,
-       * does not replace the current method(returns false).
-       */
-      bool add_method( std::shared_ptr<MethodProxyBase> method );
+    /**
+     * Adds the named method.  If a method with the same name already exists,
+     * does not replace the current method(returns false).
+     */
+    bool add_method( std::shared_ptr<MethodProxyBase> method );
 
-      /** Removes the method with the given name */
-      void remove_method( const std::string& name );
+    /** Removes the method with the given name */
+    void remove_method( const std::string& name );
 
-      /** Removed the specific method */
-      void remove_method( std::shared_ptr<MethodProxyBase> method );
+    /** Removed the specific method */
+    void remove_method( std::shared_ptr<MethodProxyBase> method );
 
-      /** True if the interface has a method with the given name */
-      bool has_method( const std::string& name ) const;
+    /** True if the interface has a method with the given name */
+    bool has_method( const std::string& name ) const;
 
-      /** True if the interface has the specified method */
-      bool has_method( std::shared_ptr<MethodProxyBase> method ) const;
-      
-      std::shared_ptr<CallMessage> create_call_message( const std::string& method_name ) const;
+    /** True if the interface has the specified method */
+    bool has_method( std::shared_ptr<MethodProxyBase> method ) const;
 
-      std::shared_ptr<const ReturnMessage> call( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
+    std::shared_ptr<CallMessage> create_call_message( const std::string& method_name ) const;
 
-//      std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
+    std::shared_ptr<const ReturnMessage> call( std::shared_ptr<const CallMessage>, int timeout_milliseconds = -1 ) const;
 
-      template <class T_return, class... T_arg>
-      std::shared_ptr<signal_proxy<T_return,T_arg...> > create_signal( const std::string& sig_name, ThreadForCalling calling )
-      {
-        std::shared_ptr< signal_proxy<T_return,T_arg...> > sig;
+    //      std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
+
+    template <class T_return, class... T_arg>
+    std::shared_ptr<signal_proxy<T_return, T_arg...> > create_signal( const std::string& sig_name, ThreadForCalling calling ) {
+        std::shared_ptr< signal_proxy<T_return, T_arg...> > sig;
         SignalMatchRule match = SignalMatchRule::create()
             .setPath( this->path() )
             .setInterface( name() )
             .setMember( sig_name );
-        sig = signal_proxy<T_return,T_arg...>::create( match );
-        this->add_signal(sig, calling);
+        sig = signal_proxy<T_return, T_arg...>::create( match );
+        this->add_signal( sig, calling );
         return sig;
-      }
+    }
 
-      const Signals& signals() const;
+    const Signals& signals() const;
 
-      std::shared_ptr<signal_proxy_base> signal( const std::string& signame );
+    std::shared_ptr<signal_proxy_base> signal( const std::string& signame );
 
-      bool add_signal( std::shared_ptr<signal_proxy_base> sig, ThreadForCalling calling );
+    bool add_signal( std::shared_ptr<signal_proxy_base> sig, ThreadForCalling calling );
 
-      bool remove_signal( const std::string& signame );
+    bool remove_signal( const std::string& signame );
 
-      bool remove_signal( std::shared_ptr<signal_proxy_base> sig );
+    bool remove_signal( std::shared_ptr<signal_proxy_base> sig );
 
-      bool has_signal( const std::string& signame ) const;
+    bool has_signal( const std::string& signame ) const;
 
-      bool has_signal( std::shared_ptr<signal_proxy_base> sig ) const;
+    bool has_signal( std::shared_ptr<signal_proxy_base> sig ) const;
 
-    private:
-      void on_object_set_connection( std::shared_ptr<Connection> conn );
+private:
+    void on_object_set_connection( std::shared_ptr<Connection> conn );
 
-      void on_object_set_path( const std::string& path );
+    void on_object_set_path( const std::string& path );
 
-      void set_object( ObjectProxy* obj );
+    void set_object( ObjectProxy* obj );
 
-    private:
-      class priv_data;
+private:
+    class priv_data;
 
-      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
+    DBUS_CXX_PROPAGATE_CONST( std::unique_ptr<priv_data> ) m_priv;
 
-      friend class ObjectProxy;
-  };
+    friend class ObjectProxy;
+};
 
 }
 

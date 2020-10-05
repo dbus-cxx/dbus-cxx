@@ -27,7 +27,7 @@
 #include <dbus-cxx/dbus-cxx-config.h>
 #include <memory>
 
-namespace DBus{
+namespace DBus {
 
 /**
  * Routines for demarshaling data.
@@ -100,7 +100,7 @@ private:
 private:
     class priv_data;
 
-    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
+    DBUS_CXX_PROPAGATE_CONST( std::unique_ptr<priv_data> ) m_priv;
 };
 
 }

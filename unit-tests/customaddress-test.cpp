@@ -20,14 +20,14 @@
 #include <dbus-cxx.h>
 #include <stdlib.h>
 
-int main( int argc, char** argv ){
+int main( int argc, char** argv ) {
     DBus::setLoggingFunction( DBus::logStdErr );
     DBus::setLogLevel( SL_TRACE );
-  std::string dbusAddress = std::string( getenv( "CUSTOM_DBUS_ADDRESS" ) );
-  std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
-  std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( dbusAddress );
+    std::string dbusAddress = std::string( getenv( "CUSTOM_DBUS_ADDRESS" ) );
+    std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( dbusAddress );
 
-  if( conn->is_valid() ) return 0;
+    if( conn->is_valid() ) { return 0; }
 
-  return 1;
+    return 1;
 }

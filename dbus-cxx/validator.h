@@ -104,7 +104,7 @@ public:
      * Return the maximum array size
      * @return
      */
-    static constexpr uint32_t maximum_array_size(){ return 0x01 << 26; }
+    static constexpr uint32_t maximum_array_size() { return 0x01 << 26; }
 
 };
 

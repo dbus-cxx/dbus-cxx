@@ -31,15 +31,14 @@ class Connection;
  *
  * One dispatcher can handle multiple connections.
  */
-class StandaloneDispatcher : public Dispatcher
-{
-  private:
+class StandaloneDispatcher : public Dispatcher {
+private:
 
-    StandaloneDispatcher(bool is_running=true);
+    StandaloneDispatcher( bool is_running = true );
 
-  public:
+public:
 
-    static std::shared_ptr<StandaloneDispatcher> create( bool is_running=true );
+    static std::shared_ptr<StandaloneDispatcher> create( bool is_running = true );
 
     ~StandaloneDispatcher();
 
@@ -59,7 +58,7 @@ class StandaloneDispatcher : public Dispatcher
 
     bool is_running();
 
-  private:
+private:
 
     void dispatch_thread_main();
 
@@ -73,7 +72,7 @@ class StandaloneDispatcher : public Dispatcher
 private:
     class priv_data;
 
-    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
+    DBUS_CXX_PROPAGATE_CONST( std::unique_ptr<priv_data> ) m_priv;
 };
 
 } /* namespace DBus */

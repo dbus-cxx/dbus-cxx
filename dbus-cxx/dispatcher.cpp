@@ -18,10 +18,8 @@
  ***************************************************************************/
 #include "dispatcher.h"
 
-namespace DBus
-{
-  Dispatcher::~Dispatcher()
-  {
-  }
+namespace DBus {
+Dispatcher::~Dispatcher() {
+}
 
 }

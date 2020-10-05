@@ -22,13 +22,13 @@
 
 #include "test_macros.h"
 
-bool signature_create(){
+bool signature_create() {
     DBus::Signature sig;
 
     return true;
 }
 
-bool signature_iterate_int32(){
+bool signature_iterate_int32() {
     DBus::Signature sig( "i" );
 
     DBus::SignatureIterator it = sig.begin();
@@ -38,7 +38,7 @@ bool signature_iterate_int32(){
     return true;
 }
 
-bool signature_iterate_arrayint(){
+bool signature_iterate_arrayint() {
     DBus::Signature sig( "ai" );
 
     DBus::SignatureIterator it = sig.begin();
@@ -55,7 +55,7 @@ bool signature_iterate_arrayint(){
     return true;
 }
 
-bool signature_iterate_arrayint2(){
+bool signature_iterate_arrayint2() {
     DBus::Signature sig( "ai" );
 
     DBus::SignatureIterator it = sig.begin();
@@ -70,7 +70,7 @@ bool signature_iterate_arrayint2(){
     return true;
 }
 
-bool signature_iterate_nested_array(){
+bool signature_iterate_nested_array() {
     DBus::Signature sig( "aai" );
 
     DBus::SignatureIterator it = sig.begin();
@@ -89,7 +89,7 @@ bool signature_iterate_nested_array(){
     return true;
 }
 
-bool signature_iterate_multiple_types(){
+bool signature_iterate_multiple_types() {
     DBus::Signature sig( "idyb" );
 
     DBus::SignatureIterator it = sig.begin();
@@ -105,7 +105,7 @@ bool signature_iterate_multiple_types(){
     return true;
 }
 
-bool signature_iterate_dictionary(){
+bool signature_iterate_dictionary() {
     DBus::Signature sig( "a{yv}" );
 
     DBus::SignatureIterator it = sig.begin();
@@ -124,7 +124,7 @@ bool signature_iterate_dictionary(){
     return true;
 }
 
-bool signature_iterate_struct(){
+bool signature_iterate_struct() {
     DBus::Signature sig( "(bdi)" );
 
     DBus::SignatureIterator it = sig.begin();
@@ -145,7 +145,7 @@ bool signature_iterate_struct(){
     return true;
 }
 
-bool signature_iterate_nested_with_more_data(){
+bool signature_iterate_nested_with_more_data() {
     DBus::Signature sig( "aaidd" );
 
     DBus::SignatureIterator it = sig.begin();
@@ -161,7 +161,7 @@ bool signature_iterate_nested_with_more_data(){
     return true;
 }
 
-bool signature_iterate_dict_and_data(){
+bool signature_iterate_dict_and_data() {
     DBus::Signature sig( "a{bs}ix" );
 
     DBus::SignatureIterator it = sig.begin();
@@ -177,7 +177,7 @@ bool signature_iterate_dict_and_data(){
     return true;
 }
 
-bool signature_iterate_struct_and_data(){
+bool signature_iterate_struct_and_data() {
     DBus::Signature sig( "(bs)ix" );
 
     DBus::SignatureIterator it = sig.begin();
@@ -193,7 +193,7 @@ bool signature_iterate_struct_and_data(){
     return true;
 }
 
-bool signature_unbalanced_struct(){
+bool signature_unbalanced_struct() {
     DBus::Signature sig( "(b" );
 
     TEST_EQUALS_RET_FAIL( sig.is_valid(), false );
@@ -201,7 +201,7 @@ bool signature_unbalanced_struct(){
     return true;
 }
 
-bool signature_iterate_nested_struct(){
+bool signature_iterate_nested_struct() {
     DBus::Signature sig( "(i(id))" );
 
     DBus::SignatureIterator it = sig.begin();
@@ -229,7 +229,7 @@ bool signature_iterate_nested_struct(){
     return true;
 }
 
-bool signature_single_bool(){
+bool signature_single_bool() {
     DBus::Signature sig( "b" );
 
     DBus::SignatureIterator it = sig.begin();
@@ -239,8 +239,8 @@ bool signature_single_bool(){
     return true;
 }
 
-bool signature_create_from_struct_in_array(){
-    std::vector<std::tuple<int32_t,uint64_t>> vector_type;
+bool signature_create_from_struct_in_array() {
+    std::vector<std::tuple<int32_t, uint64_t>> vector_type;
 
     std::string sig_output = DBus::signature( vector_type );
 
@@ -248,33 +248,34 @@ bool signature_create_from_struct_in_array(){
 }
 
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
-  ret = signature_##name();\
-} \
-} while( 0 )
+            ret = signature_##name();\
+        } \
+    } while( 0 )
 
-int main(int argc, char** argv){
-  if(argc < 1)
-    return 1;
+int main( int argc, char** argv ) {
+    if( argc < 1 ) {
+        return 1;
+    }
 
-  std::string test_name = argv[1];
-  bool ret = false;
+    std::string test_name = argv[1];
+    bool ret = false;
 
-  ADD_TEST(create);
-  ADD_TEST(iterate_arrayint);
-  ADD_TEST(iterate_arrayint2);
-  ADD_TEST(iterate_nested_array);
-  ADD_TEST(iterate_multiple_types);
-  ADD_TEST(iterate_dictionary);
-  ADD_TEST(iterate_struct);
-  ADD_TEST(iterate_nested_with_more_data);
-  ADD_TEST(iterate_dict_and_data);
-  ADD_TEST(iterate_struct_and_data);
-  ADD_TEST(iterate_nested_struct);
+    ADD_TEST( create );
+    ADD_TEST( iterate_arrayint );
+    ADD_TEST( iterate_arrayint2 );
+    ADD_TEST( iterate_nested_array );
+    ADD_TEST( iterate_multiple_types );
+    ADD_TEST( iterate_dictionary );
+    ADD_TEST( iterate_struct );
+    ADD_TEST( iterate_nested_with_more_data );
+    ADD_TEST( iterate_dict_and_data );
+    ADD_TEST( iterate_struct_and_data );
+    ADD_TEST( iterate_nested_struct );
 
-  ADD_TEST(unbalanced_struct);
-  ADD_TEST(single_bool);
+    ADD_TEST( unbalanced_struct );
+    ADD_TEST( single_bool );
 
-  ADD_TEST(create_from_struct_in_array);
+    ADD_TEST( create_from_struct_in_array );
 
-  return !ret;
+    return !ret;
 }

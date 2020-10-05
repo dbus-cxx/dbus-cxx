@@ -2,4 +2,4 @@
 
 using DBus::ThreadDispatcher;
 
-ThreadDispatcher::~ThreadDispatcher(){}
+ThreadDispatcher::~ThreadDispatcher() {}

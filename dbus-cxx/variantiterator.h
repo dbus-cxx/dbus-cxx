@@ -32,116 +32,119 @@ class Demarshaling;
 
 class VariantIterator {
 private:
-  /**
-   * Create a new sub-iterator
-   *
-   * @param d The data type we are iterating over
-   * @param sig The signature within the data type
-   * @param variant Our parent variant
-   * @param demarshal The demarshaller
-   */
-  VariantIterator( DataType d,
-                   SignatureIterator sig,
-                   const Variant* variant,
-                   std::shared_ptr<Demarshaling> demarshal );
+    /**
+     * Create a new sub-iterator
+     *
+     * @param d The data type we are iterating over
+     * @param sig The signature within the data type
+     * @param variant Our parent variant
+     * @param demarshal The demarshaller
+     */
+    VariantIterator( DataType d,
+        SignatureIterator sig,
+        const Variant* variant,
+        std::shared_ptr<Demarshaling> demarshal );
 
 public:
 
-  VariantIterator();
+    VariantIterator();
 
-  VariantIterator( const Variant* variant );
+    VariantIterator( const Variant* variant );
 
-  template <typename T>
-  VariantIterator& operator>>( T& v )
-  {
-      v = static_cast<T>(*this);
-      this->next();
-      return *this;
-  }
+    template <typename T>
+    VariantIterator& operator>>( T& v ) {
+        v = static_cast<T>( *this );
+        this->next();
+        return *this;
+    }
 
-  operator bool();
-  operator uint8_t();
-  operator uint16_t();
-  operator int16_t();
-  operator uint32_t();
-  operator int32_t();
-  operator uint64_t();
-  operator int64_t();
-  operator double();
-  operator std::string();
-  operator Variant();
+    operator bool();
+    operator uint8_t();
+    operator uint16_t();
+    operator int16_t();
+    operator uint32_t();
+    operator int32_t();
+    operator uint64_t();
+    operator int64_t();
+    operator double();
+    operator std::string();
+    operator Variant();
 
     template <typename T>
     operator std::vector<T>() {
-      if( !is_array() )
-        throw ErrorInvalidTypecast( "VariantIterator: Extracting non array into std::vector" );
+        if( !is_array() ) {
+            throw ErrorInvalidTypecast( "VariantIterator: Extracting non array into std::vector" );
+        }
 
-      std::vector<T> retval;
-      VariantIterator subiter = this->recurse();
-      while( subiter.is_valid() )
-      {
-        //NOTE: we don't need to do subiter.next() here, because
-        //operator>> does that for us
-        T val;
-        subiter >> val;
-        retval.push_back( val );
-      }
+        std::vector<T> retval;
+        VariantIterator subiter = this->recurse();
 
-      return retval;
+        while( subiter.is_valid() ) {
+            //NOTE: we don't need to do subiter.next() here, because
+            //operator>> does that for us
+            T val;
+            subiter >> val;
+            retval.push_back( val );
+        }
+
+        return retval;
     }
 
-  template <typename Key, typename Data>
-  operator std::map<Key,Data>() {
-    if ( !this->is_dict() )
-      throw ErrorInvalidTypecast( "VariantIterator: Extracting non dict into std::map" );
+    template <typename Key, typename Data>
+    operator std::map<Key, Data>() {
+        if( !this->is_dict() ) {
+            throw ErrorInvalidTypecast( "VariantIterator: Extracting non dict into std::map" );
+        }
 
-    std::map<Key,Data> dict;
-    Key val_key;
-    Data val_data;
+        std::map<Key, Data> dict;
+        Key val_key;
+        Data val_data;
 
-    VariantIterator subiter = this->recurse();
-    while( subiter.is_valid() ) {
-      VariantIterator subSubiter = subiter.recurse();
-      while( subSubiter.is_valid() )
-      {
-        subSubiter >> val_key;
-        subSubiter >> val_data;
-        dict[ val_key ] = val_data;
-        subSubiter.next();
-      }
-     subiter.next();
-   }
+        VariantIterator subiter = this->recurse();
 
-    return dict;
-  }
+        while( subiter.is_valid() ) {
+            VariantIterator subSubiter = subiter.recurse();
 
-  template <typename ...T>
-  operator std::tuple<T...>(){
-      std::tuple<T...> tup;
+            while( subSubiter.is_valid() ) {
+                subSubiter >> val_key;
+                subSubiter >> val_data;
+                dict[ val_key ] = val_data;
+                subSubiter.next();
+            }
 
-      //VariantIterator subiter = this->recurse();
-      std::apply( [this](auto&& ...arg) mutable {
-             (*this >> ... >> arg);
-            },
-      tup );
+            subiter.next();
+        }
 
-      return tup;
-  }
+        return dict;
+    }
 
-  bool        get_bool();
-  uint8_t     get_uint8();
-  uint16_t    get_uint16();
-  int16_t     get_int16();
-  uint32_t    get_uint32();
-  int32_t     get_int32();
-  uint64_t    get_uint64();
-  int64_t     get_int64();
-  double      get_double();
-  std::string get_string();
-  Variant get_variant();
-  Signature get_signature();
+    template <typename ...T>
+    operator std::tuple<T...>() {
+        std::tuple<T...> tup;
 
-  void invalidate();
+        //VariantIterator subiter = this->recurse();
+        std::apply( [this]( auto&& ...arg ) mutable {
+            ( *this >> ... >> arg );
+        },
+        tup );
+
+        return tup;
+    }
+
+    bool        get_bool();
+    uint8_t     get_uint8();
+    uint16_t    get_uint16();
+    int16_t     get_int16();
+    uint32_t    get_uint32();
+    int32_t     get_int32();
+    uint64_t    get_uint64();
+    int64_t     get_int64();
+    double      get_double();
+    std::string get_string();
+    Variant get_variant();
+    Signature get_signature();
+
+    void invalidate();
 
     /** True if this is a valid iterator */
     bool is_valid() const;

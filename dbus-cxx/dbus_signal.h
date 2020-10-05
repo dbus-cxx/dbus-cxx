@@ -32,7 +32,7 @@ template <typename... T_sig>
 class signal;
 
 template <typename T_ret, typename... T_args>
-class signal<T_ret(T_args...)>{};
+class signal<T_ret( T_args... )> {};
 
 /**
  * Subclass of sigc::signal
@@ -49,73 +49,74 @@ class signal<T_ret(T_args...)>{};
  *
  */
 template <typename... T_type>
-class signal 
-  : public sigc::signal<void(T_type...)>, public signal_base
-{
+class signal
+    : public sigc::signal<void( T_type... )>, public signal_base {
 private:
-  signal(const std::string& path, const std::string& interface_name, const std::string& member):
-    signal_base(path, interface_name, member)
-  {
-    m_internal_callback_connection =
-      this->connect( sigc::mem_fun(*this, &signal::internal_callback) );
-  }
+    signal( const std::string& path, const std::string& interface_name, const std::string& member ):
+        signal_base( path, interface_name, member ) {
+        m_internal_callback_connection =
+            this->connect( sigc::mem_fun( *this, &signal::internal_callback ) );
+    }
 
 public:
-  static std::shared_ptr<signal> create(const std::string& path, const std::string& interface_name, const std::string& member)
-  {
-    return std::shared_ptr<signal>( new signal(path, interface_name, member) );
-  }
+    static std::shared_ptr<signal> create( const std::string& path, const std::string& interface_name, const std::string& member ) {
+        return std::shared_ptr<signal>( new signal( path, interface_name, member ) );
+    }
 
-//  virtual std::shared_ptr<signal_base> clone()
-//  {
-//    return std::shared_ptr<signal_base>( new signal(*this) );
-//  }
+    //  virtual std::shared_ptr<signal_base> clone()
+    //  {
+    //    return std::shared_ptr<signal_base>( new signal(*this) );
+    //  }
 
-  /** Returns a DBus XML description of this interface */
-  virtual std::string introspect(int space_depth=0) const
-  {
-    std::ostringstream sout;
-    std::string spaces;
-    DBus::priv::dbus_function_traits<std::function<void(T_type...)>> method_sig_gen;
-    for (int i=0; i < space_depth; i++ ) spaces += " ";
-    sout << spaces << "<signal name=\"" << name() << "\">\n";
-    sout << spaces << method_sig_gen.introspect(m_arg_names, 0, spaces);
-    sout << spaces << "</signal>\n";
-    return sout.str();
-  }
+    /** Returns a DBus XML description of this interface */
+    virtual std::string introspect( int space_depth = 0 ) const {
+        std::ostringstream sout;
+        std::string spaces;
+        DBus::priv::dbus_function_traits<std::function<void( T_type... )>> method_sig_gen;
 
-  virtual std::string arg_name(size_t i) {
-    if ( i < m_arg_names.size() ) return m_arg_names[i];
-    return std::string();
-  }
+        for( int i = 0; i < space_depth; i++ ) { spaces += " "; }
 
-  virtual void set_arg_name(size_t i, const std::string& name) {
-    if ( i < m_arg_names.size() )
-        m_arg_names[i] = name;
-  }
+        sout << spaces << "<signal name=\"" << name() << "\">\n";
+        sout << spaces << method_sig_gen.introspect( m_arg_names, 0, spaces );
+        sout << spaces << "</signal>\n";
+        return sout.str();
+    }
 
-  protected:
+    virtual std::string arg_name( size_t i ) {
+        if( i < m_arg_names.size() ) { return m_arg_names[i]; }
 
-  friend class Interface;
+        return std::string();
+    }
 
-  std::vector<std::string> m_arg_names;
+    virtual void set_arg_name( size_t i, const std::string& name ) {
+        if( i < m_arg_names.size() ) {
+            m_arg_names[i] = name;
+        }
+    }
 
-  sigc::connection m_internal_callback_connection;
+protected:
 
-  void internal_callback(T_type... args)
-  {
-    std::shared_ptr<SignalMessage> __msg = SignalMessage::create(path(), interface_name(), name());
-    DBUSCXX_DEBUG_STDSTR( "DBus.signal", "Sending following signal: "
-        << __msg->path()
-        << " "
-        << __msg->interface_name()
-        << " "
-        << __msg->member() );
-    if ( !destination().empty() ) __msg->set_destination( destination() );
-    (*__msg << ... << args);
-    bool result = this->handle_dbus_outgoing(__msg);
-    DBUSCXX_DEBUG_STDSTR( "dbus.signal", "signal::internal_callback: result=" << result );
-  }
+    friend class Interface;
+
+    std::vector<std::string> m_arg_names;
+
+    sigc::connection m_internal_callback_connection;
+
+    void internal_callback( T_type... args ) {
+        std::shared_ptr<SignalMessage> __msg = SignalMessage::create( path(), interface_name(), name() );
+        DBUSCXX_DEBUG_STDSTR( "DBus.signal", "Sending following signal: "
+            << __msg->path()
+            << " "
+            << __msg->interface_name()
+            << " "
+            << __msg->member() );
+
+        if( !destination().empty() ) { __msg->set_destination( destination() ); }
+
+        ( *__msg << ... << args );
+        bool result = this->handle_dbus_outgoing( __msg );
+        DBUSCXX_DEBUG_STDSTR( "dbus.signal", "signal::internal_callback: result=" << result );
+    }
 };
 
 } /* namespace DBus */

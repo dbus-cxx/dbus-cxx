@@ -19,51 +19,43 @@
 #include "error.h"
 #include "message.h"
 
-namespace DBus
-{
+namespace DBus {
 
-  Error::Error()
-  {
-  }
+Error::Error() {
+}
 
-  Error::Error( const char* name, const char* message )
-  {
+Error::Error( const char* name, const char* message ) {
     m_name = std::string( name );
-    if( message != nullptr ){
+
+    if( message != nullptr ) {
         m_message = std::string( message );
     }
-  }
+}
 
-  Error::Error( const char* name, std::string message )
-  {
-      m_name = std::string( name );
-      m_message = std::string( message );
-  }
+Error::Error( const char* name, std::string message ) {
+    m_name = std::string( name );
+    m_message = std::string( message );
+}
 
-  Error::Error( std::string name, std::string message )
-  {
-      m_name = std::string( name );
-      m_message = std::string( message );
-  }
+Error::Error( std::string name, std::string message ) {
+    m_name = std::string( name );
+    m_message = std::string( message );
+}
 
-  Error::~Error( ) noexcept
-  {
-  }
+Error::~Error( ) noexcept {
+}
 
-  std::string Error::name() const
-  {
+std::string Error::name() const {
     return m_name;
-  }
+}
 
-  std::string Error::message() const
-  {
+std::string Error::message() const {
     return m_message;
-  }
+}
 
-  const char* Error::what() const noexcept
-  {
+const char* Error::what() const noexcept {
     return m_message.c_str();
-  }
+}
 
 }
 

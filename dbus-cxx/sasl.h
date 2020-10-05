@@ -28,7 +28,7 @@
 #include <vector>
 
 namespace DBus {
-namespace priv{
+namespace priv {
 
 /**
  * Implements the authentication routines for connection to the bus
@@ -54,7 +54,7 @@ public:
      * - bool If this supports FD passing
      * - vector The GUID of the server
      */
-    std::tuple<bool,bool,std::vector<uint8_t>> authenticate();
+    std::tuple<bool, bool, std::vector<uint8_t>> authenticate();
 
 private:
     int write_data_with_newline( std::string data );
@@ -65,7 +65,7 @@ private:
 private:
     class priv_data;
 
-    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
+    DBUS_CXX_PROPAGATE_CONST( std::unique_ptr<priv_data> ) m_priv;
 };
 
 } /* namespace priv */

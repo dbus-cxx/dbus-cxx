@@ -23,45 +23,45 @@
 
 #include <memory>
 
-namespace DBus{
+namespace DBus {
 
 /**
  * A FileDescriptor holds a UNIX file descriptor that can be passed between processes.
  *
  */
-class FileDescriptor{
+class FileDescriptor {
 protected:
-	FileDescriptor() :
-		m_valid( false ),
-		m_fd( -1 ) {}
+    FileDescriptor() :
+        m_valid( false ),
+        m_fd( -1 ) {}
 
-        explicit FileDescriptor( int fd ) :
-		m_valid( true ),
-		m_fd( fd ) {}
+    explicit FileDescriptor( int fd ) :
+        m_valid( true ),
+        m_fd( fd ) {}
 
-        explicit FileDescriptor( const FileDescriptor& other ) :
-		m_valid( other.m_valid ),
-		m_fd( other.m_fd ) {}
+    explicit FileDescriptor( const FileDescriptor& other ) :
+        m_valid( other.m_valid ),
+        m_fd( other.m_fd ) {}
 
 public:
-      static std::shared_ptr<FileDescriptor> create( int fd ){
-          std::shared_ptr<FileDescriptor> p(new FileDescriptor( fd ));
-          return p;
-      }
+    static std::shared_ptr<FileDescriptor> create( int fd ) {
+        std::shared_ptr<FileDescriptor> p( new FileDescriptor( fd ) );
+        return p;
+    }
 
-	~FileDescriptor(){}
+    ~FileDescriptor() {}
 
-	int getDescriptor() const{
-		return m_fd;
-	}
+    int getDescriptor() const {
+        return m_fd;
+    }
 
-	operator bool() const {
-		return m_valid;
-	}
+    operator bool() const {
+        return m_valid;
+    }
 
 private:
-	bool m_valid;
-	int m_fd;
+    bool m_valid;
+    int m_fd;
 };
 
 }

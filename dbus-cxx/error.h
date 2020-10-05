@@ -23,424 +23,422 @@
 #ifndef DBUSCXX_ERROR_H
 #define DBUSCXX_ERROR_H
 
-namespace DBus
-{
+namespace DBus {
 
-  class Message;
+class Message;
 
-  /**
-   * @defgroup errors Errors
-   *
-   * A hierarchy of error objects descended from std::exception thrown when
-   * exceptional conditions arise.
-   */
+/**
+ * @defgroup errors Errors
+ *
+ * A hierarchy of error objects descended from std::exception thrown when
+ * exceptional conditions arise.
+ */
 
-  /**
-   * Base class of a hierarchy of error objects thrown when exceptional conditions occur
-   *
-   * @ingroup core
-   *
-   * @ingroup errors
-   *
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  class Error : public std::exception
-  {
-    public:
-      Error();
+/**
+ * Base class of a hierarchy of error objects thrown when exceptional conditions occur
+ *
+ * @ingroup core
+ *
+ * @ingroup errors
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+class Error : public std::exception {
+public:
+    Error();
 
-      Error( const char* name, const char* message=nullptr );
+    Error( const char* name, const char* message = nullptr );
 
-      Error( const char* name, std::string message );
+    Error( const char* name, std::string message );
 
-      Error( std::string name, std::string message );
+    Error( std::string name, std::string message );
 
-      ~Error() noexcept;
+    ~Error() noexcept;
 
-      const char* what() const noexcept;
+    const char* what() const noexcept;
 
-      std::string name() const;
+    std::string name() const;
 
-      std::string message() const;
+    std::string message() const;
 
-    protected:
-      std::string m_name;
-      std::string m_message;
+protected:
+    std::string m_name;
+    std::string m_message;
 
-  };
+};
 
 #define DBUSCXX_ERROR( CPPTYPE, DBUS_ERROR_CODE )            \
-  class CPPTYPE : public Error {                             \
+    class CPPTYPE : public Error {                             \
     public:                                                  \
-    CPPTYPE( const char* message = nullptr )                 \
-        : Error( DBUS_ERROR_CODE, message ) {}               \
-    CPPTYPE( std::string message )                           \
-        : Error( DBUS_ERROR_CODE, message ) {}               \
-  }
+        CPPTYPE( const char* message = nullptr )                 \
+            : Error( DBUS_ERROR_CODE, message ) {}               \
+        CPPTYPE( std::string message )                           \
+            : Error( DBUS_ERROR_CODE, message ) {}               \
+    }
 
-  /**
-   * @class ErrorFailed
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorFailed, DBUSCXX_ERROR_FAILED );
-  
-  /**
-   * @class ErrorNoMemory
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorNoMemory, DBUSCXX_ERROR_NO_MEMORY );
+/**
+ * @class ErrorFailed
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorFailed, DBUSCXX_ERROR_FAILED );
 
-  /**
-   * @class ErrorServiceUnknown
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorServiceUnknown, DBUSCXX_ERROR_SERVICE_UNKNOWN );
+/**
+ * @class ErrorNoMemory
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorNoMemory, DBUSCXX_ERROR_NO_MEMORY );
 
-  /**
-   * @class ErrorNameHasNoOwner
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorNameHasNoOwner, DBUSCXX_ERROR_NAME_HAS_NO_OWNER );
+/**
+ * @class ErrorServiceUnknown
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorServiceUnknown, DBUSCXX_ERROR_SERVICE_UNKNOWN );
 
-  /**
-   * @class ErrorNoReply
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorNoReply, DBUSCXX_ERROR_NO_REPLY );
+/**
+ * @class ErrorNameHasNoOwner
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorNameHasNoOwner, DBUSCXX_ERROR_NAME_HAS_NO_OWNER );
 
-  /**
-   * @class ErrorIOError
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorIOError, DBUSCXX_ERROR_IO_ERROR );
+/**
+ * @class ErrorNoReply
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorNoReply, DBUSCXX_ERROR_NO_REPLY );
 
-  /**
-   * @class ErrorBadAddress
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorBadAddress, DBUSCXX_ERROR_BAD_ADDRESS );
+/**
+ * @class ErrorIOError
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorIOError, DBUSCXX_ERROR_IO_ERROR );
 
-  /**
-   * @class ErrorNotSupported
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorNotSupported, DBUSCXX_ERROR_NOT_SUPPORTED );
+/**
+ * @class ErrorBadAddress
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorBadAddress, DBUSCXX_ERROR_BAD_ADDRESS );
 
-  /**
-   * @class ErrorLimitsExceeded
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorLimitsExceeded, DBUSCXX_ERROR_LIMITS_EXCEEDED );
+/**
+ * @class ErrorNotSupported
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorNotSupported, DBUSCXX_ERROR_NOT_SUPPORTED );
 
-  /**
-   * @class ErrorAccessDenied
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorAccessDenied, DBUSCXX_ERROR_ACCESS_DENIED );
+/**
+ * @class ErrorLimitsExceeded
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorLimitsExceeded, DBUSCXX_ERROR_LIMITS_EXCEEDED );
 
-  /**
-   * @class ErrorAuthFailed
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorAuthFailed, DBUSCXX_ERROR_AUTH_FAILED );
+/**
+ * @class ErrorAccessDenied
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorAccessDenied, DBUSCXX_ERROR_ACCESS_DENIED );
 
-  /**
-   * @class ErrorNoServer
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorNoServer, DBUSCXX_ERROR_NO_SERVER );
+/**
+ * @class ErrorAuthFailed
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorAuthFailed, DBUSCXX_ERROR_AUTH_FAILED );
 
-  /**
-   * @class ErrorTimeout
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorTimeout, DBUSCXX_ERROR_TIMEOUT );
+/**
+ * @class ErrorNoServer
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorNoServer, DBUSCXX_ERROR_NO_SERVER );
 
-  /**
-   * @class ErrorNoNetwork
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorNoNetwork, DBUSCXX_ERROR_NO_NETWORK );
+/**
+ * @class ErrorTimeout
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorTimeout, DBUSCXX_ERROR_TIMEOUT );
 
-  /**
-   * @class ErrorAddressInUse
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorAddressInUse, DBUSCXX_ERROR_ADDRESS_IN_USE );
+/**
+ * @class ErrorNoNetwork
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorNoNetwork, DBUSCXX_ERROR_NO_NETWORK );
 
-  /**
-   * @class ErrorDisconnected
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorDisconnected, DBUSCXX_ERROR_DISCONNECTED );
+/**
+ * @class ErrorAddressInUse
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorAddressInUse, DBUSCXX_ERROR_ADDRESS_IN_USE );
 
-  /**
-   * @class ErrorInvalidArgs
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorInvalidArgs, DBUSCXX_ERROR_INVALID_ARGS );
+/**
+ * @class ErrorDisconnected
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorDisconnected, DBUSCXX_ERROR_DISCONNECTED );
 
-  /**
-   * @class ErrorFileNotFound
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorFileNotFound, DBUSCXX_ERROR_FILE_NOT_FOUND );
+/**
+ * @class ErrorInvalidArgs
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorInvalidArgs, DBUSCXX_ERROR_INVALID_ARGS );
 
-  /**
-   * @class ErrorFileExists
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorFileExists, DBUSCXX_ERROR_FILE_EXISTS );
+/**
+ * @class ErrorFileNotFound
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorFileNotFound, DBUSCXX_ERROR_FILE_NOT_FOUND );
 
-  /**
-   * @class ErrorUnknownMethod
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorUnknownMethod, DBUSCXX_ERROR_UNKNOWN_METHOD );
+/**
+ * @class ErrorFileExists
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorFileExists, DBUSCXX_ERROR_FILE_EXISTS );
 
-  /**
-   * @class ErrorUnknownObject
-   * @ingroup errors
-   */
-  DBUSCXX_ERROR( ErrorUnknownObject, DBUSCXX_ERROR_UNKNOWN_OBJECT );
+/**
+ * @class ErrorUnknownMethod
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorUnknownMethod, DBUSCXX_ERROR_UNKNOWN_METHOD );
 
-  /**
-   * @class ErrorUnknownInterface
-   * @ingroup errors
-   */
-  DBUSCXX_ERROR( ErrorUnknownInterface, DBUSCXX_ERROR_UNKNOWN_INTERFACE );
+/**
+ * @class ErrorUnknownObject
+ * @ingroup errors
+ */
+DBUSCXX_ERROR( ErrorUnknownObject, DBUSCXX_ERROR_UNKNOWN_OBJECT );
 
-  /**
-   * @class ErrorUnknownProperty
-   * @ingroup errors
-   */
-  DBUSCXX_ERROR( ErrorUnknownProperty, DBUSCXX_ERROR_UNKNOWN_PROPERTY );
+/**
+ * @class ErrorUnknownInterface
+ * @ingroup errors
+ */
+DBUSCXX_ERROR( ErrorUnknownInterface, DBUSCXX_ERROR_UNKNOWN_INTERFACE );
 
-  /**
-   * @class ErrorPropertyReadOnly
-   * @ingroup errors
-   */
-  DBUSCXX_ERROR( ErrorPropertyReadOnly, DBUSCXX_ERROR_PROPERTY_READ_ONLY );
+/**
+ * @class ErrorUnknownProperty
+ * @ingroup errors
+ */
+DBUSCXX_ERROR( ErrorUnknownProperty, DBUSCXX_ERROR_UNKNOWN_PROPERTY );
 
-  /**
-   * @class ErrorTimedOut
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorTimedOut, DBUSCXX_ERROR_TIMED_OUT );
+/**
+ * @class ErrorPropertyReadOnly
+ * @ingroup errors
+ */
+DBUSCXX_ERROR( ErrorPropertyReadOnly, DBUSCXX_ERROR_PROPERTY_READ_ONLY );
 
-  /**
-   * @class ErrorMatchRuleNotFound
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorMatchRuleNotFound, DBUSCXX_ERROR_MATCH_RULE_NOT_FOUND );
+/**
+ * @class ErrorTimedOut
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorTimedOut, DBUSCXX_ERROR_TIMED_OUT );
 
-  /**
-   * @class ErrorMatchRuleInvalid
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorMatchRuleInvalid, DBUSCXX_ERROR_MATCH_RULE_INVALID );
+/**
+ * @class ErrorMatchRuleNotFound
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorMatchRuleNotFound, DBUSCXX_ERROR_MATCH_RULE_NOT_FOUND );
 
-  /**
-   * @class ErrorSpawnExecFailed
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorSpawnExecFailed, DBUSCXX_ERROR_SPAWN_EXEC_FAILED );
+/**
+ * @class ErrorMatchRuleInvalid
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorMatchRuleInvalid, DBUSCXX_ERROR_MATCH_RULE_INVALID );
 
-  /**
-   * @class ErrorSpawnForkFailed
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorSpawnForkFailed, DBUSCXX_ERROR_SPAWN_FORK_FAILED );
+/**
+ * @class ErrorSpawnExecFailed
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorSpawnExecFailed, DBUSCXX_ERROR_SPAWN_EXEC_FAILED );
 
-  /**
-   * @class ErrorSpawnChildExited
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorSpawnChildExited, DBUSCXX_ERROR_SPAWN_CHILD_EXITED );
+/**
+ * @class ErrorSpawnForkFailed
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorSpawnForkFailed, DBUSCXX_ERROR_SPAWN_FORK_FAILED );
 
-  /**
-   * @class ErrorSpawnChildSignaled
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorSpawnChildSignaled, DBUSCXX_ERROR_SPAWN_CHILD_SIGNALED );
+/**
+ * @class ErrorSpawnChildExited
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorSpawnChildExited, DBUSCXX_ERROR_SPAWN_CHILD_EXITED );
 
-  /**
-   * @class ErrorSpawnFailed
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorSpawnFailed, DBUSCXX_ERROR_SPAWN_FAILED );
+/**
+ * @class ErrorSpawnChildSignaled
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorSpawnChildSignaled, DBUSCXX_ERROR_SPAWN_CHILD_SIGNALED );
 
-  /**
-   * @class ErrorUnixProcessIdUnknown
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorUnixProcessIdUnknown, DBUSCXX_ERROR_UNIX_PROCESS_ID_UNKNOWN );
+/**
+ * @class ErrorSpawnFailed
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorSpawnFailed, DBUSCXX_ERROR_SPAWN_FAILED );
 
-  /**
-   * @class ErrorInvalidSignature
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorInvalidSignature, DBUSCXX_ERROR_INVALID_SIGNATURE );
+/**
+ * @class ErrorUnixProcessIdUnknown
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorUnixProcessIdUnknown, DBUSCXX_ERROR_UNIX_PROCESS_ID_UNKNOWN );
 
-  /**
-   * @class ErrorInvalidFileContent
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorInvalidFileContent, DBUSCXX_ERROR_INVALID_FILE_CONTENT );
+/**
+ * @class ErrorInvalidSignature
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorInvalidSignature, DBUSCXX_ERROR_INVALID_SIGNATURE );
 
-  /**
-   * @class ErrorSELinuxSecurityContextUnknown
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorSELinuxSecurityContextUnknown, DBUSCXX_ERROR_SELINUX_SECURITY_CONTEXT_UNKNOWN );
+/**
+ * @class ErrorInvalidFileContent
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorInvalidFileContent, DBUSCXX_ERROR_INVALID_FILE_CONTENT );
 
-  /**
-   * @class ErrorInvalidCObject
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorInvalidCObject, "Invalid C Object" );
+/**
+ * @class ErrorSELinuxSecurityContextUnknown
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorSELinuxSecurityContextUnknown, DBUSCXX_ERROR_SELINUX_SECURITY_CONTEXT_UNKNOWN );
 
-  /**
-   * @class ErrorInvalidTypecast
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorInvalidTypecast, "Invalid Typecast" );
+/**
+ * @class ErrorInvalidCObject
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorInvalidCObject, "Invalid C Object" );
 
-  /**
-   * @class ErrorInvalidConnection
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorInvalidConnection, "DBus connection is invalid" );
+/**
+ * @class ErrorInvalidTypecast
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorInvalidTypecast, "Invalid Typecast" );
 
-  /**
-   * @class ErrorInvalidMessageType
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorInvalidMessageType, "DBus message type does not match the C++ Message object type" );
+/**
+ * @class ErrorInvalidConnection
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorInvalidConnection, "DBus connection is invalid" );
 
-  /**
-   * @class ErrorNoConnection
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorNoConnection, "No connection specified and operation requires a DBus connection" );
+/**
+ * @class ErrorInvalidMessageType
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorInvalidMessageType, "DBus message type does not match the C++ Message object type" );
 
-  /**
-   * @class ErrorDeadlock
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorDeadlock, "Locking a mutex a dbus-cxx thread already owns" );
+/**
+ * @class ErrorNoConnection
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorNoConnection, "No connection specified and operation requires a DBus connection" );
 
-  /**
-   * @class ErrorNotOwner
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorNotOwner, "Unlocking a mutex a dbus-cxx thread doesn't own" );
+/**
+ * @class ErrorDeadlock
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorDeadlock, "Locking a mutex a dbus-cxx thread already owns" );
 
-  /**
-   * @class ErrorNotInitialized
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorNotInitialized, "DBus::init(bool threadsafe=true) not called" );
+/**
+ * @class ErrorNotOwner
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorNotOwner, "Unlocking a mutex a dbus-cxx thread doesn't own" );
 
-  /**
-   * @class ErrorInvalidAdaptee
-   * @ingroup errors
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  DBUSCXX_ERROR( ErrorInvalidAdaptee, "DBus adapter method called, but adaptee is invalid" );
+/**
+ * @class ErrorNotInitialized
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorNotInitialized, "DBus::init(bool threadsafe=true) not called" );
 
-  /**
-   * @class ErrorDispatcherInitFailed
-   * @ingroup errors
-   */
-  DBUSCXX_ERROR( ErrorDispatcherInitFailed, "DBus::Dispatcher initialization failed" );
+/**
+ * @class ErrorInvalidAdaptee
+ * @ingroup errors
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+DBUSCXX_ERROR( ErrorInvalidAdaptee, "DBus adapter method called, but adaptee is invalid" );
 
-  /**
-   * @class ErrorInvalidSharedPtr
-   * @ingroup errors
-   */
-  DBUSCXX_ERROR( ErrorInvalidSharedPtr, "shared_ptr was invalid" );
+/**
+ * @class ErrorDispatcherInitFailed
+ * @ingroup errors
+ */
+DBUSCXX_ERROR( ErrorDispatcherInitFailed, "DBus::Dispatcher initialization failed" );
 
-  /**
-   * @class ErrorPollFailed
-   * @ingroup errors
-   */
-  DBUSCXX_ERROR( ErrorPollFailed, "poll() syscall failed" );
+/**
+ * @class ErrorInvalidSharedPtr
+ * @ingroup errors
+ */
+DBUSCXX_ERROR( ErrorInvalidSharedPtr, "shared_ptr was invalid" );
 
-  /**
-   * This error may be thrown if there is an invalid return value from a DBus function
-   * that should never have an invalid return value.
-   */
-  DBUSCXX_ERROR( ErrorInvalidReturn, "dbuscxx.Error.InvalidReturnValue" );
+/**
+ * @class ErrorPollFailed
+ * @ingroup errors
+ */
+DBUSCXX_ERROR( ErrorPollFailed, "poll() syscall failed" );
 
-  /**
-   * This error may be thrown if we receive an unexpected response
-   */
-  DBUSCXX_ERROR( ErrorUnexpectedResponse, "dbuscxx.Error.UnexpectedResponse" );
+/**
+ * This error may be thrown if there is an invalid return value from a DBus function
+ * that should never have an invalid return value.
+ */
+DBUSCXX_ERROR( ErrorInvalidReturn, "dbuscxx.Error.InvalidReturnValue" );
 
-  class ErrorIncorrectDispatchThread : public Error {
-    public:
+/**
+ * This error may be thrown if we receive an unexpected response
+ */
+DBUSCXX_ERROR( ErrorUnexpectedResponse, "dbuscxx.Error.UnexpectedResponse" );
+
+class ErrorIncorrectDispatchThread : public Error {
+public:
     ErrorIncorrectDispatchThread( const char* message = nullptr )
         : Error( nullptr, message ) {}
-  };
+};
 
-  class ErrorRemoteException : public Error {
-    public:
+class ErrorRemoteException : public Error {
+public:
     ErrorRemoteException( const char* message = nullptr )
         : Error( nullptr, message ) {}
-  };
+};
 
-  class ErrorUnknown : public Error {
-  public:
-  ErrorUnknown( const char* message = nullptr )
-      : Error( nullptr, message ) {}
-  };
+class ErrorUnknown : public Error {
+public:
+    ErrorUnknown( const char* message = nullptr )
+        : Error( nullptr, message ) {}
+};
 
-  class ErrorBadVariantCast : public Error {
-  public:
-      ErrorBadVariantCast( const char* message = nullptr )
-          : Error( nullptr, message ) {}
-  };
+class ErrorBadVariantCast : public Error {
+public:
+    ErrorBadVariantCast( const char* message = nullptr )
+        : Error( nullptr, message ) {}
+};
 
 }
 

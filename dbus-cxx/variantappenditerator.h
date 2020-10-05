@@ -56,42 +56,46 @@ public:
     VariantAppendIterator& operator<<( const Path& v );
 
     template <typename T>
-    VariantAppendIterator& operator<<( const std::vector<T>& v){
+    VariantAppendIterator& operator<<( const std::vector<T>& v ) {
         open_container( ContainerType::ARRAY, DBus::signature( v ) );
         VariantAppendIterator* sub = sub_iterator();
-        for( T t : v ){
-            (*sub) << t;
+
+        for( T t : v ) {
+            ( *sub ) << t;
         }
+
         close_container();
 
         return *this;
     }
 
     template <typename Key, typename Data>
-    VariantAppendIterator& operator<<( const std::map<Key,Data>& dictionary ){
+    VariantAppendIterator& operator<<( const std::map<Key, Data>& dictionary ) {
         std::string sig = signature_dict_data( dictionary );
-        typename std::map<Key,Data>::const_iterator it;
+        typename std::map<Key, Data>::const_iterator it;
         this->open_container( ContainerType::ARRAY, sig );
-        for ( it = dictionary.begin(); it != dictionary.end(); it++ ) {
-          sub_iterator()->open_container( ContainerType::DICT_ENTRY, std::string() );
-          *(sub_iterator()->sub_iterator()) << it->first;
-          *(sub_iterator()->sub_iterator()) << it->second;
-          sub_iterator()->close_container();
+
+        for( it = dictionary.begin(); it != dictionary.end(); it++ ) {
+            sub_iterator()->open_container( ContainerType::DICT_ENTRY, std::string() );
+            *( sub_iterator()->sub_iterator() ) << it->first;
+            *( sub_iterator()->sub_iterator() ) << it->second;
+            sub_iterator()->close_container();
         }
+
         this->close_container();
 
         return *this;
     }
 
     template <typename... T>
-    VariantAppendIterator& operator<<( const std::tuple<T...>& tup){
+    VariantAppendIterator& operator<<( const std::tuple<T...>& tup ) {
         bool success;
-        std::string signature = DBus::signature(tup);
+        std::string signature = DBus::signature( tup );
         success = this->open_container( ContainerType::STRUCT, signature.c_str() );
         VariantAppendIterator* subiter = sub_iterator();
-        std::apply( [subiter](auto&& ...arg) mutable {
-               (*subiter << ... << arg);
-              },
+        std::apply( [subiter]( auto&& ...arg ) mutable {
+            ( *subiter << ... << arg );
+        },
         tup );
         this->close_container();
 

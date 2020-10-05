@@ -21,26 +21,26 @@
 
 namespace DBus {
 
-  class Connection;
+class Connection;
 
-  class Interface;
+class Interface;
 
-  class InterfaceProxy;
-  
-  class Object;
+class InterfaceProxy;
 
-  class ObjectProxy;
+class Object;
 
-  template <class T_type>
-  class Method;
+class ObjectProxy;
 
-  class Watch;
+template <class T_type>
+class Method;
 
-  class Timeout;
+class Watch;
 
-  class Message;
+class Timeout;
 
-  class SignalMessage;
+class Message;
+
+class SignalMessage;
 
 };
 

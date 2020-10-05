@@ -25,87 +25,85 @@
 #ifndef DBUSCXX_CALLMESSAGE_H
 #define DBUSCXX_CALLMESSAGE_H
 
-namespace DBus
-{
+namespace DBus {
 
-  class ReplyMessage;
-  class ErrorMessage;
+class ReplyMessage;
+class ErrorMessage;
 
-  /**
-   * Represents a DBus call message
-   *
-   * When this message is received, a matching exported method is called if found.
-   * Depending on the result, either the response or an error must be sent back to the sender.
-   * The reply should be created with either create_reply() or create_error_reply() depending
-   * on the type of error that should be returned.
-   *
-   * @ingroup message
-   *
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  class CallMessage : public Message
-  {
-    protected:
-      
-      CallMessage();
+/**
+ * Represents a DBus call message
+ *
+ * When this message is received, a matching exported method is called if found.
+ * Depending on the result, either the response or an error must be sent back to the sender.
+ * The reply should be created with either create_reply() or create_error_reply() depending
+ * on the type of error that should be returned.
+ *
+ * @ingroup message
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+class CallMessage : public Message {
+protected:
 
-      CallMessage( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method );
+    CallMessage();
 
-      CallMessage( const std::string& path, const std::string& iface, const std::string& method );
+    CallMessage( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method );
 
-      CallMessage( const std::string& path, const std::string& method );
+    CallMessage( const std::string& path, const std::string& iface, const std::string& method );
 
-    public:
+    CallMessage( const std::string& path, const std::string& method );
 
-      static std::shared_ptr<CallMessage> create();
+public:
 
-      static std::shared_ptr<CallMessage> create( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method );
+    static std::shared_ptr<CallMessage> create();
 
-      static std::shared_ptr<CallMessage> create( const std::string& path, const std::string& iface, const std::string& method );
+    static std::shared_ptr<CallMessage> create( const std::string& dest, const std::string& path, const std::string& iface, const std::string& method );
 
-      static std::shared_ptr<CallMessage> create( const std::string& path, const std::string& method );
+    static std::shared_ptr<CallMessage> create( const std::string& path, const std::string& iface, const std::string& method );
 
-      /**
-       * Create a reply to this call message.
-       *
-       * If no reply is expected, this will return a valid pointer, but an invalid
-       * ReturnMessage so that the reply can be built but will be dropped before it
-       * gets sent out.
-       *
-       * @return
-       */
-      std::shared_ptr<ReturnMessage> create_reply() const;
+    static std::shared_ptr<CallMessage> create( const std::string& path, const std::string& method );
 
-      /**
-       * Create an error reply to this message.
-       *
-       * If no reply is expected, this will return a valid pointer, but an invalid
-       * ErrorMessage so that the reply can be built but will be dropped before it
-       * gets sent out.
-       *
-       * @return
-       */
-      std::shared_ptr<ErrorMessage> create_error_reply() const;
+    /**
+     * Create a reply to this call message.
+     *
+     * If no reply is expected, this will return a valid pointer, but an invalid
+     * ReturnMessage so that the reply can be built but will be dropped before it
+     * gets sent out.
+     *
+     * @return
+     */
+    std::shared_ptr<ReturnMessage> create_reply() const;
 
-      void set_path( const std::string& p );
+    /**
+     * Create an error reply to this message.
+     *
+     * If no reply is expected, this will return a valid pointer, but an invalid
+     * ErrorMessage so that the reply can be built but will be dropped before it
+     * gets sent out.
+     *
+     * @return
+     */
+    std::shared_ptr<ErrorMessage> create_error_reply() const;
 
-      Path path() const;
+    void set_path( const std::string& p );
 
-      void set_interface( const std::string& i );
+    Path path() const;
 
-      std::string interface_name() const;
+    void set_interface( const std::string& i );
 
-      void set_member( const std::string& m );
+    std::string interface_name() const;
 
-      std::string member() const;
+    void set_member( const std::string& m );
 
-      void set_no_reply( bool no_reply=true );
+    std::string member() const;
 
-      bool expects_reply() const;
+    void set_no_reply( bool no_reply = true );
 
-      virtual MessageType type() const;
+    bool expects_reply() const;
 
-  };
+    virtual MessageType type() const;
+
+};
 
 }
 

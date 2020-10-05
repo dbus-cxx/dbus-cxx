@@ -42,141 +42,145 @@ public:
 };
 
 VariantAppendIterator::VariantAppendIterator( Variant* variant ):
-    m_priv( std::make_shared<priv_data>( variant ) ){
+    m_priv( std::make_shared<priv_data>( variant ) ) {
     m_priv->m_marshaling = Marshaling( &variant->m_marshaled, Endianess::Big );
 }
 
 VariantAppendIterator::VariantAppendIterator( Variant* variant, ContainerType t ) :
-    m_priv( std::make_shared<priv_data>( variant ) ){
+    m_priv( std::make_shared<priv_data>( variant ) ) {
     m_priv->m_currentContainer = t;
     m_priv->m_marshaling = Marshaling( &m_priv->m_workingBuffer, Endianess::Big );
 }
 
-VariantAppendIterator::~VariantAppendIterator(){
+VariantAppendIterator::~VariantAppendIterator() {
     delete m_priv->m_subiter;
 }
 
-VariantAppendIterator& VariantAppendIterator::operator<<( const bool& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const bool& v ) {
     m_priv->m_marshaling.marshal( v );
 
     return *this;
 }
 
-VariantAppendIterator& VariantAppendIterator::operator<<( const uint8_t& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const uint8_t& v ) {
     m_priv->m_marshaling.marshal( v );
 
     return *this;
 }
 
-VariantAppendIterator& VariantAppendIterator::operator<<( const int16_t& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const int16_t& v ) {
     m_priv->m_marshaling.marshal( v );
 
     return *this;
 }
 
-VariantAppendIterator& VariantAppendIterator::operator<<( const uint16_t& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const uint16_t& v ) {
     m_priv->m_marshaling.marshal( v );
 
     return *this;
 }
 
-VariantAppendIterator& VariantAppendIterator::operator<<( const int32_t& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const int32_t& v ) {
     m_priv->m_marshaling.marshal( v );
 
     return *this;
 }
 
-VariantAppendIterator& VariantAppendIterator::operator<<( const uint32_t& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const uint32_t& v ) {
     m_priv->m_marshaling.marshal( v );
 
     return *this;
 }
 
-VariantAppendIterator& VariantAppendIterator::operator<<( const int64_t& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const int64_t& v ) {
     m_priv->m_marshaling.marshal( v );
 
     return *this;
 }
 
-VariantAppendIterator& VariantAppendIterator::operator<<( const uint64_t& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const uint64_t& v ) {
     m_priv->m_marshaling.marshal( v );
 
     return *this;
 }
 
-VariantAppendIterator& VariantAppendIterator::operator<<( const double& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const double& v ) {
     m_priv->m_marshaling.marshal( v );
 
     return *this;
 }
 
-VariantAppendIterator& VariantAppendIterator::operator<<( const char* v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const char* v ) {
     m_priv->m_marshaling.marshal( v );
 
     return *this;
 }
 
-VariantAppendIterator& VariantAppendIterator::operator<<( const std::string& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const std::string& v ) {
     m_priv->m_marshaling.marshal( v );
 
     return *this;
 }
 
-VariantAppendIterator& VariantAppendIterator::operator<<( const Signature& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const Signature& v ) {
     m_priv->m_marshaling.marshal( v );
 
     return *this;
 }
 
-VariantAppendIterator& VariantAppendIterator::operator<<( const Path& v ){
+VariantAppendIterator& VariantAppendIterator::operator<<( const Path& v ) {
     m_priv->m_marshaling.marshal( v );
 
     return *this;
 }
 
-bool VariantAppendIterator::open_container( ContainerType t, const std::string& sig ){
+bool VariantAppendIterator::open_container( ContainerType t, const std::string& sig ) {
     std::string signature;
     int32_t array_align = 0;
 
-    if ( m_priv->m_subiter ) this->close_container();
+    if( m_priv->m_subiter ) { this->close_container(); }
 
-    if( t == ContainerType::ARRAY ){
-            Signature tmpSig( sig );
-            SignatureIterator tmpSigIter = tmpSig.begin();
-            TypeInfo ti( tmpSigIter.type() );
-            array_align = ti.alignment();
+    if( t == ContainerType::ARRAY ) {
+        Signature tmpSig( sig );
+        SignatureIterator tmpSigIter = tmpSig.begin();
+        TypeInfo ti( tmpSigIter.type() );
+        array_align = ti.alignment();
     }
 
-      m_priv->m_subiter = new VariantAppendIterator( m_priv->m_variant, t );
-      m_priv->m_subiter->m_priv->m_arrayAlignment = array_align;
+    m_priv->m_subiter = new VariantAppendIterator( m_priv->m_variant, t );
+    m_priv->m_subiter->m_priv->m_arrayAlignment = array_align;
 
     return true;
 }
 
-bool VariantAppendIterator::close_container( ){
-    if ( ! m_priv->m_subiter ) return false;
+bool VariantAppendIterator::close_container( ) {
+    if( ! m_priv->m_subiter ) { return false; }
 
-    switch( m_priv->m_subiter->m_priv->m_currentContainer ){
+    switch( m_priv->m_subiter->m_priv->m_currentContainer ) {
     case ContainerType::None: return false;
-    case ContainerType::ARRAY:
-    {
+
+    case ContainerType::ARRAY: {
         uint32_t arraySize = static_cast<uint32_t>( m_priv->m_subiter->m_priv->m_workingBuffer.size() );
-        if( arraySize > Validator::maximum_array_size() ){
+
+        if( arraySize > Validator::maximum_array_size() ) {
             return true;
         }
+
         m_priv->m_marshaling.marshal( arraySize );
         m_priv->m_marshaling.align( m_priv->m_subiter->m_priv->m_arrayAlignment );
     }
-        break;
+    break;
+
     case ContainerType::DICT_ENTRY:
     case ContainerType::STRUCT:
         m_priv->m_marshaling.align( 8 );
         break;
+
     case ContainerType::VARIANT:
         break;
     }
 
-    for( const uint8_t& dataByte : m_priv->m_subiter->m_priv->m_workingBuffer ){
+    for( const uint8_t& dataByte : m_priv->m_subiter->m_priv->m_workingBuffer ) {
         m_priv->m_marshaling.marshal( dataByte );
     }
 
@@ -185,6 +189,6 @@ bool VariantAppendIterator::close_container( ){
     return true;
 }
 
-VariantAppendIterator* VariantAppendIterator::sub_iterator(){
+VariantAppendIterator* VariantAppendIterator::sub_iterator() {
     return m_priv->m_subiter;
 }

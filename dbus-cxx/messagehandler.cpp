@@ -18,14 +18,12 @@
  ***************************************************************************/
 #include "messagehandler.h"
 
-namespace DBus
-{
+namespace DBus {
 
-  MessageHandler::MessageHandler()
-  {
-  }
+MessageHandler::MessageHandler() {
+}
 
-  MessageHandler::~MessageHandler(){}
+MessageHandler::~MessageHandler() {}
 
 }
 

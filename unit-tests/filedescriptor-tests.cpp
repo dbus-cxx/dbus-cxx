@@ -32,14 +32,14 @@ static int pipes[2];
 // Client variables
 static std::shared_ptr<DBus::ObjectProxy> proxy;
 static std::shared_ptr<DBus::MethodProxy<std::shared_ptr<DBus::FileDescriptor>()>> fd_return_method_proxy;
-static std::shared_ptr<DBus::MethodProxy<void(std::shared_ptr<DBus::FileDescriptor>)>> fd_set_method_proxy;
+static std::shared_ptr<DBus::MethodProxy<void( std::shared_ptr<DBus::FileDescriptor> )>> fd_set_method_proxy;
 
 // Server variables
 static std::shared_ptr<DBus::Object> object;
 static std::shared_ptr<DBus::Method<std::shared_ptr<DBus::FileDescriptor>()>> fd_return_method;
-static std::shared_ptr<DBus::Method<void(std::shared_ptr<DBus::FileDescriptor>)>> fd_set_method;
+static std::shared_ptr<DBus::Method<void( std::shared_ptr<DBus::FileDescriptor> )>> fd_set_method;
 
-void write_to_fd( int fd ){
+void write_to_fd( int fd ) {
     std::this_thread::sleep_for( std::chrono::milliseconds( 250 ) );
 
     std::string daString = "This is a message";
@@ -47,32 +47,34 @@ void write_to_fd( int fd ){
 }
 
 // Server Function
-std::shared_ptr<DBus::FileDescriptor> get_filedescriptor(){
+std::shared_ptr<DBus::FileDescriptor> get_filedescriptor() {
     std::async( std::launch::async, write_to_fd, pipes[1] );
 
     return DBus::FileDescriptor::create( pipes[0] );
 }
 
 // Server Function
-void set_filedescriptor( std::shared_ptr<DBus::FileDescriptor> fd ){
+void set_filedescriptor( std::shared_ptr<DBus::FileDescriptor> fd ) {
     std::async( std::launch::async, write_to_fd, fd->getDescriptor() );
 }
 
 // Client Function
-bool filedescriptor_send(){
+bool filedescriptor_send() {
     char bytes[ 64 ];
 
-    if( pipe( pipes ) < 0 ){
+    if( pipe( pipes ) < 0 ) {
         std::cerr << "Can't create pipe" << std::endl;
-        exit(1);
+        exit( 1 );
     }
 
-    (*fd_set_method_proxy)( DBus::FileDescriptor::create( pipes[1] ) );
+    ( *fd_set_method_proxy )( DBus::FileDescriptor::create( pipes[1] ) );
 
     int bytesGot = ::read( pipes[0], bytes, 64 );
-    if( bytesGot < 0 ){
+
+    if( bytesGot < 0 ) {
         return false;
     }
+
     bytes[ bytesGot ] = 0;
     std::string str( bytes );
 
@@ -80,69 +82,73 @@ bool filedescriptor_send(){
 }
 
 // Client function
-bool filedescriptor_get(){
-    std::shared_ptr<DBus::FileDescriptor> fd = (*fd_return_method_proxy)();
+bool filedescriptor_get() {
+    std::shared_ptr<DBus::FileDescriptor> fd = ( *fd_return_method_proxy )();
     char bytes[ 64 ];
 
     int bytesGot = ::read( fd->getDescriptor(), bytes, 64 );
-    if( bytesGot < 0 ){
+
+    if( bytesGot < 0 ) {
         std::cerr << "Unable to read: " << strerror( errno ) << std::endl;
         return false;
     }
+
     bytes[ bytesGot ] = 0;
     std::string str( bytes );
 
     return str.compare( "This is a message" ) == 0;
 }
 
-void client_setup(){
+void client_setup() {
     proxy = conn->create_object_proxy( "dbuscxx.test", "/fdtest" );
 
     fd_return_method_proxy = proxy->create_method<std::shared_ptr<DBus::FileDescriptor>()>( "foo.what", "get_filedescriptor" );
-    fd_set_method_proxy = proxy->create_method<void(std::shared_ptr<DBus::FileDescriptor>)>( "foo.what", "set_filedescriptor" );
+    fd_set_method_proxy = proxy->create_method<void( std::shared_ptr<DBus::FileDescriptor> )>( "foo.what", "set_filedescriptor" );
 }
 
-void server_setup(){
+void server_setup() {
     DBus::RequestNameResponse ret = conn->request_name( "dbuscxx.test", DBUSCXX_NAME_FLAG_REPLACE_EXISTING );
-    if( ret != DBus::RequestNameResponse::PrimaryOwner ) exit(1);
 
-    if( pipe( pipes ) < 0 ){
+    if( ret != DBus::RequestNameResponse::PrimaryOwner ) { exit( 1 ); }
+
+    if( pipe( pipes ) < 0 ) {
         std::cerr << "Can't create pipe" << std::endl;
-        exit(1);
+        exit( 1 );
     }
 
-    object = conn->create_object("/fdtest", DBus::ThreadForCalling::DispatcherThread);
-    fd_return_method = object->create_method<std::shared_ptr<DBus::FileDescriptor>()>("foo.what", "get_filedescriptor", sigc::ptr_fun( get_filedescriptor ) );
-    fd_set_method = object->create_method<void(std::shared_ptr<DBus::FileDescriptor>)>("foo.what", "set_filedescriptor", sigc::ptr_fun( set_filedescriptor ));
+    object = conn->create_object( "/fdtest", DBus::ThreadForCalling::DispatcherThread );
+    fd_return_method = object->create_method<std::shared_ptr<DBus::FileDescriptor>()>( "foo.what", "get_filedescriptor", sigc::ptr_fun( get_filedescriptor ) );
+    fd_set_method = object->create_method<void( std::shared_ptr<DBus::FileDescriptor> )>( "foo.what", "set_filedescriptor", sigc::ptr_fun( set_filedescriptor ) );
 }
 
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
-  ret = filedescriptor_##name();\
-} \
-} while( 0 )
+            ret = filedescriptor_##name();\
+        } \
+    } while( 0 )
 
-int main(int argc, char** argv){
-  if(argc < 1)
-    return 1;
+int main( int argc, char** argv ) {
+    if( argc < 1 ) {
+        return 1;
+    }
 
-  std::string test_name = argv[2];
-  bool ret = false;
-  bool is_client = std::string( argv[1] ) == "client";
+    std::string test_name = argv[2];
+    bool ret = false;
+    bool is_client = std::string( argv[1] ) == "client";
 
-  DBus::setLoggingFunction( DBus::logStdErr );
-  DBus::setLogLevel( SL_TRACE );
-  dispatch = DBus::StandaloneDispatcher::create();
-  conn = dispatch->create_connection( DBus::BusType::SESSION );
+    DBus::setLoggingFunction( DBus::logStdErr );
+    DBus::setLogLevel( SL_TRACE );
+    dispatch = DBus::StandaloneDispatcher::create();
+    conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-  if( is_client ){
-    client_setup();
-    ADD_TEST(send);
-    ADD_TEST(get);
-  }else{
-    server_setup();
-    ret = true;
-    sleep( 1 );
-  }
+    if( is_client ) {
+        client_setup();
+        ADD_TEST( send );
+        ADD_TEST( get );
+    } else {
+        server_setup();
+        ret = true;
+        sleep( 1 );
+    }
 
-  return !ret;
+    return !ret;
 }

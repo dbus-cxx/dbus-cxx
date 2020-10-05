@@ -22,54 +22,55 @@
 
 std::shared_ptr<DBus::Dispatcher> dispatch;
 
-double example_method( double, double ){
+double example_method( double, double ) {
     return 0.0;
 }
 
-bool object_proxy_create(){
-    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
+bool object_proxy_create() {
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::ObjectProxy> object = conn->create_object_proxy("test", "/test/path");
+    std::shared_ptr<DBus::ObjectProxy> object = conn->create_object_proxy( "test", "/test/path" );
 
     TEST_ASSERT_RET_FAIL( object );
     return true;
 }
 
-bool object_proxy_create_method1(){
-    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
+bool object_proxy_create_method1() {
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::ObjectProxy> object = conn->create_object_proxy("test", "/test/path");
-    std::shared_ptr<DBus::MethodProxy<double(double,double)>> proxy = object->create_method<double(double,double)>( "Example.path", "method_name" );
+    std::shared_ptr<DBus::ObjectProxy> object = conn->create_object_proxy( "test", "/test/path" );
+    std::shared_ptr<DBus::MethodProxy<double( double, double )>> proxy = object->create_method<double( double, double )>( "Example.path", "method_name" );
     TEST_ASSERT_RET_FAIL( proxy );
     return true;
 }
 
-bool object_export_method(){
-    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection(DBus::BusType::SESSION);
+bool object_export_method() {
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
     std::shared_ptr<DBus::Object> object = conn->create_object( "/another/path", DBus::ThreadForCalling::DispatcherThread );
-    std::shared_ptr<DBus::Method<double(double,double)>> method = object->create_method<double(double,double)>( "method_name", sigc::ptr_fun( example_method ) );
+    std::shared_ptr<DBus::Method<double( double, double )>> method = object->create_method<double( double, double )>( "method_name", sigc::ptr_fun( example_method ) );
     TEST_ASSERT_RET_FAIL( method );
     return true;
 }
 
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
-  ret = object_##name();\
-} \
-} while( 0 )
+            ret = object_##name();\
+        } \
+    } while( 0 )
 
-int main(int argc, char** argv){
-  if(argc < 1)
-    return 1;
+int main( int argc, char** argv ) {
+    if( argc < 1 ) {
+        return 1;
+    }
 
-  std::string test_name = argv[1];
-  bool ret = false;
+    std::string test_name = argv[1];
+    bool ret = false;
 
-  dispatch = DBus::StandaloneDispatcher::create();
+    dispatch = DBus::StandaloneDispatcher::create();
 
-  ADD_TEST(proxy_create);
-  ADD_TEST(proxy_create_method1);
-  ADD_TEST(export_method);
+    ADD_TEST( proxy_create );
+    ADD_TEST( proxy_create_method1 );
+    ADD_TEST( export_method );
 
-  return !ret;
+    return !ret;
 }

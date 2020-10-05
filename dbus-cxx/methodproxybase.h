@@ -32,76 +32,73 @@
 #ifndef DBUSCXX_METHODPROXYBASE_H
 #define DBUSCXX_METHODPROXYBASE_H
 
-namespace DBus
-{
+namespace DBus {
 
-  class InterfaceProxy;
-  class PendingCall;
-  class ReturnMessage;
-  template <typename signature> class MethodProxy;
+class InterfaceProxy;
+class PendingCall;
+class ReturnMessage;
+template <typename signature> class MethodProxy;
 
-  /**
-   * Base class for all proxy(remote) methods.  This class allows remote methods
-   * to be used in a generic manner, as the MethodProxy class is templated and
-   * thus cannot be used in a generic manner(e.g. stored in a vector).
-   *
-   * @ingroup objects
-   * @ingroup proxy
-   * 
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  class MethodProxyBase
-  {
-    protected:
+/**
+ * Base class for all proxy(remote) methods.  This class allows remote methods
+ * to be used in a generic manner, as the MethodProxy class is templated and
+ * thus cannot be used in a generic manner(e.g. stored in a vector).
+ *
+ * @ingroup objects
+ * @ingroup proxy
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+class MethodProxyBase {
+protected:
 
-      MethodProxyBase( const std::string& name );
+    MethodProxyBase( const std::string& name );
 
-      MethodProxyBase( const MethodProxyBase& other );
+    MethodProxyBase( const MethodProxyBase& other );
 
-    public:
-      static std::shared_ptr<MethodProxyBase> create( const std::string& name );
+public:
+    static std::shared_ptr<MethodProxyBase> create( const std::string& name );
 
-      ~MethodProxyBase();
+    ~MethodProxyBase();
 
-      InterfaceProxy* interface_name() const;
+    InterfaceProxy* interface_name() const;
 
-      const std::string& name() const;
+    const std::string& name() const;
 
-      std::shared_ptr<CallMessage> create_call_message( ) const;
+    std::shared_ptr<CallMessage> create_call_message( ) const;
 
-      std::shared_ptr<const ReturnMessage> call( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
+    std::shared_ptr<const ReturnMessage> call( std::shared_ptr<const CallMessage>, int timeout_milliseconds = -1 ) const;
 
-//      std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
+    //      std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
-  private:
-      void set_interface( InterfaceProxy* proxy );
+private:
+    void set_interface( InterfaceProxy* proxy );
 
-    private:
-      class priv_data;
+private:
+    class priv_data;
 
-      DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
+    DBUS_CXX_PROPAGATE_CONST( std::unique_ptr<priv_data> ) m_priv;
 
-      // Declare InterfaceProxy as a friend so that it can set the interface
-      friend class InterfaceProxy;
-  };
+    // Declare InterfaceProxy as a friend so that it can set the interface
+    friend class InterfaceProxy;
+};
 
 
-  /**
-   * MethodProxy specialization for void return type.
-   *
-   * @param T_arg Method arguments
-   */
-  template<typename... T_arg>
-  class MethodProxy<void(T_arg...)> : public MethodProxyBase
-  {
-  protected:
-      MethodProxy(const std::string& name) :
-        MethodProxyBase(name){}
+/**
+ * MethodProxy specialization for void return type.
+ *
+ * @param T_arg Method arguments
+ */
+template<typename... T_arg>
+class MethodProxy<void( T_arg... )> : public MethodProxyBase {
+protected:
+    MethodProxy( const std::string& name ) :
+        MethodProxyBase( name ) {}
 
-  public:
-    void operator()(T_arg... args){
+public:
+    void operator()( T_arg... args ) {
         std::ostringstream debug_str;
-        DBus::priv::dbus_function_traits<std::function<void(T_arg...)>> method_sig_gen;
+        DBus::priv::dbus_function_traits<std::function<void( T_arg... )>> method_sig_gen;
 
         debug_str << "DBus::MethodProxy<";
         debug_str << method_sig_gen.debug_string();
@@ -110,45 +107,44 @@ namespace DBus
         DBUSCXX_DEBUG_STDSTR( "DBus.MethodProxy", debug_str.str() );
 
         std::shared_ptr<CallMessage> _callmsg = this->create_call_message();
-        (*_callmsg << ... << args);
+        ( *_callmsg << ... << args );
         std::shared_ptr<const ReturnMessage> retmsg = this->call( _callmsg, -1 );
     }
 
-    std::future<void> call_async(T_arg... args ){
-         std::ostringstream debug_str;
-         DBus::priv::dbus_function_traits<std::function<void(T_arg...)>> method_sig_gen;
-
-         debug_str << "DBus::MethodProxy<";
-         debug_str << method_sig_gen.debug_string();
-         debug_str << "> calling async method=";
-         debug_str << name();
-         DBUSCXX_DEBUG_STDSTR( "DBus.MethodProxy", debug_str.str() );
-
-         return std::async( std::launch::async, *this, args... );
-    }
-
-    static std::shared_ptr<MethodProxy> create(const std::string& name){
-      return std::shared_ptr<MethodProxy>( new MethodProxy(name) );
-    }
-  };
-
-  /**
-   * MethodProxy specialization for non-void return type.
-   *
-   * @param T_return Return type(not void)
-   * @param T_arg Method arguments
-   */
-  template<typename T_return, typename... T_arg>
-  class MethodProxy<T_return(T_arg...)> : public MethodProxyBase
-  {
-  protected:
-      MethodProxy(const std::string& name) :
-        MethodProxyBase(name){}
-
-  public:
-    T_return operator()(T_arg... args){
+    std::future<void> call_async( T_arg... args ) {
         std::ostringstream debug_str;
-        DBus::priv::dbus_function_traits<std::function<T_return(T_arg...)>> method_sig_gen;
+        DBus::priv::dbus_function_traits<std::function<void( T_arg... )>> method_sig_gen;
+
+        debug_str << "DBus::MethodProxy<";
+        debug_str << method_sig_gen.debug_string();
+        debug_str << "> calling async method=";
+        debug_str << name();
+        DBUSCXX_DEBUG_STDSTR( "DBus.MethodProxy", debug_str.str() );
+
+        return std::async( std::launch::async, *this, args... );
+    }
+
+    static std::shared_ptr<MethodProxy> create( const std::string& name ) {
+        return std::shared_ptr<MethodProxy>( new MethodProxy( name ) );
+    }
+};
+
+/**
+ * MethodProxy specialization for non-void return type.
+ *
+ * @param T_return Return type(not void)
+ * @param T_arg Method arguments
+ */
+template<typename T_return, typename... T_arg>
+class MethodProxy<T_return( T_arg... )> : public MethodProxyBase {
+protected:
+    MethodProxy( const std::string& name ) :
+        MethodProxyBase( name ) {}
+
+public:
+    T_return operator()( T_arg... args ) {
+        std::ostringstream debug_str;
+        DBus::priv::dbus_function_traits<std::function<T_return( T_arg... )>> method_sig_gen;
 
         debug_str << "DBus::MethodProxy<";
         debug_str << method_sig_gen.debug_string();
@@ -158,30 +154,30 @@ namespace DBus
 
         std::shared_ptr<CallMessage> _callmsg = this->create_call_message();
         MessageAppendIterator iter = _callmsg->append();
-        (void)(iter << ... << args);
+        ( void )( iter << ... << args );
         std::shared_ptr<const ReturnMessage> retmsg = this->call( _callmsg, -1 );
         T_return _retval;
         retmsg >> _retval;
         return _retval;
     }
 
-     std::future<T_return> call_async(T_arg... args ){
-          std::ostringstream debug_str;
-          DBus::priv::dbus_function_traits<std::function<void(T_arg...)>> method_sig_gen;
+    std::future<T_return> call_async( T_arg... args ) {
+        std::ostringstream debug_str;
+        DBus::priv::dbus_function_traits<std::function<void( T_arg... )>> method_sig_gen;
 
-          debug_str << "DBus::MethodProxy<";
-          debug_str << method_sig_gen.debug_string();
-          debug_str << "> calling async method=";
-          debug_str << name();
-          DBUSCXX_DEBUG_STDSTR( "DBus.MethodProxy", debug_str.str() );
+        debug_str << "DBus::MethodProxy<";
+        debug_str << method_sig_gen.debug_string();
+        debug_str << "> calling async method=";
+        debug_str << name();
+        DBUSCXX_DEBUG_STDSTR( "DBus.MethodProxy", debug_str.str() );
 
-          return std::async( std::launch::async, *this, args... );
-     }
-
-    static std::shared_ptr<MethodProxy> create(const std::string& name){
-      return std::shared_ptr<MethodProxy>( new MethodProxy(name) );
+        return std::async( std::launch::async, *this, args... );
     }
-  };
+
+    static std::shared_ptr<MethodProxy> create( const std::string& name ) {
+        return std::shared_ptr<MethodProxy>( new MethodProxy( name ) );
+    }
+};
 
 }
 

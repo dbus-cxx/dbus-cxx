@@ -21,58 +21,61 @@
 #ifndef DBUSCXX_ACCUMULATORS_H
 #define DBUSCXX_ACCUMULATORS_H
 
-namespace DBus
-{
-  /**
-   * @defgroup accumulators Accumulators
-   *
-   * These are sigc::signal accumulators that are common to dbus-cxx.
-   */
-  //@{
+namespace DBus {
+/**
+ * @defgroup accumulators Accumulators
+ *
+ * These are sigc::signal accumulators that are common to dbus-cxx.
+ */
+//@{
 
-  /**
-   * This accumulator starts with a presumption of true and
-   * checks to see if any result returned false
-   */
-  struct PredicateAccumulatorDefaultTrue {
+/**
+ * This accumulator starts with a presumption of true and
+ * checks to see if any result returned false
+ */
+struct PredicateAccumulatorDefaultTrue {
     typedef bool result_type;
 
     template <typename T_iterator>
     result_type operator()( T_iterator first, T_iterator last ) const {
-      bool result = true;
-      while ( first != last ) {
-        result = result && ( *first );
-      }
-      return result;
-    }
-  };
+        bool result = true;
 
-  /**
-   * This accumulator will interrupt on the first slot that returns true.
-   * Otherwise it will return false if all slots are false.
-   */
-  struct InterruptablePredicateAccumulatorDefaultFalse {
+        while( first != last ) {
+            result = result && ( *first );
+        }
+
+        return result;
+    }
+};
+
+/**
+ * This accumulator will interrupt on the first slot that returns true.
+ * Otherwise it will return false if all slots are false.
+ */
+struct InterruptablePredicateAccumulatorDefaultFalse {
     typedef bool result_type;
 
     template <typename T_iterator>
     result_type operator()( T_iterator first, T_iterator last ) const {
-      while ( first != last ) {
-        if ( *first ) return true;
-        ++first;
-      }
-      return false;
-    }
-  };
+        while( first != last ) {
+            if( *first ) { return true; }
 
-  /**
-   * This accumulator will try each slot and stop when the first slot returns
-   * HandlerResult::HANDLED.
-   *
-   * If no slot returned HandlerResult::HANDLED it will return HandlerResult::NEEDS_MEMORY if any
-   * handler indicated this condition.
-   *
-   * Otherwise it will return HandlerResult::NOT_HANDLED.
-   */
+            ++first;
+        }
+
+        return false;
+    }
+};
+
+/**
+ * This accumulator will try each slot and stop when the first slot returns
+ * HandlerResult::HANDLED.
+ *
+ * If no slot returned HandlerResult::HANDLED it will return HandlerResult::NEEDS_MEMORY if any
+ * handler indicated this condition.
+ *
+ * Otherwise it will return HandlerResult::NOT_HANDLED.
+ */
 //  struct MessageHandlerAccumulator {
 //    typedef HandlerResult result_type;
 
@@ -95,56 +98,61 @@ namespace DBus
 //    }
 //  };
 
-  /**
-   * This accumulator will try each slot and stop when the first slot returns
-   * FilterResult::FILTER.
-   *
-   * If no slot returned FilterResult::FILTER it will return FilterResult::NEEDS_MEMORY if any
-   * handler indicated this condition.
-   *
-   * Otherwise it will return FilterResult::DONT_FILTER.
-   */
-  struct FilterAccumulator {
+/**
+ * This accumulator will try each slot and stop when the first slot returns
+ * FilterResult::FILTER.
+ *
+ * If no slot returned FilterResult::FILTER it will return FilterResult::NEEDS_MEMORY if any
+ * handler indicated this condition.
+ *
+ * Otherwise it will return FilterResult::DONT_FILTER.
+ */
+struct FilterAccumulator {
     typedef FilterResult result_type;
 
     template <typename T_iterator>
-        result_type operator()( T_iterator first, T_iterator last ) const {
-      FilterResult retval = FilterResult::DONT_FILTER;
-      while ( first != last ) {
-        switch ( *first )
-        {
-          case FilterResult::FILTER:
-            return FilterResult::FILTER;
-          case FilterResult::NEEDS_MEMORY:
-            retval = FilterResult::NEEDS_MEMORY;
-            // no break because we'll slide through to the next case
-          case FilterResult::DONT_FILTER:
-            ++first;
-        }
-      }
-      return retval;
-    }
-  };
+    result_type operator()( T_iterator first, T_iterator last ) const {
+        FilterResult retval = FilterResult::DONT_FILTER;
 
-  /**
-   * This accumulator starts with a presumption of false and
-   * checks to see if any result returned true
-   */
-  struct PredicateAccumulatorDefaultFalse {
+        while( first != last ) {
+            switch( *first ) {
+            case FilterResult::FILTER:
+                return FilterResult::FILTER;
+
+            case FilterResult::NEEDS_MEMORY:
+                retval = FilterResult::NEEDS_MEMORY;
+
+            // no break because we'll slide through to the next case
+            case FilterResult::DONT_FILTER:
+                ++first;
+            }
+        }
+
+        return retval;
+    }
+};
+
+/**
+ * This accumulator starts with a presumption of false and
+ * checks to see if any result returned true
+ */
+struct PredicateAccumulatorDefaultFalse {
     typedef bool result_type;
 
     template <typename T_iterator>
     result_type operator()( T_iterator first, T_iterator last ) const {
-      bool result = false;
-      while ( first != last ) {
-        result = result || ( *first );
-        ++first;
-      }
-      return result;
-    }
-  };
+        bool result = false;
 
-  //@}
+        while( first != last ) {
+            result = result || ( *first );
+            ++first;
+        }
+
+        return result;
+    }
+};
+
+//@}
 
 }
 

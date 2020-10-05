@@ -29,7 +29,7 @@
 
 using DBus::priv::SASL;
 
-class SASL::priv_data{
+class SASL::priv_data {
 public:
     priv_data( int fd, bool negotiateFDPassing ) :
         m_fd( fd ),
@@ -44,14 +44,14 @@ static const std::regex OK_REGEX( "OK ([a-z0-9]*)" );
 static const std::regex DATA_REGEX( "DATA ([a-z0-9]*)" );
 static const std::regex ERROR_REGEX( "ERROR(.*)" );
 static const std::regex AGREE_UNIX_FD_REGEX( "AGREE_UNIX_FD" );
-static const std::regex REJECTED_REGEX( "REJECTED (.*)");
+static const std::regex REJECTED_REGEX( "REJECTED (.*)" );
 
-static int hexchar2int( char c ){
-    if( c >= '0' && c <= '9' ){
+static int hexchar2int( char c ) {
+    if( c >= '0' && c <= '9' ) {
         return c - 48;
     }
 
-    if( c >= 'a' && c <= 'f' ){
+    if( c >= 'a' && c <= 'f' ) {
         return c - 97;
     }
 
@@ -59,13 +59,13 @@ static int hexchar2int( char c ){
 }
 
 SASL::SASL( int fd, bool negotiateFDPassing ) :
-    m_priv( std::make_unique<priv_data>( fd, negotiateFDPassing ) ){
+    m_priv( std::make_unique<priv_data>( fd, negotiateFDPassing ) ) {
 
 }
 
-SASL::~SASL(){}
+SASL::~SASL() {}
 
-std::tuple<bool,bool,std::vector<uint8_t>> SASL::authenticate() {
+std::tuple<bool, bool, std::vector<uint8_t>> SASL::authenticate() {
     bool success = false;
     bool negotiatedFD = false;
     std::vector<uint8_t> serverGUID;
@@ -76,33 +76,34 @@ std::tuple<bool,bool,std::vector<uint8_t>> SASL::authenticate() {
     write_data_with_newline( "AUTH EXTERNAL " + encode_as_hex( uid ) );
 
     line = read_data();
-    if( std::regex_search( line, regex_match, OK_REGEX ) ){
+
+    if( std::regex_search( line, regex_match, OK_REGEX ) ) {
         serverGUID = hex_to_vector( regex_match[ 1 ] );
-    }else if( std::regex_search( line, regex_match, ERROR_REGEX ) ){
-        SIMPLELOGGER_DEBUG("DBus.priv.SASL", "Unable to authenticate: "
-                           + regex_match[ 1 ].str() );
+    } else if( std::regex_search( line, regex_match, ERROR_REGEX ) ) {
+        SIMPLELOGGER_DEBUG( "DBus.priv.SASL", "Unable to authenticate: "
+            + regex_match[ 1 ].str() );
         goto out;
-    }else if( std::regex_search( line, regex_match, REJECTED_REGEX ) ){
-        SIMPLELOGGER_DEBUG("DBus.priv.SASL", "Rejected authentication, available modes: "
-                           + regex_match[ 1 ].str() );
+    } else if( std::regex_search( line, regex_match, REJECTED_REGEX ) ) {
+        SIMPLELOGGER_DEBUG( "DBus.priv.SASL", "Rejected authentication, available modes: "
+            + regex_match[ 1 ].str() );
         goto out;
-    }else{
+    } else {
         // Unknown command, return an error to the server
         write_data_with_newline( "ERROR Unrecognized response" );
         goto out;
     }
 
-    if( m_priv->m_negotiateFDpassing ){
+    if( m_priv->m_negotiateFDpassing ) {
         write_data_with_newline( "NEGOTIATE_UNIX_FD" );
         line = read_data();
 
-        if( std::regex_search( line, regex_match, AGREE_UNIX_FD_REGEX ) ){
+        if( std::regex_search( line, regex_match, AGREE_UNIX_FD_REGEX ) ) {
             negotiatedFD = true;
         }
 
-        if( std::regex_search( line, regex_match, ERROR_REGEX ) ){
-            SIMPLELOGGER_DEBUG("DBus.priv.SASL", "Unable to negotiate FD passing: "
-                               + regex_match[ 1 ].str() );
+        if( std::regex_search( line, regex_match, ERROR_REGEX ) ) {
+            SIMPLELOGGER_DEBUG( "DBus.priv.SASL", "Unable to negotiate FD passing: "
+                + regex_match[ 1 ].str() );
         }
     }
 
@@ -115,13 +116,13 @@ out:
     return std::make_tuple( success, negotiatedFD, serverGUID );
 }
 
-int SASL::write_data_with_newline( std::string data ){
-    SIMPLELOGGER_DEBUG("DBus.priv.SASL", "Sending command: " + data );
+int SASL::write_data_with_newline( std::string data ) {
+    SIMPLELOGGER_DEBUG( "DBus.priv.SASL", "Sending command: " + data );
     data += "\r\n";
     return ::write( m_priv->m_fd, data.c_str(), data.length() );
 }
 
-std::string SASL::read_data(){
+std::string SASL::read_data() {
     std::string line_read;
     char dataBuffer[ 512 ];
     ssize_t bytesRead;
@@ -130,9 +131,9 @@ std::string SASL::read_data(){
     pollfd.fd = m_priv->m_fd;
     pollfd.events = POLLIN;
 
-    if( poll( &pollfd, 1, -1 ) < 0 ){
+    if( poll( &pollfd, 1, -1 ) < 0 ) {
         std::string errmsg = strerror( errno );
-        SIMPLELOGGER_ERROR("DBus.priv.SASL", "Unable to poll for response from daemon: " + errmsg );
+        SIMPLELOGGER_ERROR( "DBus.priv.SASL", "Unable to poll for response from daemon: " + errmsg );
         return line_read;
     }
 
@@ -141,12 +142,12 @@ std::string SASL::read_data(){
     bytesRead = ::read( m_priv->m_fd, &dataBuffer, 512 );
     line_read = std::string( dataBuffer, bytesRead );
 
-    SIMPLELOGGER_DEBUG("DBus.priv.SASL", "Received response: " + line_read );
+    SIMPLELOGGER_DEBUG( "DBus.priv.SASL", "Received response: " + line_read );
 
     return line_read;
 }
 
-std::string SASL::encode_as_hex(int num){
+std::string SASL::encode_as_hex( int num ) {
     std::ostringstream out;
     std::ostringstream numString;
     std::string finalNumString;
@@ -155,26 +156,27 @@ std::string SASL::encode_as_hex(int num){
 
     finalNumString = numString.str();
     out << std::hex;
-    for( const char& s : finalNumString ){
-        out << std::hex << (int)s;
+
+    for( const char& s : finalNumString ) {
+        out << std::hex << ( int )s;
     }
 
     return out.str();
 
 }
 
-std::vector<uint8_t> SASL::hex_to_vector( std::string hexData ){
+std::vector<uint8_t> SASL::hex_to_vector( std::string hexData ) {
     std::vector<uint8_t> retval;
 
-    if( hexData.size() % 2 != 0 ){
+    if( hexData.size() % 2 != 0 ) {
         return retval;
     }
 
     for( std::string::const_iterator it = hexData.cbegin();
-         it != hexData.cend(); ){
-        int first = hexchar2int(*it);
+        it != hexData.cend(); ) {
+        int first = hexchar2int( *it );
         it++;
-        int second = hexchar2int(*it);
+        int second = hexchar2int( *it );
         it++;
 
         retval.push_back( first << 4 | second );

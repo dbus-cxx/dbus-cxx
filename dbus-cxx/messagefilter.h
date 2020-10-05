@@ -24,38 +24,36 @@
 #ifndef DBUSCXX_MESSAGEFILTER_H
 #define DBUSCXX_MESSAGEFILTER_H
 
-namespace DBus
-{
-  class Connection;
-  class Message;
-  struct FilterAccumulator;
-  
-  /**
-   * @ingroup objects
-   * @ingroup local
-   * 
-   * This class provides a common base class for all message filters
-   *
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  class MessageFilter : public MessageHandler
-  {
-    protected:
-      MessageFilter();
+namespace DBus {
+class Connection;
+class Message;
+struct FilterAccumulator;
 
-    public:
-      virtual ~MessageFilter();
+/**
+ * @ingroup objects
+ * @ingroup local
+ *
+ * This class provides a common base class for all message filters
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+class MessageFilter : public MessageHandler {
+protected:
+    MessageFilter();
 
-      /** The default implementation simply emits the message signal and returns the result */
-//       virtual HandlerResult handle_message( DBusCxxPointer<Connection>, Message::const_pointer );
+public:
+    virtual ~MessageFilter();
 
-    protected:
+    /** The default implementation simply emits the message signal and returns the result */
+    //       virtual HandlerResult handle_message( DBusCxxPointer<Connection>, Message::const_pointer );
 
-//       virtual FilterResult on_filter_message( DBusCxxPointer<Connection>, Message::const_pointer );
+protected:
 
-  };
+    //       virtual FilterResult on_filter_message( DBusCxxPointer<Connection>, Message::const_pointer );
 
-  typedef sigc::signal<FilterResult(std::shared_ptr<Connection>,std::shared_ptr<Message>)>::accumulated<FilterAccumulator> FilterSignal;
+};
+
+typedef sigc::signal<FilterResult( std::shared_ptr<Connection>, std::shared_ptr<Message> )>::accumulated<FilterAccumulator> FilterSignal;
 
 }
 

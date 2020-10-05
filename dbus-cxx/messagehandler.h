@@ -22,44 +22,42 @@
 #ifndef DBUSCXX_MESSAGEHANDLER_H
 #define DBUSCXX_MESSAGEHANDLER_H
 
-namespace DBus
-{
-  class Connection;
-  class Message;
+namespace DBus {
+class Connection;
+class Message;
 
-  /**
-   * @ingroup objects
-   * @ingroup local
-   * 
-   * Interface indicating that the implementing classes can process messages.
-   * Messages will be either CallMessage or SignalMessage.
-   *
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  class MessageHandler
-  {
-    protected:
-      MessageHandler();
-      virtual ~MessageHandler();
+/**
+ * @ingroup objects
+ * @ingroup local
+ *
+ * Interface indicating that the implementing classes can process messages.
+ * Messages will be either CallMessage or SignalMessage.
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+class MessageHandler {
+protected:
+    MessageHandler();
+    virtual ~MessageHandler();
 
-    public:
-      /**
-       * Attempt to handle the given message.  This method will only ever be called
-       * when msg is either a CallMessage or a SignalMessage.
-       *
-       * The object that is handling the method should return a HandlerResult based
-       * on the result of the message handling.  Any errors will then be automatically
-       * propogated back over the bus.
-       *
-       * Alternatively, if the handler sends out a custom error message, return
-       * HandlerResult::Handled to indicate that no errors need to be sent back.
-       *
-       * @param msg
-       * @return
-       */
-      virtual HandlerResult handle_message( std::shared_ptr<const Message> msg ) = 0;
+public:
+    /**
+     * Attempt to handle the given message.  This method will only ever be called
+     * when msg is either a CallMessage or a SignalMessage.
+     *
+     * The object that is handling the method should return a HandlerResult based
+     * on the result of the message handling.  Any errors will then be automatically
+     * propogated back over the bus.
+     *
+     * Alternatively, if the handler sends out a custom error message, return
+     * HandlerResult::Handled to indicate that no errors need to be sent back.
+     *
+     * @param msg
+     * @return
+     */
+    virtual HandlerResult handle_message( std::shared_ptr<const Message> msg ) = 0;
 
-  };
+};
 
 }
 

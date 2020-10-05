@@ -18,7 +18,7 @@
  ***************************************************************************/
 #include "signalNameAdapter.h"
 
-int main( int argc, char** argv ){
+int main( int argc, char** argv ) {
     std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 

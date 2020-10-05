@@ -32,106 +32,102 @@
 #define DBUSCXX_MESSAGE_NO_REPLY_EXPECTED   0x01
 #define DBUSCXX_MESSAGE_NO_AUTO_START_FLAG  0x02
 
-namespace DBus
-{
-  class ReturnMessage;
+namespace DBus {
+class ReturnMessage;
 
-  /**
-   * @defgroup message DBus Messages
-   * Messages may be either sent across the DBus or received from the DBus
-   */
+/**
+ * @defgroup message DBus Messages
+ * Messages may be either sent across the DBus or received from the DBus
+ */
 
-  /**
-   * This class represents a basic DBus message and also serves as a base
-   * class for the specialized message types (call, return, signal, error).
-   *
-   * This class cannot be initialized on its own; create a new Message from
-   * one of the subclasses
-   * 
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   *
-   * @ingroup message
-   */
-  class Message
-  {
-    protected:
-      
-      Message();
+/**
+ * This class represents a basic DBus message and also serves as a base
+ * class for the specialized message types (call, return, signal, error).
+ *
+ * This class cannot be initialized on its own; create a new Message from
+ * one of the subclasses
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ *
+ * @ingroup message
+ */
+class Message {
+protected:
 
-    public:
+    Message();
 
-      virtual ~Message();
+public:
 
-      bool operator == ( const Message& other );
+    virtual ~Message();
 
-      bool is_valid() const;
+    bool operator == ( const Message& other );
 
-      void invalidate();
+    bool is_valid() const;
 
-      operator bool() const;
+    void invalidate();
 
-      uint32_t serial() const;
+    operator bool() const;
 
-      virtual MessageType type() const = 0;
+    uint32_t serial() const;
 
-      void set_auto_start( bool auto_start);
+    virtual MessageType type() const = 0;
 
-      /**
-       * Returns true if the bus is allowed to start an owner for this
-       * message's destination if it is not running
-       *
-       * @return
-       */
-      bool auto_start();
+    void set_auto_start( bool auto_start );
 
-      /**
-       * Set the destination of this message
-       *
-       * @param s
-       * @return true if the destination was able to be set, false if the
-       * destination was unable to be validated
-       */
-      bool set_destination( const std::string& s );
+    /**
+     * Returns true if the bus is allowed to start an owner for this
+     * message's destination if it is not running
+     *
+     * @return
+     */
+    bool auto_start();
 
-      std::string destination() const;
+    /**
+     * Set the destination of this message
+     *
+     * @param s
+     * @return true if the destination was able to be set, false if the
+     * destination was unable to be validated
+     */
+    bool set_destination( const std::string& s );
 
-      std::string sender() const;
+    std::string destination() const;
 
-      Signature signature() const;
+    std::string sender() const;
 
-      template <typename T>
-      MessageIterator operator>>( T& value ) const
-      {
+    Signature signature() const;
+
+    template <typename T>
+    MessageIterator operator>>( T& value ) const {
         MessageIterator iter = this->begin();
         iter >> value;
         return iter;
-      }
-      
-      template <typename T>
-      MessageAppendIterator operator<<( const T& value )
-      {
+    }
+
+    template <typename T>
+    MessageAppendIterator operator<<( const T& value ) {
         MessageAppendIterator aiter( *this );
         aiter << value;
         return aiter;
-      }
+    }
 
-      MessageIterator begin() const;
+    MessageIterator begin() const;
 
-      MessageIterator end() const;
+    MessageIterator end() const;
 
-      MessageAppendIterator append();
+    MessageAppendIterator append();
 
-      /**
-       * Serialize this message to the given vector.  The vector will be resized
-       * but not cleared.  Can fail with an error under the following circumstances:
-       * - Invalid message type passed in
-       * - Method return or method call does not have serial set
-       *
-       * @param vec The location to serialize the message to.
-       * @param serial The serial of the message.
-       * @return True if the message was able to be serialized, false otherwise.
-       */
-      bool serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const;
+    /**
+     * Serialize this message to the given vector.  The vector will be resized
+     * but not cleared.  Can fail with an error under the following circumstances:
+     * - Invalid message type passed in
+     * - Method return or method call does not have serial set
+     *
+     * @param vec The location to serialize the message to.
+     * @param serial The serial of the message.
+     * @return True if the message was able to be serialized, false otherwise.
+     */
+    bool serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const;
 
     /**
      * Returns the given header field(if it exists), otherwise returns a default
@@ -163,7 +159,7 @@ namespace DBus
 
     static std::shared_ptr<Message> create_from_data( uint8_t* data, uint32_t data_len, std::vector<int> fds = std::vector<int>() );
 
-    protected:
+protected:
 
     void append_signature( std::string toappend );
 
@@ -174,39 +170,39 @@ namespace DBus
 
     void set_flags( uint8_t flags );
 
-  private:
+private:
     std::vector<uint8_t>* body();
     const std::vector<uint8_t>* body() const;
     void add_filedescriptor( int fd );
     uint32_t filedescriptors_size() const;
     int filedescriptor_at_location( int location ) const;
 
-  private:
+private:
     class priv_data;
 
-    DBUS_CXX_PROPAGATE_CONST(std::unique_ptr<priv_data>) m_priv;
+    DBUS_CXX_PROPAGATE_CONST( std::unique_ptr<priv_data> ) m_priv;
 
     friend class MessageAppendIterator;
     friend class MessageIterator;
     friend std::ostream& operator<<( std::ostream& os, const DBus::Message* msg );
 
-  };
+};
 
 
 template <typename T>
 inline
-DBus::MessageIterator operator>>( std::shared_ptr<const DBus::Message> ptr, T& value )
-{
-  if ( !ptr ) throw DBus::ErrorInvalidSharedPtr();
-  return (*ptr) >> value;
+DBus::MessageIterator operator>>( std::shared_ptr<const DBus::Message> ptr, T& value ) {
+    if( !ptr ) { throw DBus::ErrorInvalidSharedPtr(); }
+
+    return ( *ptr ) >> value;
 }
 
 template <typename T>
 inline
-DBus::MessageAppendIterator operator<<( std::shared_ptr<DBus::Message> ptr, const T& value )
-{
-  if ( !ptr ) throw DBus::ErrorInvalidSharedPtr();
-  return (*ptr) << value;
+DBus::MessageAppendIterator operator<<( std::shared_ptr<DBus::Message> ptr, const T& value ) {
+    if( !ptr ) { throw DBus::ErrorInvalidSharedPtr(); }
+
+    return ( *ptr ) << value;
 }
 
 }

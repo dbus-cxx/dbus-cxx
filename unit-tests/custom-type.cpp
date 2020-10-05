@@ -21,20 +21,18 @@
 #include "custom-type.h"
 #include <iostream>
 
-DBus::MessageIterator& operator>>(DBus::MessageIterator& i, struct custom& c)
-{
-std::cout << "extracting custom" << std::endl;
-  c.first = i.get_int32();
-  i.next();
-  c.second = i.get_int32();
-  i.next();
-  return i;
+DBus::MessageIterator& operator>>( DBus::MessageIterator& i, struct custom& c ) {
+    std::cout << "extracting custom" << std::endl;
+    c.first = i.get_int32();
+    i.next();
+    c.second = i.get_int32();
+    i.next();
+    return i;
 }
 
-DBus::MessageAppendIterator& operator<<(DBus::MessageAppendIterator& i, const struct custom& c)
-{
-std::cout << "appending to iterator" << std::endl;
-  i << (int32_t)c.first;
-  i << (int32_t)c.second;
-  return i;
+DBus::MessageAppendIterator& operator<<( DBus::MessageAppendIterator& i, const struct custom& c ) {
+    std::cout << "appending to iterator" << std::endl;
+    i << ( int32_t )c.first;
+    i << ( int32_t )c.second;
+    return i;
 }

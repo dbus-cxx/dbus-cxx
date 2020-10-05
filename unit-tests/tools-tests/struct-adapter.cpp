@@ -20,17 +20,17 @@
 
 class MyStructType : public structtypesAdaptee {
 public:
-	void structMethod( std::tuple<int,int> struct1, std::tuple<int,std::tuple<int,int>> struct2 ){
-	}
+    void structMethod( std::tuple<int, int> struct1, std::tuple<int, std::tuple<int, int>> struct2 ) {
+    }
 
-	void mapMethod( std::map<std::string,DBus::Variant> map ){}
+    void mapMethod( std::map<std::string, DBus::Variant> map ) {}
 
-	void arrayMethod( std::vector<double> vector ){}
+    void arrayMethod( std::vector<double> vector ) {}
 
-	void mapMethod2( std::map<std::string,std::string> map ){}
+    void mapMethod2( std::map<std::string, std::string> map ) {}
 };
 
-int main(){
+int main() {
     std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 

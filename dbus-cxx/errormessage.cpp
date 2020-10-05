@@ -25,90 +25,87 @@
 
 #define DBUS_ERROR_CHECK(err_name,error_throw) do{ if( name() == err_name ) throw error_throw( message() ); }while(0)
 
-namespace DBus
-{
+namespace DBus {
 
-  ErrorMessage::ErrorMessage()
-  {
-  }
+ErrorMessage::ErrorMessage() {
+}
 
-  ErrorMessage::ErrorMessage( std::shared_ptr<const CallMessage> to_reply, const std::string& name, const std::string& message )
-  {
-    if ( to_reply ){
+ErrorMessage::ErrorMessage( std::shared_ptr<const CallMessage> to_reply, const std::string& name, const std::string& message ) {
+    if( to_reply ) {
         set_header_field( MessageHeaderFields::Reply_Serial, Variant( to_reply->serial() ) );
     }
+
     set_header_field( MessageHeaderFields::Error_Name, Variant( name ) );
     append() << message;
-  }
+}
 
-  std::shared_ptr<ErrorMessage> ErrorMessage::create()
-  {
-    return std::shared_ptr<ErrorMessage>(new ErrorMessage() );
-  }
+std::shared_ptr<ErrorMessage> ErrorMessage::create() {
+    return std::shared_ptr<ErrorMessage>( new ErrorMessage() );
+}
 
-  std::shared_ptr<ErrorMessage> ErrorMessage::create(std::shared_ptr<const CallMessage> msg, const std::string & name, const std::string & message)
-  {
-    return std::shared_ptr<ErrorMessage>(new ErrorMessage(msg, name, message) );
-  }
+std::shared_ptr<ErrorMessage> ErrorMessage::create( std::shared_ptr<const CallMessage> msg, const std::string& name, const std::string& message ) {
+    return std::shared_ptr<ErrorMessage>( new ErrorMessage( msg, name, message ) );
+}
 
-  bool ErrorMessage::operator == ( const ErrorMessage& m ) const
-  {
+bool ErrorMessage::operator == ( const ErrorMessage& m ) const {
     return name() == m.name() && message() == m.message();
-  }
+}
 
-  std::string ErrorMessage::name() const
-  {
-      Variant msgName = header_field( MessageHeaderFields::Error_Name );
-      if( msgName.currentType() == DataType::STRING ){
-          return msgName.to_string();
-      }
+std::string ErrorMessage::name() const {
+    Variant msgName = header_field( MessageHeaderFields::Error_Name );
+
+    if( msgName.currentType() == DataType::STRING ) {
+        return msgName.to_string();
+    }
+
     return "";
-  }
+}
 
-  void ErrorMessage::set_name( const std::string& n )
-  {
+void ErrorMessage::set_name( const std::string& n ) {
     set_header_field( MessageHeaderFields::Error_Name, Variant( n ) );
-  }
+}
 
-  MessageType ErrorMessage::type() const {
-      return MessageType::ERROR;
-  }
+MessageType ErrorMessage::type() const {
+    return MessageType::ERROR;
+}
 
-  std::string ErrorMessage::message() const {
-      Variant signature = header_field( MessageHeaderFields::Signature );
-      std::string retval;
+std::string ErrorMessage::message() const {
+    Variant signature = header_field( MessageHeaderFields::Signature );
+    std::string retval;
 
-      if( signature.currentType() == DataType::SIGNATURE ){
+    if( signature.currentType() == DataType::SIGNATURE ) {
         Signature value = signature.to_signature();
-        if( value.begin().type() == DataType::STRING ){
+
+        if( value.begin().type() == DataType::STRING ) {
             begin() >> retval;
         }
-      }
+    }
+
     return retval;
-  }
+}
 
-  void ErrorMessage::set_message( const std::string& message ) {
-      clear_sig_and_data();
-      append() << message;
-  }
+void ErrorMessage::set_message( const std::string& message ) {
+    clear_sig_and_data();
+    append() << message;
+}
 
-  bool ErrorMessage::set_reply_serial( uint32_t s )
-  {
+bool ErrorMessage::set_reply_serial( uint32_t s ) {
     Variant serialField = Variant( s );
     set_header_field( MessageHeaderFields::Reply_Serial, serialField );
     return false;
-  }
+}
 
-  uint32_t ErrorMessage::reply_serial() const
-  {
+uint32_t ErrorMessage::reply_serial() const {
     Variant field = header_field( MessageHeaderFields::Reply_Serial );
-    if( field.currentType() == DataType::UINT32 ){
+
+    if( field.currentType() == DataType::UINT32 ) {
         return field.to_uint32();
     }
-    return 0;
-  }
 
-  void ErrorMessage::throw_error() {
+    return 0;
+}
+
+void ErrorMessage::throw_error() {
     DBUS_ERROR_CHECK( DBUSCXX_ERROR_FAILED, ErrorFailed );
     DBUS_ERROR_CHECK( DBUSCXX_ERROR_SERVICE_UNKNOWN, ErrorServiceUnknown );
     DBUS_ERROR_CHECK( DBUSCXX_ERROR_NAME_HAS_NO_OWNER, ErrorNameHasNoOwner );
@@ -137,7 +134,7 @@ namespace DBus
     DBUS_ERROR_CHECK( DBUSCXX_ERROR_MATCH_RULE_INVALID, ErrorMatchRuleInvalid );
 
     throw Error( name(), message() );
-  }
+}
 
 }
 

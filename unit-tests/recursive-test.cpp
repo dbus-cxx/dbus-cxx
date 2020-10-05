@@ -24,26 +24,26 @@ static std::shared_ptr<DBus::Connection> conn;
 
 static int result = 0;
 
-static int a_test( int a, int b ){
+static int a_test( int a, int b ) {
     return a + b;
 }
 
-static void b_test(){
+static void b_test() {
     std::shared_ptr<DBus::ObjectProxy> proxyObject =
-            conn->create_object_proxy( "dbuscxx.test.sideA", "/atest" );
-    std::shared_ptr<DBus::MethodProxy<int(int,int)>> proxyMethod =
-            proxyObject->create_method<int(int,int)>( "dbuscxx.interface", "a_test" );
+        conn->create_object_proxy( "dbuscxx.test.sideA", "/atest" );
+    std::shared_ptr<DBus::MethodProxy<int( int, int )>> proxyMethod =
+            proxyObject->create_method<int( int, int )>( "dbuscxx.interface", "a_test" );
 
-    result = (*proxyMethod)( 5, 2 );
+    result = ( *proxyMethod )( 5, 2 );
 }
 
 // This test does the following:
 // Call B.test() from A
 // Call A.test(5,2) from B.test()
-int main( int argc, char** argv ){
+int main( int argc, char** argv ) {
     int retval = 0;
 
-    if( argc < 1 ){
+    if( argc < 1 ) {
         return 1;
     }
 
@@ -53,34 +53,34 @@ int main( int argc, char** argv ){
     dispatch = DBus::StandaloneDispatcher::create();
     conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    if( argv[ 1 ][ 0 ] == 'A' ){
+    if( argv[ 1 ][ 0 ] == 'A' ) {
         conn->request_name( "dbuscxx.test.sideA" );
 
         std::shared_ptr<DBus::ObjectProxy> proxy =
-                conn->create_object_proxy( "dbuscxx.test.sideB", "/btest" );
+            conn->create_object_proxy( "dbuscxx.test.sideB", "/btest" );
         std::shared_ptr<DBus::MethodProxy<void()>> method =
                 proxy->create_method<void()>( "dbuscxx.interface", "b_test" );
 
         std::shared_ptr<DBus::Object> obj =
-                conn->create_object( "/atest", DBus::ThreadForCalling::DispatcherThread );
+            conn->create_object( "/atest", DBus::ThreadForCalling::DispatcherThread );
 
-        obj->create_method<int(int,int)>( "dbuscxx.interface", "a_test", sigc::ptr_fun( a_test ) );
+        obj->create_method<int( int, int )>( "dbuscxx.interface", "a_test", sigc::ptr_fun( a_test ) );
 
         std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
 
-        (*method)();
+        ( *method )();
 
-    }else if( argv[ 1 ][ 0 ] == 'B' ){
+    } else if( argv[ 1 ][ 0 ] == 'B' ) {
         conn->request_name( "dbuscxx.test.sideB" );
 
         std::shared_ptr<DBus::Object> obj =
-                conn->create_object( "/btest", DBus::ThreadForCalling::DispatcherThread );
+            conn->create_object( "/btest", DBus::ThreadForCalling::DispatcherThread );
 
         obj->create_method<void()>( "dbuscxx.interface", "b_test", sigc::ptr_fun( b_test ) );
 
         std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
 
-        if( result != 7 ){
+        if( result != 7 ) {
             retval = 1;
         }
     }

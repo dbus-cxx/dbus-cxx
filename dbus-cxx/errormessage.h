@@ -24,57 +24,55 @@
 #ifndef DBUSCXX_ERRORMESSAGE_H
 #define DBUSCXX_ERRORMESSAGE_H
 
-namespace DBus
-{
+namespace DBus {
 
-  /**
-   * Represents a DBus Error message
-   *
-   * This class inherits from Message and uses the dbus_message_* methods to
-   * create an interface for an error message.
-   *
-   * @ingroup message
-   *
-   * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
-   */
-  class ErrorMessage : public Message
-  {
-    protected:
-      
-      ErrorMessage();
+/**
+ * Represents a DBus Error message
+ *
+ * This class inherits from Message and uses the dbus_message_* methods to
+ * create an interface for an error message.
+ *
+ * @ingroup message
+ *
+ * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
+ */
+class ErrorMessage : public Message {
+protected:
 
-      ErrorMessage( std::shared_ptr<const CallMessage> callMessage, const std::string& name, const std::string& message );
+    ErrorMessage();
 
-    public:
-      static std::shared_ptr<ErrorMessage> create();
+    ErrorMessage( std::shared_ptr<const CallMessage> callMessage, const std::string& name, const std::string& message );
 
-      static std::shared_ptr<ErrorMessage> create( std::shared_ptr<const CallMessage> callMessage, const std::string& name, const std::string& message );
+public:
+    static std::shared_ptr<ErrorMessage> create();
 
-      std::string name() const;
+    static std::shared_ptr<ErrorMessage> create( std::shared_ptr<const CallMessage> callMessage, const std::string& name, const std::string& message );
 
-      void set_name( const std::string& n );
+    std::string name() const;
 
-      std::string message() const;
+    void set_name( const std::string& n );
 
-      void set_message( const std::string& message );
+    std::string message() const;
 
-      bool operator == ( const ErrorMessage& ) const;
+    void set_message( const std::string& message );
 
-      virtual MessageType type() const;
+    bool operator == ( const ErrorMessage& ) const;
 
-      bool set_reply_serial( uint32_t );
+    virtual MessageType type() const;
 
-      uint32_t reply_serial() const;
+    bool set_reply_serial( uint32_t );
 
-      /**
-       * Throw the error associated with this ErrorMessage.
-       * If this error is of a well-known type, the well-known
-       * type will be thrown.  Otherwise, a generic DBus::Error
-       * will be thrown.
-       */
-      [[ noreturn ]] void throw_error();
-  
-  };
+    uint32_t reply_serial() const;
+
+    /**
+     * Throw the error associated with this ErrorMessage.
+     * If this error is of a well-known type, the well-known
+     * type will be thrown.  Otherwise, a generic DBus::Error
+     * will be thrown.
+     */
+    [[ noreturn ]] void throw_error();
+
+};
 
 }
 
