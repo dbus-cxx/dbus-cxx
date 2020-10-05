@@ -429,7 +429,7 @@ VariantIterator::operator std::string() {
         return get_signature();
 
     default:
-        throw ErrorInvalidTypecast( "MessageIterator:: extracting non-string type to std::string" );
+        throw ErrorInvalidTypecast( "VariantIterator:: extracting non-string type to std::string" );
     }
 }
 
@@ -452,7 +452,7 @@ bool VariantIterator::get_bool() {
 
 uint8_t VariantIterator::get_uint8() {
     if( this->arg_type() != DataType::BYTE ) {
-        throw ErrorInvalidTypecast( "MessageIterator: getting uint8_t and type is not DataType::BYTE" );
+        throw ErrorInvalidTypecast( "VariantIterator: getting uint8_t and type is not DataType::BYTE" );
     }
 
     return m_priv->m_demarshal->demarshal_uint8_t();
@@ -492,7 +492,7 @@ uint32_t VariantIterator::get_uint32() {
 
 int64_t VariantIterator::get_int64() {
     if( this->arg_type() != DataType::INT64 ) {
-        throw ErrorInvalidTypecast( "MessageIterator: getting int64_t and type is not DataType::INT64" );
+        throw ErrorInvalidTypecast( "VariantIterator: getting int64_t and type is not DataType::INT64" );
     }
 
     return m_priv->m_demarshal->demarshal_int64_t();
@@ -527,9 +527,9 @@ std::string VariantIterator::get_string() {
 }
 
 DBus::Variant VariantIterator::get_variant() {
-    //  VariantIterator subiter = this->recurse();
-
-    //  return Variant::createFromMessage( subiter );
+    // TODO if you need to use an API that has a variant inside of a variant...
+    // go and punch the person who made that API in the face.
+    return Variant();
 }
 
 DBus::Signature VariantIterator::get_signature() {
