@@ -199,14 +199,6 @@ public:
     Signature get_signature();
 
     /**
-     * Align our memory to the specified location.  This skips bytes.
-     * This is for internal use only; don't call it in client code!
-     *
-     * @param alignment
-     */
-    void align( int alignment );
-
-    /**
      * Get values in an array, pushing them back one at a time
      */
     template <typename T>
@@ -307,20 +299,16 @@ public:
         return *this;
     }
 
-    template <typename T>
-    void value( T& temp ) {
-        if( this->arg_type() != DBus::type( temp ) ) {
-            TypeInfo t( DBus::type( temp ) );
-            std::string s = "MessageIterator: Extracting DBus type ";
-            s += t.cppType();
-            s += " into C++ type ";
-            s += demangle<T>();
-            throw ErrorInvalidTypecast( s.c_str() );
-        }
-    }
-
 private:
     SignatureIterator signature_iterator();
+
+    /**
+     * Align our memory to the specified location.  This skips bytes.
+     * This is for internal use only; don't call it in client code!
+     *
+     * @param alignment
+     */
+    void align( int alignment );
 
 private:
     class priv_data;
