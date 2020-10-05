@@ -1,4 +1,4 @@
-dbus-cxx 2.0 Migration Guide #{dbus-cxx-2.0-migration}
+dbus-cxx 2.0 Migration Guide {#dbus-cxx-2-0-migration}
 ===
 
 # Migration
@@ -14,21 +14,21 @@ to handle smart pointers.
 
 The syntax for declaring methods has now also changed slightly: instead of
 having the first template parameter be the return value, the types now correspond
-to method signatures.  
+to method signatures.  This is for compatability with libsigc++ version 3.0.
 
 You must also explicitly define what thread methods need to be called from to ensure
 proper multithreading.
 
 ## Migration Example
 Given the following code with version 1:
-```
+```{.cpp}
     DBus::Object::pointer object = conn->create_object("/dbuscxx/example/Calculator");
 
     object->create_method<double,double,double>("Calculator.Basic", "add", sigc::ptr_fun(add) );
 ```
 
 This code now becomes:
-```
+```{.cpp}
     std::shared_ptr<DBus::Object> object = conn->create_object("/dbuscxx/example/Calculator", DBus::ThreadForCalling::DispatcherThread);
 
     object->create_method<double(double,double)>("Calculator.Basic", "add", sigc::ptr_fun(add) );
@@ -139,12 +139,5 @@ be reimplmented in a new version
  thread, and part of this has to do with how often the signals are used.  Note
  that 'signals' for this bullet point is talking about internal libsigc++ signals,
  not DBus signals received from the bus.
-
-# TODO
-* Finish adding std::tuple for structs
-* Integrate with GLib
-* Integrate with Qt
-
-NOTE: https://github.com/jbcoe/propagate_const/blob/master/propagate_const.h
 
 [1]: https://yarchive.net/comp/linux/typedefs.html

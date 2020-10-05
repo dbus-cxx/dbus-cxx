@@ -1135,7 +1135,8 @@ HTML_EXTRA_FILES       = images/bug-small.png \
                          images/dbus-cxx-logo.png \
                          images/documents-small.png \
                          images/fedora-logo-tiny.png \
-                         images/sourcecode-small.png
+                         images/sourcecode-small.png \
+                         images/mail-bulk-solid.png
 
 # The HTML_COLORSTYLE_HUE tag controls the color of the HTML output. Doxygen
 # will adjust the colors in the stylesheet and background images according to

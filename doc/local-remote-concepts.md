@@ -25,7 +25,7 @@ Bus names must consist of at least two dotted sections with at least
 one character each in them.
 
 With dbus-cxx, you request a bus name using 
-`DBus::Connection.request\_name()`. 
+`DBus::Connection.request_name()`. 
 
 Bus names are analagous to top-level domain names(e.g. example.com), or TLDs.
 

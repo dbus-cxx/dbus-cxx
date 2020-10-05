@@ -82,11 +82,6 @@ introspection-like documents.
  The API documentation (including the pages you are reading now) have been generated
  with Doxygen.
 
- \par devhelp
- The built documentation also includes a devhelp index. The index is installed
- automatically in the dbus-cxx-doc RPM and can be browsed simply by starting
- devhelp.
-
  \par
  The most current documentation for dbus-cxx is available online here:
  - dbus-cxx - <a href="https://dbus-cxx.github.io">https://dbus-cxx.github.io</a>
@@ -100,7 +95,7 @@ introspection-like documents.
 
  <br><hr>
 
- \htmlonly <img src="envelope-small.png" alt=""/> \endhtmlonly
+ \htmlonly <img src="mail-bulk-solid.png" alt="" width="50" height="50"/> \endhtmlonly
  \par Mailing Lists
  <b>Note that the old Sourceforge mailing lists are monitored, but new users should use the Google group.</b>
  <br/>

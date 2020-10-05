@@ -43,9 +43,12 @@ class FileDescriptor;
 
 /**
  * A Variant is a type-safe union for DBus operations.
- * Note that due to limitations in how dbus-cxx handles types,
- * it is not possible to store maps or vectors inside of the
- * variant.
+ *
+ * Variants are immutable - once you create them, you cannot change them.
+ *
+ * To get the value out of the variant, use one of the `to_XXX` methods.  If
+ * the type you requested is not possible to get out, an `ErrorBadVariantCast`
+ * will be thrown.
  */
 class Variant {
 public:

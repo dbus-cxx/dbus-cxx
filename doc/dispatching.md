@@ -35,7 +35,7 @@ be called from a specific thread.
 
 Example:
 
-```
+```{.cpp}
 /* Create a new dispatcher that does the reading/writing from a separate thread */
 std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
 std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
@@ -57,7 +57,7 @@ multi-thread your application.
 
 Example with dispatching in main thread:
 
-```
+```{.cpp}
 #include <dbus-cxx-qt.h>
 
 ...
@@ -75,7 +75,7 @@ obj->create_method<...>( "dbuscxx.interface", "example_method", sigc::[mem|ptr]_
 
 Example with the StandaloneDispatcher:
 
-```
+```{.cpp}
 std::shared_ptr<DBus::Dispatcher> disp = DBus::StandaloneDispatcher::create();
 std::shared_ptr<DBus::Connection> conn = disp->create_connection( DBus::BusType::SESSION );
 
@@ -104,7 +104,7 @@ There is currently no implementation of a `ThreadDispatcher` for GLib.
 
 Example:
 
-```
+```{.cpp}
 std::shared_ptr<DBus::Dispatcher> disp = DBus::GLib::GLibDispatcher::create();
 std::shared_ptr<DBus::Connection> conn = disp->create_connection( DBus::BusType::SESSION );
 

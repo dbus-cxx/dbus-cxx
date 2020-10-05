@@ -1,3 +1,5 @@
+Method Examples {#method_example}
+==
 
   
   @example callee_c.cpp

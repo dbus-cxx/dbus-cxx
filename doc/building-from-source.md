@@ -3,7 +3,8 @@ Building dbus-cxx from source {#building-from-source}
 
 ## 1. What are the requirements to build from source?
 
-DBus-cxx requires support of at least C++17.
+DBus-cxx requires support of at least C++17.  As of version 2.0, it is also a full
+implementation of the DBus protocol, and does not depend on libdbus.
 
 The requirements are intended to be very low.  In order to build, you will need the 
 following tools to be installed:
@@ -15,7 +16,6 @@ following tools to be installed:
 DBus-cxx depends on the following libraries:
 
 * libsigc++(>=3.0)
-* libdbus
 * expat(not needed if tests and tools are disabled; tests are enabled by default)
 
 (See section 4 for information on optional dependencies)
@@ -25,7 +25,7 @@ commands(as root/sudo):
 
     apt-get install libdbus-1-dev cmake libexpat1-dev
 
-Note that as of the writing of this guide(March 2020), libsigc++-3.0 has not yet
+Note that as of the writing of this guide(October 2020), libsigc++-3.0 has not yet
 been added to the Debian repositoreis, and you will need to build this dependency
 manually.
 
@@ -44,6 +44,7 @@ to the above:
 
 * libpopt
 * libcppgenerate
+* libcppgenerate(bundled version included)
 
 On Debian-based systems, you should be able to install popt with the following 
 commands(as root/sudo):
