@@ -45,6 +45,7 @@ static const std::regex DATA_REGEX( "DATA ([a-z0-9]*)" );
 static const std::regex ERROR_REGEX( "ERROR(.*)" );
 static const std::regex AGREE_UNIX_FD_REGEX( "AGREE_UNIX_FD" );
 static const std::regex REJECTED_REGEX( "REJECTED (.*)" );
+static const char* LOGGER_NAME = "DBus.priv.SASL";
 
 static int hexchar2int( char c ) {
     if( c >= '0' && c <= '9' ) {
@@ -76,6 +77,9 @@ std::tuple<bool, bool, std::vector<uint8_t>> SASL::authenticate() {
     write_data_with_newline( "AUTH EXTERNAL " + encode_as_hex( uid ) );
 
     line = read_data();
+    if( line.length() == 0 ){
+        goto out;
+    }
 
     if( std::regex_search( line, regex_match, OK_REGEX ) ) {
         serverGUID = hex_to_vector( regex_match[ 1 ] );
@@ -97,6 +101,10 @@ std::tuple<bool, bool, std::vector<uint8_t>> SASL::authenticate() {
         write_data_with_newline( "NEGOTIATE_UNIX_FD" );
         line = read_data();
 
+        if( line.length() == 0 ){
+            goto out;
+        }
+
         if( std::regex_search( line, regex_match, AGREE_UNIX_FD_REGEX ) ) {
             negotiatedFD = true;
         }
@@ -117,7 +125,7 @@ out:
 }
 
 int SASL::write_data_with_newline( std::string data ) {
-    SIMPLELOGGER_DEBUG( "DBus.priv.SASL", "Sending command: " + data );
+    SIMPLELOGGER_DEBUG( LOGGER_NAME, "Sending command: " + data );
     data += "\r\n";
     return ::write( m_priv->m_fd, data.c_str(), data.length() );
 }
@@ -140,9 +148,13 @@ std::string SASL::read_data() {
     // TODO Note that we are making an assumption here that we don't
     // have a short read.  This may need to be fixed in the future.
     bytesRead = ::read( m_priv->m_fd, &dataBuffer, 512 );
+    if( bytesRead < 0 ){
+        SIMPLELOGGER_ERROR( LOGGER_NAME, "Unable to read SASL data!" );
+        return std::string();
+    }
     line_read = std::string( dataBuffer, bytesRead );
 
-    SIMPLELOGGER_DEBUG( "DBus.priv.SASL", "Received response: " + line_read );
+    SIMPLELOGGER_DEBUG( LOGGER_NAME, "Received response: " + line_read );
 
     return line_read;
 }
