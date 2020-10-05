@@ -153,8 +153,9 @@ public:
         m_ok( false ),
         rx_capacity( RECEIVE_BUFFER_SIZE ),
         rx_control_capacity( CONTROL_BUFFER_SIZE ),
-        tx_control_capacity( CONTROL_BUFFER_SIZE ),
-        tx_control_data( nullptr ) {
+        tx_control_data( nullptr ),
+        tx_control_capacity( CONTROL_BUFFER_SIZE )
+        {
         ::memset( &rx_msg, 0, sizeof( struct msghdr ) );
         ::memset( &tx_msg, 0, sizeof( struct msghdr ) );
         m_sendBuffer.reserve( SEND_BUFFER_SIZE );
@@ -351,7 +352,7 @@ ssize_t SendmsgTransport::writeMessage( std::shared_ptr<const DBus::Message> mes
 }
 
 std::shared_ptr<DBus::Message> SendmsgTransport::readMessage() {
-    ssize_t header_array_len;
+    uint32_t header_array_len;
     ssize_t body_len;
     ssize_t total_len;
     ssize_t ret;
