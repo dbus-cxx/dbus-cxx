@@ -30,7 +30,8 @@ public:
     priv_data( Variant* variant ) :
         m_variant( variant ),
         m_subiter( nullptr ),
-        m_currentContainer( ContainerType::None )
+        m_currentContainer( ContainerType::None ),
+        m_arrayAlignment( 0 )
     {}
 
     Variant* m_variant;
