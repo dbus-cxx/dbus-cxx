@@ -22,6 +22,7 @@
 #include "demarshaling.h"
 #include "message.h"
 #include "utility.h"
+#include "validator.h"
 
 #include <cstring>
 #include <memory>
@@ -152,15 +153,29 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage() {
             uint32_t totalMessageSize;
             uint32_t headerArraySize;
             int bytesToAdd;
+            uint8_t endian = m.demarshal_uint8_t();
 
-            if( m.demarshal_uint8_t() == 'l' ) {
+            if( endian == 'l' ) {
                 m.setEndianess( Endianess::Little );
+            }else if( endian != 'B' ){
+                // Bad endianess
+                purgeData();
+                return std::shared_ptr<DBus::Message>();
             }
 
             m.setDataOffset( 4 );
-            m_priv->m_bodyLeftToRead =  m.demarshal_uint32_t();
+            uint32_t bodyToRead = m.demarshal_uint32_t();
             m.setDataOffset( 12 );
             headerArraySize = m.demarshal_uint32_t();
+
+            if( (bodyToRead + headerArraySize + 12) >
+                    DBus::Validator::maximum_message_size() ){
+                // Invalid message: it can't be that big!
+                // purge our reading buffer and reset to a known state.
+                purgeData();
+                return std::shared_ptr<DBus::Message>();
+            }
+            m_priv->m_bodyLeftToRead = bodyToRead;
 
             // Make sure that the header would align to a multiple of 8
             bytesToAdd = 8 - ( ( 16 + headerArraySize ) % 8 );
@@ -249,4 +264,17 @@ bool SimpleTransport::is_valid() const {
 
 int SimpleTransport::fd() const {
     return m_priv->m_fd;
+}
+
+void SimpleTransport::purgeData(){
+    uint8_t purgeBuffer[ 1024 ];
+    ssize_t bytes_read;
+
+    m_priv->m_receiveBufferLocation = 0;
+    m_priv->m_readingState = ReadingState::FirstHeaderPart;
+    m_priv->m_headerLeftToRead = 0;
+
+    do{
+        bytes_read = ::read( m_priv->m_fd, purgeBuffer, 1024 );
+    }while( bytes_read > 0 );
 }

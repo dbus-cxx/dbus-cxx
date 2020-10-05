@@ -135,6 +135,6 @@ bool Validator::validate_error_name( std::string errorname ) {
 }
 
 bool Validator::message_is_small_enough( const std::vector<uint8_t>* data ) {
-    return data->size() < ( 0x01 << 27 );
+    return data->size() < maximum_message_size();
 }
 

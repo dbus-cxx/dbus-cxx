@@ -65,6 +65,9 @@ public:
     int fd() const;
 
 private:
+    void purgeData();
+
+private:
     class priv_data;
 
     DBUS_CXX_PROPAGATE_CONST( std::unique_ptr<priv_data> ) m_priv;
