@@ -146,14 +146,6 @@ public:
     /** Returns the current signature of the iterator */
     std::string signature() const;
 
-    /**
-     * TODO
-     *
-     * Add support for:
-     * - dbus_message_iter_get_fixed_array
-     * - dbus_message_iter_get_array_len
-     */
-
     operator bool();
     operator uint8_t();
     operator uint16_t();
@@ -192,7 +184,6 @@ public:
         return tup;
     }
 
-
     bool        get_bool();
     uint8_t     get_uint8();
     uint16_t    get_uint16();
@@ -214,41 +205,6 @@ public:
      * @param alignment
      */
     void align( int alignment );
-
-    /**
-     * get_array for simple types - arithmetic types where the array is fixed and thus
-     * we can use dbus_message_iter_get_fixed_array.
-     */
-    //      template <typename T,
-    //          typename std::enable_if<std::is_arithmetic<T>::value>::type>
-    //      void get_array( std::vector<T>& array ) {
-    //        if ( not this->is_fixed() ) /* This should never happen */
-    //          throw ErrorInvalidTypecast( "MessageIterator: Extracting non fixed array into std::vector" );
-
-    //        T type;
-    //        if ( this->element_type() != DBus::type( type ) ) {
-    //          TypeInfo t( DBus::type( type ) );
-    //          std::string s = "MessageIterator: Extracting DBus array type ";
-    //          s += t.cppType();
-    //          s += " into C++ vector with type ";
-    //          s += demangle<T>();
-    //    throw ErrorInvalidTypecast( s.c_str() );
-    //        }
-
-    //        int elements;
-    //        T* values;
-
-    //        MessageIterator subiter = this->recurse();
-
-    //        array.clear();
-
-    //        // Get the underlying array
-    //        //dbus_message_iter_get_fixed_array( subiter.cobj(), &values, &elements );
-
-    //        // Iteratively add the elements to the array
-    //        for ( int i=0; i < elements; i++ )
-    //          array.push_back( values[i] );
-    //      }
 
     /**
      * Get values in an array, pushing them back one at a time
@@ -315,25 +271,16 @@ public:
             throw ErrorInvalidTypecast( "MessageIterator: Extracting non dict into std::map" );
         }
 
-        try {
-            get_dict<Key, Data>( m );
-            this->next();
-            return *this;
-        } catch( std::shared_ptr<DBus::ErrorInvalidTypecast> e ) {
-            //TODO make sure we don't need this? it doesn't make much sense
-            throw( ErrorInvalidTypecast )*e;
-        }
+        get_dict<Key, Data>( m );
+        this->next();
+        return *this;
     }
 
     template <typename... T>
     MessageIterator& operator>>( std::tuple<T...>& v ) {
-        try {
-            this->get_struct<T...>( v );
-            this->next();
-            return *this;
-        } catch( std::shared_ptr<DBus::ErrorInvalidTypecast> e ) {
-            throw( ErrorInvalidTypecast )*e;
-        }
+        this->get_struct<T...>( v );
+        this->next();
+        return *this;
     }
 
     template <typename T>
@@ -342,34 +289,22 @@ public:
             throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
         }
 
-        try {
-            this->get_array<T>( v );
-            this->next();
-            return *this;
-        } catch( std::shared_ptr<DBus::ErrorInvalidTypecast> e ) {
-            throw( ErrorInvalidTypecast )*e;
-        }
+        this->get_array<T>( v );
+        this->next();
+        return *this;
     }
 
     MessageIterator& operator>>( Variant& v ) {
-        try {
-            v = this->get_variant();
-            this->next();
-            return *this;
-        } catch( std::shared_ptr<DBus::ErrorInvalidTypecast> e ) {
-            throw( ErrorInvalidTypecast )*e;
-        }
+        v = this->get_variant();
+        this->next();
+        return *this;
     }
 
     template <typename T>
     MessageIterator& operator>>( T& v ) {
-        try {
-            v = ( T )( *this );
-            this->next();
-            return *this;
-        } catch( std::shared_ptr<DBus::ErrorInvalidTypecast> e ) {
-            throw( ErrorInvalidTypecast )*e;
-        }
+        v = static_cast<T>( *this );
+        this->next();
+        return *this;
     }
 
     template <typename T>
@@ -382,8 +317,6 @@ public:
             s += demangle<T>();
             throw ErrorInvalidTypecast( s.c_str() );
         }
-
-        //dbus_message_iter_get_basic( &m_cobj, &temp );
     }
 
 private:
@@ -396,6 +329,7 @@ private:
 
     friend class Variant;
 };
+
 }
 
 #endif
