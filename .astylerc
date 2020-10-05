@@ -1,0 +1,38 @@
+##
+# Why am I here?
+#
+# This file exists to document which settings have been used to reformat the code in general the
+# last time and to somewhat describe main aspects of the code style in use. It's NOT intended to get
+# applied whenever any piece of code is changed! Instead, it IS OK to not follow these settings for
+# some pieces of code, if it makes those pieces more readable in the end. Some pieces of code simply
+# can not be described properly using automatic formatting rules.
+#
+# Example invocation:
+#
+# astyle --project dbus-cxx
+# astyle --project dbus-cxx-glib
+# astyle --project dbus-cxx-qt
+#
+
+--align-pointer=type
+--align-reference=type
+--break-blocks
+--convert-tabs
+--keep-one-line-blocks
+--keep-one-line-statements
+
+--add-braces
+--indent=spaces
+--indent-after-parens
+--indent-col1-comments
+--indent-preproc-block
+--indent-preproc-define
+
+--lineend=linux
+--unpad-paren
+--pad-paren-in
+--pad-comma
+--pad-oper
+--recursive
+--style=java
+--suffix=none
