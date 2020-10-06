@@ -40,6 +40,7 @@ public:
     priv_data() :
         m_message( nullptr ),
         m_subiter( nullptr ),
+        m_currentContainer( ContainerType::None ),
         m_arrayAlignment( 0 ) {}
 
     Marshaling m_marshaling;
