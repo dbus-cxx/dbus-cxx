@@ -41,6 +41,7 @@ class SimpleTransport::priv_data {
 public:
     priv_data( int fd ):
         m_fd( fd ),
+        m_ok( false ),
         m_readingState( ReadingState::FirstHeaderPart ),
         m_receiveBuffer( nullptr ),
         m_receiveBufferLocation( 0 ),
