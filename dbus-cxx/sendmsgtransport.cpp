@@ -20,6 +20,7 @@
 
 #include "dbus-cxx-private.h"
 #include "utility.h"
+#include "validator.h"
 
 #include <message.h>
 #include <string.h>
@@ -397,6 +398,14 @@ std::shared_ptr<DBus::Message> SendmsgTransport::readMessage() {
         return std::shared_ptr<DBus::Message>();
     }
 
+    if( (body_len + header_array_len + 12 + 4) >
+            DBus::Validator::maximum_message_size() ){
+        // Invalid message: it can't be that big!
+        // purge our reading buffer and reset to a known state.
+        purgeData();
+        return std::shared_ptr<DBus::Message>();
+    }
+
     if( 0 != header_array_len % 8 ) {
         header_array_len += 8 - ( header_array_len % 8 );
     }
@@ -453,4 +462,21 @@ bool SendmsgTransport::is_valid() const {
 
 int SendmsgTransport::fd() const {
     return m_priv->m_fd;
+}
+
+void SendmsgTransport::purgeData(){
+//    If a message is
+//    too long to fit in the supplied buffers, and MSG_PEEK is not set in
+//    the flags argument, the excess bytes shall be discarded....
+    // https://man7.org/linux/man-pages/man3/recvmsg.3p.html
+    struct msghdr hdr;
+    struct iovec iov;
+
+    ::memset( &hdr, 0, sizeof( hdr ) );
+    ::memset( &iov, 0, sizeof( iov ) );
+
+    hdr.msg_iov = &iov;
+    hdr.msg_iovlen = 1;
+
+    m_priv->receive( 0, m_priv->rx_control_capacity, 0, 0 );
 }
