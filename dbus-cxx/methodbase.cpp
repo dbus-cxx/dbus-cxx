@@ -52,7 +52,7 @@ void MethodBase::set_arg_name( size_t i, const std::string& name ) {
 }
 
 std::string MethodBase::arg_name( size_t i ) const {
-    if( m_priv->m_arg_names.size() < i && i >= 0 ) {
+    if( i < m_priv->m_arg_names.size() ) {
         return m_priv->m_arg_names[i];
     }
 
