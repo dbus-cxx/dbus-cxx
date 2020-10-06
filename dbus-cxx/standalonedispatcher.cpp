@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <deque>
 #include <utility>
+#include <string.h>
 
 #include "standalonedispatcher.h"
 
@@ -151,7 +152,6 @@ void StandaloneDispatcher::dispatch_thread_main() {
 
         for( std::shared_ptr<Connection> conn : m_priv->m_connections ) {
             if( !conn->is_registered() ) {
-                SIMPLELOGGER_ERROR( "dbus.Dispatcher", "going to register bus" );
                 conn->bus_register();
             }
 
@@ -164,7 +164,10 @@ void StandaloneDispatcher::dispatch_thread_main() {
 
         if( fdsToRead[ 0 ] == m_priv->process_fd[ 1 ] ) {
             char discard;
-            read( m_priv->process_fd[ 1 ], &discard, sizeof( char ) );
+            if( read( m_priv->process_fd[ 1 ], &discard, sizeof( char ) ) < 0 ){
+                SIMPLELOGGER_DEBUG( LOGGER_NAME, "Failure reading from dispatch thread process_fd: "
+                                    << strerror( errno ) );
+            }
         }
 
         dispatch_connections();
