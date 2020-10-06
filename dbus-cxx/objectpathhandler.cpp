@@ -32,15 +32,13 @@ public:
 
     std::weak_ptr<Connection> m_connection;
     Path m_path;
-    PrimaryFallback m_primary_fallback;
     sigc::signal<void( std::shared_ptr<Connection> ) > m_signal_registered;
     sigc::signal<void( std::shared_ptr<Connection> ) > m_signal_unregistered;
 };
 
-ObjectPathHandler::ObjectPathHandler( const std::string& path, PrimaryFallback pf ):
+ObjectPathHandler::ObjectPathHandler( const std::string& path ):
     m_priv( std::make_unique<priv_data>() ) {
     m_priv->m_path = path;
-    m_priv->m_primary_fallback = pf;
 }
 
 ObjectPathHandler::~ObjectPathHandler() {
@@ -48,10 +46,6 @@ ObjectPathHandler::~ObjectPathHandler() {
 
 const Path& ObjectPathHandler::path() const {
     return m_priv->m_path;
-}
-
-PrimaryFallback ObjectPathHandler::is_primary_or_fallback() {
-    return m_priv->m_primary_fallback;
 }
 
 std::weak_ptr< Connection > ObjectPathHandler::connection() const {

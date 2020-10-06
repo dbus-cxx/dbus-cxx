@@ -65,7 +65,7 @@ protected:
      * This class has a protected constructor. Use the \c create() methods
      * to obtain a smart pointer to a new instance.
      */
-    Object( const std::string& path, PrimaryFallback pf = PrimaryFallback::PRIMARY );
+    Object( const std::string& path );
 
 public:
     /**
@@ -94,9 +94,8 @@ public:
     /**
      * Creates a named Object that will register as a primary or fallback handler
      * @param path The path the object will handle
-     * @param pf Determines whether the Object will registar as a primary or fallback handler (\e default = \c PrimaryFallback::PRIMARY)
      */
-    static std::shared_ptr<Object> create( const std::string& path = std::string(), PrimaryFallback pf = PrimaryFallback::PRIMARY );
+    static std::shared_ptr<Object> create( const std::string& path = std::string() );
 
     virtual ~Object();
 

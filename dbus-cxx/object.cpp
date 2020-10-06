@@ -54,13 +54,13 @@ public:
     InterfaceSignalNameConnections m_interface_signal_name_connections;
 };
 
-Object::Object( const std::string& path, PrimaryFallback pf ):
-    ObjectPathHandler( path, pf ),
+Object::Object( const std::string& path ):
+    ObjectPathHandler( path ),
     m_priv( std::make_unique<priv_data>() ) {
 }
 
-std::shared_ptr<Object> Object::create( const std::string& path, PrimaryFallback pf ) {
-    return std::shared_ptr<Object>( new Object( path, pf ) );
+std::shared_ptr<Object> Object::create( const std::string& path ) {
+    return std::shared_ptr<Object>( new Object( path ) );
 }
 
 Object::~ Object( ) {

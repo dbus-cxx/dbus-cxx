@@ -44,16 +44,13 @@ class CallMessage;
  */
 class ObjectPathHandler: public MessageHandler {
 protected:
-    ObjectPathHandler( const std::string& path, PrimaryFallback pf );
+    ObjectPathHandler( const std::string& path );
 
 public:
     virtual ~ObjectPathHandler();
 
     /** Returns the path this handler is associated with */
     const Path& path() const;
-
-    /** Returns the mechanism this handler will use to register with a connection */
-    PrimaryFallback is_primary_or_fallback();
 
     /** Returns the connection this handler is registered with */
     std::weak_ptr<Connection> connection() const;
