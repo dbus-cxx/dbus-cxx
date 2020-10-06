@@ -165,6 +165,7 @@ static int open_unix_socket( std::string socketAddress, bool is_abstract ) {
         std::string errmsg = strerror( errno );
         SIMPLELOGGER_DEBUG( LOGGER_NAME, "Unable to set passcred: " + errmsg );
         errno = my_errno;
+        close( fd );
         return stat;
     }
 
