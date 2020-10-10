@@ -47,6 +47,11 @@ public:
 private:
     void start_element( std::string name, std::map<std::string,std::string> attrs );
     void end_element( std::string name );
+    void handle_node_tag( std::map<std::string,std::string>& tagAttrs );
+    void handle_method_tag( std::map<std::string,std::string>& tagAttrs );
+    void handle_signal_tag( std::map<std::string,std::string>& tagAttrs );
+    void handle_arg_tag( std::map<std::string,std::string>& tagAttrs );
+    void handle_property_tag( std::map<std::string,std::string>& tagAttrs );
 
     static void start_element_handler(void* user_data, const XML_Char* name, const XML_Char** attrs );
     static void end_element_handler( void* userData, const XML_Char* name );

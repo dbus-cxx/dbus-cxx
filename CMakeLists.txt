@@ -143,6 +143,7 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/daemon-proxy/DBusDaemonProxy.cpp
     dbus-cxx/variantappenditerator.cpp
     dbus-cxx/variantiterator.cpp
+    dbus-cxx/property.cpp
 )
 
 # headers that need to go in the include/ directory
@@ -201,6 +202,7 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/validator.h
     dbus-cxx/variantappenditerator.h
     dbus-cxx/variantiterator.h
+    dbus-cxx/property.h
     ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
 )
 
