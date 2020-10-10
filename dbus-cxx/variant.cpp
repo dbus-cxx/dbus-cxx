@@ -142,6 +142,13 @@ Variant::Variant( const Variant& other ) :
     m_dataAlignment( other.m_dataAlignment )
 {}
 
+Variant::Variant( Variant&& other ) :
+    m_currentType( std::exchange( other.m_currentType, DataType::INVALID ) ),
+    m_signature( std::exchange( other.m_signature, "" ) ),
+    m_marshaled( std::move( other.m_marshaled ) ),
+    m_dataAlignment( std::exchange( other.m_dataAlignment, 0 ) ){
+}
+
 Variant::~Variant() {}
 
 DBus::Signature Variant::signature() const {

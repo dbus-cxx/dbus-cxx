@@ -97,6 +97,7 @@ public:
     }
 
     Variant( const Variant& other );
+    Variant( Variant&& other );
     ~Variant();
 
     Signature signature() const;
