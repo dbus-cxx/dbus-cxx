@@ -92,22 +92,22 @@ template <typename T_type>
 class Property : public PropertyBase {
 private:
     Property( std::string interface_name, std::string name, PropertyUpdateType update ) :
-        PropertyBase( interface_name, name, update ) {}
+        PropertyBase( interface_name, name, update ){}
 
 public:
-    static Property<T_type> create( std::string interface_name, std::string name, PropertyUpdateType update ) {
+    static Property<T_type> create( std::string interface_name, std::string name, PropertyUpdateType update ){
         return std::shared_ptr( new Property<T_type>( interface_name, name, update ) );
     }
 
-    sigc::signal<void(T_type)> signal_property_changed() {
+    sigc::signal<void(T_type)> signal_property_changed(){
         return m_slot;
     }
 
-    void set_value( T_type t ) {
+    void set_value( T_type t ){
         set_value( Variant( t ) );
     }
 
-    T_type value() const {
+    T_type value() const{
         T_type t = variant_value();
         return t;
     }

@@ -37,30 +37,30 @@ public:
 };
 
 PropertyBase::PropertyBase( std::string interface_name, std::string name, PropertyUpdateType update ) :
-    m_priv( std::make_unique<priv_data>( interface_name, name, update ) ) {
+    m_priv( std::make_unique<priv_data>( interface_name, name, update ) ){
 
 }
 
-std::string PropertyBase::name() const {
+std::string PropertyBase::name() const{
     return m_priv->m_name;
 }
 
-std::string PropertyBase::interface_name() const {
+std::string PropertyBase::interface_name() const{
     return m_priv->m_interface;
 }
 
-DBus::Variant PropertyBase::variant_value() const {
+DBus::Variant PropertyBase::variant_value() const{
 
 }
 
-DBus::PropertyUpdateType PropertyBase::update_type() const {
+DBus::PropertyUpdateType PropertyBase::update_type() const{
     return m_priv->m_propertyUpdate;
 }
 
-sigc::signal<void(DBus::Variant)> PropertyBase::signal_generic_property_changed() {
+sigc::signal<void(DBus::Variant)> PropertyBase::signal_generic_property_changed(){
     return m_priv->m_propertyChangedSignal;
 }
 
-void PropertyBase::set_value( DBus::Variant value ) {
+void PropertyBase::set_value( DBus::Variant value ){
 
 }

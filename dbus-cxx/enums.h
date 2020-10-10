@@ -30,10 +30,27 @@ enum class BusType {
     STARTER     /**< The bus that started us, if any */
 };
 
-
-enum class CreateMethod {
-    ALIAS,
-    COPY,
+enum class PropertyUpdateType {
+    /**
+     * When this property changes, the PropertyChanged signal will be emitted
+     * with the new value.
+     */
+    Updates,
+    /**
+     * When this property cahnges, the PropertyChanged signal will be emitted
+     * but the new value will not be set in the signal.
+     */
+    Invalidates,
+    /**
+     * This property does not change during the lifetime.
+     */
+    Const,
+    /**
+     * The property does not emit the PropertyChanged signal whenever it changes.
+     * This implies that when you query the property on a proxy, it will always
+     * query the value over the bus.
+     */
+    DoesNotUpdate
 };
 
 enum class DataType {
