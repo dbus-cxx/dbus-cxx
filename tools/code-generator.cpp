@@ -50,6 +50,7 @@ bool CodeGenerator::parse(){
 }
 
 void CodeGenerator::start_element( std::string tagName, std::map<std::string,std::string> tagAttrs ){
+    std::string parentElement = m_tagStack.empty() ? "" : m_tagStack.top();
     m_tagStack.push( tagName );
 
     if( tagName.compare( "node" ) == 0 ){
@@ -65,7 +66,7 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
     }else if( tagName.compare( "signal" ) == 0 ){
         handle_signal_tag( tagAttrs );
     }else if( tagName.compare( "arg" ) == 0 ){
-        handle_arg_tag( tagAttrs );
+        handle_arg_tag( parentElement, tagAttrs );
     }else if( tagName.compare( "property" ) == 0 ){
         handle_property_tag( tagAttrs );
     }
@@ -533,9 +534,10 @@ void CodeGenerator::handle_signal_tag( std::map<std::string,std::string>& tagAtt
     m_currentSignal = SignalInfo( signalName );
 }
 
-void CodeGenerator::handle_arg_tag( std::map<std::string,std::string>& tagAttrs ){
+void CodeGenerator::handle_arg_tag( std::string parentElement, std::map<std::string,std::string>& tagAttrs ){
     cppgenerate::Argument arg;
-    std::string parentElement = m_tagStack.empty() ? "" : m_tagStack.top();
+
+    std::cerr << "handling arg tag.  parent element: " << parentElement << "\n";
 
     if( tagAttrs.find( "direction" ) == tagAttrs.end() &&
         parentElement == "method" ){
