@@ -46,9 +46,12 @@ public:
     /**
      * Get the value of this property as a Variant.
      *
+     * If the value is stale, this will go and query the latest value from the
+     * remote object.
+     *
      * @return
      */
-    Variant variant_value() const;
+    Variant variant_value();
 
     PropertyUpdateType update_type() const;
 
@@ -79,6 +82,7 @@ public:
 private:
     void set_interface( InterfaceProxy* proxy );
     void updated_value( Variant value );
+    void invalidate();
 
 private:
     class priv_data;
@@ -98,7 +102,9 @@ template <typename T_type>
 class PropertyProxy : public PropertyProxyBase {
 private:
     PropertyProxy( std::string name, PropertyUpdateType update ) :
-        PropertyProxyBase( name, update ) {}
+        PropertyProxyBase( name, update ) {
+        signal_generic_property_changed().connect( sigc::mem_fun( this, &PropertyProxy::parentUpdated ) );
+    }
 
 public:
     static PropertyProxy<T_type> create( std::string name, PropertyUpdateType update ) {
@@ -114,8 +120,14 @@ public:
     }
 
     T_type value() const {
-        T_type t = variant_value();
-        return t;
+//        T_type t = variant_value();
+//        return t;
+    }
+
+private:
+    void parentUpdated( Variant v ){
+        T_type t;
+        m_signal_changed.emit( t );
     }
 
 private:

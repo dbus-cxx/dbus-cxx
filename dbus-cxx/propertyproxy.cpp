@@ -28,7 +28,8 @@ public:
     priv_data( std::string name, PropertyUpdateType update) :
         m_name( name ),
         m_propertyUpdate( update ),
-        m_interface( nullptr )
+        m_interface( nullptr ),
+        m_valueSet( false )
     {}
 
     std::string m_name;
@@ -36,6 +37,7 @@ public:
     sigc::signal<void(DBus::Variant)> m_propertyChangedSignal;
     InterfaceProxy* m_interface;
     Variant m_value;
+    bool m_valueSet;
 };
 
 PropertyProxyBase::PropertyProxyBase( std::string name, PropertyUpdateType update ) :
@@ -47,8 +49,23 @@ std::string PropertyProxyBase::name() const {
     return m_priv->m_name;
 }
 
-DBus::Variant PropertyProxyBase::variant_value() const {
+DBus::Variant PropertyProxyBase::variant_value() {
+    if( !m_priv->m_valueSet && m_priv->m_interface ){
+        std::shared_ptr<CallMessage> msg =
+                CallMessage::create( m_priv->m_interface->path(), "org.freedesktop.DBus.Properties", "Get" );
+        msg << m_priv->m_interface->name() << m_priv->m_name;
 
+        std::shared_ptr<const ReturnMessage> ret =
+                m_priv->m_interface->call( msg );
+
+        MessageIterator iter = ret->begin();
+        Variant var;
+        iter >> var;
+
+        updated_value( var );
+    }
+
+    return m_priv->m_value;
 }
 
 DBus::PropertyUpdateType PropertyProxyBase::update_type() const {
@@ -60,7 +77,22 @@ sigc::signal<void(DBus::Variant)> PropertyProxyBase::signal_generic_property_cha
 }
 
 void PropertyProxyBase::set_value( DBus::Variant value ) {
+    if( m_priv->m_propertyUpdate == PropertyUpdateType::Const ){
+        // We can't set the value for this
+        return;
+    }
 
+    // Create a CallMessage to set the value on the remote object.
+    std::shared_ptr<CallMessage> msg =
+            CallMessage::create( m_priv->m_interface->path(), "org.freedesktop.DBus.Properties", "Set" );
+    msg << m_priv->m_interface->name() << m_priv->m_name << value;
+
+    std::shared_ptr<const ReturnMessage> ret =
+            m_priv->m_interface->call( msg );
+
+    // This is probably not needed, as the remote object will likely emit a signal with the new value,
+    // but this shouldn't cause an issue.
+    m_priv->m_value = value;
 }
 
 void PropertyProxyBase::set_interface( InterfaceProxy *proxy ){
@@ -73,4 +105,11 @@ DBus::InterfaceProxy* PropertyProxyBase::interface_name() const {
 
 void PropertyProxyBase::updated_value(Variant value){
     m_priv->m_value = value;
+    m_priv->m_valueSet = true;
+
+    m_priv->m_propertyChangedSignal.emit( m_priv->m_value );
+}
+
+void PropertyProxyBase::invalidate(){
+    m_priv->m_valueSet = false;
 }
