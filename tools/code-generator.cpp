@@ -537,8 +537,6 @@ void CodeGenerator::handle_signal_tag( std::map<std::string,std::string>& tagAtt
 void CodeGenerator::handle_arg_tag( std::string parentElement, std::map<std::string,std::string>& tagAttrs ){
     cppgenerate::Argument arg;
 
-    std::cerr << "handling arg tag.  parent element: " << parentElement << "\n";
-
     if( tagAttrs.find( "direction" ) == tagAttrs.end() &&
         parentElement == "method" ){
         std::cerr << "WARNING: No direction for arg found(assuming in).  Line:"
