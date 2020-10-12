@@ -26,6 +26,7 @@
 #include <string>
 #include "path.h"
 #include <sigc++/sigc++.h>
+#include <dbus-cxx/propertyproxy.h>
 
 #ifndef DBUSCXX_INTERFACEPROXY_H
 #define DBUSCXX_INTERFACEPROXY_H
@@ -105,6 +106,52 @@ public:
 
     /** True if the interface has the specified method */
     bool has_method( std::shared_ptr<MethodProxyBase> method ) const;
+
+    /**
+     * Get the (local) cache of all properties.
+     * @return
+     */
+    const std::map<std::string,std::shared_ptr<PropertyProxyBase>>& properties() const;
+
+    std::shared_ptr<PropertyProxyBase> property( const std::string& name ) const;
+
+    /** True if the interface has a property with the given name */
+    bool has_property( const std::string& name ) const;
+
+    /** True if the interface has the specified property */
+    bool has_property( std::shared_ptr<PropertyProxyBase> property ) const;
+
+    /** Removes the property with the given name */
+    void remove_property( const std::string& name );
+
+    /** Removed the specific property */
+    void remove_property( std::shared_ptr<PropertyProxyBase> method );
+
+    /**
+     * Create a property with the given type, and the given name.
+     */
+    template <class T_type>
+    std::shared_ptr<PropertyProxy<T_type>> create_property( const std::string& name ){
+        std::shared_ptr< PropertyProxy<T_type> > prop;
+        prop = PropertyProxy<T_type>::create( name );
+
+        if( !this->add_property( prop ) ) {
+            return std::shared_ptr< PropertyProxy<T_type> >();
+        }
+
+        return method;
+    }
+
+    /**
+     * Adds the given property.  If a property with the same name already exists,
+     * does not replace the current property(returns false).
+     */
+    bool add_property( std::shared_ptr<PropertyProxyBase> property );
+
+    /**
+     * Ask the remote object for the status of all of its properties.
+     */
+    void cache_properties();
 
     std::shared_ptr<CallMessage> create_call_message( const std::string& method_name ) const;
 

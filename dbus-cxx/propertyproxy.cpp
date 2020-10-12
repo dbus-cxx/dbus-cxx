@@ -16,14 +16,14 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <dbus-cxx/property.h>
+#include <dbus-cxx/propertyproxy.h>
 #include <dbus-cxx/variant.h>
-#include <dbus-cxx/interface.h>
+#include <dbus-cxx/interfaceproxy.h>
 #include "property.h"
 
-using DBus::PropertyBase;
+using DBus::PropertyProxyBase;
 
-class PropertyBase::priv_data {
+class PropertyProxyBase::priv_data {
 public:
     priv_data( std::string name, PropertyUpdateType update) :
         m_name( name ),
@@ -34,30 +34,43 @@ public:
     std::string m_name;
     PropertyUpdateType m_propertyUpdate;
     sigc::signal<void(DBus::Variant)> m_propertyChangedSignal;
-    Interface* m_interface;
+    InterfaceProxy* m_interface;
+    Variant m_value;
 };
 
-PropertyBase::PropertyBase( std::string name, PropertyUpdateType update ) :
+PropertyProxyBase::PropertyProxyBase( std::string name, PropertyUpdateType update ) :
     m_priv( std::make_unique<priv_data>( name, update ) ) {
 
 }
 
-std::string PropertyBase::name() const {
+std::string PropertyProxyBase::name() const {
     return m_priv->m_name;
 }
 
-DBus::Variant PropertyBase::variant_value() const {
+DBus::Variant PropertyProxyBase::variant_value() const {
 
 }
 
-DBus::PropertyUpdateType PropertyBase::update_type() const {
+DBus::PropertyUpdateType PropertyProxyBase::update_type() const {
     return m_priv->m_propertyUpdate;
 }
 
-sigc::signal<void(DBus::Variant)> PropertyBase::signal_generic_property_changed() {
+sigc::signal<void(DBus::Variant)> PropertyProxyBase::signal_generic_property_changed() {
     return m_priv->m_propertyChangedSignal;
 }
 
-void PropertyBase::set_value( DBus::Variant value ) {
+void PropertyProxyBase::set_value( DBus::Variant value ) {
 
+}
+
+void PropertyProxyBase::set_interface( InterfaceProxy *proxy ){
+    m_priv->m_interface = proxy;
+}
+
+DBus::InterfaceProxy* PropertyProxyBase::interface_name() const {
+    return m_priv->m_interface;
+}
+
+void PropertyProxyBase::updated_value(Variant value){
+    m_priv->m_value = value;
 }

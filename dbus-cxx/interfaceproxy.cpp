@@ -24,6 +24,9 @@
 #include "objectproxy.h"
 #include <sigc++/sigc++.h>
 #include "signal_proxy_base.h"
+#include <dbus-cxx/dbus-cxx-private.h>
+
+static const char* LOGGER_NAME = "DBus.InterfaceProxy";
 
 namespace DBus {
 
@@ -43,6 +46,8 @@ public:
     Signals m_signals;
     std::map<std::shared_ptr<signal_proxy_base>, ThreadForCalling> m_callingMap;
     mutable std::shared_mutex m_methods_rwlock;
+    mutable std::shared_mutex m_properties_rwlock;
+    std::map<std::string,std::shared_ptr<PropertyProxyBase>> m_properties;
 };
 
 InterfaceProxy::InterfaceProxy( const std::string& name ) {
@@ -284,6 +289,130 @@ void InterfaceProxy::on_object_set_connection( std::shared_ptr< Connection > con
 void InterfaceProxy::on_object_set_path( const std::string& path ) {
     for( Signals::iterator i = m_priv->m_signals.begin(); i != m_priv->m_signals.end(); i++ ) {
         ( *i )->set_path( path );
+    }
+}
+
+const std::map<std::string,std::shared_ptr<PropertyProxyBase>>& InterfaceProxy::properties() const {
+    return m_priv->m_properties;
+}
+
+std::shared_ptr<PropertyProxyBase> InterfaceProxy::property( const std::string& name ) const {
+    std::map<std::string,std::shared_ptr<PropertyProxyBase>>::const_iterator iter;
+    std::shared_lock lock( m_priv->m_properties_rwlock );
+
+    iter = m_priv->m_properties.find( name );
+
+    if( iter == m_priv->m_properties.end() ) { return std::shared_ptr<PropertyProxyBase>(); }
+
+    return iter->second;
+}
+
+bool InterfaceProxy::add_property( std::shared_ptr<PropertyProxyBase> property ) {
+    bool result = true;
+
+    if( !property ) { return false; }
+
+    if( this->has_property( property ) ) { return false; }
+
+    if( property->interface_name() ) { property->interface_name()->remove_property( property ); }
+
+    {
+        std::unique_lock lock( m_priv->m_properties_rwlock );
+
+        m_priv->m_properties.insert( std::make_pair( property->name(), property ) );
+        property->set_interface( this );
+    }
+
+    return result;
+}
+
+bool InterfaceProxy::has_property( const std::string& name ) const {
+    std::map<std::string,std::shared_ptr<PropertyProxyBase>>::const_iterator iter;
+    std::shared_lock lock( m_priv->m_properties_rwlock );
+
+    iter = m_priv->m_properties.find( name );
+
+    return ( iter != m_priv->m_properties.end() );
+}
+
+bool InterfaceProxy::has_property( std::shared_ptr<PropertyProxyBase> property ) const {
+    std::map<std::string,std::shared_ptr<PropertyProxyBase>>::const_iterator current, upper;
+    bool found = false;
+
+    if( !property ) { return false; }
+
+    std::shared_lock lock( m_priv->m_properties_rwlock );
+
+    current = m_priv->m_properties.lower_bound( property->name() );
+
+    if( current != m_priv->m_properties.end() ) {
+        upper = m_priv->m_properties.upper_bound( property->name() );
+
+        for( ; current != upper; current++ ) {
+            if( current->second == property ) {
+                found = true;
+                break;
+            }
+        }
+    }
+
+    return found;
+}
+
+void InterfaceProxy::remove_property( const std::string& name ) {
+    std::map<std::string,std::shared_ptr<PropertyProxyBase>>::iterator iter;
+    std::shared_ptr<PropertyProxyBase> property;
+
+    {
+        std::unique_lock lock( m_priv->m_properties_rwlock );
+
+        iter = m_priv->m_properties.find( name );
+
+        if( iter != m_priv->m_properties.end() ) {
+            property = iter->second;
+            m_priv->m_properties.erase( iter );
+        }
+    }
+    property->set_interface( nullptr );
+}
+
+void InterfaceProxy::remove_property( std::shared_ptr<PropertyProxyBase> property ) {
+    std::map<std::string,std::shared_ptr<PropertyProxyBase>>::iterator location;
+    bool erased = false;
+
+    if( !property ) { return; }
+
+    {
+        std::unique_lock lock( m_priv->m_methods_rwlock );
+
+        location = m_priv->m_properties.find( property->name() );
+
+        if( location != m_priv->m_properties.end() ) {
+            m_priv->m_properties.erase( location );
+            erased = true;
+        }
+    }
+
+    property->set_interface( nullptr );
+}
+
+void InterfaceProxy::cache_properties(){
+    std::shared_ptr<CallMessage> msg =
+            CallMessage::create( m_priv->m_object->path(), "org.freedesktop.DBus.Properties", "Get" );
+    std::shared_ptr<const ReturnMessage> ret =
+            call( msg );
+
+    MessageIterator iter = ret->begin();
+    std::map<std::string,DBus::Variant> allValues;
+
+    iter >> allValues;
+
+    for( std::map<std::string,DBus::Variant>::const_iterator it = allValues.cbegin();
+         it != allValues.cend();
+         it++ ){
+        SIMPLELOGGER_TRACE( LOGGER_NAME, "Caching property " << it->first << "=" << it->second );
+        std::shared_ptr<DBus::PropertyProxyBase> prop = property( it->first );
+        prop->updated_value( it->second );
     }
 }
 

@@ -22,17 +22,18 @@
 #include <sigc++/sigc++.h>
 #include <memory>
 
-#ifndef DBUSCXX_PROPERTY_H
-#define DBUSCXX_PROPERTY_H
-
+#ifndef DBUSCXX_PROPERTYPROXY_H
+#define DBUSCXX_PROPERTYPROXY_H
 namespace DBus {
 
+class InterfaceProxy;
+
 /**
- * Base type of Property to allow for storage in e.g. a vector.
+ * Base type of PropertyProxy to allow for storage in e.g. a vector.
  */
-class PropertyBase {
+class PropertyProxyBase {
 protected:
-    PropertyBase( std::string name, PropertyUpdateType update );
+    PropertyProxyBase( std::string name, PropertyUpdateType update );
 
 public:
 
@@ -73,27 +74,39 @@ public:
      */
     void set_value( Variant value );
 
+    InterfaceProxy* interface_name() const;
+
+private:
+    void set_interface( InterfaceProxy* proxy );
+    void updated_value( Variant value );
+
 private:
     class priv_data;
 
     DBUS_CXX_PROPAGATE_CONST( std::unique_ptr<priv_data> ) m_priv;
+
+    // Declare InterfaceProxy as a friend so that it can set the interface
+    friend class InterfaceProxy;
 };
 
 /**
- * Represents a local DBus property.
+ * Represents a remote DBus property.
  *
- * Properties can be Read, Write, or Readonly.  When they change, a signal
- * may be emitted on the bus to listeners.
+ * Properties can be Read, Write, or Readonly.
  */
 template <typename T_type>
-class Property : public PropertyBase {
+class PropertyProxy : public PropertyProxyBase {
 private:
-    Property( std::string name, PropertyUpdateType update ) :
-        PropertyBase( name, update ) {}
+    PropertyProxy( std::string name, PropertyUpdateType update ) :
+        PropertyProxyBase( name, update ) {}
 
 public:
-    static Property<T_type> create( std::string name, PropertyUpdateType update ) {
-        return std::shared_ptr( new Property<T_type>( name, update ) );
+    static PropertyProxy<T_type> create( std::string name, PropertyUpdateType update ) {
+        return std::shared_ptr( new PropertyProxy<T_type>( name, update ) );
+    }
+
+    sigc::signal<void(T_type)> signal_property_changed() {
+        return m_signal_changed;
     }
 
     void set_value( T_type t ) {
@@ -104,6 +117,9 @@ public:
         T_type t = variant_value();
         return t;
     }
+
+private:
+    sigc::slot<void(T_type)> m_signal_changed;
 };
 
 } /* namespace DBus */
