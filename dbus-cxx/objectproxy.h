@@ -19,6 +19,7 @@
 #include <dbus-cxx/signal_proxy_base.h>
 #include <dbus-cxx/interfaceproxy.h>
 #include <dbus-cxx/dbus-cxx-config.h>
+#include <dbus-cxx/propertyproxy.h>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -164,6 +165,16 @@ public:
         if( !interface_ptr ) { interface_ptr = this->create_interface( interface_name ); }
 
         return interface_ptr->create_signal<T_type...>( sig_name, calling );
+    }
+
+    template <class T_type>
+    std::shared_ptr<PropertyProxy<T_type>>
+    create_property( const std::string& interface_name, const std::string& property_name, PropertyUpdateType update ) {
+        std::shared_ptr<InterfaceProxy> interface_ptr = this->interface_by_name( interface_name );
+
+        if( !interface_ptr ) { interface_ptr = this->create_interface( interface_name ); }
+
+        return interface_ptr->create_property<T_type>( property_name, update );
     }
 
     /**

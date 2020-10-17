@@ -19,6 +19,7 @@
 #include <dbus-cxx/propertyproxy.h>
 #include <dbus-cxx/variant.h>
 #include <dbus-cxx/interfaceproxy.h>
+#include <dbus-cxx/objectproxy.h>
 #include "property.h"
 
 using DBus::PropertyProxyBase;
@@ -45,6 +46,8 @@ PropertyProxyBase::PropertyProxyBase( std::string name, PropertyUpdateType updat
 
 }
 
+PropertyProxyBase::~PropertyProxyBase(){}
+
 std::string PropertyProxyBase::name() const {
     return m_priv->m_name;
 }
@@ -52,7 +55,10 @@ std::string PropertyProxyBase::name() const {
 DBus::Variant PropertyProxyBase::variant_value() {
     if( !m_priv->m_valueSet && m_priv->m_interface ){
         std::shared_ptr<CallMessage> msg =
-                CallMessage::create( m_priv->m_interface->path(), "org.freedesktop.DBus.Properties", "Get" );
+                CallMessage::create( m_priv->m_interface->object()->destination(),
+                                     m_priv->m_interface->path(),
+                                     "org.freedesktop.DBus.Properties",
+                                     "Get" );
         msg << m_priv->m_interface->name() << m_priv->m_name;
 
         std::shared_ptr<const ReturnMessage> ret =

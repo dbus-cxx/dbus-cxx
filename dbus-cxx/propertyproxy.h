@@ -35,6 +35,8 @@ class PropertyProxyBase {
 protected:
     PropertyProxyBase( std::string name, PropertyUpdateType update );
 
+    ~PropertyProxyBase();
+
 public:
 
     /**
@@ -103,12 +105,12 @@ class PropertyProxy : public PropertyProxyBase {
 private:
     PropertyProxy( std::string name, PropertyUpdateType update ) :
         PropertyProxyBase( name, update ) {
-        signal_generic_property_changed().connect( sigc::mem_fun( this, &PropertyProxy::parentUpdated ) );
+        signal_generic_property_changed().connect( sigc::mem_fun( *this, &PropertyProxy::parentUpdated ) );
     }
 
 public:
-    static PropertyProxy<T_type> create( std::string name, PropertyUpdateType update ) {
-        return std::shared_ptr( new PropertyProxy<T_type>( name, update ) );
+    static std::shared_ptr<PropertyProxy<T_type>> create( std::string name, PropertyUpdateType update ) {
+        return std::shared_ptr<PropertyProxy<T_type>>( new PropertyProxy<T_type>( name, update ) );
     }
 
     sigc::signal<void(T_type)> signal_property_changed() {
@@ -119,19 +121,20 @@ public:
         set_value( Variant( t ) );
     }
 
-    T_type value() const {
-//        T_type t = variant_value();
-//        return t;
+    T_type value() {
+        Variant v = variant_value();
+        T_type t = v;
+        return t;
     }
 
 private:
     void parentUpdated( Variant v ){
-        T_type t;
+        T_type t = v;
         m_signal_changed.emit( t );
     }
 
 private:
-    sigc::slot<void(T_type)> m_signal_changed;
+    sigc::signal<void(T_type)> m_signal_changed;
 };
 
 } /* namespace DBus */

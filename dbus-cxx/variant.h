@@ -153,6 +153,34 @@ public:
     DBus::Path  to_path() const;
     DBus::Signature to_signature() const;
 
+    operator bool();
+    operator uint8_t();
+    operator uint16_t();
+    operator int16_t();
+    operator uint32_t();
+    operator int32_t();
+    operator uint64_t();
+    operator int64_t();
+    operator double();
+    operator std::string();
+    operator DBus::Path();
+    operator DBus::Signature();
+
+    template <typename T>
+    operator std::vector<T>() {
+        return to_vector<T>();
+    }
+
+    template <typename Key, typename Data>
+    operator std::map<Key, Data>() {
+        return to_map<Key, Data>();
+    }
+
+    template <typename... T>
+    operator std::tuple<T...>() {
+        return to_tuple<T...>();
+    }
+
     static Variant createFromMessage( MessageIterator iter );
 
 private:

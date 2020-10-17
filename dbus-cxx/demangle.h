@@ -21,7 +21,7 @@
 #define DBUSCXX_DEMANGLE_H
 
 #include <string>
-#include <dbus-cxx-config.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 
 #if DBUS_CXX_HAS_CXXABI_H
     #include <cxxabi.h>

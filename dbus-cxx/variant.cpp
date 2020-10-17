@@ -599,6 +599,54 @@ DBus::Signature Variant::to_signature() const {
     return vi.get_signature();
 }
 
+Variant::operator bool(){
+    return to_bool();
+}
+
+Variant::operator uint8_t(){
+    return to_uint8();
+}
+
+Variant::operator uint16_t(){
+    return to_uint16();
+}
+
+Variant::operator int16_t(){
+    return to_int16();
+}
+
+Variant::operator uint32_t(){
+    return to_uint32();
+}
+
+Variant::operator int32_t(){
+    return to_int32();
+}
+
+Variant::operator uint64_t(){
+    return to_uint64();
+}
+
+Variant::operator int64_t(){
+    return to_int64();
+}
+
+Variant::operator double(){
+    return to_double();
+}
+
+Variant::operator std::string(){
+    return to_string();
+}
+
+Variant::operator DBus::Path(){
+    return to_path();
+}
+
+Variant::operator DBus::Signature(){
+    return to_signature();
+}
+
 namespace DBus {
 
 std::ostream& operator<<( std::ostream& os, const Variant& var ) {
