@@ -133,8 +133,6 @@ public:
      */
     std::shared_ptr<const ReturnMessage> call( std::shared_ptr<const CallMessage>, int timeout_milliseconds = -1 ) const;
 
-    //      std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
-
     /**
      * Creates a proxy method with a signature based on the template parameters and adds it to the named interface
      * @return A smart pointer to the newly created method proxy

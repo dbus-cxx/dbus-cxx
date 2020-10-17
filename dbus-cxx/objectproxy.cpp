@@ -266,14 +266,6 @@ std::shared_ptr<const ReturnMessage> ObjectProxy::call( std::shared_ptr<const Ca
     return conn->send_with_reply_blocking( call_message, timeout_milliseconds );
 }
 
-//  std::shared_ptr<PendingCall> ObjectProxy::call_async( std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds ) const
-//  {
-//      std::shared_ptr<Connection> conn = m_priv->m_connection.lock();
-//    if ( !conn ) return std::shared_ptr<PendingCall>();
-
-//    return conn->send_with_reply_async( call_message, timeout_milliseconds );
-//  }
-
 sigc::signal< void( std::shared_ptr<InterfaceProxy> )> ObjectProxy::signal_interface_added() {
     return m_priv->m_signal_interface_added;
 }
