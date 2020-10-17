@@ -205,15 +205,6 @@ public:
     Connection& operator<<( std::shared_ptr<const Message> msg );
 
     /**
-     * Send a message and return a handle to the pending call.
-     *
-     * @param message
-     * @param timeout_milliseconds
-     * @return
-     */
-    //std::shared_ptr<PendingCall> send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds=-1 );
-
-    /**
      * Send a CallMessage, and wait for the reply.
      *
      * If a timeout is processed, this will throw ErrorNoReply
@@ -341,10 +332,6 @@ public:
         sig->set_connection( shared_from_this() );
         return sig;
     }
-
-    //       bool register_object( Object& obj, const std::string & path );
-    //
-    //       bool register_signal( signal_base& );
 
     std::string introspect( const std::string& destination, const std::string& path );
 

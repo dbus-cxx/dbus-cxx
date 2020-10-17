@@ -168,7 +168,7 @@ Connection::Connection( BusType type ) {
     }
 
     if( !m_priv->m_transport || !m_priv->m_transport->is_valid() ) {
-        SIMPLELOGGER_ERROR( "dbus.Connection", "Unable to open transport" );
+        SIMPLELOGGER_ERROR( LOGGER_NAME, "Unable to open transport" );
         return;
     }
 }
@@ -376,16 +376,6 @@ Connection& Connection::operator <<( std::shared_ptr<const Message> msg ) {
     return *this;
 }
 
-//  std::shared_ptr<PendingCall> Connection::send_with_reply_async( std::shared_ptr<const Message> message, int timeout_milliseconds )
-//  {
-//    if ( not this->is_valid() ) throw ErrorDisconnected();
-//    if ( not message or not *message ) return std::shared_ptr<PendingCall>();
-//    uint32_t reply_serial = send( message );
-//    //if ( not dbus_connection_send_with_reply( m_cobj, message->cobj(), &reply, timeout_milliseconds ) )
-//      throw ErrorNoMemory( "Unable to start asynchronous call" );
-//    return PendingCall::create();
-//  }
-
 std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking( std::shared_ptr<const CallMessage> message, int timeout_milliseconds ) {
 
     if( !this->is_valid() ) { throw ErrorDisconnected(); }
@@ -582,7 +572,7 @@ DispatchStatus Connection::dispatch( ) {
 
     // Try to read a message
     {
-        SIMPLELOGGER_DEBUG( "DBus.Connection", "Try to read a message" );
+        SIMPLELOGGER_DEBUG( LOGGER_NAME, "Try to read a message" );
         std::shared_ptr<Message> incoming = m_priv->m_transport->readMessage();
 
         if( incoming ) {
@@ -639,7 +629,7 @@ void Connection::process_single_message() {
         std::shared_ptr<SignalMessage> signalmsg = std::static_pointer_cast<SignalMessage>( msgToProcess );
         process_signal_message( signalmsg );
     } else {
-        SIMPLELOGGER_ERROR( "DBus.Connection", "Unable to process message: invalid type " << msgToProcess->type() );
+        SIMPLELOGGER_ERROR( LOGGER_NAME, "Unable to process message: invalid type " << msgToProcess->type() );
         return;
     }
 }
@@ -928,43 +918,6 @@ bool Connection::remove_signal_proxy( std::shared_ptr<signal_proxy_base> signal 
     return removed;
 }
 
-//   bool Connection::register_signal_handler(SignalReceiver::pointer sighandler)
-//   {
-//     if ( not sighandler or sighandler->interface().empty() or sighandler->member().empty() ) return false;
-//
-//     m_proxy_signal_interface_map[sighandler->interface()][sighandler->member()].push_back(sighandler);
-//
-//     this->add_match( sighandler->match_rule() );
-//
-//     return true;
-//   }
-
-//   bool Connection::unregister_signal_handler(SignalReceiver::pointer sighandler)
-//   {
-//     InterfaceToNameProxySignalMap::iterator i;
-//     NameToProxySignalMap::iterator j;
-//     std::list<SignalReceiver::pointer>::iterator k;
-//
-//     if ( not sighandler or sighandler->interface().empty() or sighandler->member().empty() ) return false;
-//
-//     i = m_proxy_signal_interface_map.find(sighandler->interface());
-//     if ( i == m_proxy_signal_interface_map.end() ) return false;
-//
-//     j = i->second.find(sighandler->member());
-//     if ( j == i->second.end() ) return false;
-//
-//     for ( k = j->second.begin(); k != j->second.end(); k++ )
-//     {
-//       if ( *k == sighandler )
-//       {
-//         j->second.erase(k);
-//         return true;
-//       }
-//     }
-//
-//     return false;
-//   }
-
 const std::vector<std::shared_ptr<signal_proxy_base>>& Connection::get_signal_proxies() {
     return m_priv->m_proxySignals;
 }
@@ -993,43 +946,6 @@ std::vector<std::shared_ptr<signal_proxy_base>> Connection::get_signal_proxies( 
 
     return ret;
 }
-
-
-//   bool Connection::register_object( Object& obj, const std::string & path )
-//   {
-//     return dbus_connection_register_object_path( m_cobj, path.c_str(), obj.dbus_vtable(), &obj );
-//   }
-//
-//   bool Connection::register_signal( signal_proxy_base & signal )
-//   {
-//     InterfaceVTable* interface_vtable;
-//
-//     // We must have a valid interface and signal name to perform the match upon
-//     if ( signal.interface().size() == 0 || signal.name().size() == 0 )
-//       return false;
-//
-//     // Let's get the signal vtable, and if we don't have a signal vtable let's make one
-//     interface_vtable = static_cast<InterfaceVTable*>( dbus_connection_get_data( m_cobj, m_interface_vtable_slot ) );
-//
-// //                            DEBUG_OUT( "Connection::register_signal()", "pre-creation interface VTable address is " << (unsigned long) interface_vtable );
-//
-//     if ( interface_vtable == nullptr ) {
-//       interface_vtable = new InterfaceVTable();
-//       dbus_connection_set_data( m_cobj, m_interface_vtable_slot, interface_vtable, operator delete );
-//     }
-//
-//     InterfaceVTable* interface_vtable2 = static_cast<InterfaceVTable*>( dbus_connection_get_data( m_cobj, m_interface_vtable_slot ) );
-//
-// //                            DEBUG_OUT( "Connection::register_signal()", "Interface VTable address is " << (unsigned long) interface_vtable2 );
-//
-//     this->add_match( "type='signal',interface='" + signal.interface() + "',member='" + signal.name() + "'" );
-//
-// //                            DEBUG_OUT( "Connection::register_signal()", "registering signal with match string \"" "type='signal',interface='" + signal.interface() + "',member='" + signal.name() + "'\"" );
-//
-//     ( *interface_vtable )[signal.interface()][signal.name()] = signal;
-// //                            DEBUG_OUT( "Connection::register_signal()", "the interface vtable for " << (long unsigned)m_cobj << " has " << interface_vtable->size() << " elements" );
-//   }
-//
 
 std::string Connection::introspect( const std::string& destination, const std::string& path ) {
     std::string failed;
