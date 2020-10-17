@@ -57,7 +57,7 @@ DBus::Variant PropertyProxyBase::variant_value() {
         std::shared_ptr<CallMessage> msg =
                 CallMessage::create( m_priv->m_interface->object()->destination(),
                                      m_priv->m_interface->path(),
-                                     "org.freedesktop.DBus.Properties",
+                                     DBUS_CXX_PROPERTIES_INTERFACE,
                                      "Get" );
         msg << m_priv->m_interface->name() << m_priv->m_name;
 
