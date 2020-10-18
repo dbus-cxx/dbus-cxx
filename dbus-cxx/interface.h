@@ -21,6 +21,7 @@
 #include <dbus-cxx/methodbase.h>
 #include <dbus-cxx/dbus_signal.h>
 #include <dbus-cxx/dbus-cxx-config.h>
+#include <dbus-cxx/property.h>
 #include <sigc++/sigc++.h>
 #include <set>
 #include <map>
@@ -143,6 +144,20 @@ public:
         return method;
     }
 
+    template <typename T_type>
+    std::shared_ptr<Property<T_type>>
+    create_property( const std::string& name,
+                     PropertyAccess access_type = PropertyAccess::ReadWrite,
+                     PropertyUpdateType update_type = PropertyUpdateType::Updates ) {
+        std::shared_ptr<Property<T_type>> prop = Property<T_type>::create( name, access_type, update_type );
+        add_property( prop );
+        return prop;
+    }
+
+    bool add_property( std::shared_ptr<PropertyBase> prop );
+
+    bool has_property( const std::string& name ) const;
+
     /** Adds the named method */
     bool add_method( std::shared_ptr<MethodBase> method );
 
@@ -203,6 +218,8 @@ public:
 
     /** Returns the signals associated with this interface */
     const Signals& signals();
+
+    const std::set<std::shared_ptr<PropertyBase>>& properties();
 
     /**
      * Returns the first signal found with a matching name.

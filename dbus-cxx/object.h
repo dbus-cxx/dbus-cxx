@@ -22,6 +22,7 @@
 #include <dbus-cxx/objectpathhandler.h>
 #include <dbus-cxx/interface.h>
 #include <dbus-cxx/dbus-cxx-config.h>
+#include <dbus-cxx/property.h>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -168,6 +169,20 @@ public:
         method = interface_ptr->create_method<T_type>( method_name );
         method->set_method( slot );
         return method;
+    }
+
+    template <typename T_type>
+    std::shared_ptr<Property<T_type>>
+    create_property( const std::string& interface_name,
+                     const std::string& property_name,
+                     PropertyAccess access_type = PropertyAccess::ReadWrite,
+                     PropertyUpdateType update_type = PropertyUpdateType::Updates ){
+        std::shared_ptr<Interface> interface_ptr;
+        interface_ptr = this->interface_by_name( interface_name );
+
+        if( !interface_ptr ) { interface_ptr = this->create_interface( interface_name ); }
+
+        return interface_ptr->create_property<T_type>( property_name, access_type, update_type );
     }
 
     /**

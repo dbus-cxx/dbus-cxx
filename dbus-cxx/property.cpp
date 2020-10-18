@@ -25,20 +25,27 @@ using DBus::PropertyBase;
 
 class PropertyBase::priv_data {
 public:
-    priv_data( std::string name, PropertyUpdateType update) :
+    priv_data( std::string name, PropertyAccess access, PropertyUpdateType update ) :
         m_name( name ),
         m_propertyUpdate( update ),
-        m_interface( nullptr )
+        m_interface( nullptr ),
+        m_access( access )
     {}
 
     std::string m_name;
     PropertyUpdateType m_propertyUpdate;
     sigc::signal<void(DBus::Variant)> m_propertyChangedSignal;
     Interface* m_interface;
+    Variant m_value;
+    PropertyAccess m_access;
 };
 
-PropertyBase::PropertyBase( std::string name, PropertyUpdateType update ) :
-    m_priv( std::make_unique<priv_data>( name, update ) ) {
+PropertyBase::PropertyBase( std::string name, PropertyAccess access, PropertyUpdateType update ) :
+    m_priv( std::make_unique<priv_data>( name, access, update ) ) {
+
+}
+
+PropertyBase::~PropertyBase(){
 
 }
 
@@ -47,17 +54,17 @@ std::string PropertyBase::name() const {
 }
 
 DBus::Variant PropertyBase::variant_value() const {
-
+    return m_priv->m_value;
 }
 
 DBus::PropertyUpdateType PropertyBase::update_type() const {
     return m_priv->m_propertyUpdate;
 }
 
-sigc::signal<void(DBus::Variant)> PropertyBase::signal_generic_property_changed() {
-    return m_priv->m_propertyChangedSignal;
+void PropertyBase::set_value( DBus::Variant value ) {
+    m_priv->m_value = value;
 }
 
-void PropertyBase::set_value( DBus::Variant value ) {
-
+DBus::PropertyAccess PropertyBase::access_type() const {
+    return m_priv->m_access;
 }

@@ -53,6 +53,12 @@ enum class PropertyUpdateType {
     DoesNotUpdate
 };
 
+enum class PropertyAccess {
+    ReadOnly,
+    WriteOnly,
+    ReadWrite
+};
+
 enum class DataType {
     INVALID = '\0',
     BYTE = 'y',

@@ -19,8 +19,11 @@
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/dbus-cxx-config.h>
 #include <dbus-cxx/variant.h>
+#include <dbus-cxx/signature.h>
+#include <dbus-cxx/utility.h>
 #include <sigc++/sigc++.h>
 #include <memory>
+#include <sstream>
 
 #ifndef DBUSCXX_PROPERTY_H
 #define DBUSCXX_PROPERTY_H
@@ -32,7 +35,9 @@ namespace DBus {
  */
 class PropertyBase {
 protected:
-    PropertyBase( std::string name, PropertyUpdateType update );
+    PropertyBase( std::string name, PropertyAccess access, PropertyUpdateType update );
+
+    ~PropertyBase();
 
 public:
 
@@ -51,11 +56,7 @@ public:
 
     PropertyUpdateType update_type() const;
 
-    /**
-     * This signal is emitted whenever the property changes
-     * @return
-     */
-    sigc::signal<void(Variant)> signal_generic_property_changed();
+    PropertyAccess access_type() const;
 
     /**
      * Set the value of this property.
@@ -73,6 +74,8 @@ public:
      */
     void set_value( Variant value );
 
+    virtual std::string introspect( int spaces ){ return std::string(); }
+
 private:
     class priv_data;
 
@@ -88,12 +91,12 @@ private:
 template <typename T_type>
 class Property : public PropertyBase {
 private:
-    Property( std::string name, PropertyUpdateType update ) :
-        PropertyBase( name, update ) {}
+    Property( std::string name, PropertyAccess access, PropertyUpdateType update ) :
+        PropertyBase( name, access, update ) {}
 
 public:
-    static Property<T_type> create( std::string name, PropertyUpdateType update ) {
-        return std::shared_ptr( new Property<T_type>( name, update ) );
+    static std::shared_ptr<Property<T_type>> create( std::string name, PropertyAccess access, PropertyUpdateType update ) {
+        return std::shared_ptr<Property<T_type>>( new Property<T_type>( name, access, update ) );
     }
 
     void set_value( T_type t ) {
@@ -103,6 +106,46 @@ public:
     T_type value() const {
         T_type t = variant_value();
         return t;
+    }
+
+    virtual std::string introspect( int space_depth ) {
+        std::ostringstream sout;
+        std::string spaces;
+        DBus::priv::dbus_signature<T_type> sig;
+
+        for( int i = 0; i < space_depth; i++ ) { spaces += " "; }
+
+        sout << spaces << "<property"
+             << " name=\"" << name() << "\""
+             << " type=\"" << sig.dbus_sig() << "\""
+             << " access=\"";
+        switch( access_type() ){
+        case DBus::PropertyAccess::ReadOnly:
+            sout << "read";
+            break;
+        case DBus::PropertyAccess::WriteOnly:
+            sout << "write";
+            break;
+        case DBus::PropertyAccess::ReadWrite:
+            sout << "readwrite";
+            break;
+        }
+        sout << "\" ";
+
+        switch( update_type() ){
+        case DBus::PropertyUpdateType::Const:
+            sout << DBUS_CXX_PROPERTY_EMITS_CHANGE_SIGNAL_ANNOTATION << "=\"const\"";
+            break;
+        case DBus::PropertyUpdateType::Invalidates:
+            sout << DBUS_CXX_PROPERTY_EMITS_CHANGE_SIGNAL_ANNOTATION << "=\"invalidates\"";
+            break;
+        case DBus::PropertyUpdateType::DoesNotUpdate:
+            sout << DBUS_CXX_PROPERTY_EMITS_CHANGE_SIGNAL_ANNOTATION << "=\"false\"";
+            break;
+        }
+        sout << "/>\n";
+
+        return sout.str();
     }
 };
 

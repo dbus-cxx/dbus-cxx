@@ -81,8 +81,6 @@ class Transport;
  *
  * @ingroup core
  *
- * @todo TODO need to deal with signal proxies that change name and/or interface
- *
  * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
  */
 class Connection : public std::enable_shared_from_this<Connection> {

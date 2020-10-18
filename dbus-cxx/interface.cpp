@@ -40,8 +40,10 @@ public:
     std::string m_path;
     Methods m_methods;
     Signals m_signals;
+    std::set<std::shared_ptr<PropertyBase>> m_properties;
     mutable std::shared_mutex m_methods_rwlock;
     mutable std::shared_mutex m_signals_rwlock;
+    mutable std::shared_mutex m_properties_rwlock;
     sigc::signal<void( std::shared_ptr<MethodBase> )> m_signal_method_added;
     sigc::signal<void( std::shared_ptr<MethodBase> )> m_signal_method_removed;
 };
@@ -271,6 +273,7 @@ std::string Interface::introspect( int space_depth ) const {
     std::string spaces;
     Methods::const_iterator miter;
     Signals::const_iterator siter;
+    std::set<std::shared_ptr<PropertyBase>>::const_iterator piter;
 
     for( int i = 0; i < space_depth; i++ ) { spaces += " "; }
 
@@ -282,6 +285,10 @@ std::string Interface::introspect( int space_depth ) const {
 
     for( siter = m_priv->m_signals.begin(); siter != m_priv->m_signals.end(); siter++ ) {
         sout << ( *siter )->introspect( space_depth + 2 );
+    }
+
+    for( piter = m_priv->m_properties.begin(); piter != m_priv->m_properties.end(); piter++ ){
+        sout << ( *piter )->introspect( space_depth + 2 );
     }
 
     sout << spaces << "</interface>\n";
@@ -309,6 +316,40 @@ void Interface::set_path( const std::string& new_path ) {
     for( Signals::iterator i = m_priv->m_signals.begin(); i != m_priv->m_signals.end(); i++ ) {
         ( *i )->set_path( new_path );
     }
+}
+
+bool Interface::add_property( std::shared_ptr<PropertyBase> prop ) {
+    bool result = true;
+
+    if( !prop ) { return false; }
+
+    if( has_property( prop->name() ) ) { return false; }
+
+    {
+        std::unique_lock lock( m_priv->m_properties_rwlock );
+
+        m_priv->m_properties.insert( prop );
+    }
+
+    //m_priv->m_signal_method_added.emit( method );
+
+    return result;
+}
+
+bool Interface::has_property( const std::string& name ) const {
+    bool result = false;
+    std::shared_lock lock( m_priv->m_properties_rwlock );
+
+    for( std::set<std::shared_ptr<PropertyBase>>::iterator i = m_priv->m_properties.begin();
+         i != m_priv->m_properties.end();
+         i++ ) {
+        if( ( *i )->name() == name ) {
+            result = true;
+            break;
+        }
+    }
+
+    return result;
 }
 
 }
