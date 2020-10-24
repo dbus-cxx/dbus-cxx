@@ -19,9 +19,9 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <stdint.h>
-#include <dbus-cxx/dbus_signal.h>
+#include <dbus-cxx/signal.h>
 #include <dbus-cxx/messagefilter.h>
-#include <dbus-cxx/signal_proxy_base.h>
+#include <dbus-cxx/signalproxy.h>
 #include <dbus-cxx/threaddispatcher.h>
 #include <dbus-cxx/errormessage.h>
 #include <dbus-cxx/dbus-cxx-config.h>

@@ -123,9 +123,9 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/path.cpp
     dbus-cxx/pendingcall.cpp
     dbus-cxx/returnmessage.cpp
-    dbus-cxx/signal_base.cpp
+    dbus-cxx/signalbase.cpp
     dbus-cxx/signalmessage.cpp
-    dbus-cxx/signal_proxy_base.cpp
+    dbus-cxx/signalproxy.cpp
     dbus-cxx/signature.cpp
     dbus-cxx/signatureiterator.cpp
     dbus-cxx/standalonedispatcher.cpp
@@ -173,9 +173,9 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/path.h
     dbus-cxx/pendingcall.h
     dbus-cxx/returnmessage.h
-    dbus-cxx/signal_base.h
+    dbus-cxx/signalbase.h
     dbus-cxx/signalmessage.h
-    dbus-cxx/signal_proxy_base.h
+    dbus-cxx/signalproxy.h
     dbus-cxx/signature.h
     dbus-cxx/signatureiterator.h
     dbus-cxx/simplelogger_defs.h
@@ -183,7 +183,7 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/types.h
     dbus-cxx/utility.h
     dbus-cxx/demangle.h
-    dbus-cxx/dbus_signal.h
+    dbus-cxx/signal.h
     dbus-cxx/interface.h
     dbus-cxx/interfaceproxy.h
     dbus-cxx/methodproxybase.h

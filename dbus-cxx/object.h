@@ -18,7 +18,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <dbus-cxx/dbus_signal.h>
+#include <dbus-cxx/signal.h>
 #include <dbus-cxx/objectpathhandler.h>
 #include <dbus-cxx/interface.h>
 #include <dbus-cxx/dbus-cxx-config.h>

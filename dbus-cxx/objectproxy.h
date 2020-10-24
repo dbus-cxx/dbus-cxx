@@ -16,7 +16,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <dbus-cxx/signal_proxy_base.h>
+#include <dbus-cxx/signalproxy.h>
 #include <dbus-cxx/interfaceproxy.h>
 #include <dbus-cxx/dbus-cxx-config.h>
 #include <dbus-cxx/propertyproxy.h>

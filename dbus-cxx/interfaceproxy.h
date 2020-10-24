@@ -17,7 +17,7 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/methodproxybase.h>
-#include <dbus-cxx/signal_proxy_base.h>
+#include <dbus-cxx/signalproxy.h>
 #include <map>
 #include <memory>
 #include <mutex>

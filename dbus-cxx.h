@@ -27,7 +27,7 @@
 #include <dbus-cxx/accumulators.h>
 #include <dbus-cxx/callmessage.h>
 #include <dbus-cxx/connection.h>
-#include <dbus-cxx/dbus_signal.h>
+#include <dbus-cxx/signal.h>
 #include <dbus-cxx/dispatcher.h>
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/error.h>
@@ -46,9 +46,9 @@
 #include <dbus-cxx/objectproxy.h>
 #include <dbus-cxx/pendingcall.h>
 #include <dbus-cxx/returnmessage.h>
-#include <dbus-cxx/signal_base.h>
+#include <dbus-cxx/signalbase.h>
 #include <dbus-cxx/signalmessage.h>
-#include <dbus-cxx/signal_proxy_base.h>
+#include <dbus-cxx/signalproxy.h>
 #include <dbus-cxx/signature.h>
 #include <dbus-cxx/signatureiterator.h>
 #include <dbus-cxx/utility.h>

@@ -38,7 +38,7 @@
 #include "pendingcall.h"
 #include "returnmessage.h"
 #include <sigc++/sigc++.h>
-#include "signal_proxy_base.h"
+#include "signalproxy.h"
 #include "transport.h"
 #include "simpletransport.h"
 #include <poll.h>

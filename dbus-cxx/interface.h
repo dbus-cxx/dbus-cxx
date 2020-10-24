@@ -19,7 +19,7 @@
 #include "enums.h"
 #include "path.h"
 #include <dbus-cxx/methodbase.h>
-#include <dbus-cxx/dbus_signal.h>
+#include <dbus-cxx/signal.h>
 #include <dbus-cxx/dbus-cxx-config.h>
 #include <dbus-cxx/property.h>
 #include <sigc++/sigc++.h>

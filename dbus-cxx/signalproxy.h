@@ -16,7 +16,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <dbus-cxx/signal_base.h>
+#include <dbus-cxx/signalbase.h>
 #include <dbus-cxx/signalmessage.h>
 #include <dbus-cxx/utility.h>
 #include <functional>

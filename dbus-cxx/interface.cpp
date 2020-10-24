@@ -24,7 +24,7 @@
 #include "dbus-cxx-private.h"
 #include "methodbase.h"
 #include <sigc++/sigc++.h>
-#include "signal_base.h"
+#include "signalbase.h"
 
 static const char* LOGGER_NAME = "DBus.Interface";
 

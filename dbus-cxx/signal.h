@@ -18,7 +18,7 @@
  ***************************************************************************/
 #include <sstream>
 #include <dbus-cxx/utility.h>
-#include <dbus-cxx/signal_base.h>
+#include <dbus-cxx/signalbase.h>
 #include <dbus-cxx/headerlog.h>
 #include <dbus-cxx/signalmessage.h>
 

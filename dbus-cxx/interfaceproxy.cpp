@@ -23,7 +23,7 @@
 #include "methodproxybase.h"
 #include "objectproxy.h"
 #include <sigc++/sigc++.h>
-#include "signal_proxy_base.h"
+#include "signalproxy.h"
 #include <dbus-cxx/dbus-cxx-private.h>
 
 static const char* LOGGER_NAME = "DBus.InterfaceProxy";
