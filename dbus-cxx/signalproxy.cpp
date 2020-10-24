@@ -23,66 +23,6 @@
 
 namespace DBus {
 
-SignalMatchRule::SignalMatchRule() {}
-
-SignalMatchRule& SignalMatchRule::setPath( const std::string& path ) {
-    m_path = path;
-    return *this;
-}
-
-SignalMatchRule& SignalMatchRule::setInterface( const std::string& interface_name ) {
-    m_interface = interface_name;
-    return *this;
-}
-
-SignalMatchRule& SignalMatchRule::setMember( const std::string& member ) {
-    m_member = member;
-    return *this;
-}
-
-SignalMatchRule& SignalMatchRule::setSender( const std::string& sender ) {
-    m_sender = sender;
-    return *this;
-}
-
-SignalMatchRule& SignalMatchRule::setDestination( const std::string& destination ) {
-    m_destination = destination;
-    return *this;
-}
-
-std::string SignalMatchRule::getPath() const {
-    return m_path;
-}
-
-std::string SignalMatchRule::getInterface() const {
-    return m_interface;
-}
-
-std::string SignalMatchRule::getMember() const {
-    return m_member;
-}
-
-
-std::string SignalMatchRule::getMatchRule() const {
-    std::string match_rule = "type='signal'";
-
-    if( !m_interface.empty() ) { match_rule += ",interface='"   + m_interface   + "'"; }
-
-    if( !m_member.empty() ) { match_rule += ",member='"      + m_member      + "'"; }
-
-    if( !m_sender.empty() ) { match_rule += ",sender='"      + m_sender      + "'"; }
-
-    if( !m_path.empty() ) { match_rule += ",path='"        + m_path        + "'"; }
-
-    if( !m_destination.empty() ) { match_rule += ",destination='" + m_destination + "'"; }
-
-    return match_rule;
-}
-
-SignalMatchRule SignalMatchRule::create() {
-    return SignalMatchRule();
-}
-
 class SignalProxyBase::priv_data {
 public:
     priv_data() {}

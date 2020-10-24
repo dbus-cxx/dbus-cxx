@@ -27,6 +27,7 @@
 #include "error.h"
 #include "headerlog.h"
 #include "messageiterator.h"
+#include "matchrule.h"
 #include <sigc++/sigc++.h>
 
 #ifndef DBUSCXX_SIGNALPROXYBASE_H
@@ -35,43 +36,6 @@
 namespace DBus {
 struct MessageHandlerAccumulator;
 template <typename type> class SignalProxy;
-
-/**
- * A builder class to build up a match rule for a signal.  Define
- * the particular parts of the signal that you want to listen for,
- * and then pass it into the signal_proxy.
- */
-class SignalMatchRule {
-public:
-    SignalMatchRule();
-
-    SignalMatchRule& setPath( const std::string& path );
-
-    SignalMatchRule& setInterface( const std::string& interface_name );
-
-    SignalMatchRule& setMember( const std::string& member );
-
-    SignalMatchRule& setSender( const std::string& sender );
-
-    SignalMatchRule& setDestination( const std::string& destination );
-
-    std::string getMatchRule() const;
-
-    std::string getPath() const;
-
-    std::string getInterface() const;
-
-    std::string getMember() const;
-
-    static SignalMatchRule create();
-
-private:
-    std::string m_path;
-    std::string m_interface;
-    std::string m_member;
-    std::string m_sender;
-    std::string m_destination;
-};
 
 /**
  * Base class for a signal proxy that allows you to listen for signals.  This is required

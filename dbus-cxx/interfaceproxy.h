@@ -162,10 +162,11 @@ public:
     template <class T_arg>
     std::shared_ptr<SignalProxy<T_arg >> create_signal( const std::string& sig_name, ThreadForCalling calling ) {
         std::shared_ptr< SignalProxy<T_arg> > sig;
-        SignalMatchRule match = SignalMatchRule::create()
+        SignalMatchRule match = MatchRuleBuilder::create()
             .setPath( this->path() )
             .setInterface( name() )
-            .setMember( sig_name );
+            .setMember( sig_name )
+            .asSignalMatch();
         sig = SignalProxy<T_arg>::create( match );
         this->add_signal( sig, calling );
         return sig;

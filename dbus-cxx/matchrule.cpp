@@ -1,0 +1,150 @@
+/***************************************************************************
+ *   Copyright (C) 2020 by Robert Middleton                                *
+ *   robert.middleton@rm5248.com                                           *
+ *                                                                         *
+ *   This file is part of the dbus-cxx library.                            *
+ *                                                                         *
+ *   The dbus-cxx library is free software; you can redistribute it and/or *
+ *   modify it under the terms of the GNU General Public License           *
+ *   version 3 as published by the Free Software Foundation.               *
+ *                                                                         *
+ *   The dbus-cxx library is distributed in the hope that it will be       *
+ *   useful, but WITHOUT ANY WARRANTY; without even the implied warranty   *
+ *   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU   *
+ *   General Public License for more details.                              *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
+ ***************************************************************************/
+#include "matchrule.h"
+
+using DBus::MatchRuleBuilder;
+using DBus::MatchRule;
+using DBus::SignalMatchRule;
+using DBus::MethodCallMatchRule;
+using DBus::MethodReturnMatchRule;
+using DBus::ErrorMatchRule;
+
+/***************************************************************************/
+class DBus::MatchRuleData {
+public:
+    MatchRuleData(){}
+
+    std::string m_type;
+    std::string m_path;
+    std::string m_interface;
+    std::string m_member;
+    std::string m_sender;
+    std::string m_destination;
+};
+
+
+/***************************************************************************/
+MatchRuleBuilder::MatchRuleBuilder() :
+    m_priv( std::make_unique<MatchRuleData>() )
+{}
+
+MatchRuleBuilder& MatchRuleBuilder::setPath( const std::string& path ) {
+    m_priv->m_path = path;
+    return *this;
+}
+
+MatchRuleBuilder& MatchRuleBuilder::setInterface( const std::string& interface_name ) {
+    m_priv->m_interface = interface_name;
+    return *this;
+}
+
+MatchRuleBuilder& MatchRuleBuilder::setMember( const std::string& member ) {
+    m_priv->m_member = member;
+    return *this;
+}
+
+MatchRuleBuilder& MatchRuleBuilder::setSender( const std::string& sender ) {
+    m_priv->m_sender = sender;
+    return *this;
+}
+
+MatchRuleBuilder& MatchRuleBuilder::setDestination( const std::string& destination ) {
+    m_priv->m_destination = destination;
+    return *this;
+}
+
+SignalMatchRule MatchRuleBuilder::asSignalMatch(){
+    SignalMatchRule sig( m_priv );
+
+    return sig;
+}
+
+MethodCallMatchRule MatchRuleBuilder::asMethodCallMatch(){
+    MethodCallMatchRule meth( m_priv );
+
+    return meth;
+}
+
+MethodReturnMatchRule MatchRuleBuilder::asMethodReturnMatch(){
+    MethodReturnMatchRule meth( m_priv );
+
+    return meth;
+}
+
+ErrorMatchRule MatchRuleBuilder::asErrorMatch(){
+    ErrorMatchRule err( m_priv );
+
+    return err;
+}
+
+MatchRuleBuilder MatchRuleBuilder::create(){
+    MatchRuleBuilder build;
+    return build;
+}
+
+/***************************************************************************/
+MatchRule::MatchRule( std::string type, std::shared_ptr<MatchRuleData> data ) :
+    m_priv( data ){
+    m_priv->m_type = type;
+}
+
+std::string MatchRule::getPath() const {
+    return m_priv->m_path;
+}
+
+std::string MatchRule::getInterface() const {
+    return m_priv->m_interface;
+}
+
+std::string MatchRule::getMember() const {
+    return m_priv->m_member;
+}
+
+std::string MatchRule::getMatchRule() const {
+    std::string match_rule = "type='" + m_priv->m_type + "'";
+
+    if( !m_priv->m_interface.empty() ) { match_rule += ",interface='"   + m_priv->m_interface   + "'"; }
+
+    if( !m_priv->m_member.empty() ) { match_rule += ",member='"      + m_priv->m_member      + "'"; }
+
+    if( !m_priv->m_sender.empty() ) { match_rule += ",sender='"      + m_priv->m_sender      + "'"; }
+
+    if( !m_priv->m_path.empty() ) { match_rule += ",path='"        + m_priv->m_path        + "'"; }
+
+    if( !m_priv->m_destination.empty() ) { match_rule += ",destination='" + m_priv->m_destination + "'"; }
+
+    return match_rule;
+}
+
+/***************************************************************************/
+SignalMatchRule::SignalMatchRule( std::shared_ptr<MatchRuleData> data ) :
+    MatchRule( "signal", data ){
+}
+
+MethodCallMatchRule::MethodCallMatchRule( std::shared_ptr<MatchRuleData> data ) :
+    MatchRule( "method_call", data ){
+}
+
+MethodReturnMatchRule::MethodReturnMatchRule( std::shared_ptr<MatchRuleData> data ) :
+    MatchRule( "method_return", data ){
+}
+
+ErrorMatchRule::ErrorMatchRule( std::shared_ptr<MatchRuleData> data ) :
+    MatchRule( "error", data ){
+}
