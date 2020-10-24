@@ -248,7 +248,7 @@ void server_setup() {
 
     object->create_method<void( double )>( "what.bob", "setBar", sigc::ptr_fun( doublefun ) );
 
-    object->create_signal<std::string>( "sig.interface", "tim" );
+    object->create_signal<void(std::string)>( "sig.interface", "tim" );
 }
 
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \

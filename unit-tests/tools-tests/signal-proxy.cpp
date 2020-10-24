@@ -21,11 +21,19 @@
 static void dosomething( std::string ) {
 }
 
+static void dosomething2(){
+
+}
+
 int main( int argc, char** argv ) {
     std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
     std::shared_ptr<signalNameProxy> proxy = signalNameProxy::create( conn );
-    std::shared_ptr<DBus::signal_proxy<std::string>> signalProxy = proxy->signal_exampleSignal();
-    signalProxy->connect( sigc::ptr_fun( dosomething ) );
+    //std::shared_ptr<DBus::signal_proxy<void(std::string)>> signalProxy = proxy->signal_exampleSignal();
+    //signalProxy->connect( sigc::ptr_fun( dosomething ) );
+
+    std::shared_ptr<DBus::signal_proxy<void()>> signalProxy2 =
+            DBus::signal_proxy<void()>::create( DBus::SignalMatchRule::create() );
+    signalProxy2->connect( sigc::ptr_fun( dosomething2 ) );
 }

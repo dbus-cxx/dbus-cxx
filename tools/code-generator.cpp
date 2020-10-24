@@ -160,7 +160,7 @@ void CodeGenerator::end_element( std::string tagName ){
         bool argumentComma = false;
         std::string signalEmitCode;
 
-        templateType += "<";
+        templateType += "<void(";
         signalEmitCode = "(*m_signal_" + m_currentSignal.name() + ")(";
         for( cppgenerate::Argument arg : args ){
             emitSignalMethod.addArgument( arg );
@@ -174,7 +174,7 @@ void CodeGenerator::end_element( std::string tagName ){
             signalEmitCode += arg.name();
             argumentComma = true;
         }
-        templateType += ">";
+        templateType += ")>";
         signalEmitCode += ");";
 
         proxyMemberVar.setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
@@ -354,10 +354,12 @@ void CodeGenerator::handle_node_tag( std::map<std::string,std::string>& tagAttrs
                   << std::endl;
     }
 
-    if( tagAttrs.find( "path" ) != tagAttrs.end() ){
+    if( tagAttrs.find( "name" ) != tagAttrs.end() ){
+        path = "\"" + tagAttrs[ "name" ] + "\"";
+    }else if( tagAttrs.find( "path" ) != tagAttrs.end() ){
         path = "\"" + tagAttrs[ "path" ] + "\"";
     }else{
-        std::cerr << "WARNING: Did not find 'path' in xml for node \'"
+        std::cerr << "WARNING: Did not find 'path' or 'name' in xml for node \'"
                   << "node" << "\'.  Line:"
                   << XML_GetCurrentLineNumber( m_parser )
                   << std::endl;

@@ -37,7 +37,7 @@ void voidSigHandle() {
 bool signal_create() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::signal<std::string>> signal = conn->create_signal<std::string>( "/test/signal", "test.signal.type", "Path" );
+    std::shared_ptr<DBus::signal<void(std::string)>> signal = conn->create_signal<void(std::string)>( "/test/signal", "test.signal.type", "Path" );
 
     TEST_ASSERT_RET_FAIL( signal );
     return true;
@@ -46,8 +46,8 @@ bool signal_create() {
 bool signal_tx_rx() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::signal<std::string>> signal = conn->create_signal<std::string>( "/test/signal", "test.signal.type", "Path" );
-    std::shared_ptr<DBus::signal_proxy<std::string>> proxy = conn->create_signal_proxy<std::string>(
+    std::shared_ptr<DBus::signal<void(std::string)>> signal = conn->create_signal<void(std::string)>( "/test/signal", "test.signal.type", "Path" );
+    std::shared_ptr<DBus::signal_proxy<void(std::string)>> proxy = conn->create_signal_proxy<void(std::string)>(
                 DBus::SignalMatchRule::create()
                 .setPath( "/test/signal" )
                 .setInterface( "test.signal.type" )
@@ -66,8 +66,8 @@ bool signal_tx_rx() {
 bool signal_void_txrx() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
-    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+    std::shared_ptr<DBus::signal<void()>> signal = conn->create_signal<void()>( "/test/signal", "test.signal.type", "ExampleMember" );
+    std::shared_ptr<DBus::signal_proxy<void()>> proxy = conn->create_signal_proxy<void()>(
                 DBus::SignalMatchRule::create()
                 .setPath( "/test/signal" )
                 .setInterface( "test.signal.type" )
@@ -86,8 +86,8 @@ bool signal_void_txrx() {
 bool signal_path_match_only() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
-    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+    std::shared_ptr<DBus::signal<void()>> signal = conn->create_signal<void()>( "/test/signal", "test.signal.type", "ExampleMember" );
+    std::shared_ptr<DBus::signal_proxy<void()>> proxy = conn->create_signal_proxy<void()>(
                 DBus::SignalMatchRule::create()
                 .setPath( "/test/signal" ),
                 DBus::ThreadForCalling::DispatcherThread );
@@ -104,8 +104,8 @@ bool signal_path_match_only() {
 bool signal_interface_match_only() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
-    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+    std::shared_ptr<DBus::signal<void()>> signal = conn->create_signal<void()>( "/test/signal", "test.signal.type", "ExampleMember" );
+    std::shared_ptr<DBus::signal_proxy<void()>> proxy = conn->create_signal_proxy<void()>(
                 DBus::SignalMatchRule::create()
                 .setInterface( "test.signal.type" ),
                 DBus::ThreadForCalling::DispatcherThread );
@@ -122,8 +122,8 @@ bool signal_interface_match_only() {
 bool signal_member_match_only() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
-    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+    std::shared_ptr<DBus::signal<void()>> signal = conn->create_signal<void()>( "/test/signal", "test.signal.type", "ExampleMember" );
+    std::shared_ptr<DBus::signal_proxy<void()>> proxy = conn->create_signal_proxy<void()>(
                 DBus::SignalMatchRule::create()
                 .setMember( "ExampleMember" ),
                 DBus::ThreadForCalling::DispatcherThread );
@@ -140,14 +140,14 @@ bool signal_member_match_only() {
 bool signal_multiple_handlers() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
-    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+    std::shared_ptr<DBus::signal<void()>> signal = conn->create_signal<void()>( "/test/signal", "test.signal.type", "ExampleMember" );
+    std::shared_ptr<DBus::signal_proxy<void()>> proxy = conn->create_signal_proxy<void()>(
                 DBus::SignalMatchRule::create()
                 .setPath( "/test/signal" )
                 .setInterface( "test.signal.type" )
                 .setMember( "ExampleMember" ),
                 DBus::ThreadForCalling::DispatcherThread );
-    std::shared_ptr<DBus::signal_proxy<>> proxy2 = conn->create_signal_proxy<>(
+    std::shared_ptr<DBus::signal_proxy<void()>> proxy2 = conn->create_signal_proxy<void()>(
                 DBus::SignalMatchRule::create()
                 .setMember( "ExampleMember" ),
                 DBus::ThreadForCalling::DispatcherThread );
@@ -165,14 +165,14 @@ bool signal_multiple_handlers() {
 bool signal_remove_handler() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/test/signal", "test.signal.type", "ExampleMember" );
-    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+    std::shared_ptr<DBus::signal<void()>> signal = conn->create_signal<void()>( "/test/signal", "test.signal.type", "ExampleMember" );
+    std::shared_ptr<DBus::signal_proxy<void()>> proxy = conn->create_signal_proxy<void()>(
                 DBus::SignalMatchRule::create()
                 .setPath( "/test/signal" )
                 .setInterface( "test.signal.type" )
                 .setMember( "ExampleMember" ),
                 DBus::ThreadForCalling::DispatcherThread );
-    std::shared_ptr<DBus::signal_proxy<>> proxy2 = conn->create_signal_proxy<>(
+    std::shared_ptr<DBus::signal_proxy<void()>> proxy2 = conn->create_signal_proxy<void()>(
                 DBus::SignalMatchRule::create()
                 .setMember( "ExampleMember" ),
                 DBus::ThreadForCalling::DispatcherThread );

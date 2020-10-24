@@ -159,14 +159,14 @@ public:
 
     //      std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
-    template <class T_return, class... T_arg>
-    std::shared_ptr<signal_proxy<T_return, T_arg...> > create_signal( const std::string& sig_name, ThreadForCalling calling ) {
-        std::shared_ptr< signal_proxy<T_return, T_arg...> > sig;
+    template <class T_arg>
+    std::shared_ptr<signal_proxy<T_arg >> create_signal( const std::string& sig_name, ThreadForCalling calling ) {
+        std::shared_ptr< signal_proxy<T_arg> > sig;
         SignalMatchRule match = SignalMatchRule::create()
             .setPath( this->path() )
             .setInterface( name() )
             .setMember( sig_name );
-        sig = signal_proxy<T_return, T_arg...>::create( match );
+        sig = signal_proxy<T_arg>::create( match );
         this->add_signal( sig, calling );
         return sig;
     }

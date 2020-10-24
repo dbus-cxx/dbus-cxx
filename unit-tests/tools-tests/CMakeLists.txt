@@ -62,3 +62,4 @@ add_xml_test( containertypes.xml adapter "structtypesAdapter.h;structtypesAdapte
 add_xml_test( simpletypes.xml adapter "SimpleTypesAdapter.h;SimpleTypesAdapter.cpp" simple-adapter )
 add_xml_test( signal-interface.xml adapter "signalNameAdapter.h;signalNameAdapter.cpp" signal-adapter )
 add_xml_test( signal-interface.xml proxy "signalNameProxy.h;signalNameProxy.cpp" signal-proxy )
+#add_xml_test( org.freedesktop.NetworkManager.xml proxy "NetworkManagerProxy.h;NetworkManagerProxy.cpp" nm-proxy )

@@ -32,8 +32,8 @@ int main()
 
   std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 
-  std::shared_ptr<DBus::signal_proxy<std::vector<double> >> signal = 
-      connection->create_signal_proxy<std::vector<double> >(
+  std::shared_ptr<DBus::signal_proxy<void(std::vector<double>) >> signal =
+      connection->create_signal_proxy<void(std::vector<double>) >(
           DBus::SignalMatchRule::create()
             .setPath("/test/signal/Object")
             .setInterface("test.signal.Type")

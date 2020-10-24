@@ -34,6 +34,7 @@
 
 namespace DBus {
 struct MessageHandlerAccumulator;
+template <typename type> class signal_proxy;
 
 /**
  * A builder class to build up a match rule for a signal.  Define
@@ -118,9 +119,9 @@ private:
  *
  * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
  */
-template <class... T_arg>
-class signal_proxy
-    : public sigc::signal<void( T_arg... )>, public signal_proxy_base {
+template <typename... T_arg>
+class signal_proxy<void(T_arg...)>
+    : public sigc::signal<void(T_arg...)>, public signal_proxy_base {
 public:
     signal_proxy( const SignalMatchRule& matchRule ):
         signal_proxy_base( matchRule )
@@ -163,6 +164,7 @@ protected:
     }
 
 };
+
 
 }
 

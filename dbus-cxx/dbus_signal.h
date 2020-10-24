@@ -49,7 +49,7 @@ class signal<T_ret( T_args... )> {};
  *
  */
 template <typename... T_type>
-class signal
+class signal<void(T_type...)>
     : public sigc::signal<void( T_type... )>, public signal_base {
 private:
     signal( const std::string& path, const std::string& interface_name, const std::string& member ):

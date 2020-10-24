@@ -31,7 +31,7 @@ class Calculator: public DBus::ObjectProxy
         m_method_sub = this->create_method<double(double,double)>("Calculator.Basic", "sub");
         m_method_mul = this->create_method<double(double,double)>("Calculator.Basic", "mul");
         m_method_div = this->create_method<double(double,double)>("Calculator.Basic", "div");
-        m_signal_calculation = this->create_signal<std::string,double,double,double>("Calculator.Basic", "calculation", DBus::ThreadForCalling::DispatcherThread);
+        m_signal_calculation = this->create_signal<void(std::string,double,double,double)>("Calculator.Basic", "calculation", DBus::ThreadForCalling::DispatcherThread);
       }
 
   public:
@@ -51,7 +51,7 @@ class Calculator: public DBus::ObjectProxy
 
     double div(double param1, double param2) { return (*m_method_div)(param1,param2); }
 
-    DBus::signal_proxy<std::string,double,double,double>& signal_calculation() { return *m_signal_calculation; }
+    DBus::signal_proxy<void(std::string,double,double,double)>& signal_calculation() { return *m_signal_calculation; }
 
   protected:
     
@@ -59,7 +59,7 @@ class Calculator: public DBus::ObjectProxy
     std::shared_ptr<DBus::MethodProxy<double(double,double)>> m_method_sub;
     std::shared_ptr<DBus::MethodProxy<double(double,double)>> m_method_mul;
     std::shared_ptr<DBus::MethodProxy<double(double,double)>> m_method_div;
-    std::shared_ptr<DBus::signal_proxy<std::string,double,double,double>> m_signal_calculation;
+    std::shared_ptr<DBus::signal_proxy<void(std::string,double,double,double)>> m_signal_calculation;
 };
 
 

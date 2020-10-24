@@ -25,7 +25,7 @@ static std::shared_ptr<DBus::Dispatcher> dispatch;
 bool connection_create_int_signal() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::signal<int>> signal = conn->create_signal<int>( "/some/path", "signal.type", "Member" );
+    std::shared_ptr<DBus::signal<void(int)>> signal = conn->create_signal<void(int)>( "/some/path", "signal.type", "Member" );
 
     return true;
 }
@@ -33,7 +33,7 @@ bool connection_create_int_signal() {
 bool connection_create_void_signal() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::signal<>> signal = conn->create_signal<>( "/some/path", "signal.type", "Member" );
+    std::shared_ptr<DBus::signal<void()>> signal = conn->create_signal<void()>( "/some/path", "signal.type", "Member" );
 
     return true;
 }
@@ -41,7 +41,7 @@ bool connection_create_void_signal() {
 bool connection_create_signal_proxy() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+    std::shared_ptr<DBus::signal_proxy<void()>> proxy = conn->create_signal_proxy<void()>(
                 DBus::SignalMatchRule::create()
                 .setInterface( "interface.name" )
                 .setMember( "myname" ),
@@ -63,7 +63,7 @@ bool connection_create_signal_proxy() {
 bool connection_get_signal_proxy_by_iface() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+    std::shared_ptr<DBus::signal_proxy<void()>> proxy = conn->create_signal_proxy<void()>(
                 DBus::SignalMatchRule::create()
                 .setInterface( "interface.name" )
                 .setMember( "myname" ),
@@ -78,7 +78,7 @@ bool connection_get_signal_proxy_by_iface() {
 bool connection_get_signal_proxy_by_iface_and_name() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::signal_proxy<>> proxy = conn->create_signal_proxy<>(
+    std::shared_ptr<DBus::signal_proxy<void()>> proxy = conn->create_signal_proxy<void()>(
                 DBus::SignalMatchRule::create()
                 .setInterface( "interface.name" )
                 .setMember( "myname" ),

@@ -33,7 +33,7 @@ int main()
 
   std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 
-  std::shared_ptr<DBus::signal<std::vector<double> >> signal = connection->create_signal<std::vector<double> >("/test/signal/Object", "test.signal.Type", "Test");
+  std::shared_ptr<DBus::signal<void(std::vector<double>) >> signal = connection->create_signal<void(std::vector<double>) >("/test/signal/Object", "test.signal.Type", "Test");
 
   std::vector<double> array;
   array.push_back(M_PI);
