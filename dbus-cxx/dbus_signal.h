@@ -17,7 +17,6 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <sstream>
-#include <dbus-cxx/forward_decls.h>
 #include <dbus-cxx/utility.h>
 #include <dbus-cxx/signal_base.h>
 #include <dbus-cxx/headerlog.h>
