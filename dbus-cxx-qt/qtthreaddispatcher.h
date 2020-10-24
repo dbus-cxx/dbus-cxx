@@ -39,8 +39,8 @@ public:
     ~QtThreadDispatcher();
 
     void add_message( std::shared_ptr<ObjectPathHandler> object, std::shared_ptr<const CallMessage> message );
-    void add_signal_proxy( std::shared_ptr<signal_proxy_base> handler );
-    bool remove_signal_proxy( std::shared_ptr<signal_proxy_base> handler );
+    void add_signal_proxy( std::shared_ptr<SignalProxyBase> handler );
+    bool remove_signal_proxy( std::shared_ptr<SignalProxyBase> handler );
     void add_signal( std::shared_ptr<const SignalMessage> message );
 
     static std::shared_ptr<QtThreadDispatcher> create();

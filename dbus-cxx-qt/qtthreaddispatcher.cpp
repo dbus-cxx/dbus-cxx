@@ -20,7 +20,7 @@
 #include <QMutex>
 #include <QQueue>
 #include <QMutexLocker>
-#include <dbus-cxx/signal_proxy_base.h>
+#include <dbus-cxx/signalproxy.h>
 #include <dbus-cxx/objectpathhandler.h>
 
 #include "qtthreaddispatcher.h"
@@ -37,7 +37,7 @@ public:
     QMutex m_objMessageMutex;
     QQueue<ObjectAndMessage> m_objMessageQueue;
     QMutex m_signalHandlerMutex;
-    QVector<std::shared_ptr<DBus::signal_proxy_base>> m_signalHandlers;
+    QVector<std::shared_ptr<DBus::SignalProxyBase>> m_signalHandlers;
     QMutex m_signalsMutex;
     QQueue<std::shared_ptr<const SignalMessage>> m_signalsQueue;
 };
@@ -70,14 +70,14 @@ void QtThreadDispatcher::add_message( std::shared_ptr<ObjectPathHandler> object,
     Q_EMIT notifyMainThread();
 }
 
-void QtThreadDispatcher::add_signal_proxy( std::shared_ptr<signal_proxy_base> handler ){
+void QtThreadDispatcher::add_signal_proxy( std::shared_ptr<SignalProxyBase> handler ){
     QMutexLocker lock( &m_priv->m_objMessageMutex );
     m_priv->m_signalHandlers.push_back( handler );
 }
 
-bool QtThreadDispatcher::remove_signal_proxy( std::shared_ptr<signal_proxy_base> handler ){
+bool QtThreadDispatcher::remove_signal_proxy( std::shared_ptr<SignalProxyBase> handler ){
     QMutexLocker lock( &m_priv->m_objMessageMutex );
-    QVector<std::shared_ptr<DBus::signal_proxy_base>>::iterator it;
+    QVector<std::shared_ptr<DBus::SignalProxyBase>>::iterator it;
 
     it = std::find( m_priv->m_signalHandlers.begin(), m_priv->m_signalHandlers.end(), handler );
     if( it != m_priv->m_signalHandlers.end() ){
@@ -115,7 +115,7 @@ void QtThreadDispatcher::sendMessages(){
             std::shared_ptr<const SignalMessage> signal = m_priv->m_signalsQueue.front();
             m_priv->m_signalsQueue.pop_front();
 
-            for( std::shared_ptr<DBus::signal_proxy_base> proxy : m_priv->m_signalHandlers ){
+            for( std::shared_ptr<DBus::SignalProxyBase> proxy : m_priv->m_signalHandlers ){
                 proxy->handle_signal( signal );
             }
         }
