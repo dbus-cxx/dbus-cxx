@@ -43,19 +43,19 @@ class Message;
  *
  * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
  */
-class signal_base {
+class SignalBase {
 protected:
 
-    signal_base( const std::string& path, const std::string& interface_name, const std::string& name );
+    SignalBase( const std::string& path, const std::string& interface_name, const std::string& name );
 
-    signal_base( const std::string& interface_name, const std::string& name );
+    SignalBase( const std::string& interface_name, const std::string& name );
 
-    signal_base( std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface_name, const std::string& name );
+    SignalBase( std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface_name, const std::string& name );
 
-    signal_base( std::shared_ptr<Connection> connection, const std::string& interface_name, const std::string& name );
+    SignalBase( std::shared_ptr<Connection> connection, const std::string& interface_name, const std::string& name );
 
 public:
-    virtual ~signal_base();
+    virtual ~SignalBase();
 
     std::shared_ptr<Connection> connection();
 

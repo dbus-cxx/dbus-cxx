@@ -58,7 +58,7 @@ protected:
 public:
     typedef std::multimap<std::string, std::shared_ptr<MethodProxyBase>> Methods;
 
-    typedef std::set<std::shared_ptr<signal_proxy_base>> Signals;
+    typedef std::set<std::shared_ptr<SignalProxyBase>> Signals;
 
     static std::shared_ptr<InterfaceProxy> create( const std::string& name = std::string() );
 
@@ -160,30 +160,30 @@ public:
     //      std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
     template <class T_arg>
-    std::shared_ptr<signal_proxy<T_arg >> create_signal( const std::string& sig_name, ThreadForCalling calling ) {
-        std::shared_ptr< signal_proxy<T_arg> > sig;
+    std::shared_ptr<SignalProxy<T_arg >> create_signal( const std::string& sig_name, ThreadForCalling calling ) {
+        std::shared_ptr< SignalProxy<T_arg> > sig;
         SignalMatchRule match = SignalMatchRule::create()
             .setPath( this->path() )
             .setInterface( name() )
             .setMember( sig_name );
-        sig = signal_proxy<T_arg>::create( match );
+        sig = SignalProxy<T_arg>::create( match );
         this->add_signal( sig, calling );
         return sig;
     }
 
     const Signals& signals() const;
 
-    std::shared_ptr<signal_proxy_base> signal( const std::string& signame );
+    std::shared_ptr<SignalProxyBase> signal( const std::string& signame );
 
-    bool add_signal( std::shared_ptr<signal_proxy_base> sig, ThreadForCalling calling );
+    bool add_signal( std::shared_ptr<SignalProxyBase> sig, ThreadForCalling calling );
 
     bool remove_signal( const std::string& signame );
 
-    bool remove_signal( std::shared_ptr<signal_proxy_base> sig );
+    bool remove_signal( std::shared_ptr<SignalProxyBase> sig );
 
     bool has_signal( const std::string& signame ) const;
 
-    bool has_signal( std::shared_ptr<signal_proxy_base> sig ) const;
+    bool has_signal( std::shared_ptr<SignalProxyBase> sig ) const;
 
 private:
     void on_object_set_connection( std::shared_ptr<Connection> conn );

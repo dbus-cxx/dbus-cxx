@@ -28,10 +28,10 @@
 namespace DBus {
 
 template <typename... T_sig>
-class signal;
+class Signal;
 
 template <typename T_ret, typename... T_args>
-class signal<T_ret( T_args... )> {};
+class Signal<T_ret( T_args... )> {};
 
 /**
  * Subclass of sigc::signal
@@ -48,18 +48,18 @@ class signal<T_ret( T_args... )> {};
  *
  */
 template <typename... T_type>
-class signal<void(T_type...)>
-    : public sigc::signal<void( T_type... )>, public signal_base {
+class Signal<void(T_type...)>
+    : public sigc::signal<void( T_type... )>, public SignalBase {
 private:
-    signal( const std::string& path, const std::string& interface_name, const std::string& member ):
-        signal_base( path, interface_name, member ) {
+    Signal( const std::string& path, const std::string& interface_name, const std::string& member ):
+        SignalBase( path, interface_name, member ) {
         m_internal_callback_connection =
-            this->connect( sigc::mem_fun( *this, &signal::internal_callback ) );
+            this->connect( sigc::mem_fun( *this, &Signal::internal_callback ) );
     }
 
 public:
-    static std::shared_ptr<signal> create( const std::string& path, const std::string& interface_name, const std::string& member ) {
-        return std::shared_ptr<signal>( new signal( path, interface_name, member ) );
+    static std::shared_ptr<Signal> create( const std::string& path, const std::string& interface_name, const std::string& member ) {
+        return std::shared_ptr<Signal>( new Signal( path, interface_name, member ) );
     }
 
     //  virtual std::shared_ptr<signal_base> clone()

@@ -36,9 +36,9 @@ class Inherited: public DBus::Object
       m_signal_calculation = this->create_signal<void(std::string,double,double,double)>("Calculator.Basic", "calculation");
     }
 
-    std::shared_ptr<DBus::signal<void(std::string,double,double,double)>> m_signal_calculation;
+    std::shared_ptr<DBus::Signal<void(std::string,double,double,double)>> m_signal_calculation;
     
-    std::shared_ptr<DBus::signal<void(std::string)>> sig;
+    std::shared_ptr<DBus::Signal<void(std::string)>> sig;
 
   public:
     typedef std::shared_ptr<Inherited> pointer;
@@ -73,7 +73,7 @@ class Inherited: public DBus::Object
       return result;
     }
 
-    DBus::signal<void(std::string,double,double,double)>& signal_calculation() { return *m_signal_calculation; }
+    DBus::Signal<void(std::string,double,double,double)>& signal_calculation() { return *m_signal_calculation; }
 
     double x;
 

@@ -25,7 +25,7 @@ namespace DBus {
 
 class Message;
 class ObjectPathHandler;
-class signal_proxy_base;
+class SignalProxyBase;
 class SignalMessage;
 class CallMessage;
 
@@ -69,7 +69,7 @@ public:
      *
      * @param handler A handler that can handle incoming signals
      */
-    virtual void add_signal_proxy( std::shared_ptr<signal_proxy_base> handler ) = 0;
+    virtual void add_signal_proxy( std::shared_ptr<SignalProxyBase> handler ) = 0;
 
     /**
      * Remove a signal proxy.  Note that it is possible that this method is called
@@ -79,7 +79,7 @@ public:
      * @param handler The handler to remove
      * @returns True if the signal proxy was removed, false otherwise.
      */
-    virtual bool remove_signal_proxy( std::shared_ptr<signal_proxy_base> handler ) = 0;
+    virtual bool remove_signal_proxy( std::shared_ptr<SignalProxyBase> handler ) = 0;
 
     /**
      * When a new signal message comes in that needs to be processed, this method

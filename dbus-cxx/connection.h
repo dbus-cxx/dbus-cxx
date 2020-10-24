@@ -299,9 +299,9 @@ public:
      * This method automatically calls add_signal_proxy.
      */
     template<typename... T_arg>
-    std::shared_ptr<signal_proxy<T_arg...> > create_signal_proxy( const SignalMatchRule& rule, ThreadForCalling calling ) {
-        std::shared_ptr<signal_proxy<T_arg...> > sig;
-        sig = signal_proxy<T_arg...>::create( rule );
+    std::shared_ptr<SignalProxy<T_arg...> > create_signal_proxy( const SignalMatchRule& rule, ThreadForCalling calling ) {
+        std::shared_ptr<SignalProxy<T_arg...> > sig;
+        sig = SignalProxy<T_arg...>::create( rule );
         this->add_signal_proxy( sig, calling );
         return sig;
     }
@@ -309,24 +309,24 @@ public:
     /**
      * Adds the given signal proxy to the connection.
      */
-    std::shared_ptr<signal_proxy_base> add_signal_proxy( std::shared_ptr<signal_proxy_base> signal, ThreadForCalling calling );
+    std::shared_ptr<SignalProxyBase> add_signal_proxy( std::shared_ptr<SignalProxyBase> Signal, ThreadForCalling calling );
 
-    bool remove_signal_proxy( std::shared_ptr<signal_proxy_base> proxy );
+    bool remove_signal_proxy( std::shared_ptr<SignalProxyBase> proxy );
 
     /** Gets all the signal handlers */
-    const std::vector<std::shared_ptr<signal_proxy_base>>& get_signal_proxies();
+    const std::vector<std::shared_ptr<SignalProxyBase>>& get_signal_proxies();
 
     /** Gets the signal handlers for a specific interface */
-    std::vector<std::shared_ptr<signal_proxy_base>> get_signal_proxies( const std::string& interface_name );
+    std::vector<std::shared_ptr<SignalProxyBase>> get_signal_proxies( const std::string& interface_name );
 
     /** Gets the signal handlers for a specific interface and member */
-    std::vector<std::shared_ptr<signal_proxy_base>> get_signal_proxies( const std::string& interface_name, const std::string& member );
+    std::vector<std::shared_ptr<SignalProxyBase>> get_signal_proxies( const std::string& interface_name, const std::string& member );
 
     /** Create a signal, that when it is emitted will send that signal over the DBus  */
     template <class T_arg>
-    std::shared_ptr<signal<T_arg> > create_signal( const std::string& path, const std::string& interface_name, const std::string& member ) {
-        std::shared_ptr<signal<T_arg> > sig;
-        sig = signal<T_arg>::create( path, interface_name, member );
+    std::shared_ptr<Signal<T_arg> > create_signal( const std::string& path, const std::string& interface_name, const std::string& member ) {
+        std::shared_ptr<Signal<T_arg> > sig;
+        sig = Signal<T_arg>::create( path, interface_name, member );
         sig->set_connection( shared_from_this() );
         return sig;
     }

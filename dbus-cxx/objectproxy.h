@@ -156,7 +156,7 @@ public:
      * @param sig_name The name to assign to the newly created signal proxy.
      */
     template <class T_type>
-    std::shared_ptr<signal_proxy<T_type> >
+    std::shared_ptr<SignalProxy<T_type> >
     create_signal( const std::string& interface_name, const std::string& sig_name, ThreadForCalling calling ) {
         std::shared_ptr<InterfaceProxy> interface_ptr = this->interface_by_name( interface_name );
 

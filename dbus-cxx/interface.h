@@ -35,7 +35,7 @@ namespace DBus {
 class CallMessage;
 class Connection;
 class Object;
-class signal_base;
+class SignalBase;
 
 /**
  * An Interface represents a local copy of a DBus interface.  A DBus interface is
@@ -76,7 +76,7 @@ public:
      *
      * Can access \e type as \c Interface::Signals
      */
-    typedef std::set<std::shared_ptr<signal_base>> Signals;
+    typedef std::set<std::shared_ptr<SignalBase>> Signals;
 
     /**
      * Creates a named Interface
@@ -177,7 +177,7 @@ public:
      * Adds the given signal
      * @return true if the signal was successfully added, false otherwise
      */
-    bool add_signal( std::shared_ptr<signal_base> signal );
+    bool add_signal( std::shared_ptr<SignalBase> signal );
 
     /**
      * Removes the given signal
@@ -185,7 +185,7 @@ public:
      *
      * One reason a signal couldn't be removed is if it wasn't a part of the interface.
      */
-    bool remove_signal( std::shared_ptr<signal_base> signal );
+    bool remove_signal( std::shared_ptr<SignalBase> signal );
 
     /**
      * Removes all signals with the given name
@@ -195,7 +195,7 @@ public:
     /**
      * True if the given signal is part of this interface
      */
-    bool has_signal( std::shared_ptr<signal_base> signal ) const;
+    bool has_signal( std::shared_ptr<SignalBase> signal ) const;
 
     /** True if this interface has at least one signal with the given name */
     bool has_signal( const std::string& name ) const;
@@ -206,14 +206,14 @@ public:
      * @param name The name that will be associated with this signal
      */
     template <class... T_type>
-    std::shared_ptr<signal<T_type...> >
+    std::shared_ptr<Signal<T_type...> >
     create_signal( const std::string& member ) {
-        std::shared_ptr<DBus::signal<T_type...> > sig;
-        sig = DBus::signal<T_type...>::create( path(), name(), member );
+        std::shared_ptr<DBus::Signal<T_type...> > sig;
+        sig = DBus::Signal<T_type...>::create( path(), name(), member );
 
         if( this->add_signal( sig ) ) { return sig; }
 
-        return std::shared_ptr<DBus::signal<T_type...> >();
+        return std::shared_ptr<DBus::Signal<T_type...> >();
     }
 
     /** Returns the signals associated with this interface */
@@ -226,7 +226,7 @@ public:
      * If more than one signal has a given name there are no guarantees
      * as to which signal will be returned.
      */
-    std::shared_ptr<signal_base> signal( const std::string& signal_name );
+    std::shared_ptr<SignalBase> signal( const std::string& signal_name );
 
     /** Signal emitted when a method of the given name is added */
     sigc::signal<void( std::shared_ptr<MethodBase> )> signal_method_added();

@@ -162,7 +162,7 @@ bool Interface::has_method( const std::string& name ) const {
     return ( iter != m_priv->m_methods.end() );
 }
 
-bool Interface::add_signal( std::shared_ptr<signal_base> sig ) {
+bool Interface::add_signal( std::shared_ptr<SignalBase> sig ) {
     bool result = false;
 
     if( !sig ) { return false; }
@@ -187,7 +187,7 @@ bool Interface::add_signal( std::shared_ptr<signal_base> sig ) {
     return result;
 }
 
-bool Interface::remove_signal( std::shared_ptr<signal_base> signal ) {
+bool Interface::remove_signal( std::shared_ptr<SignalBase> signal ) {
     bool result = false;
     std::unique_lock lock( m_priv->m_signals_rwlock );
 
@@ -219,7 +219,7 @@ bool Interface::remove_signal( const std::string& name ) {
     return result;
 }
 
-bool Interface::has_signal( std::shared_ptr<signal_base> signal ) const {
+bool Interface::has_signal( std::shared_ptr<SignalBase> signal ) const {
     bool result;
     std::shared_lock lock( m_priv->m_signals_rwlock );
 
@@ -246,8 +246,8 @@ const Interface::Signals& Interface::signals() {
     return m_priv->m_signals;
 }
 
-std::shared_ptr<signal_base> Interface::signal( const std::string& signal_name ) {
-    std::shared_ptr<signal_base> sig;
+std::shared_ptr<SignalBase> Interface::signal( const std::string& signal_name ) {
+    std::shared_ptr<SignalBase> sig;
     std::shared_lock lock( m_priv->m_signals_rwlock );
 
     for( Signals::iterator i = m_priv->m_signals.begin(); i != m_priv->m_signals.end(); i++ ) {

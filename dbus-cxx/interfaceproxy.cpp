@@ -44,7 +44,7 @@ public:
     const std::string m_name;
     Methods m_methods;
     Signals m_signals;
-    std::map<std::shared_ptr<signal_proxy_base>, ThreadForCalling> m_callingMap;
+    std::map<std::shared_ptr<SignalProxyBase>, ThreadForCalling> m_callingMap;
     mutable std::shared_mutex m_methods_rwlock;
     mutable std::shared_mutex m_properties_rwlock;
     std::map<std::string,std::shared_ptr<PropertyProxyBase>> m_properties;
@@ -211,15 +211,15 @@ const InterfaceProxy::Signals& InterfaceProxy::signals() const {
     return m_priv->m_signals;
 }
 
-std::shared_ptr<signal_proxy_base> InterfaceProxy::signal( const std::string& signame ) {
+std::shared_ptr<SignalProxyBase> InterfaceProxy::signal( const std::string& signame ) {
     for( Signals::iterator i = m_priv->m_signals.begin(); i != m_priv->m_signals.end(); i++ ) {
         if( ( *i )->name() == signame ) { return *i; }
     }
 
-    return std::shared_ptr<signal_proxy_base>();
+    return std::shared_ptr<SignalProxyBase>();
 }
 
-bool InterfaceProxy::add_signal( std::shared_ptr<signal_proxy_base> sig, ThreadForCalling calling ) {
+bool InterfaceProxy::add_signal( std::shared_ptr<SignalProxyBase> sig, ThreadForCalling calling ) {
     // is it a valid signal?
     if( !sig ) { return false; }
 
@@ -251,7 +251,7 @@ bool InterfaceProxy::remove_signal( const std::string& signame ) {
     return this->remove_signal( this->signal( signame ) );
 }
 
-bool InterfaceProxy::remove_signal( std::shared_ptr<signal_proxy_base> sig ) {
+bool InterfaceProxy::remove_signal( std::shared_ptr<SignalProxyBase> sig ) {
     if( !sig ) { return false; }
 
     if( !this->has_signal( sig ) ) { return false; }
@@ -275,12 +275,12 @@ bool InterfaceProxy::has_signal( const std::string& signame ) const {
     return false;
 }
 
-bool InterfaceProxy::has_signal( std::shared_ptr<signal_proxy_base> sig ) const {
+bool InterfaceProxy::has_signal( std::shared_ptr<SignalProxyBase> sig ) const {
     return m_priv->m_signals.find( sig ) != m_priv->m_signals.end();
 }
 
 void InterfaceProxy::on_object_set_connection( std::shared_ptr< Connection > conn ) {
-    for( std::shared_ptr<signal_proxy_base> sig : m_priv->m_signals ) {
+    for( std::shared_ptr<SignalProxyBase> sig : m_priv->m_signals ) {
         ThreadForCalling calling = m_priv->m_callingMap[ sig ];
         conn->add_signal_proxy( sig, calling );
     }

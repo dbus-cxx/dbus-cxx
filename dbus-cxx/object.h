@@ -243,9 +243,9 @@ public:
      * @return A smart pointer to the newly created signal
      */
     template <class... T_type>
-    std::shared_ptr<signal<T_type...> >
+    std::shared_ptr<Signal<T_type...> >
     create_signal( const std::string& name ) {
-        std::shared_ptr<DBus::signal<T_type...> > sig;
+        std::shared_ptr<DBus::Signal<T_type...> > sig;
         std::shared_ptr<Interface> iface = this->default_interface();
 
         if( !iface ) { iface = this->create_interface( "" ); }
@@ -264,9 +264,9 @@ public:
      * @return A smart pointer to the newly created signal
      */
     template <class... T_type>
-    std::shared_ptr<signal<T_type...> >
+    std::shared_ptr<Signal<T_type...> >
     create_signal( const std::string& iface, const std::string& name ) {
-        std::shared_ptr<DBus::signal<T_type...> > sig;
+        std::shared_ptr<DBus::Signal<T_type...> > sig;
 
         if( !has_interface( iface ) ) { this->create_interface( iface ); }
 

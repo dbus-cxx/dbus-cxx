@@ -118,15 +118,15 @@ std::map<std::string, DBus::Variant> DBusDaemonProxy::GetConnectionCredentials( 
     return ( *m_method_GetConnectionCredentials )( arg0 );
 
 }
-std::shared_ptr<DBus::signal_proxy<void(std::string, std::string, std::string)>> DBusDaemonProxy::signal_NameOwnerChanged( ) {
+std::shared_ptr<DBus::SignalProxy<void(std::string, std::string, std::string)>> DBusDaemonProxy::signal_NameOwnerChanged( ) {
     return m_signalproxy_NameOwnerChanged;
 
 }
-std::shared_ptr<DBus::signal_proxy<void(std::string)>> DBusDaemonProxy::signal_NameLost( ) {
+std::shared_ptr<DBus::SignalProxy<void(std::string)>> DBusDaemonProxy::signal_NameLost( ) {
     return m_signalproxy_NameLost;
 
 }
-std::shared_ptr<DBus::signal_proxy<void(std::string)>> DBusDaemonProxy::signal_NameAcquired( ) {
+std::shared_ptr<DBus::SignalProxy<void(std::string)>> DBusDaemonProxy::signal_NameAcquired( ) {
     return m_signalproxy_NameAcquired;
 
 }
@@ -142,7 +142,7 @@ void DBusDaemonProxy::Set( std::string arg0, std::string arg1, DBus::Variant arg
     ( *m_method_Set )( arg0, arg1, arg2 );
 
 }
-std::shared_ptr<DBus::signal_proxy<void(std::string, std::map<std::string, DBus::Variant>, std::vector<std::string>)>> DBusDaemonProxy::signal_PropertiesChanged( ) {
+std::shared_ptr<DBus::SignalProxy<void(std::string, std::map<std::string, DBus::Variant>, std::vector<std::string>)>> DBusDaemonProxy::signal_PropertiesChanged( ) {
     return m_signalproxy_PropertiesChanged;
 
 }

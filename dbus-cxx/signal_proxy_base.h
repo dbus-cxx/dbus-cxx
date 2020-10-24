@@ -34,7 +34,7 @@
 
 namespace DBus {
 struct MessageHandlerAccumulator;
-template <typename type> class signal_proxy;
+template <typename type> class SignalProxy;
 
 /**
  * A builder class to build up a match rule for a signal.  Define
@@ -82,16 +82,16 @@ private:
  *
  * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
  */
-class signal_proxy_base: public signal_base {
+class SignalProxyBase: public SignalBase {
 public:
     virtual HandlerResult handle_signal( std::shared_ptr<const SignalMessage> );
 
     const std::string& match_rule() const;
 
 protected:
-    signal_proxy_base( const SignalMatchRule& matchRule );
+    SignalProxyBase( const SignalMatchRule& matchRule );
 
-    virtual ~signal_proxy_base();
+    virtual ~SignalProxyBase();
 
     bool matches( std::shared_ptr<const SignalMessage> msg );
 
@@ -120,15 +120,15 @@ private:
  * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
  */
 template <typename... T_arg>
-class signal_proxy<void(T_arg...)>
-    : public sigc::signal<void(T_arg...)>, public signal_proxy_base {
+class SignalProxy<void(T_arg...)>
+    : public sigc::signal<void(T_arg...)>, public SignalProxyBase {
 public:
-    signal_proxy( const SignalMatchRule& matchRule ):
-        signal_proxy_base( matchRule )
+    SignalProxy( const SignalMatchRule& matchRule ):
+        SignalProxyBase( matchRule )
     {  }
 
-    static std::shared_ptr<signal_proxy> create( const SignalMatchRule& matchRule )
-    { return std::shared_ptr<signal_proxy>( new signal_proxy( matchRule ) ); }
+    static std::shared_ptr<SignalProxy> create( const SignalMatchRule& matchRule )
+    { return std::shared_ptr<SignalProxy>( new SignalProxy( matchRule ) ); }
 
     //    virtual std::shared_ptr<signal_base> clone()
     //    { return std::shared_ptr<signal_base>( new signal_proxy(*this) ); }
@@ -151,7 +151,7 @@ protected:
                 ( void )( i >> ... >> arg );
             },
             tup_args );
-            std::apply( &signal_proxy::emit, std::tuple_cat( std::make_tuple( this ), tup_args ) );
+            std::apply( &SignalProxy::emit, std::tuple_cat( std::make_tuple( this ), tup_args ) );
         } catch( ErrorInvalidTypecast& e ) {
             DBUSCXX_DEBUG_STDSTR( "DBus.signal_proxy", "Caught error invalid typecast" );
             return HandlerResult::Not_Handled;

@@ -33,7 +33,7 @@ int main( int argc, char** argv ) {
     //std::shared_ptr<DBus::signal_proxy<void(std::string)>> signalProxy = proxy->signal_exampleSignal();
     //signalProxy->connect( sigc::ptr_fun( dosomething ) );
 
-    std::shared_ptr<DBus::signal_proxy<void()>> signalProxy2 =
-            DBus::signal_proxy<void()>::create( DBus::SignalMatchRule::create() );
+    std::shared_ptr<DBus::SignalProxy<void()>> signalProxy2 =
+            DBus::SignalProxy<void()>::create( DBus::SignalMatchRule::create() );
     signalProxy2->connect( sigc::ptr_fun( dosomething2 ) );
 }

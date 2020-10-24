@@ -179,21 +179,21 @@ void CodeGenerator::end_element( std::string tagName ){
 
         proxyMemberVar.setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
                  .setName( "m_signalproxy_" + m_currentSignal.name() )
-                 .setType( "std::shared_ptr<DBus::signal_proxy" + templateType + ">" );
+                 .setType( "std::shared_ptr<DBus::SignalProxy" + templateType + ">" );
 
         adapterMemberVar.setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
                  .setName( "m_signal_" + m_currentSignal.name() )
-                 .setType( "std::shared_ptr<DBus::signal" + templateType + ">" );
+                 .setType( "std::shared_ptr<DBus::Signal" + templateType + ">" );
 
         proxy_getSignalMethod = cppgenerate::Method::create()
             .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
-            .setReturnType( "std::shared_ptr<DBus::signal_proxy" + templateType + ">" )
+            .setReturnType( "std::shared_ptr<DBus::SignalProxy" + templateType + ">" )
             .setName( "signal_" + m_currentSignal.name() )
             .setCode( cppgenerate::CodeBlock::create().addLine( "return m_signalproxy_" + m_currentSignal.name() + ";" ) );
 
         getSignalMethod = cppgenerate::Method::create()
             .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
-            .setReturnType( "std::shared_ptr<DBus::signal" + templateType + ">" )
+            .setReturnType( "std::shared_ptr<DBus::Signal" + templateType + ">" )
             .setName( "signal_" + m_currentSignal.name() )
             .setCode( cppgenerate::CodeBlock::create().addLine( "return m_signal_" + m_currentSignal.name() + ";" ) );
 

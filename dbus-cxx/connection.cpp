@@ -118,8 +118,8 @@ public:
     std::shared_ptr<DBusDaemonProxy> m_daemonProxy;
     sigc::signal<void()> m_needsDispatching;
     std::mutex m_proxySignalsLock;
-    std::vector<std::shared_ptr<signal_proxy_base>> m_proxySignals;
-    std::vector<std::shared_ptr<signal_proxy_base>> m_allProxySignals;
+    std::vector<std::shared_ptr<SignalProxyBase>> m_proxySignals;
+    std::vector<std::shared_ptr<SignalProxyBase>> m_allProxySignals;
 
 
     FilterSignal m_filter_signal;
@@ -687,7 +687,7 @@ void Connection::process_signal_message( std::shared_ptr<const SignalMessage> ms
         // See if any of our handlers can handle this
         std::unique_lock<std::mutex> lock( m_priv->m_proxySignalsLock );
 
-        for( std::shared_ptr<signal_proxy_base> handler : m_priv->m_proxySignals ) {
+        for( std::shared_ptr<SignalProxyBase> handler : m_priv->m_proxySignals ) {
             handler->handle_signal( msg );
         }
     }
@@ -834,8 +834,8 @@ bool Connection::unregister_object( const std::string& path ) {
     return false;
 }
 
-std::shared_ptr<signal_proxy_base> Connection::add_signal_proxy( std::shared_ptr<signal_proxy_base> signal, ThreadForCalling calling ) {
-    if( !signal ) { return std::shared_ptr<signal_proxy_base>(); }
+std::shared_ptr<SignalProxyBase> Connection::add_signal_proxy( std::shared_ptr<SignalProxyBase> signal, ThreadForCalling calling ) {
+    if( !signal ) { return std::shared_ptr<SignalProxyBase>(); }
 
     SIMPLELOGGER_DEBUG( LOGGER_NAME, "Adding signal " << signal->interface_name() << ":" << signal->name() );
 
@@ -858,14 +858,14 @@ std::shared_ptr<signal_proxy_base> Connection::add_signal_proxy( std::shared_ptr
 
         if( iter == m_priv->m_threadDispatchers.end() ) {
             SIMPLELOGGER_ERROR( LOGGER_NAME, "Unable to find a thread dispatcher on current thread, not adding signal proxy" );
-            return std::shared_ptr<signal_proxy_base>();
+            return std::shared_ptr<SignalProxyBase>();
         }
 
         std::shared_ptr<ThreadDispatcher> thrDispatch = iter->second.lock();
 
         if( !thrDispatch ) {
             SIMPLELOGGER_ERROR( LOGGER_NAME, "Unable to find a valid thread dispatcher on current thread, not adding signal proxy" );
-            return std::shared_ptr<signal_proxy_base>();
+            return std::shared_ptr<SignalProxyBase>();
         }
 
         thrDispatch->add_signal_proxy( signal );
@@ -877,7 +877,7 @@ std::shared_ptr<signal_proxy_base> Connection::add_signal_proxy( std::shared_ptr
     return signal;
 }
 
-bool Connection::remove_signal_proxy( std::shared_ptr<signal_proxy_base> signal ) {
+bool Connection::remove_signal_proxy( std::shared_ptr<SignalProxyBase> signal ) {
     if( !signal ) { return false; }
 
     SIMPLELOGGER_DEBUG( LOGGER_NAME, "remove_signal_proxy with match rule " << signal->match_rule() );
@@ -888,7 +888,7 @@ bool Connection::remove_signal_proxy( std::shared_ptr<signal_proxy_base> signal 
 
     {
         std::unique_lock<std::mutex> lock( m_priv->m_proxySignalsLock );
-        std::vector<std::shared_ptr<signal_proxy_base>>::iterator it =
+        std::vector<std::shared_ptr<SignalProxyBase>>::iterator it =
                 std::find( m_priv->m_proxySignals.begin(), m_priv->m_proxySignals.end(), signal );
 
         if( it != m_priv->m_proxySignals.end() ) {
@@ -918,14 +918,14 @@ bool Connection::remove_signal_proxy( std::shared_ptr<signal_proxy_base> signal 
     return removed;
 }
 
-const std::vector<std::shared_ptr<signal_proxy_base>>& Connection::get_signal_proxies() {
+const std::vector<std::shared_ptr<SignalProxyBase>>& Connection::get_signal_proxies() {
     return m_priv->m_proxySignals;
 }
 
-std::vector<std::shared_ptr<signal_proxy_base>> Connection::get_signal_proxies( const std::string& interface_name ) {
-    std::vector<std::shared_ptr<signal_proxy_base>> ret;
+std::vector<std::shared_ptr<SignalProxyBase>> Connection::get_signal_proxies( const std::string& interface_name ) {
+    std::vector<std::shared_ptr<SignalProxyBase>> ret;
 
-    for( std::shared_ptr<signal_proxy_base> base : m_priv->m_allProxySignals ) {
+    for( std::shared_ptr<SignalProxyBase> base : m_priv->m_allProxySignals ) {
         if( base->interface_name().compare( interface_name ) == 0 ) {
             ret.push_back( base );
         }
@@ -934,10 +934,10 @@ std::vector<std::shared_ptr<signal_proxy_base>> Connection::get_signal_proxies( 
     return ret;
 }
 
-std::vector<std::shared_ptr<signal_proxy_base>> Connection::get_signal_proxies( const std::string& interface_name, const std::string& member ) {
-    std::vector<std::shared_ptr<signal_proxy_base>> ret;
+std::vector<std::shared_ptr<SignalProxyBase>> Connection::get_signal_proxies( const std::string& interface_name, const std::string& member ) {
+    std::vector<std::shared_ptr<SignalProxyBase>> ret;
 
-    for( std::shared_ptr<signal_proxy_base> base : m_priv->m_allProxySignals ) {
+    for( std::shared_ptr<SignalProxyBase> base : m_priv->m_allProxySignals ) {
         if( base->interface_name().compare( interface_name ) == 0 &&
             base->name().compare( member ) == 0 ) {
             ret.push_back( base );

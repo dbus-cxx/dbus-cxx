@@ -83,7 +83,7 @@ SignalMatchRule SignalMatchRule::create() {
     return SignalMatchRule();
 }
 
-class signal_proxy_base::priv_data {
+class SignalProxyBase::priv_data {
 public:
     priv_data() {}
 
@@ -91,26 +91,26 @@ public:
     sigc::signal<HandlerResult( std::shared_ptr<const SignalMessage> )>::accumulated<MessageHandlerAccumulator> m_signal_dbus_incoming;
 };
 
-signal_proxy_base::signal_proxy_base( const SignalMatchRule& matchRule ):
-    signal_base( matchRule.getPath(), matchRule.getInterface(), matchRule.getMember() ),
+SignalProxyBase::SignalProxyBase( const SignalMatchRule& matchRule ):
+    SignalBase( matchRule.getPath(), matchRule.getInterface(), matchRule.getMember() ),
     m_priv( std::make_unique<priv_data>() ) {
     m_priv->m_match_rule = matchRule.getMatchRule();
 }
 
-signal_proxy_base::~signal_proxy_base() {
+SignalProxyBase::~SignalProxyBase() {
 }
 
-HandlerResult signal_proxy_base::handle_signal( std::shared_ptr<const SignalMessage> msg ) {
+HandlerResult SignalProxyBase::handle_signal( std::shared_ptr<const SignalMessage> msg ) {
     if( !this->matches( msg ) ) { return HandlerResult::Not_Handled; }
 
     return on_dbus_incoming( msg );
 }
 
-const std::string& signal_proxy_base::match_rule() const {
+const std::string& SignalProxyBase::match_rule() const {
     return m_priv->m_match_rule;
 }
 
-bool signal_proxy_base::matches( std::shared_ptr<const SignalMessage> msg ) {
+bool SignalProxyBase::matches( std::shared_ptr<const SignalMessage> msg ) {
     if( !msg || !msg->is_valid() ) { return false; }
 
     if( !interface_name().empty() && interface_name() != msg->interface_name() ) { return false; }
