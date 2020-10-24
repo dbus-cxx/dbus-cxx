@@ -44,7 +44,7 @@ pkg_check_modules( sigc REQUIRED sigc++-3.0 )
 #
 option( ENABLE_EXAMPLES "Enable the examples" OFF )
 option( ENABLE_TOOLS "Enable dbus-cxx tools" OFF )
-option( ENABLE_GLIB "Enable GLib support" OFF )
+option( ENABLE_GLIB_SUPPORT "Enable GLib support" OFF )
 option( BUILD_SITE "Build the dbus-cxx website reference" OFF )
 option( TOOLS_BUNDLED_CPPGENERATE "Use bundled libcppgenerate" ON )
 option( ENABLE_CODE_COVERAGE_REPORT "Enable code coverage report" OFF )
@@ -272,9 +272,9 @@ set_property( TARGET dbus-cxx PROPERTY CXX_STANDARD 17 )
 #
 # If GLIB is used, add in the appropriate code
 #
-if( ENABLE_GLIB )
+if( ENABLE_GLIB_SUPPORT )
     add_subdirectory( dbus-cxx-glib )
-endif( ENABLE_GLIB )
+endif( ENABLE_GLIB_SUPPORT )
 
 #
 # If Qt should be supported, add in the appropriate code
@@ -417,4 +417,4 @@ endif( BUILD_TESTING )
 
 message(STATUS "Library Support:" )
 message(STATUS "  Qt .............................. : ${ENABLE_QT_SUPPORT}")
-message(STATUS "  GLib ............................ : ${ENABLE_GLIB}")
+message(STATUS "  GLib ............................ : ${ENABLE_GLIB_SUPPORT}")
