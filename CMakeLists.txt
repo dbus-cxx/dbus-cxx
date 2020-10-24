@@ -145,6 +145,7 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/variantiterator.cpp
     dbus-cxx/property.cpp
     dbus-cxx/propertyproxy.cpp
+    dbus-cxx/matchrule.cpp
 )
 
 # headers that need to go in the include/ directory
@@ -161,7 +162,6 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/error.h
     dbus-cxx/errormessage.h
     dbus-cxx/filedescriptor.h
-    dbus-cxx/forward_decls.h
     dbus-cxx/headerlog.h
     dbus-cxx/messageappenditerator.h
     dbus-cxx/messagefilter.h
@@ -205,6 +205,7 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/variantiterator.h
     dbus-cxx/property.h
     dbus-cxx/propertyproxy.h
+    dbus-cxx/matchrule.h
     ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
 )
 
