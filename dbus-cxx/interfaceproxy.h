@@ -131,7 +131,8 @@ public:
      * Create a property with the given type, and the given name.
      */
     template <class T_type>
-    std::shared_ptr<PropertyProxy<T_type>> create_property( const std::string& name, PropertyUpdateType update ){
+    std::shared_ptr<PropertyProxy<T_type>> create_property( const std::string& name,
+                                                            PropertyUpdateType update = PropertyUpdateType::Updates ){
         std::shared_ptr< PropertyProxy<T_type> > prop;
         prop = PropertyProxy<T_type>::create( name, update );
 

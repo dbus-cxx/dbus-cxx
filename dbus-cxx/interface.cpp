@@ -25,6 +25,7 @@
 #include "methodbase.h"
 #include <sigc++/sigc++.h>
 #include "signalbase.h"
+#include "connection.h"
 
 static const char* LOGGER_NAME = "DBus.Interface";
 
@@ -308,6 +309,91 @@ HandlerResult Interface::handle_call_message( std::shared_ptr<Connection> conn, 
     }
 
     return method_it->second->handle_call_message( conn, message );
+}
+
+HandlerResult Interface::handle_properties_message( std::shared_ptr<Connection> conn, std::shared_ptr<const CallMessage> message ){
+    SIMPLELOGGER_DEBUG( LOGGER_NAME, "handle_properties_message  interface=" << m_priv->m_name );
+    std::shared_lock lock( m_priv->m_properties_rwlock );
+    std::shared_ptr<ReturnMessage> retmsg = message->create_reply();
+    std::string errMsg;
+    std::string errName = DBUSCXX_ERROR_UNKNOWN_PROPERTY;
+
+    if( message->member() == "GetAll" ){
+        std::map<std::string,DBus::Variant> retval;
+
+        for( std::shared_ptr<DBus::PropertyBase> prop : m_priv->m_properties ){
+            if( prop->variant_value().currentType() == DataType::INVALID ){
+                // The property has not been set, so we must assume that it does not exist
+                continue;
+            }
+
+            switch( prop->access_type() ){
+            case DBus::PropertyAccess::ReadOnly:
+            case DBus::PropertyAccess::ReadWrite:
+                retval[ prop->name() ] = prop->variant_value();
+                break;
+            case DBus::PropertyAccess::WriteOnly:
+                continue;
+            }
+        }
+
+        retmsg << retval;
+        conn << retmsg;
+        return HandlerResult::Handled;
+    } else if( message->member() == "Get" ){
+        std::string interfaceName;
+        std::string propertyName;
+
+        message >> interfaceName >> propertyName;
+
+        for( std::shared_ptr<DBus::PropertyBase> prop : m_priv->m_properties ){
+            if( prop->variant_value().currentType() == DataType::INVALID ){
+                // The property has not been set, so we must assume that it does not exist
+                continue;
+            }
+
+            if( prop->name() == propertyName ){
+                if( prop->access_type() != DBus::PropertyAccess::WriteOnly ){
+                    retmsg << prop->variant_value();
+                    conn << retmsg;
+                    return HandlerResult::Handled;
+                }
+            }
+        }
+
+        errMsg = "Unable to find property " + propertyName + " on interface " + interfaceName;
+    } else if( message->member() == "Set" ){
+        std::string interfaceName;
+        std::string propertyName;
+        DBus::Variant variantValue;
+
+        message >> interfaceName >> propertyName >> variantValue;
+        errMsg = "Unable to find property " + propertyName + " on interface " + interfaceName;
+
+        for( std::shared_ptr<DBus::PropertyBase> prop : m_priv->m_properties ){
+            if( prop->variant_value().currentType() == DataType::INVALID ){
+                // The property has not been set, so we must assume that it does not exist
+                continue;
+            }
+
+            if( prop->name() == propertyName ){
+                if( prop->access_type() != DBus::PropertyAccess::ReadOnly ){
+                    prop->set_value( variantValue );
+                    conn << retmsg;
+                    return HandlerResult::Handled;
+                }
+                errName = DBUSCXX_ERROR_PROPERTY_READ_ONLY;
+                errMsg = "Property " + propertyName + " on interface " + interfaceName + " is read-only";
+                break;
+            }
+        }
+    }
+
+    std::shared_ptr<ErrorMessage> errmsg = message->create_error_reply();
+    errmsg->set_name( errName );
+    errmsg->set_message( errMsg );
+    conn << errmsg;
+    return HandlerResult::Handled;
 }
 
 void Interface::set_path( const std::string& new_path ) {

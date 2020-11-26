@@ -100,7 +100,7 @@ public:
     }
 
     void set_value( T_type t ) {
-        set_value( Variant( t ) );
+        PropertyBase::set_value( Variant( t ) );
     }
 
     T_type value() const {

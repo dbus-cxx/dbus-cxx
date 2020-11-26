@@ -100,6 +100,18 @@ public:
      */
     HandlerResult handle_call_message( std::shared_ptr<Connection> conn, std::shared_ptr<const CallMessage> message );
 
+    /**
+     * Handle the specified properties message.
+     *
+     * Depending on the type of properties message(Get/Set/GetAll), the appropriate response
+     * will be built up and returned.
+     *
+     * @param conn The connection this is from
+     * @param message The message with properties information
+     * @return
+     */
+    HandlerResult handle_properties_message( std::shared_ptr<Connection> conn, std::shared_ptr<const CallMessage> message );
+
     /** Get the name of this interface */
     const std::string& name() const;
 

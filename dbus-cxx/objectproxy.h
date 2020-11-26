@@ -167,7 +167,9 @@ public:
 
     template <class T_type>
     std::shared_ptr<PropertyProxy<T_type>>
-    create_property( const std::string& interface_name, const std::string& property_name, PropertyUpdateType update ) {
+    create_property( const std::string& interface_name,
+                     const std::string& property_name,
+                     PropertyUpdateType update = PropertyUpdateType::Updates ) {
         std::shared_ptr<InterfaceProxy> interface_ptr = this->interface_by_name( interface_name );
 
         if( !interface_ptr ) { interface_ptr = this->create_interface( interface_name ); }

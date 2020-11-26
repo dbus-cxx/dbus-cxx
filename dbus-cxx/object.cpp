@@ -371,6 +371,25 @@ HandlerResult Object::handle_message( std::shared_ptr<const Message> message ) {
         }
 
         return HandlerResult::Invalid_Method;
+    } else if( msg->interface_name() == DBUS_CXX_PROPERTIES_INTERFACE ){
+        SIMPLELOGGER_DEBUG( LOGGER_NAME, "Object::handle_call_message: properties interface called" );
+        std::string requestedInterfaceName;
+        msg >> requestedInterfaceName;
+
+        std::shared_lock lock( m_priv->m_interfaces_rwlock );
+        Interfaces::iterator iface_iter = m_priv->m_interfaces.find( requestedInterfaceName);
+        std::shared_ptr<Interface> interface_ptr;
+        if( iface_iter == m_priv->m_interfaces.end() ) {
+            // Unable to find an interface to use, try to use the default
+            if( m_priv->m_default_interface ) {
+                return m_priv->m_default_interface->handle_properties_message( conn, msg );
+            }
+
+            return  HandlerResult::Invalid_Interface;
+        } else {
+            interface_ptr = iface_iter->second;
+            return interface_ptr->handle_properties_message( conn, msg );
+        }
     }
 
     std::shared_lock lock( m_priv->m_interfaces_rwlock );
