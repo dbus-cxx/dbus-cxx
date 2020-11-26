@@ -112,7 +112,6 @@ public:
     DispatchStatus m_dispatchStatus;
     std::mutex m_pathHandlerLock;
     std::map<std::string, PathHandlingEntry> m_path_handler;
-    std::map<std::string, std::shared_ptr<ObjectPathHandler>> m_path_handler_fallback;
     std::mutex m_threadDispatcherLock;
     std::map<std::thread::id, std::weak_ptr<ThreadDispatcher>> m_threadDispatchers;
     std::shared_ptr<DBusDaemonProxy> m_daemonProxy;
@@ -809,6 +808,26 @@ RegistrationStatus Connection::register_object( std::shared_ptr<ObjectPathHandle
     object->set_connection( shared_from_this() );
 
     return RegistrationStatus::Success;
+}
+
+bool Connection::change_object_calling_thread( std::shared_ptr<ObjectPathHandler> object,
+                                   ThreadForCalling calling ){
+    std::unique_lock lock( m_priv->m_pathHandlerLock );
+    std::map<std::string,PathHandlingEntry>::iterator it = m_priv->m_path_handler.find( object->path() );
+
+    if( it == m_priv->m_path_handler.end() ) {
+        return false;
+    }
+
+    PathHandlingEntry entry = it->second;
+    if( calling == ThreadForCalling::DispatcherThread ) {
+        entry.handlingThread = m_priv->m_dispatchingThread;
+    } else {
+        entry.handlingThread = std::this_thread::get_id();
+    }
+    m_priv->m_path_handler[ object->path() ] = entry;
+
+    return true;
 }
 
 std::shared_ptr<ObjectProxy> Connection::create_object_proxy( const std::string& path ) {

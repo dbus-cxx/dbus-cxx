@@ -265,10 +265,11 @@ public:
      * fails, an invalid pointer will be returned.
      *
      * @param path The path of a new object, e.g. /opt/freedesktop/DBus
-     * @param calling How to call this object(what thread)
+     * @param calling How to call this object(what thread).  Defaults to being the dispatching thread.
      * @return An invalid shared_ptr if registration was not successful, else a valid shared_ptr
      */
-    std::shared_ptr<Object> create_object( const std::string& path, ThreadForCalling calling );
+    std::shared_ptr<Object> create_object( const std::string& path,
+                                           ThreadForCalling calling = ThreadForCalling::DispatcherThread );
 
     /**
      * Register an object with this connection.  The path that this object is accessible at
@@ -276,11 +277,22 @@ public:
      * be called on.
      *
      * @param object The object to export
-     * @param calling Select how to call methods on this object.
+     * @param calling The thread in which this object's methods will be called in.  Defaults to being the dispatching thread.
      * @return The status of registering an object to be exported.
      */
     RegistrationStatus register_object( std::shared_ptr<ObjectPathHandler> object,
-        ThreadForCalling calling );
+        ThreadForCalling calling = ThreadForCalling::DispatcherThread );
+
+    /**
+     * Change the thread that the methods on this object will be called from.  Note that this
+     * object must already be registered with register_object.
+     *
+     * @param object
+     * @param calling
+     * @return
+     */
+    bool change_object_calling_thread( std::shared_ptr<ObjectPathHandler> object,
+                                       ThreadForCalling calling );
 
     std::shared_ptr<ObjectProxy> create_object_proxy( const std::string& path );
 

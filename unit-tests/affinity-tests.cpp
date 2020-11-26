@@ -189,6 +189,47 @@ bool affinity_message_main_thread() {
     return false;
 }
 
+bool affinity_message_change_thread() {
+    bool dispatcherThreadOk = false;
+    bool mainThreadOk = false;
+
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
+    std::shared_ptr<AffinityThreadDispatcher> afDisp = std::shared_ptr<AffinityThreadDispatcher>( new AffinityThreadDispatcher );
+    conn->add_thread_dispatcher( afDisp );
+    conn->request_name( "dbuscxx.test" );
+
+    std::shared_ptr<DBus::Object> object = conn->create_object( "/test", DBus::ThreadForCalling::DispatcherThread );
+
+    object->create_method<void()>( "test.for.dbuscxx", "rxMethod", sigc::ptr_fun( receiveMethodCall ) );
+
+    std::shared_ptr<DBus::ObjectProxy> remote = conn->create_object_proxy( "dbuscxx.test", "/test" );
+    std::shared_ptr<DBus::MethodProxy<void()>> remoteMethod =
+            remote->create_method<void()>( "test.for.dbuscxx", "rxMethod" );
+
+    ( *remoteMethod )();
+
+    if( rxMessage && ( mainThreadId != rxThread ) ) {
+        dispatcherThreadOk = true;
+    }
+
+    conn->change_object_calling_thread( object, DBus::ThreadForCalling::CurrentThread );
+
+    std::future<void> result = remoteMethod->call_async();
+
+    // Stupid async trick!  We need to process the messages before
+    // we can wait for the response, as wait() will not return unless
+    // the remote method has finished!
+    std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
+    afDisp->processMessages();
+    result.wait();
+
+    if( rxMessage && ( mainThreadId == rxThread ) ) {
+        mainThreadOk = true;
+    }
+
+    return dispatcherThreadOk && mainThreadOk;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = affinity_##name();\
         } \
@@ -212,6 +253,7 @@ int main( int argc, char** argv ) {
     ADD_TEST( signal_main_thread );
     ADD_TEST( message_dispatch_thread );
     ADD_TEST( message_main_thread );
+    ADD_TEST( message_change_thread );
 
     return !ret;
 }

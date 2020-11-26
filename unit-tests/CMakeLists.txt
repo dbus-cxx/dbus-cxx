@@ -259,6 +259,7 @@ add_test( NAME affinity-signal-dispatcher-thread COMMAND dbus-run-session ./test
 add_test( NAME affinity-signal-main-thread COMMAND dbus-run-session ./test-affinity signal_main_thread)
 add_test( NAME affinity-message-dispatcher-thread COMMAND dbus-run-session ./test-affinity message_dispatch_thread)
 add_test( NAME affinity-message-main-thread COMMAND dbus-run-session ./test-affinity message_main_thread)
+add_test( NAME affinity-message-change-thread COMMAND dbus-run-session ./test-affinity message_change_thread)
 
 #
 # File Descriptor tests - make sure that we can send and receive file descriptors correctly
