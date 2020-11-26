@@ -453,7 +453,6 @@ void Interface::property_updated( DBus::PropertyBase* prop ){
     sigChanged << m_priv->m_name << changed << invalidated;
 
     std::shared_ptr<DBus::Object> parent = m_priv->m_parent.lock();
-    SIMPLELOGGER_DEBUG( LOGGER_NAME, "parent to lock: " << parent );
     if( parent ){
         std::shared_ptr<Connection> conn = parent->connection().lock();
         if( !conn ){
@@ -465,7 +464,6 @@ void Interface::property_updated( DBus::PropertyBase* prop ){
 }
 
 void Interface::set_parent_object(std::weak_ptr<Object> parent){
-    SIMPLELOGGER_DEBUG( LOGGER_NAME, "setting parent: " << parent.lock() );
     m_priv->m_parent = parent;
 }
 
