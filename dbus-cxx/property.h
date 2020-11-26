@@ -30,6 +30,8 @@
 
 namespace DBus {
 
+class Interface;
+
 /**
  * Base type of Property to allow for storage in e.g. a vector.
  */
@@ -77,9 +79,14 @@ public:
     virtual std::string introspect( int spaces ){ return std::string(); }
 
 private:
+    void setInterface( Interface* );
+
+private:
     class priv_data;
 
     DBUS_CXX_PROPAGATE_CONST( std::unique_ptr<priv_data> ) m_priv;
+
+    friend class Interface;
 };
 
 /**

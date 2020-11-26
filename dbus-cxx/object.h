@@ -59,7 +59,7 @@ template <typename T_type> class Method;
  *
  * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
  */
-class Object: public ObjectPathHandler {
+class Object: public ObjectPathHandler, virtual public std::enable_shared_from_this<Object> {
 protected:
 
     /**

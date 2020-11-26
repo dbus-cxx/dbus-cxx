@@ -47,6 +47,7 @@ public:
     mutable std::shared_mutex m_properties_rwlock;
     sigc::signal<void( std::shared_ptr<MethodBase> )> m_signal_method_added;
     sigc::signal<void( std::shared_ptr<MethodBase> )> m_signal_method_removed;
+    std::weak_ptr<DBus::Object> m_parent;
 };
 
 Interface::Interface( const std::string& name ) {
@@ -418,6 +419,7 @@ bool Interface::add_property( std::shared_ptr<PropertyBase> prop ) {
     }
 
     //m_priv->m_signal_method_added.emit( method );
+    prop->setInterface( this );
 
     return result;
 }
@@ -436,6 +438,35 @@ bool Interface::has_property( const std::string& name ) const {
     }
 
     return result;
+}
+
+void Interface::property_updated( DBus::PropertyBase* prop ){
+    std::shared_ptr<SignalMessage> sigChanged = SignalMessage::create( m_priv->m_path,
+                                                                       DBUS_CXX_PROPERTIES_INTERFACE,
+                                                                       "PropertiesChanged" );
+
+    std::map<std::string,DBus::Variant> changed;
+    std::vector<std::string> invalidated;
+
+    changed[ prop->name() ] = prop->variant_value();
+
+    sigChanged << m_priv->m_name << changed << invalidated;
+
+    std::shared_ptr<DBus::Object> parent = m_priv->m_parent.lock();
+    SIMPLELOGGER_DEBUG( LOGGER_NAME, "parent to lock: " << parent );
+    if( parent ){
+        std::shared_ptr<Connection> conn = parent->connection().lock();
+        if( !conn ){
+            return;
+        }
+
+        conn << sigChanged;
+    }
+}
+
+void Interface::set_parent_object(std::weak_ptr<Object> parent){
+    SIMPLELOGGER_DEBUG( LOGGER_NAME, "setting parent: " << parent.lock() );
+    m_priv->m_parent = parent;
 }
 
 }

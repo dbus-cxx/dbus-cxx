@@ -398,7 +398,8 @@ void InterfaceProxy::remove_property( std::shared_ptr<PropertyProxyBase> propert
 
 void InterfaceProxy::cache_properties(){
     std::shared_ptr<CallMessage> msg =
-            CallMessage::create( m_priv->m_object->path(), "org.freedesktop.DBus.Properties", "GetAll" );
+            CallMessage::create( m_priv->m_object->destination(), m_priv->m_object->path(), "org.freedesktop.DBus.Properties", "GetAll" );
+    msg << m_priv->m_name;
     std::shared_ptr<const ReturnMessage> ret =
             call( msg );
 

@@ -251,6 +251,8 @@ public:
 
 private:
     void set_path( const std::string& new_path );
+    void property_updated( DBus::PropertyBase* prop );
+    void set_parent_object( std::weak_ptr<Object> parent );
 
 private:
     class priv_data;
@@ -258,6 +260,7 @@ private:
     DBUS_CXX_PROPAGATE_CONST( std::unique_ptr<priv_data> ) m_priv;
 
     friend class Object;
+    friend class PropertyBase;
 };
 
 } /* namespace DBus */

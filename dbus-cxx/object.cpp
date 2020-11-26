@@ -111,6 +111,7 @@ bool Object::add_interface( std::shared_ptr<Interface> interface_ptr ) {
             m_priv->m_interfaces.insert( std::make_pair( interface_ptr->name(), interface_ptr ) );
 
             interface_ptr->set_path( path() );
+            interface_ptr->set_parent_object( shared_from_this() );
         } else {
             result = false;
         }

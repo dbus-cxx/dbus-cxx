@@ -299,3 +299,21 @@ set_property( TARGET test-unset-envvars PROPERTY CXX_STANDARD 17 )
 
 add_test( NAME unset-session-bus COMMAND test-unset-envvars connect_session_bus )
 add_test( NAME unset-starter-bus COMMAND test-unset-envvars connect_starter_bus )
+
+#
+# Property tests - test that we can get/set properties, as well as getting signals
+#
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper-property-tests.sh
+    ${CMAKE_CURRENT_BINARY_DIR}/dbus-wrapper-property-tests.sh COPYONLY)
+add_executable( test-property property-test.cpp )
+target_link_libraries( test-property ${TEST_LINK} )
+target_include_directories( test-property PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( test-property PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+set_property( TARGET test-property PROPERTY CXX_STANDARD 17 )
+
+add_test( NAME property-get-all COMMAND dbus-wrapper-property-tests.sh get_all )
+add_test( NAME property-get-valid COMMAND dbus-wrapper-property-tests.sh get_valid )
+add_test( NAME property-set-valid COMMAND dbus-wrapper-property-tests.sh set_valid )
+add_test( NAME property-set-invalid COMMAND dbus-wrapper-property-tests.sh set_invalid )
+add_test( NAME property-set-readonly COMMAND dbus-wrapper-property-tests.sh set_readonly )
+add_test( NAME property-signal-emitted COMMAND dbus-wrapper-property-tests.sh signal_emitted )

@@ -118,7 +118,7 @@ public:
     }
 
     void set_value( T_type t ) {
-        set_value( Variant( t ) );
+        PropertyProxyBase::set_value( Variant( t ) );
     }
 
     T_type value() {

@@ -19,6 +19,7 @@
 #include <dbus-cxx/property.h>
 #include <dbus-cxx/variant.h>
 #include <dbus-cxx/interface.h>
+#include <dbus-cxx/signalmessage.h>
 #include "property.h"
 
 using DBus::PropertyBase;
@@ -63,8 +64,18 @@ DBus::PropertyUpdateType PropertyBase::update_type() const {
 
 void PropertyBase::set_value( DBus::Variant value ) {
     m_priv->m_value = value;
+
+    if( !m_priv->m_interface ){
+        return;
+    }
+
+    m_priv->m_interface->property_updated( this );
 }
 
 DBus::PropertyAccess PropertyBase::access_type() const {
     return m_priv->m_access;
+}
+
+void PropertyBase::setInterface( Interface* iface ){
+    m_priv->m_interface = iface;
 }

@@ -311,7 +311,8 @@ public:
      * This method automatically calls add_signal_proxy.
      */
     template<typename... T_arg>
-    std::shared_ptr<SignalProxy<T_arg...> > create_signal_proxy( const SignalMatchRule& rule, ThreadForCalling calling ) {
+    std::shared_ptr<SignalProxy<T_arg...> > create_signal_proxy( const SignalMatchRule& rule,
+                                                                 ThreadForCalling calling = ThreadForCalling::DispatcherThread ) {
         std::shared_ptr<SignalProxy<T_arg...> > sig;
         sig = SignalProxy<T_arg...>::create( rule );
         this->add_signal_proxy( sig, calling );
@@ -321,7 +322,8 @@ public:
     /**
      * Adds the given signal proxy to the connection.
      */
-    std::shared_ptr<SignalProxyBase> add_signal_proxy( std::shared_ptr<SignalProxyBase> Signal, ThreadForCalling calling );
+    std::shared_ptr<SignalProxyBase> add_signal_proxy( std::shared_ptr<SignalProxyBase> Signal,
+                                                       ThreadForCalling calling = ThreadForCalling::DispatcherThread );
 
     bool remove_signal_proxy( std::shared_ptr<SignalProxyBase> proxy );
 

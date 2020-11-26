@@ -90,7 +90,10 @@ void PropertyProxyBase::set_value( DBus::Variant value ) {
 
     // Create a CallMessage to set the value on the remote object.
     std::shared_ptr<CallMessage> msg =
-            CallMessage::create( m_priv->m_interface->path(), "org.freedesktop.DBus.Properties", "Set" );
+            CallMessage::create( m_priv->m_interface->object()->destination(),
+                                 m_priv->m_interface->path(),
+                                 "org.freedesktop.DBus.Properties",
+                                 "Set" );
     msg << m_priv->m_interface->name() << m_priv->m_name << value;
 
     std::shared_ptr<const ReturnMessage> ret =
