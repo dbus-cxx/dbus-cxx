@@ -252,7 +252,7 @@ public:
 private:
     void set_path( const std::string& new_path );
     void property_updated( DBus::PropertyBase* prop );
-    void set_parent_object( std::weak_ptr<Object> parent );
+    void set_connection( std::weak_ptr<Connection> conn );
 
 private:
     class priv_data;

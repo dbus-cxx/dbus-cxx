@@ -73,6 +73,11 @@ void Object::set_connection( std::shared_ptr<Connection> conn ) {
     for( Children::iterator c = m_priv->m_children.begin(); c != m_priv->m_children.end(); c++ ) {
         c->second->set_connection( conn );
     }
+
+    std::shared_lock lock( m_priv->m_interfaces_rwlock );
+    for( std::pair<std::string,std::shared_ptr<Interface>> pair : m_priv->m_interfaces ){
+        pair.second->set_connection( conn );
+    }
 }
 
 const Object::Interfaces& Object::interfaces() const {
@@ -111,7 +116,7 @@ bool Object::add_interface( std::shared_ptr<Interface> interface_ptr ) {
             m_priv->m_interfaces.insert( std::make_pair( interface_ptr->name(), interface_ptr ) );
 
             interface_ptr->set_path( path() );
-            interface_ptr->set_parent_object( shared_from_this() );
+            interface_ptr->set_connection( connection() );
         } else {
             result = false;
         }

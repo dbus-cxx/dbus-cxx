@@ -47,7 +47,7 @@ public:
     mutable std::shared_mutex m_properties_rwlock;
     sigc::signal<void( std::shared_ptr<MethodBase> )> m_signal_method_added;
     sigc::signal<void( std::shared_ptr<MethodBase> )> m_signal_method_removed;
-    std::weak_ptr<DBus::Object> m_parent;
+    std::weak_ptr<DBus::Connection> m_connection;
 };
 
 Interface::Interface( const std::string& name ) {
@@ -452,19 +452,16 @@ void Interface::property_updated( DBus::PropertyBase* prop ){
 
     sigChanged << m_priv->m_name << changed << invalidated;
 
-    std::shared_ptr<DBus::Object> parent = m_priv->m_parent.lock();
-    if( parent ){
-        std::shared_ptr<Connection> conn = parent->connection().lock();
-        if( !conn ){
-            return;
-        }
-
-        conn << sigChanged;
+    std::shared_ptr<Connection> conn = m_priv->m_connection.lock();
+    if( !conn ){
+        return;
     }
+
+    conn << sigChanged;
 }
 
-void Interface::set_parent_object(std::weak_ptr<Object> parent){
-    m_priv->m_parent = parent;
+void Interface::set_connection( std::weak_ptr<Connection> conn ){
+    m_priv->m_connection = conn;
 }
 
 }

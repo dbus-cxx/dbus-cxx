@@ -184,7 +184,7 @@ int main( int argc, char** argv ) {
     } else {
         server_setup();
         ret = true;
-        std::this_thread::sleep_for( std::chrono::seconds( 100 ) );
+        std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
     }
 
 
