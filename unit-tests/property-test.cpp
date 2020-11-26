@@ -103,24 +103,26 @@ bool property_signal_emitted(){
 
     std::this_thread::sleep_for( std::chrono::milliseconds( 750 ) );
 
-    return done == 1 && variantValue.to_int32() == 5248;;
+    return done == 1 && variantValue.to_int32() == 5248;
 }
 
 bool property_updated_from_signal(){
     std::shared_ptr<DBus::InterfaceProxy> iface = proxy->interface_by_name( "dbuscxx.interface" );
     std::shared_ptr<DBus::PropertyProxyBase> prop = iface->property( "intproperty" );
 
-    prop->set_value( 7878 );
-
     // Wait for the signal - this signal will get emitted when the value gets updated via a signal
     int times = 0;
-    prop->signal_generic_property_changed().connect( [&times]( DBus::Variant v ){
+    int value;
+    prop->signal_generic_property_changed().connect( [&times, &value]( DBus::Variant v ){
         times++;
+        value = v.to_int32();
     });
 
-    std::this_thread::sleep_for( std::chrono::milliseconds( 750 ) );
+    prop->set_value( 7878 );
 
-    return times == 1;
+    std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
+
+    return times == 1 && value == 7878;
 }
 
 void client_setup() {

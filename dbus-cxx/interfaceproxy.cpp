@@ -48,6 +48,7 @@ public:
     mutable std::shared_mutex m_methods_rwlock;
     mutable std::shared_mutex m_properties_rwlock;
     std::map<std::string,std::shared_ptr<PropertyProxyBase>> m_properties;
+    std::shared_ptr<DBus::SignalProxy<void(std::string,std::map<std::string,DBus::Variant>,std::vector<std::string>)>> m_updated_proxy;
 };
 
 InterfaceProxy::InterfaceProxy( const std::string& name ) {
@@ -59,6 +60,14 @@ std::shared_ptr<InterfaceProxy> InterfaceProxy::create( const std::string& name 
 }
 
 InterfaceProxy::~ InterfaceProxy( ) {
+    if( m_priv->m_object ){
+        std::shared_ptr<Connection> conn = m_priv->m_object->connection().lock();
+        if( !conn ){
+            return;
+        }
+
+        conn->remove_signal_proxy( m_priv->m_updated_proxy );
+    }
 }
 
 ObjectProxy* InterfaceProxy::object() const {
@@ -67,6 +76,20 @@ ObjectProxy* InterfaceProxy::object() const {
 
 void InterfaceProxy::set_object( ObjectProxy* obj ) {
     m_priv->m_object = obj;
+
+    std::shared_ptr<Connection> conn = connection().lock();
+    if( conn ){
+        m_priv->m_updated_proxy =
+            conn->create_signal_proxy<void(std::string,std::map<std::string,DBus::Variant>,std::vector<std::string>)>(
+                DBus::MatchRuleBuilder::create()
+                .setPath( path() )
+                .setInterface( DBUS_CXX_PROPERTIES_INTERFACE )
+                .setMember( "PropertiesChanged" )
+                .asSignalMatch()
+                );
+
+        m_priv->m_updated_proxy->connect( sigc::mem_fun( *this, &InterfaceProxy::property_updated ) );
+    }
 }
 
 Path InterfaceProxy::path() const {
@@ -414,6 +437,29 @@ void InterfaceProxy::cache_properties(){
         SIMPLELOGGER_TRACE( LOGGER_NAME, "Caching property " << it->first << "=" << it->second );
         std::shared_ptr<DBus::PropertyProxyBase> prop = property( it->first );
         prop->updated_value( it->second );
+    }
+}
+
+void InterfaceProxy::property_updated( std::string iface,
+                                  std::map<std::string,DBus::Variant> changed,
+                                  std::vector<std::string> invalidated ){
+    if( m_priv->m_name != iface ){
+        // Wrong interface
+        return;
+    }
+
+    std::shared_lock lock( m_priv->m_properties_rwlock );
+    for( std::pair<std::string,DBus::Variant> entry : changed ){
+        std::shared_ptr<PropertyProxyBase> prop = property( entry.first );
+
+        if( prop ){
+            SIMPLELOGGER_TRACE( LOGGER_NAME, "Updating property '"
+                                << prop->name()
+                                << "' on interface '"
+                                << m_priv->m_name
+                                << "' = " << entry.second);
+            prop->updated_value( entry.second );
+        }
     }
 }
 

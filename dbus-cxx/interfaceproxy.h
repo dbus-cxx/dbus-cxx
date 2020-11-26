@@ -194,6 +194,8 @@ private:
 
     void set_object( ObjectProxy* obj );
 
+    void property_updated( std::string,std::map<std::string,DBus::Variant>,std::vector<std::string> );
+
 private:
     class priv_data;
 
