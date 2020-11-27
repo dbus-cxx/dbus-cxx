@@ -56,6 +56,7 @@ public:
     VariantAppendIterator& operator<<( const std::string& v );
     VariantAppendIterator& operator<<( const Signature& v );
     VariantAppendIterator& operator<<( const Path& v );
+    VariantAppendIterator& operator<<( const Variant& v );
 
     template <typename T>
     VariantAppendIterator& operator<<( const std::vector<T>& v ) {

@@ -135,6 +135,18 @@ VariantAppendIterator& VariantAppendIterator::operator<<( const Path& v ) {
     return *this;
 }
 
+VariantAppendIterator& VariantAppendIterator::operator<<( const Variant& v ){
+    if( m_priv->m_subiter ) { this->close_container(); }
+
+    // The variant should already be correctly marshaled at this point, so just copy the bytes?
+    const std::vector<uint8_t>* marshaled = v.marshaled();
+    for( uint8_t byte : *marshaled ){
+        m_priv->m_marshaling.marshal( byte );
+    }
+
+    return *this;
+}
+
 bool VariantAppendIterator::open_container( ContainerType t, const std::string& sig ) {
     std::string signature;
     int32_t array_align = 0;

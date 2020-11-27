@@ -535,3 +535,9 @@ DBus::Variant VariantIterator::get_variant() {
 DBus::Signature VariantIterator::get_signature() {
     return m_priv->m_demarshal->demarshal_signature();
 }
+
+VariantIterator& VariantIterator::operator>>( Variant& v ){
+    v = operator Variant();
+    this->next();
+    return *this;
+}

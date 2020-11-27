@@ -169,6 +169,7 @@ public:
     std::shared_ptr<PropertyProxy<T_type>>
     create_property( const std::string& interface_name,
                      const std::string& property_name,
+                     PropertyAccess access_type = PropertyAccess::ReadWrite,
                      PropertyUpdateType update = PropertyUpdateType::Updates ) {
         std::shared_ptr<InterfaceProxy> interface_ptr = this->interface_by_name( interface_name );
 

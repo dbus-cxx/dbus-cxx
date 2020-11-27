@@ -607,6 +607,8 @@ void CodeGenerator::handle_property_tag( std::map<std::string, std::string> &tag
     propertyType = tagAttrs[ "type" ];
     propertyAccess = tagAttrs[ "access" ];
 
+    std::string propertyVariableName = "m_prop_" + propertyName;
+
     // We treat properties like normal methods under the assumption that a property
     // will not be named the same as a method.
     DBus::Signature signature( propertyType );
@@ -616,14 +618,42 @@ void CodeGenerator::handle_property_tag( std::map<std::string, std::string> &tag
     cppgenerate::Method proxyGetMethod = cppgenerate::Method::create()
             .setName( propertyName )
             .setReturnType( typestr )
-            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC );
+            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+            .addCode( cppgenerate::CodeBlock::create()
+                      .addLine( "return " + propertyVariableName + "->value();" )
+                      );
     cppgenerate::Method proxySetMethod = cppgenerate::Method::create()
             .setName( "set_" + propertyName )
             .addArgument( cppgenerate::Argument::create()
-                          .setName( propertyName )
+                          .setName( propertyName + "_arg" )
                           .setType( typestr )
                           )
-            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC );
+            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+            .addCode( cppgenerate::CodeBlock::create()
+                        .addLine( propertyVariableName + "->set_value( " + propertyName + "_arg );" )
+                        );
+
+    std::string accessAsEnum = "DBus::PropertyAccess::ReadWrite";
+    if( propertyAccess == "readonly" ){
+        accessAsEnum = "PropertyAccess::ReadOnly";
+    }else if( propertyAccess == "writeonly" ){
+        accessAsEnum = "PropertyAccess::WriteOnly";
+    }
+
+    std::string propertyProxyType = "std::shared_ptr<DBus::PropertyProxy<" + typestr + ">>";
+    m_currentProxyConstructor.addCode( cppgenerate::CodeBlock::create()
+                                       .addLine( propertyVariableName + " = this->create_property<" + typestr + ">( " +
+                                                 "\"" + m_currentInterface + "\", " +
+                                                 "\"" +propertyName + "\", " +
+                                                 accessAsEnum + ");"
+                                                 )
+                                       );
+
+    m_proxyClasses.data()[ m_proxyClasses.size() - 1 ]
+        .addMemberVariable( cppgenerate::MemberVariable::create()
+                            .setName( propertyVariableName )
+                            .setType( propertyProxyType )
+                            );
 
     if( propertyAccess.compare( "read" ) == 0 ){
         m_proxyClasses.data()[ m_proxyClasses.size() - 1 ]

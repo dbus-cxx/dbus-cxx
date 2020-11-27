@@ -53,6 +53,8 @@ public:
 
     VariantIterator( const Variant* variant );
 
+    VariantIterator& operator>>( Variant& v );
+
     template <typename T>
     VariantIterator& operator>>( T& v ) {
         v = static_cast<T>( *this );
