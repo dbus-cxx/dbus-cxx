@@ -146,15 +146,14 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/property.cpp
     dbus-cxx/propertyproxy.cpp
     dbus-cxx/matchrule.cpp
-)
-
-# headers that need to go in the include/ directory
-set( DBUS_CXX_HEADERS1
-    dbus-cxx.h
+    dbus-cxx/standard-interfaces/peerinterface.cpp
+    dbus-cxx/standard-interfaces/introspectableinterface.cpp
+    dbus-cxx/standard-interfaces/propertiesinterface.cpp
 )
 
 # headers that need to go in the include/dbus-cxx directory
 set( DBUS_CXX_HEADERS
+    dbus-cxx.h
     dbus-cxx/accumulators.h
     dbus-cxx/callmessage.h
     dbus-cxx/dispatcher.h
@@ -206,7 +205,10 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/property.h
     dbus-cxx/propertyproxy.h
     dbus-cxx/matchrule.h
-    ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
+    dbus-cxx/standard-interfaces/peerinterface.h
+    dbus-cxx/standard-interfaces/introspectableinterface.h
+    dbus-cxx/standard-interfaces/propertiesinterface.h
+    dbus-cxx/daemon-proxy/DBusDaemonProxy.h
 )
 
 set( DBUS_CXX_INCLUDE_DIRECTORIES 
@@ -262,8 +264,7 @@ endif( WIN32 )
 # Target for the library
 #
 link_directories( ${sigc_LIBRARY_DIRS} )
-add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} )
-#add_library( dbus-cxx-static STATIC ${DBUS_CXX_SOURCES} )
+add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} ${DBUS_CXX_HEADERS} )
 set_target_properties( dbus-cxx PROPERTIES VERSION 2.0.0 SOVERSION 2 )
 target_link_libraries( dbus-cxx ${DBUS_CXX_LIBRARIES} )
 
@@ -291,9 +292,13 @@ set( install_targets ${install_targets} dbus-cxx )
 install( TARGETS ${install_targets}
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
-install( FILES ${DBUS_CXX_HEADERS} DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/dbus-cxx )
-install( FILES ${DBUS_CXX_HEADERS1} DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION} )
-install( FILES dbus-cxx/daemon-proxy/DBusDaemonProxy.h DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/dbus-cxx/daemon-proxy )
+foreach(FILE ${DBUS_CXX_HEADERS} )
+    get_filename_component(DIR ${FILE} DIRECTORY)
+    install( FILES ${FILE} DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/${DIR} )
+endforeach()
+install( FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
+    DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/dbus-cxx )
 
 #
 # pkg-config script creation and install
