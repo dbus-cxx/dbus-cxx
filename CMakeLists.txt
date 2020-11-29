@@ -146,9 +146,9 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/property.cpp
     dbus-cxx/propertyproxy.cpp
     dbus-cxx/matchrule.cpp
-    dbus-cxx/standard-interfaces/peerinterface.cpp
-    dbus-cxx/standard-interfaces/introspectableinterface.cpp
-    dbus-cxx/standard-interfaces/propertiesinterface.cpp
+    dbus-cxx/standard-interfaces/peerinterfaceproxy.cpp
+    dbus-cxx/standard-interfaces/introspectableinterfaceproxy.cpp
+    dbus-cxx/standard-interfaces/propertiesinterfaceproxy.cpp
 )
 
 # headers that need to go in the include/dbus-cxx directory
@@ -205,9 +205,9 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/property.h
     dbus-cxx/propertyproxy.h
     dbus-cxx/matchrule.h
-    dbus-cxx/standard-interfaces/peerinterface.h
-    dbus-cxx/standard-interfaces/introspectableinterface.h
-    dbus-cxx/standard-interfaces/propertiesinterface.h
+    dbus-cxx/standard-interfaces/peerinterfaceproxy.h
+    dbus-cxx/standard-interfaces/introspectableinterfaceproxy.h
+    dbus-cxx/standard-interfaces/propertiesinterfaceproxy.h
     dbus-cxx/daemon-proxy/DBusDaemonProxy.h
 )
 

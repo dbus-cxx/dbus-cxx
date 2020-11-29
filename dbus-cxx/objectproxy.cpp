@@ -22,6 +22,9 @@
 #include "connection.h"
 #include "interfaceproxy.h"
 #include <sigc++/sigc++.h>
+#include "standard-interfaces/peerinterfaceproxy.h"
+#include "standard-interfaces/introspectableinterfaceproxy.h"
+#include "standard-interfaces/propertiesinterfaceproxy.h"
 
 namespace DBus {
 class MethodProxyBase;
@@ -33,7 +36,10 @@ public:
     priv_data( std::shared_ptr<Connection> conn, const std::string& destination, const std::string& path ) :
         m_connection( conn ),
         m_destination( destination ),
-        m_path( path )
+        m_path( path ),
+        m_peerInterface( PeerInterfaceProxy::create() ),
+        m_introspectableInterface( IntrospectableInterfaceProxy::create() ),
+        m_propertiesInterface( PropertiesInterfaceProxy::create() )
     {}
 
     std::weak_ptr<Connection> m_connection;
@@ -44,10 +50,14 @@ public:
     Interfaces m_interfaces;
     sigc::signal<void( std::shared_ptr<InterfaceProxy> )> m_signal_interface_added;
     sigc::signal<void( std::shared_ptr<InterfaceProxy> )> m_signal_interface_removed;
+    std::shared_ptr<PeerInterfaceProxy> m_peerInterface;
+    std::shared_ptr<IntrospectableInterfaceProxy> m_introspectableInterface;
+    std::shared_ptr<PropertiesInterfaceProxy> m_propertiesInterface;
 };
 
 ObjectProxy::ObjectProxy( std::shared_ptr<Connection> conn, const std::string& destination, const std::string& path ):
     m_priv( std::make_unique<priv_data>( conn, destination, path ) ) {
+    add_interface( m_priv->m_peerInterface );
 }
 
 std::shared_ptr<ObjectProxy> ObjectProxy::create( const std::string& path ) {
@@ -274,7 +284,17 @@ sigc::signal< void( std::shared_ptr<InterfaceProxy> )> ObjectProxy::signal_inter
     return m_priv->m_signal_interface_removed;
 }
 
+std::shared_ptr<PeerInterfaceProxy> ObjectProxy::getPeerInterface(){
+    return m_priv->m_peerInterface;
 }
 
+std::shared_ptr<IntrospectableInterfaceProxy> ObjectProxy::getIntrospectableInterface(){
+    return m_priv->m_introspectableInterface;
+}
 
+std::shared_ptr<PropertiesInterfaceProxy> ObjectProxy::getPropertiesInterface(){
+    return m_priv->m_propertiesInterface;
+}
+
+}
 

@@ -40,6 +40,9 @@ class MethodProxyBase;
 class PendingCall;
 class ReturnMessage;
 template <typename signature> class MethodProxy;
+class PeerInterfaceProxy;
+class IntrospectableInterfaceProxy;
+class PropertiesInterfaceProxy;
 
 /**
  * Object proxies are local proxies that provide local methods and signals for
@@ -193,6 +196,12 @@ public:
      * @return
      */
     sigc::signal<void( std::shared_ptr<InterfaceProxy> )> signal_interface_removed();
+
+    std::shared_ptr<PeerInterfaceProxy> getPeerInterface();
+
+    std::shared_ptr<IntrospectableInterfaceProxy> getIntrospectableInterface();
+
+    std::shared_ptr<PropertiesInterfaceProxy> getPropertiesInterface();
 
 private:
     class priv_data;
