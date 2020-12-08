@@ -28,6 +28,9 @@
 #include <dbus-cxx/signatureiterator.h>
 
 #include "signal-info.h"
+#include "node-info.h"
+#include "interface-info.h"
+#include "property-info.h"
 
 namespace DBus{
 
@@ -58,6 +61,26 @@ private:
 
     std::string getTemplateArgsFromSignature( SignatureIterator iter );
 
+    void generateProxyMethods( cppgenerate::Class* cls,
+                               cppgenerate::Constructor* constructor,
+                               std::vector<MethodInfo> methods );
+    void generateProxySignals( cppgenerate::Class* cls,
+                               cppgenerate::Constructor* constructor,
+                               std::vector<SignalInfo> signals );
+    void generateProxyProperties( cppgenerate::Class* cls,
+                                  cppgenerate::Constructor* constructor,
+                                  std::vector<PropertyInfo> properties );
+
+    void generateAdapterMethods( cppgenerate::Class* cls,
+                               cppgenerate::Constructor* constructor,
+                               std::vector<MethodInfo> methods );
+    void generateAdapterSignals( cppgenerate::Class* cls,
+                               cppgenerate::Constructor* constructor,
+                               std::vector<SignalInfo> signals );
+    void generateAdapterProperties( cppgenerate::Class* cls,
+                                  cppgenerate::Constructor* constructor,
+                                  std::vector<PropertyInfo> properties );
+
 private:
     XML_Parser m_parser;
     std::string m_xmlData;
@@ -65,7 +88,6 @@ private:
     std::vector<cppgenerate::Class> m_proxyClasses;
     std::vector<cppgenerate::Class> m_adapterClasses;
     std::vector<cppgenerate::Class> m_adapteeClasses;
-    std::string m_currentInterface;
     cppgenerate::Method m_currentProxyMethod;
     cppgenerate::Method m_currentAdapteeMethod;
     cppgenerate::Constructor m_currentProxyConstructor;
@@ -73,6 +95,11 @@ private:
     SignalInfo m_currentSignal;
     int m_argNum;
     std::string m_returnName;
+
+    // --------
+    NodeInfo m_rootNode;
+    InterfaceInfo m_currentInterface;
+    MethodInfo m_currentMethodInfo;
 };
 
 }

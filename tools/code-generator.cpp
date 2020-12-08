@@ -56,11 +56,16 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
     if( tagName.compare( "node" ) == 0 ){
         handle_node_tag( tagAttrs );
     }else if( tagName.compare( "interface" ) == 0 ){
+        std::string interfaceName;
         if( tagAttrs.find( "name" ) == tagAttrs.end() ){
             std::cerr << "WARNING: No name for interface found" << std::endl;
             return;
         }
-        m_currentInterface = tagAttrs[ "name" ];
+        interfaceName = tagAttrs[ "name" ];
+        std::string cppName = interfaceName;
+        std::replace( cppName.begin(), cppName.end(), '.', '_' );
+        m_currentInterface = InterfaceInfo( interfaceName );
+        m_currentInterface.setCppname( cppName );
     }else if( tagName.compare( "method" ) == 0 ){
         handle_method_tag( tagAttrs );
     }else if( tagName.compare( "signal" ) == 0 ){
@@ -120,22 +125,22 @@ void CodeGenerator::end_element( std::string tagName ){
             .addMethod( m_currentProxyMethod )
             .addMemberVariable( memberVar );
 
-        m_currentProxyConstructor.addCode( cppgenerate::CodeBlock::create()
-            .addLine( "m_method_" + m_currentProxyMethod.name() + 
-                      " = this->create_method" + methodProxyType + 
-                      "(\"" + m_currentInterface + "\",\"" + m_currentProxyMethod.name() + "\");" ) );
+//        m_currentProxyConstructor.addCode( cppgenerate::CodeBlock::create()
+//            .addLine( "m_method_" + m_currentProxyMethod.name() +
+//                      " = this->create_method" + methodProxyType +
+//                      "(\"" + m_currentInterface + "\",\"" + m_currentProxyMethod.name() + "\");" ) );
 
         /* Add our new virtual method that needs to be implemented to our adaptee */
         m_adapteeClasses.data()[ m_adapteeClasses.size() - 1 ]
             .addMethod( m_currentAdapteeMethod );
 
         /* Add our internal construction of the adaptee method */
-        m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
-            .addLine( "temp_method = this->create_method" + methodProxyType + 
-                      "( \"" + m_currentInterface + "\", \"" + 
-                      m_currentAdapteeMethod.name() + "\"," +
-                      "sigc::mem_fun( *adaptee, &" + m_adapteeClasses.data()[ m_adapteeClasses.size() - 1 ].getName() +
-                      "::" + m_currentAdapteeMethod.name() + " ) );" ) );
+//        m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
+//            .addLine( "temp_method = this->create_method" + methodProxyType +
+//                      "( \"" + m_currentInterface + "\", \"" +
+//                      m_currentAdapteeMethod.name() + "\"," +
+//                      "sigc::mem_fun( *adaptee, &" + m_adapteeClasses.data()[ m_adapteeClasses.size() - 1 ].getName() +
+//                      "::" + m_currentAdapteeMethod.name() + " ) );" ) );
         m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
             .addLine( "temp_method->set_arg_name( 0, \"" + m_returnName + "\" );" ) );
         for( cppgenerate::Argument arg : args ){
@@ -143,12 +148,10 @@ void CodeGenerator::end_element( std::string tagName ){
             m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
                 .addLine( "temp_method->set_arg_name( " + std::to_string( argNum ) + ", \"" + arg.name() + "\" );" ) );
         }
-    }else if( tagName == "node" ){
-        m_proxyClasses.data()[ m_proxyClasses.size() - 1 ]
-            .addConstructor( m_currentProxyConstructor );
 
-        m_adapterClasses.data()[ m_adapterClasses.size() - 1 ]
-            .addConstructor( m_currentAdapterConstructor );
+        m_currentInterface.addMethodInfo( m_currentMethodInfo );
+    }else if( tagName == "interface" ){
+        m_rootNode.addInterfaceInfo( m_currentInterface );
     }else if( tagName == "signal" ){
         cppgenerate::MemberVariable adapterMemberVar;
         cppgenerate::MemberVariable proxyMemberVar;
@@ -211,17 +214,17 @@ void CodeGenerator::end_element( std::string tagName ){
             .addMethod( proxy_getSignalMethod );
 
         /* Add our internal construction of the adapter signal */
-        m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
-            .addLine( adapterMemberVar.name() + 
-                      " = this->create_signal" + templateType + 
-                      "( \"" + m_currentInterface + "\", \"" + 
-                      m_currentSignal.name() + "\" );" ) );
+//        m_currentAdapterConstructor.addCode( cppgenerate::CodeBlock::create()
+//            .addLine( adapterMemberVar.name() +
+//                      " = this->create_signal" + templateType +
+//                      "( \"" + m_currentInterface + "\", \"" +
+//                      m_currentSignal.name() + "\" );" ) );
 
-        m_currentProxyConstructor.addCode( cppgenerate::CodeBlock::create()
-            .addLine( proxyMemberVar.name() + 
-                      " = this->create_signal" + templateType + 
-                      "( \"" + m_currentInterface + "\", \"" + 
-                      m_currentSignal.name() + "\", signalCallingThread );" ) );
+//        m_currentProxyConstructor.addCode( cppgenerate::CodeBlock::create()
+//            .addLine( proxyMemberVar.name() +
+//                      " = this->create_signal" + templateType +
+//                      "( \"" + m_currentInterface + "\", \"" +
+//                      m_currentSignal.name() + "\", signalCallingThread );" ) );
 
     }
 }
@@ -252,7 +255,123 @@ void CodeGenerator::end_element_handler( void* userData, const XML_Char* name ){
 }
 
 void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& output_directory ){
-    for( cppgenerate::Class c : m_proxyClasses ){
+    std::vector<cppgenerate::Class> proxyClasses;
+    cppgenerate::Class mainProxyClass;
+    cppgenerate::Constructor mainProxyConstructor;
+    std::string mainClassName = m_rootNode.cppname() + "Proxy";
+
+    mainProxyClass.setName( mainClassName )
+          .setNamespace( m_rootNode.genNamespace() )
+          .addSystemInclude( "dbus-cxx.h" )
+          .addSystemInclude( "stdint.h" )
+          .addSystemInclude( "string" )
+          .addSystemInclude( "memory" )
+          .addParentClass( "DBus::ObjectProxy", cppgenerate::AccessModifier::PUBLIC, "conn, dest, path" );
+
+    mainProxyClass.addMethod( cppgenerate::Method::create()
+        .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+        .setName( "create" )
+        .setStatic( true )
+        .setReturnType( "std::shared_ptr<" + mainClassName + ">" )
+        .addCode( cppgenerate::CodeBlock::create()
+            .addLine( "return std::shared_ptr<" + mainClassName + ">( new " + mainClassName + "( conn, dest, path, signalCallingThread ) );" ) )
+        .addArgument( cppgenerate::Argument::create()
+          .setType( "std::shared_ptr<DBus::Connection>" )
+          .setName( "conn" ) )
+        .addArgument( cppgenerate::Argument::create()
+          .setType( "std::string" )
+          .setName( "dest" )
+          .setDefaultValue( m_rootNode.destination() ) )
+        .addArgument( cppgenerate::Argument::create()
+          .setType( "std::string" )
+          .setName( "path" )
+          .setDefaultValue( m_rootNode.name() ) )
+        .addArgument( cppgenerate::Argument::create()
+          .setType( "DBus::ThreadForCalling" )
+          .setName( "signalCallingThread" )
+          .setDefaultValue( "DBus::ThreadForCalling::DispatcherThread" ) ) );
+
+    mainProxyConstructor.addArgument( cppgenerate::Argument::create()
+          .setType( "std::shared_ptr<DBus::Connection>" )
+          .setName( "conn" ) )
+        .addArgument( cppgenerate::Argument::create()
+          .setType( "std::string" )
+          .setName( "dest" )
+          .setDefaultValue( m_rootNode.destination() ) )
+        .addArgument( cppgenerate::Argument::create()
+          .setType( "std::string" )
+          .setName( "path" )
+          .setDefaultValue( m_rootNode.name() ) )
+        .addArgument( cppgenerate::Argument::create()
+          .setType( "DBus::ThreadForCalling" )
+          .setName( "signalCallingThread" )
+          .setDefaultValue( "DBus::ThreadForCalling::DispatcherThread" ) );
+
+    for( InterfaceInfo i : m_rootNode.interfaces() ){
+        if( i.name() == DBUS_CXX_PEER_INTERFACE ||
+                i.name() == DBUSCXX_INTERFACE_INTROSPECTABLE ||
+                i.name() == DBUS_CXX_PROPERTIES_INTERFACE ){
+            // This is a standard interface, ignore code generation.
+            continue;
+        }
+
+        cppgenerate::Class newClass;
+        newClass.setName( i.cppname() )
+                .addSystemInclude( "dbus-cxx.h" )
+                .addSystemInclude( "stdint.h" )
+                .addSystemInclude( "string" )
+                .addSystemInclude( "memory" )
+                .setNamespace( m_rootNode.genNamespace() )
+                .addParentClass( "DBus::InterfaceProxy", cppgenerate::AccessModifier::PUBLIC, "name" )
+                .addMethod( cppgenerate::Method::create()
+                            .setName( "create" )
+                            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+                            .setStatic( true )
+                            .setReturnType( "std::shared_ptr<" + i.cppname() + ">" )
+                            .addCode( cppgenerate::CodeBlock::create()
+                                      .addLine( "return std::shared_ptr<" + i.cppname() + ">( new " + i.cppname() + "( name ));") )
+                            .addArgument( cppgenerate::Argument::create()
+                                          .setName( "name" )
+                                          .setType( "std::string" )
+                                          .setDefaultValue( "\"" + i.name() + "\"" ))
+                );
+
+        cppgenerate::Constructor proxyConstructor =
+                cppgenerate::Constructor::create()
+                 .setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
+                 .addArgument( cppgenerate::Argument::create()
+                   .setType( "std::string" )
+                   .setName( "name" ) );
+
+        generateProxyMethods( &newClass, &proxyConstructor, i.methods() );
+        generateProxySignals( &newClass, &proxyConstructor, i.signals() );
+        generateProxyProperties( &newClass, &proxyConstructor, i.properties() );
+
+        newClass.addConstructor( proxyConstructor );
+
+        // Add the new class to our master proxy class
+        mainProxyClass.addMemberVariable( cppgenerate::MemberVariable::create()
+                                          .setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
+                                          .setName( "m_" + i.cppname() )
+                                          .setType( "std::shared_ptr<" + i.cppname() + ">" ) )
+                .addLocalInclude( newClass.getName() + ".h" )
+                .addMethod( cppgenerate::Method::create()
+                            .setName( "get" + i.cppname() + "Interface" )
+                            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+                            .setReturnType( "std::shared_ptr<" + i.cppname() + ">" )
+                            .addCode( cppgenerate::CodeBlock::create()
+                                      .addLine( "return m_" + i.cppname() + ";" ))
+                            );
+        mainProxyConstructor.addCode( cppgenerate::CodeBlock::create()
+                                      .addLine( "m_" + i.cppname() + " = " + i.cppname() + "::create( \"" + i.name() + "\" );") );
+
+        proxyClasses.push_back( newClass );
+    }
+
+    mainProxyClass.addConstructor( mainProxyConstructor );
+    proxyClasses.push_back( mainProxyClass );
+
+    for( cppgenerate::Class c : proxyClasses ){
         if( outputToFile ){
             std::string headerFilename = output_directory + c.getName() + std::string( ".h" );
             std::string implFilename = output_directory + c.getName() + std::string( ".cpp" );
@@ -268,6 +387,154 @@ void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& 
         }
     }
 
+}
+
+void CodeGenerator::generateProxyMethods( cppgenerate::Class *cls, cppgenerate::Constructor* constructor, std::vector<MethodInfo> methods ){
+    for( MethodInfo i : methods ){
+        cppgenerate::Method newMethod;
+        cppgenerate::MemberVariable memberVar;
+        std::vector<cppgenerate::Argument> args = i.arguments();
+        std::string dbusSig;
+        /* method proxy type = template args */
+        std::string methodProxyType;
+        /* methodArguments = arguments to proxy method */
+        std::string methodArguments;
+        bool argumentComma = false;
+        std::string block;
+
+        newMethod.setName( i.name() );
+
+        methodProxyType += "<" + i.returnType();
+        methodProxyType += "(";
+        for( cppgenerate::Argument arg : args ){
+            if( argumentComma ){
+                methodArguments += ",";
+                methodProxyType += ",";
+            }
+
+            methodProxyType += arg.type();
+            methodArguments += arg.name();
+            argumentComma = true;
+
+            newMethod.addArgument( arg );
+        }
+        methodProxyType += ")";
+        methodProxyType += ">";
+
+        memberVar.setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
+                 .setName( "m_method_" + i.name() )
+                 .setType( "std::shared_ptr<DBus::MethodProxy" + methodProxyType + "> " );
+
+        if( i.returnType() != "void" ){
+            block = "return ";
+        }
+        block += "(*" + memberVar.name() + ")(" +  methodArguments + ");";
+        newMethod.addCode( cppgenerate::CodeBlock::create()
+            .addLine( block ) )
+                .setAccessModifier( cppgenerate::AccessModifier::PUBLIC );
+
+        cls->addMethod( newMethod )
+            .addMemberVariable( memberVar );
+
+        constructor->addCode( cppgenerate::CodeBlock::create()
+            .addLine( "m_method_" + i.name() +
+                      " = this->create_method" + methodProxyType +
+                      "(\"" + newMethod.name() + "\");" ) );
+    }
+}
+
+void CodeGenerator::generateProxySignals(cppgenerate::Class *cls, cppgenerate::Constructor *constructor, std::vector<SignalInfo> signals){
+    for( SignalInfo si : signals ){
+        cppgenerate::MemberVariable proxyMemberVar;
+        cppgenerate::Method emitSignalMethod;
+        cppgenerate::Method proxy_getSignalMethod;
+        std::vector<cppgenerate::Argument> args = si.arguments();
+        std::string templateType;
+        bool argumentComma = false;
+        std::string signalEmitCode;
+
+        templateType += "<void(";
+        signalEmitCode = "(*m_signal_" + si.name() + ")(";
+        for( cppgenerate::Argument arg : args ){
+            emitSignalMethod.addArgument( arg );
+
+            if( argumentComma ){
+                templateType += ",";
+                signalEmitCode += ",";
+            }
+
+            templateType += arg.type();
+            signalEmitCode += arg.name();
+            argumentComma = true;
+        }
+        templateType += ")>";
+        signalEmitCode += ");";
+
+        proxyMemberVar.setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
+                 .setName( "m_signalproxy_" + si.name() )
+                 .setType( "std::shared_ptr<DBus::SignalProxy" + templateType + ">" );
+
+        proxy_getSignalMethod = cppgenerate::Method::create()
+            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+            .setReturnType( "std::shared_ptr<DBus::SignalProxy" + templateType + ">" )
+            .setName( "signal_" + si.name() )
+            .setCode( cppgenerate::CodeBlock::create().addLine( "return m_signalproxy_" + si.name() + ";" ) );
+
+        emitSignalMethod.setName( si.name() )
+            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+            .setCode( cppgenerate::CodeBlock::create().addLine( signalEmitCode ) );
+
+
+        cls->addMemberVariable( proxyMemberVar )
+            .addMethod( proxy_getSignalMethod );
+
+        constructor->addCode( cppgenerate::CodeBlock::create()
+            .addLine( proxyMemberVar.name() +
+                      " = this->create_signal" + templateType +
+                      "( \"" + si.name() + "\", signalCallingThread );" ) );
+
+    }
+}
+
+void CodeGenerator::generateProxyProperties(cppgenerate::Class *cls, cppgenerate::Constructor *constructor, std::vector<PropertyInfo> properties){
+    for( PropertyInfo pi : properties ){
+        cppgenerate::MemberVariable propertyProxyMember;
+        cppgenerate::Argument propertyArugment;
+        cppgenerate::Method propertySetMethod;
+        cppgenerate::Method propertyGetMethod;
+        cppgenerate::Method propertyProxyGetMethod;
+        std::string templateType;
+
+        templateType += "<" + pi.cpptype() + ">";
+
+        propertyProxyMember.setName( "m_property_" + pi.name() )
+                .setType( "std::shared_ptr<PropertyProxy<" + templateType + ">" );
+
+        propertySetMethod.setName( "set" + pi.name() )
+                .setCode( cppgenerate::CodeBlock::create()
+                          .addLine( "m_property_" + pi.name() + "->set_value( value );") )
+                .addArgument( cppgenerate::Argument::create()
+                              .setName( "value" )
+                              .setType( pi.cpptype() ) );
+
+        propertyGetMethod.setName( pi.name() )
+                .setCode( cppgenerate::CodeBlock::create()
+                          .addLine( "return m_property_" + pi.name() + "->value();") )
+                .setReturnType( pi.cpptype() );
+
+        propertyProxyGetMethod.setName( "getProperty_" + pi.name() )
+                .setReturnType( "std::shared_ptr<PropertyProxy<" + templateType + ">" )
+                .setCode( cppgenerate::CodeBlock::create().addLine( "return m_property_" + pi.name() + ";" ) );
+
+        constructor->addCode( cppgenerate::CodeBlock::create()
+                              .addLine( "m_property_" + pi.name() + " = this->create_property" + templateType + "( \"" + pi.name() + "\" );" ) );
+
+        cls->addMethod( propertySetMethod )
+                .addMethod( propertyGetMethod )
+                .addMethod( propertyProxyGetMethod )
+                .addMemberVariable( propertyProxyMember );
+
+    }
 }
 
 void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string& output_directory ){
@@ -371,11 +638,18 @@ void CodeGenerator::handle_node_tag( std::map<std::string,std::string>& tagAttrs
         newclass.setName( cppname + "Proxy" );
         newAdapterClass.setName( cppname + "Adapter" );
         newAdapteeClass.setName( cppname + "Adaptee" );
+
+        m_rootNode = NodeInfo();
+        m_rootNode.setCppname( cppname );
     }else{
+        m_rootNode = NodeInfo();
+        m_rootNode.setCppname( "NONAME" );
         newclass.setName( "NONAME_Proxy" );
         newAdapterClass.setName( "NONAME_Adapter" );
         newAdapteeClass.setName( "NONAME_Adaptee" );
     }
+
+    m_rootNode.setDest( dest );
 
 
     /* Add new proxy class */
@@ -511,6 +785,8 @@ void CodeGenerator::handle_method_tag( std::map<std::string,std::string>& tagAtt
     std::string methodName = tagAttrs[ "name" ];
     std::replace( methodName.begin(), methodName.end(), '.', '_' );
 
+    m_currentMethodInfo = MethodInfo( methodName );
+
     m_currentProxyMethod = cppgenerate::Method()
         .setName( methodName )
         .setAccessModifier( cppgenerate::AccessModifier::PUBLIC );
@@ -560,14 +836,16 @@ void CodeGenerator::handle_arg_tag( std::string parentElement, std::map<std::str
     }
 
     if( tagAttrs[ "direction" ] == "out" && parentElement == "method" ){
-        m_currentProxyMethod.setReturnType( typestr );
-        m_currentAdapteeMethod.setReturnType( typestr );
-        if( tagAttrs[ "name" ].length() ){
-            m_returnName = tagAttrs[ "name" ];
-        }
+//        m_currentProxyMethod.setReturnType( typestr );
+//        m_currentAdapteeMethod.setReturnType( typestr );
+//        if( tagAttrs[ "name" ].length() ){
+//            m_returnName = tagAttrs[ "name" ];
+//        }
+        m_currentMethodInfo.setReturnType( typestr );
     }else if( parentElement == "method" ){
-        m_currentProxyMethod.addArgument( arg );
-        m_currentAdapteeMethod.addArgument( arg );
+        m_currentMethodInfo.addArgument( arg );
+//        m_currentProxyMethod.addArgument( arg );
+//        m_currentAdapteeMethod.addArgument( arg );
     }else if( parentElement == "signal" ){
         m_currentSignal.addArgument( arg );
     }
@@ -641,13 +919,13 @@ void CodeGenerator::handle_property_tag( std::map<std::string, std::string> &tag
     }
 
     std::string propertyProxyType = "std::shared_ptr<DBus::PropertyProxy<" + typestr + ">>";
-    m_currentProxyConstructor.addCode( cppgenerate::CodeBlock::create()
-                                       .addLine( propertyVariableName + " = this->create_property<" + typestr + ">( " +
-                                                 "\"" + m_currentInterface + "\", " +
-                                                 "\"" +propertyName + "\", " +
-                                                 accessAsEnum + ");"
-                                                 )
-                                       );
+//    m_currentProxyConstructor.addCode( cppgenerate::CodeBlock::create()
+//                                       .addLine( propertyVariableName + " = this->create_property<" + typestr + ">( " +
+//                                                 "\"" + m_currentInterface + "\", " +
+//                                                 "\"" +propertyName + "\", " +
+//                                                 accessAsEnum + ");"
+//                                                 )
+//                                       );
 
     m_proxyClasses.data()[ m_proxyClasses.size() - 1 ]
         .addMemberVariable( cppgenerate::MemberVariable::create()

@@ -29,6 +29,10 @@ add_executable( dbus-cxx-xml2cpp
     xml2cpp.cpp
     code-generator.cpp 
     signal-info.cpp
+    method-info.cpp
+    property-info.cpp
+    interface-info.cpp
+    node-info.cpp
 )
 target_link_libraries( dbus-cxx-xml2cpp ${TOOLS_LINK} ${cppgenerate_LDFLAGS} )
 install( TARGETS dbus-cxx-xml2cpp DESTINATION bin )
