@@ -402,7 +402,8 @@ void CodeGenerator::generateProxyMethods( cppgenerate::Class *cls, cppgenerate::
         bool argumentComma = false;
         std::string block;
 
-        newMethod.setName( i.name() );
+        newMethod.setName( i.name() )
+                .setReturnType( i.returnType() );
 
         methodProxyType += "<" + i.returnType();
         methodProxyType += "(";
