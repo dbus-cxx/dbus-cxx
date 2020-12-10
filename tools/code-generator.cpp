@@ -539,7 +539,140 @@ void CodeGenerator::generateProxyProperties(cppgenerate::Class *cls, cppgenerate
 }
 
 void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string& output_directory ){
-    for( cppgenerate::Class c : m_adapterClasses ){
+    std::vector<cppgenerate::Class> classes;
+    cppgenerate::Class mainAdapterClass;
+    cppgenerate::Constructor mainAdapterConstructor;
+    cppgenerate::Method createMethod;
+    std::string mainClassName = m_rootNode.cppname() + "Adapter";
+
+    mainAdapterClass.setName( mainClassName )
+          .setNamespace( m_rootNode.genNamespace() )
+          .addSystemInclude( "dbus-cxx.h" )
+          .addSystemInclude( "stdint.h" )
+          .addSystemInclude( "string" )
+          .addSystemInclude( "memory" )
+          .addParentClass( "DBus::Object", cppgenerate::AccessModifier::PUBLIC, "path" );
+
+    mainAdapterConstructor
+        .addArgument( cppgenerate::Argument::create()
+          .setType( "std::string" )
+          .setName( "path" )
+          .setDefaultValue( m_rootNode.name() ) );
+
+    createMethod
+        .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+        .setName( "create" )
+        .setStatic( true )
+        .setReturnType( "std::shared_ptr<" + mainClassName + ">" )
+        .addArgument( cppgenerate::Argument::create()
+          .setType( "std::shared_ptr<DBus::Connection>" )
+          .setName( "conn" ) )
+        .addArgument( cppgenerate::Argument::create()
+          .setType( "std::string" )
+          .setName( "path" )
+          .setDefaultValue( m_rootNode.name() ) );
+
+    cppgenerate::CodeBlock constructorBlock;
+    cppgenerate::CodeBlock createBlock;
+    createBlock.addLine(  "std::shared_ptr<" + mainClassName + "> adapter = std::shared_ptr<" + mainClassName + ">( new " + mainClassName + "(" );
+    createBlock.addLine( "path" );
+    for( InterfaceInfo interfaceInfo : m_rootNode.interfaces() ){
+        if( interfaceInfo.name() == DBUS_CXX_PEER_INTERFACE ||
+                interfaceInfo.name() == DBUSCXX_INTERFACE_INTROSPECTABLE ||
+                interfaceInfo.name() == DBUS_CXX_PROPERTIES_INTERFACE ){
+            // This is a standard interface, ignore code generation.
+            continue;
+        }
+
+        // For each of the interfaces, we need to add a new InterfaceAdapter parameter to our create() method.
+        createMethod.addArgument( cppgenerate::Argument::create()
+                                  .setName( "_" + interfaceInfo.cppname() )
+                                  .setType( "std::shared_ptr<" + interfaceInfo.cppname() + ">" ) );
+        createBlock.addLine( ", _" + interfaceInfo.cppname() );
+
+        // For each of the interfaces, add them to us
+        mainAdapterConstructor.addArgument( cppgenerate::Argument::create()
+                                            .setName( "_" + interfaceInfo.cppname() )
+                                            .setType( "std::shared_ptr<" + interfaceInfo.cppname() + ">" ) );
+        constructorBlock.addLine( "this->add_interface( _" + interfaceInfo.cppname() + ");" );
+    }
+    createBlock.addLine( ");" );
+
+    createBlock
+            .addLine( "if( connection ){ " )
+            .addLine( "  if( connection->register_object( adapter, calling_thread ) != DBus::RegistrationStatus::Success ){" )
+            .addLine( "    return std::shared_ptr<" + mainClassName + ">();" )
+            .addLine( "  }" )
+            .addLine( "}" )
+            .addLine( "return new_adaptee;" );
+    createMethod.addCode( createBlock );
+
+    createMethod.addArgument( cppgenerate::Argument::create()
+          .setType( "DBus::ThreadForCalling" )
+          .setName( "calling_thread" )
+          .setDefaultValue( "DBus::ThreadForCalling::DispatcherThread" ) );
+
+    mainAdapterConstructor.addCode( constructorBlock );
+
+    mainAdapterClass.addMethod( createMethod )
+            .addConstructor( mainAdapterConstructor );
+
+    classes.push_back( mainAdapterClass );
+
+
+    for( InterfaceInfo interfaceInfo : m_rootNode.interfaces() ){
+        if( interfaceInfo.name() == DBUS_CXX_PEER_INTERFACE ||
+                interfaceInfo.name() == DBUSCXX_INTERFACE_INTROSPECTABLE ||
+                interfaceInfo.name() == DBUS_CXX_PROPERTIES_INTERFACE ){
+            // This is a standard interface, ignore code generation.
+            continue;
+        }
+
+        cppgenerate::Class interfaceAdapter;
+        cppgenerate::Constructor interfaceConstructor;
+        cppgenerate::Class virtualClass;
+        cppgenerate::Method interfaceCreateMethod;
+        std::string interfaceAdapterName = interfaceInfo.cppname() + "Interface";
+
+        interfaceAdapter.setName( interfaceAdapterName )
+                .addParentClass( "DBus::Interface", cppgenerate::AccessModifier::PUBLIC, "name" )
+                .setNamespace( m_rootNode.genNamespace() )
+                .addSystemInclude( "dbus-cxx.h" )
+                .addSystemInclude( "stdint.h" )
+                .addSystemInclude( "string" )
+                .addSystemInclude( "memory" )
+                .addLocalInclude( interfaceInfo.cppname() + ".h" );
+        interfaceConstructor.addArgument( cppgenerate::Argument::create()
+                                          .setName( "name" )
+                                          .setType( "std::string" ) )
+                .addArgument( cppgenerate::Argument::create()
+                              .setName( "adaptee" )
+                              .setType( interfaceInfo.cppname() + "*" ))
+                .setAccessModifier( cppgenerate::AccessModifier::PRIVATE );
+        interfaceCreateMethod.setName( "create" )
+                .addArgument( cppgenerate::Argument::create()
+                  .setName( "name" )
+                  .setType( "std::string" ) )
+                .addArgument( cppgenerate::Argument::create()
+                  .setName( "adaptee" )
+                  .setType( interfaceInfo.cppname() + "*" ))
+                .setReturnType( "std::shared_ptr<" + interfaceAdapterName + ">" )
+                .setStatic( true )
+                .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+                .addCode( cppgenerate::CodeBlock::create()
+                          .addLine( "return std::shared_ptr<" + interfaceAdapterName + ">( new " + interfaceAdapterName + "( name, adaptee );" ));
+
+        interfaceAdapter.addMethod( interfaceCreateMethod );
+        virtualClass.setName( interfaceInfo.cppname() );
+
+        generateAdapterMethods( &interfaceAdapter, &interfaceConstructor, &virtualClass, interfaceInfo.methods() );
+
+        interfaceAdapter.addConstructor( interfaceConstructor );
+        classes.push_back( interfaceAdapter );
+        classes.push_back( virtualClass );
+    }
+
+    for( cppgenerate::Class c : classes ){
         if( outputToFile ){
             std::string headerFilename = output_directory + c.getName() + std::string( ".h" );
             std::string implFilename = output_directory + c.getName() + std::string( ".cpp" );
@@ -555,18 +688,65 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
         }
     }
 
-    for( cppgenerate::Class c : m_adapteeClasses ){
-        if( outputToFile ){
-            std::string headerFilename = output_directory + c.getName() + std::string( ".h" );
-            std::ofstream header;
+//    for( cppgenerate::Class c : m_adapteeClasses ){
+//        if( outputToFile ){
+//            std::string headerFilename = output_directory + c.getName() + std::string( ".h" );
+//            std::ofstream header;
 
-            header.open( headerFilename );
+//            header.open( headerFilename );
 
-            c.printAsHeaderOnly( header );
-        }else{
-            c.printAsHeaderOnly( std::cout );
+//            c.printAsHeaderOnly( header );
+//        }else{
+//            c.printAsHeaderOnly( std::cout );
+//        }
+//    }
+}
+
+void CodeGenerator::generateAdapterMethods( cppgenerate::Class* cls,
+                                cppgenerate::Constructor* constructor,
+                                cppgenerate::Class* virtualClass,
+                                std::vector<MethodInfo> methods ){
+
+    for( MethodInfo mi : methods ){
+        cppgenerate::Method newVirtualMethod;
+        std::vector<cppgenerate::Argument> args = mi.arguments();
+        std::string dbusSig;
+        /* method adapter type = template args */
+        std::string methodAdapterType;
+        /* methodArguments = arguments to virtual method */
+        std::string methodArguments;
+        bool argumentComma = false;
+        std::string block;
+        std::string sigc_fun = "sigc::mem_fun( adaptee, &";
+
+        sigc_fun += virtualClass->getName() + "::" + mi.name();
+
+        newVirtualMethod.setName( mi.name() )
+                .setReturnType( mi.returnType() )
+                .setPureVirtual( true );
+
+        methodAdapterType += "<" + mi.returnType();
+        methodAdapterType += "(";
+        for( cppgenerate::Argument arg : args ){
+            if( argumentComma ){
+                methodArguments += ",";
+                methodAdapterType += ",";
+            }
+
+            argumentComma = true;
+
+            newVirtualMethod.addArgument( arg );
+            methodArguments += arg.name();
+            methodAdapterType += arg.type();
         }
+        methodAdapterType += ")>";
+
+        constructor->addCode( cppgenerate::CodeBlock::create()
+            .addLine( "this->create_method" + methodAdapterType +
+                      "(\"" + newVirtualMethod.name() + "\", " + sigc_fun + "));" ) );
+        virtualClass->addMethod( newVirtualMethod );
     }
+
 }
 
 std::string CodeGenerator::getTemplateArgsFromSignature( SignatureIterator it ){

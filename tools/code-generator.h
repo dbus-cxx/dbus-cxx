@@ -73,6 +73,7 @@ private:
 
     void generateAdapterMethods( cppgenerate::Class* cls,
                                cppgenerate::Constructor* constructor,
+                                 cppgenerate::Class* virtualClass,
                                std::vector<MethodInfo> methods );
     void generateAdapterSignals( cppgenerate::Class* cls,
                                cppgenerate::Constructor* constructor,
