@@ -122,7 +122,7 @@ void Method::printImplementation( const cppgenerate::Class* parent, std::ostream
     if( !inHeader && parent != nullptr ) parentName = parent->getName();
     if( inHeader && m_isVirtual ) stream << "virtual ";
 
-    printMethodSignature( stream, parentName, false );
+    if( !inHeader && !m_isPureVirtual ) printMethodSignature( stream, parentName, false );
 
     if( !m_isPureVirtual ){
         stream << "{" << std::endl;

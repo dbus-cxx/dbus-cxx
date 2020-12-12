@@ -566,7 +566,7 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
         .setReturnType( "std::shared_ptr<" + mainClassName + ">" )
         .addArgument( cppgenerate::Argument::create()
           .setType( "std::shared_ptr<DBus::Connection>" )
-          .setName( "conn" ) )
+          .setName( "connection" ) )
         .addArgument( cppgenerate::Argument::create()
           .setType( "std::string" )
           .setName( "path" )
@@ -584,19 +584,21 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
             continue;
         }
 
+        std::string interfaceAdapterName = interfaceInfo.cppname() + "Interface";
+
         // For each of the interfaces, we need to add a new InterfaceAdapter parameter to our create() method.
         createMethod.addArgument( cppgenerate::Argument::create()
-                                  .setName( "_" + interfaceInfo.cppname() )
-                                  .setType( "std::shared_ptr<" + interfaceInfo.cppname() + ">" ) );
-        createBlock.addLine( ", _" + interfaceInfo.cppname() );
+                                  .setName( "_" + interfaceAdapterName )
+                                  .setType( "std::shared_ptr<" + interfaceAdapterName + ">" ) );
+        createBlock.addLine( ", _" + interfaceAdapterName );
 
         // For each of the interfaces, add them to us
         mainAdapterConstructor.addArgument( cppgenerate::Argument::create()
-                                            .setName( "_" + interfaceInfo.cppname() )
-                                            .setType( "std::shared_ptr<" + interfaceInfo.cppname() + ">" ) );
-        constructorBlock.addLine( "this->add_interface( _" + interfaceInfo.cppname() + ");" );
+                                            .setName( "_" + interfaceAdapterName )
+                                            .setType( "std::shared_ptr<" + interfaceAdapterName + ">" ) );
+        constructorBlock.addLine( "this->add_interface( _" + interfaceAdapterName + ");" );
     }
-    createBlock.addLine( ");" );
+    createBlock.addLine( ") );" );
 
     createBlock
             .addLine( "if( connection ){ " )
@@ -604,7 +606,7 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
             .addLine( "    return std::shared_ptr<" + mainClassName + ">();" )
             .addLine( "  }" )
             .addLine( "}" )
-            .addLine( "return new_adaptee;" );
+            .addLine( "return adapter;" );
     createMethod.addCode( createBlock );
 
     createMethod.addArgument( cppgenerate::Argument::create()
@@ -616,9 +618,6 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
 
     mainAdapterClass.addMethod( createMethod )
             .addConstructor( mainAdapterConstructor );
-
-    classes.push_back( mainAdapterClass );
-
 
     for( InterfaceInfo interfaceInfo : m_rootNode.interfaces() ){
         if( interfaceInfo.name() == DBUS_CXX_PEER_INTERFACE ||
@@ -633,6 +632,8 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
         cppgenerate::Class virtualClass;
         cppgenerate::Method interfaceCreateMethod;
         std::string interfaceAdapterName = interfaceInfo.cppname() + "Interface";
+
+        mainAdapterClass.addLocalInclude( interfaceAdapterName + ".h" );
 
         interfaceAdapter.setName( interfaceAdapterName )
                 .addParentClass( "DBus::Interface", cppgenerate::AccessModifier::PUBLIC, "name" )
@@ -660,7 +661,7 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
                 .setStatic( true )
                 .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
                 .addCode( cppgenerate::CodeBlock::create()
-                          .addLine( "return std::shared_ptr<" + interfaceAdapterName + ">( new " + interfaceAdapterName + "( name, adaptee );" ));
+                          .addLine( "return std::shared_ptr<" + interfaceAdapterName + ">( new " + interfaceAdapterName + "( name, adaptee ) );" ));
 
         interfaceAdapter.addMethod( interfaceCreateMethod );
         virtualClass.setName( interfaceInfo.cppname() );
@@ -671,6 +672,8 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
         classes.push_back( interfaceAdapter );
         classes.push_back( virtualClass );
     }
+
+    classes.push_back( mainAdapterClass );
 
     for( cppgenerate::Class c : classes ){
         if( outputToFile ){
@@ -687,19 +690,6 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
             c.printAsHeaderOnly( std::cout );
         }
     }
-
-//    for( cppgenerate::Class c : m_adapteeClasses ){
-//        if( outputToFile ){
-//            std::string headerFilename = output_directory + c.getName() + std::string( ".h" );
-//            std::ofstream header;
-
-//            header.open( headerFilename );
-
-//            c.printAsHeaderOnly( header );
-//        }else{
-//            c.printAsHeaderOnly( std::cout );
-//        }
-//    }
 }
 
 void CodeGenerator::generateAdapterMethods( cppgenerate::Class* cls,
@@ -717,12 +707,13 @@ void CodeGenerator::generateAdapterMethods( cppgenerate::Class* cls,
         std::string methodArguments;
         bool argumentComma = false;
         std::string block;
-        std::string sigc_fun = "sigc::mem_fun( adaptee, &";
+        std::string sigc_fun = "sigc::mem_fun( *adaptee, &";
 
         sigc_fun += virtualClass->getName() + "::" + mi.name();
 
         newVirtualMethod.setName( mi.name() )
                 .setReturnType( mi.returnType() )
+                .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
                 .setPureVirtual( true );
 
         methodAdapterType += "<" + mi.returnType();
@@ -745,18 +736,23 @@ void CodeGenerator::generateAdapterMethods( cppgenerate::Class* cls,
             .addLine( "this->create_method" + methodAdapterType +
                       "(\"" + newVirtualMethod.name() + "\", " + sigc_fun + "));" ) );
         virtualClass->addMethod( newVirtualMethod );
+
+        for( std::string include : mi.includes() ){
+            cls->addSystemInclude( include );
+            virtualClass->addSystemInclude( include );
+        }
     }
 
 }
 
-std::string CodeGenerator::getTemplateArgsFromSignature( SignatureIterator it ){
+std::tuple<std::string,std::vector<std::string>> CodeGenerator::getTemplateArgsFromSignature( SignatureIterator it ){
     std::string ret;
+    std::vector<std::string> includes;
 
     do{
         TypeInfo info( it.type() );
         for( std::string include_file : info.includeFilesForType() ){
-            m_adapteeClasses[ m_adapteeClasses.size() - 1 ].addSystemInclude( include_file );
-            m_adapterClasses[ m_adapterClasses.size() - 1 ].addSystemInclude( include_file );
+            includes.push_back( include_file );
         }
 
         if( ret.length() > 0 ){
@@ -774,12 +770,18 @@ std::string CodeGenerator::getTemplateArgsFromSignature( SignatureIterator it ){
 
         if( info.isTemplated() ){
             if( !it.is_dict() ) ret += "<";
-            ret += getTemplateArgsFromSignature( it.recurse() );
+
+            std::tuple<std::string,std::vector<std::string>> tmpRet =
+                    getTemplateArgsFromSignature( it.recurse() );
+            ret += std::get<0>( tmpRet );
+            for( std::string include_file : std::get<1>( tmpRet ) ){
+                includes.push_back( include_file );
+            }
             if( !it.is_dict() ) ret += ">";
         }
     }while( it.next() );
 
-    return ret;
+    return std::tuple<std::string,std::vector<std::string>>( ret, includes );
 }
 
 void CodeGenerator::handle_node_tag( std::map<std::string,std::string>& tagAttrs ){
@@ -1005,9 +1007,9 @@ void CodeGenerator::handle_arg_tag( std::string parentElement, std::map<std::str
     DBus::Signature signature( tagAttrs[ "type" ] );
 
     DBus::Signature::iterator it = signature.begin();
-    std::string typestr = getTemplateArgsFromSignature( it );
+    std::tuple<std::string,std::vector<std::string>> types = getTemplateArgsFromSignature( it );
 
-    arg.setType( typestr );
+    arg.setType( std::get<0>( types ) );
     if( tagAttrs[ "name" ].length() == 0 ){
         char buffer[10];
         snprintf( buffer, 10, "arg%d", m_argNum );
@@ -1017,18 +1019,14 @@ void CodeGenerator::handle_arg_tag( std::string parentElement, std::map<std::str
     }
 
     if( tagAttrs[ "direction" ] == "out" && parentElement == "method" ){
-//        m_currentProxyMethod.setReturnType( typestr );
-//        m_currentAdapteeMethod.setReturnType( typestr );
-//        if( tagAttrs[ "name" ].length() ){
-//            m_returnName = tagAttrs[ "name" ];
-//        }
-        m_currentMethodInfo.setReturnType( typestr );
+        m_currentMethodInfo.setReturnType( std::get<0>( types ) );
+        m_currentMethodInfo.addIncludes( std::get<1>( types ) );
     }else if( parentElement == "method" ){
         m_currentMethodInfo.addArgument( arg );
-//        m_currentProxyMethod.addArgument( arg );
-//        m_currentAdapteeMethod.addArgument( arg );
+        m_currentMethodInfo.addIncludes( std::get<1>( types ) );
     }else if( parentElement == "signal" ){
         m_currentSignal.addArgument( arg );
+        m_currentSignal.addIncludes( std::get<1>( types ) );
     }
 
     m_argNum++;
@@ -1073,10 +1071,10 @@ void CodeGenerator::handle_property_tag( std::map<std::string, std::string> &tag
     DBus::Signature signature( propertyType );
 
     DBus::Signature::iterator it = signature.begin();
-    std::string typestr = getTemplateArgsFromSignature( it );
+    std::tuple<std::string,std::vector<std::string>> typestr = getTemplateArgsFromSignature( it );
     cppgenerate::Method proxyGetMethod = cppgenerate::Method::create()
             .setName( propertyName )
-            .setReturnType( typestr )
+            .setReturnType( std::get<0>( typestr ) )
             .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
             .addCode( cppgenerate::CodeBlock::create()
                       .addLine( "return " + propertyVariableName + "->value();" )
@@ -1085,7 +1083,7 @@ void CodeGenerator::handle_property_tag( std::map<std::string, std::string> &tag
             .setName( "set_" + propertyName )
             .addArgument( cppgenerate::Argument::create()
                           .setName( propertyName + "_arg" )
-                          .setType( typestr )
+                          .setType( std::get<0>( typestr ) )
                           )
             .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
             .addCode( cppgenerate::CodeBlock::create()
@@ -1099,7 +1097,7 @@ void CodeGenerator::handle_property_tag( std::map<std::string, std::string> &tag
         accessAsEnum = "PropertyAccess::WriteOnly";
     }
 
-    std::string propertyProxyType = "std::shared_ptr<DBus::PropertyProxy<" + typestr + ">>";
+    std::string propertyProxyType = ""; //"std::shared_ptr<DBus::PropertyProxy<" + typestr + ">>";
 //    m_currentProxyConstructor.addCode( cppgenerate::CodeBlock::create()
 //                                       .addLine( propertyVariableName + " = this->create_property<" + typestr + ">( " +
 //                                                 "\"" + m_currentInterface + "\", " +

@@ -38,9 +38,14 @@ public:
 
 	std::string name() const;
 
+    void addIncludes( std::vector<std::string> includes );
+
+    std::vector<std::string> includes() const;
+
 private:
 	std::string m_name;
 	std::vector<cppgenerate::Argument> m_arguments;
+    std::vector<std::string> m_includes;
 };
 
 #endif

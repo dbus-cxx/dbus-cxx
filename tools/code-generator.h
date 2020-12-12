@@ -59,7 +59,7 @@ private:
     static void start_element_handler(void* user_data, const XML_Char* name, const XML_Char** attrs );
     static void end_element_handler( void* userData, const XML_Char* name );
 
-    std::string getTemplateArgsFromSignature( SignatureIterator iter );
+    std::tuple<std::string,std::vector<std::string>> getTemplateArgsFromSignature( SignatureIterator iter );
 
     void generateProxyMethods( cppgenerate::Class* cls,
                                cppgenerate::Constructor* constructor,

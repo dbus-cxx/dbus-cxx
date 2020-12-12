@@ -35,3 +35,13 @@ std::vector<cppgenerate::Argument> SignalInfo::arguments() const {
 std::string SignalInfo::name() const {
 	return m_name;
 }
+
+void SignalInfo::addIncludes( std::vector<std::string> includes ){
+    for( std::string include : includes ){
+        m_includes.push_back( include );
+    }
+}
+
+std::vector<std::string> SignalInfo::includes() const{
+    return m_includes;
+}

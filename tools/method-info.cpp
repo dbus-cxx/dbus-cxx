@@ -52,3 +52,13 @@ std::string MethodInfo::returnArgName() const{
 void MethodInfo::setReturnArgName( std::string name ){
     m_returnArgName = name;
 }
+
+void MethodInfo::addIncludes( std::vector<std::string> includes ){
+    for( std::string include : includes ){
+        m_includes.push_back( include );
+    }
+}
+
+std::vector<std::string> MethodInfo::includes() const{
+    return m_includes;
+}
