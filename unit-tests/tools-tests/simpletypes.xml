@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <node cppname="SimpleTypes">
-    <interface name="test.interface">
+    <interface name="test.simpletype.interface">
         <method name="typesMethod">
             <arg type="i" name="first" direction="in"/>
             <arg type="d" name="second" direction="in"/>

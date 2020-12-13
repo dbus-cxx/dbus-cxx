@@ -69,6 +69,10 @@ std::vector<std::string> TypeInfo::includeFilesForType() const {
         ret.push_back( "tuple" );
         break;
 
+    case DataType::VARIANT:
+        ret.push_back( "dbus-cxx/variant.h" );
+        break;
+
     default:
         break;
     }

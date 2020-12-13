@@ -316,7 +316,8 @@ void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& 
         }
 
         cppgenerate::Class newClass;
-        newClass.setName( i.cppname() )
+        std::string proxyClassName = i.cppname() + "Proxy";
+        newClass.setName( proxyClassName )
                 .addSystemInclude( "dbus-cxx.h" )
                 .addSystemInclude( "stdint.h" )
                 .addSystemInclude( "string" )
@@ -327,9 +328,9 @@ void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& 
                             .setName( "create" )
                             .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
                             .setStatic( true )
-                            .setReturnType( "std::shared_ptr<" + i.cppname() + ">" )
+                            .setReturnType( "std::shared_ptr<" + proxyClassName + ">" )
                             .addCode( cppgenerate::CodeBlock::create()
-                                      .addLine( "return std::shared_ptr<" + i.cppname() + ">( new " + i.cppname() + "( name ));") )
+                                      .addLine( "return std::shared_ptr<" + proxyClassName + ">( new " + proxyClassName + "( name ));") )
                             .addArgument( cppgenerate::Argument::create()
                                           .setName( "name" )
                                           .setType( "std::string" )
@@ -352,18 +353,18 @@ void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& 
         // Add the new class to our master proxy class
         mainProxyClass.addMemberVariable( cppgenerate::MemberVariable::create()
                                           .setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
-                                          .setName( "m_" + i.cppname() )
-                                          .setType( "std::shared_ptr<" + i.cppname() + ">" ) )
+                                          .setName( "m_" + proxyClassName )
+                                          .setType( "std::shared_ptr<" + proxyClassName + ">" ) )
                 .addLocalInclude( newClass.getName() + ".h" )
                 .addMethod( cppgenerate::Method::create()
                             .setName( "get" + i.cppname() + "Interface" )
                             .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
-                            .setReturnType( "std::shared_ptr<" + i.cppname() + ">" )
+                            .setReturnType( "std::shared_ptr<" + proxyClassName + ">" )
                             .addCode( cppgenerate::CodeBlock::create()
-                                      .addLine( "return m_" + i.cppname() + ";" ))
+                                      .addLine( "return m_" + proxyClassName + ";" ))
                             );
         mainProxyConstructor.addCode( cppgenerate::CodeBlock::create()
-                                      .addLine( "m_" + i.cppname() + " = " + i.cppname() + "::create( \"" + i.name() + "\" );") );
+                                      .addLine( "m_" + proxyClassName + " = " + proxyClassName + "::create( \"" + proxyClassName + "\" );") );
 
         proxyClasses.push_back( newClass );
     }
@@ -382,6 +383,9 @@ void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& 
             impl.open( implFilename );
 
             c.print( header, impl );
+
+            std::cerr << "Generated proxy file: " << headerFilename << "\n";
+            std::cerr << "Generated proxy file: " << implFilename << "\n";
         }else{
             c.printAsHeaderOnly( std::cout );
         }
@@ -566,11 +570,7 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
         .setReturnType( "std::shared_ptr<" + mainClassName + ">" )
         .addArgument( cppgenerate::Argument::create()
           .setType( "std::shared_ptr<DBus::Connection>" )
-          .setName( "connection" ) )
-        .addArgument( cppgenerate::Argument::create()
-          .setType( "std::string" )
-          .setName( "path" )
-          .setDefaultValue( m_rootNode.name() ) );
+          .setName( "connection" ) );
 
     cppgenerate::CodeBlock constructorBlock;
     cppgenerate::CodeBlock createBlock;
@@ -609,6 +609,10 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
             .addLine( "return adapter;" );
     createMethod.addCode( createBlock );
 
+    createMethod.addArgument( cppgenerate::Argument::create()
+          .setType( "std::string" )
+          .setName( "path" )
+          .setDefaultValue( m_rootNode.name() ) );
     createMethod.addArgument( cppgenerate::Argument::create()
           .setType( "DBus::ThreadForCalling" )
           .setName( "calling_thread" )
@@ -686,6 +690,8 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
             impl.open( implFilename );
 
             c.print( header, impl );
+            std::cerr << "Generated adapter file: " << headerFilename << "\n";
+            std::cerr << "Generated adapter file: " << implFilename << "\n";
         }else{
             c.printAsHeaderOnly( std::cout );
         }
@@ -822,10 +828,10 @@ void CodeGenerator::handle_node_tag( std::map<std::string,std::string>& tagAttrs
         newAdapterClass.setName( cppname + "Adapter" );
         newAdapteeClass.setName( cppname + "Adaptee" );
 
-        m_rootNode = NodeInfo();
+        m_rootNode = NodeInfo( path );
         m_rootNode.setCppname( cppname );
     }else{
-        m_rootNode = NodeInfo();
+        m_rootNode = NodeInfo( path );
         m_rootNode.setCppname( "NONAME" );
         newclass.setName( "NONAME_Proxy" );
         newAdapterClass.setName( "NONAME_Adapter" );

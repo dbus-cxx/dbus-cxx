@@ -18,7 +18,7 @@
  ***************************************************************************/
 #include "structtypesAdapter.h"
 
-class MyStructType : public structtypesAdaptee {
+class MyStructType : public test_struct_interface {
 public:
     void structMethod( std::tuple<int, int> struct1, std::tuple<int, std::tuple<int, int>> struct2 ) {
     }
@@ -35,5 +35,6 @@ int main() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
     MyStructType myStruct;
-    std::shared_ptr<structtypesAdapter> ptr = structtypesAdapter::create( &myStruct, "/path" );
+    std::shared_ptr<test_struct_interfaceInterface> interfaceptr = test_struct_interfaceInterface::create("test_interface", &myStruct);
+    std::shared_ptr<structtypesAdapter> ptr = structtypesAdapter::create( conn, interfaceptr, "/path" );
 }
