@@ -35,6 +35,6 @@ int main() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
     MyStructType myStruct;
-    std::shared_ptr<test_struct_interfaceInterface> interfaceptr = test_struct_interfaceInterface::create("test_interface", &myStruct);
+    std::shared_ptr<test_struct_interfaceInterface> interfaceptr = test_struct_interfaceInterface::create( &myStruct );
     std::shared_ptr<structtypesAdapter> ptr = structtypesAdapter::create( conn, interfaceptr, "/path" );
 }

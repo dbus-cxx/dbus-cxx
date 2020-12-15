@@ -226,6 +226,8 @@ void CodeGenerator::end_element( std::string tagName ){
 //                      "( \"" + m_currentInterface + "\", \"" +
 //                      m_currentSignal.name() + "\", signalCallingThread );" ) );
 
+        m_currentInterface.addSignalInfo( m_currentSignal );
+
     }
 }
 
@@ -364,7 +366,7 @@ void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& 
                                       .addLine( "return m_" + proxyClassName + ";" ))
                             );
         mainProxyConstructor.addCode( cppgenerate::CodeBlock::create()
-                                      .addLine( "m_" + proxyClassName + " = " + proxyClassName + "::create( \"" + proxyClassName + "\" );") );
+                                      .addLine( "m_" + proxyClassName + " = " + proxyClassName + "::create( \"" + i.name() + "\" );") );
 
         proxyClasses.push_back( newClass );
     }
@@ -496,7 +498,7 @@ void CodeGenerator::generateProxySignals(cppgenerate::Class *cls, cppgenerate::C
         constructor->addCode( cppgenerate::CodeBlock::create()
             .addLine( proxyMemberVar.name() +
                       " = this->create_signal" + templateType +
-                      "( \"" + si.name() + "\", signalCallingThread );" ) );
+                      "( \"" + si.name() + "\" );" ) );
 
     }
 }
@@ -557,12 +559,6 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
           .addSystemInclude( "memory" )
           .addParentClass( "DBus::Object", cppgenerate::AccessModifier::PUBLIC, "path" );
 
-    mainAdapterConstructor
-        .addArgument( cppgenerate::Argument::create()
-          .setType( "std::string" )
-          .setName( "path" )
-          .setDefaultValue( m_rootNode.name() ) );
-
     createMethod
         .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
         .setName( "create" )
@@ -574,8 +570,8 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
 
     cppgenerate::CodeBlock constructorBlock;
     cppgenerate::CodeBlock createBlock;
+    bool comma = false;
     createBlock.addLine(  "std::shared_ptr<" + mainClassName + "> adapter = std::shared_ptr<" + mainClassName + ">( new " + mainClassName + "(" );
-    createBlock.addLine( "path" );
     for( InterfaceInfo interfaceInfo : m_rootNode.interfaces() ){
         if( interfaceInfo.name() == DBUS_CXX_PEER_INTERFACE ||
                 interfaceInfo.name() == DBUSCXX_INTERFACE_INTROSPECTABLE ||
@@ -590,7 +586,13 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
         createMethod.addArgument( cppgenerate::Argument::create()
                                   .setName( "_" + interfaceAdapterName )
                                   .setType( "std::shared_ptr<" + interfaceAdapterName + ">" ) );
-        createBlock.addLine( ", _" + interfaceAdapterName );
+        if( comma ){
+            createBlock.addLine( ", _" + interfaceAdapterName );
+        }else{
+            createBlock.addLine( " _" + interfaceAdapterName );
+            comma = true;
+        }
+
 
         // For each of the interfaces, add them to us
         mainAdapterConstructor.addArgument( cppgenerate::Argument::create()
@@ -598,7 +600,12 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
                                             .setType( "std::shared_ptr<" + interfaceAdapterName + ">" ) );
         constructorBlock.addLine( "this->add_interface( _" + interfaceAdapterName + ");" );
     }
-    createBlock.addLine( ") );" );
+
+    if( comma ){
+        createBlock.addLine( ", path ) );" );
+    }else{
+        createBlock.addLine( " path ) );" );
+    }
 
     createBlock
             .addLine( "if( connection ){ " )
@@ -619,6 +626,11 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
           .setDefaultValue( "DBus::ThreadForCalling::DispatcherThread" ) );
 
     mainAdapterConstructor.addCode( constructorBlock );
+    mainAdapterConstructor
+        .addArgument( cppgenerate::Argument::create()
+          .setType( "std::string" )
+          .setName( "path" )
+          .setDefaultValue( m_rootNode.name() ) );
 
     mainAdapterClass.addMethod( createMethod )
             .addConstructor( mainAdapterConstructor );
@@ -648,29 +660,31 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
                 .addSystemInclude( "memory" )
                 .addLocalInclude( interfaceInfo.cppname() + ".h" );
         interfaceConstructor.addArgument( cppgenerate::Argument::create()
-                                          .setName( "name" )
-                                          .setType( "std::string" ) )
-                .addArgument( cppgenerate::Argument::create()
                               .setName( "adaptee" )
                               .setType( interfaceInfo.cppname() + "*" ))
+                .addArgument( cppgenerate::Argument::create()
+                              .setName( "name" )
+                              .setType( "std::string" ) )
                 .setAccessModifier( cppgenerate::AccessModifier::PRIVATE );
         interfaceCreateMethod.setName( "create" )
                 .addArgument( cppgenerate::Argument::create()
-                  .setName( "name" )
-                  .setType( "std::string" ) )
-                .addArgument( cppgenerate::Argument::create()
                   .setName( "adaptee" )
                   .setType( interfaceInfo.cppname() + "*" ))
+                .addArgument( cppgenerate::Argument::create()
+                  .setName( "name" )
+                  .setType( "std::string" )
+                  .setDefaultValue( "\"" + interfaceInfo.name() + "\"" ))
                 .setReturnType( "std::shared_ptr<" + interfaceAdapterName + ">" )
                 .setStatic( true )
                 .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
                 .addCode( cppgenerate::CodeBlock::create()
-                          .addLine( "return std::shared_ptr<" + interfaceAdapterName + ">( new " + interfaceAdapterName + "( name, adaptee ) );" ));
+                          .addLine( "return std::shared_ptr<" + interfaceAdapterName + ">( new " + interfaceAdapterName + "( adaptee, name ) );" ));
 
         interfaceAdapter.addMethod( interfaceCreateMethod );
         virtualClass.setName( interfaceInfo.cppname() );
 
         generateAdapterMethods( &interfaceAdapter, &interfaceConstructor, &virtualClass, interfaceInfo.methods() );
+        generateAdapterSignals( &interfaceAdapter, &interfaceConstructor, interfaceInfo.signals() );
 
         interfaceAdapter.addConstructor( interfaceConstructor );
         classes.push_back( interfaceAdapter );
@@ -747,6 +761,61 @@ void CodeGenerator::generateAdapterMethods( cppgenerate::Class* cls,
             cls->addSystemInclude( include );
             virtualClass->addSystemInclude( include );
         }
+    }
+
+}
+
+void CodeGenerator::generateAdapterSignals( cppgenerate::Class* cls,
+                           cppgenerate::Constructor* constructor,
+                             std::vector<SignalInfo> signals ){
+    for( SignalInfo si : signals ){
+        cppgenerate::MemberVariable adapterMemberVar;
+        cppgenerate::Method getSignalMethod;
+        cppgenerate::Method emitSignalMethod;
+        std::vector<cppgenerate::Argument> args = si.arguments();
+        std::string templateType;
+        bool argumentComma = false;
+        std::string signalEmitCode;
+
+        templateType += "<void(";
+        signalEmitCode = "(*m_signal_" + si.name() + ")(";
+        for( cppgenerate::Argument arg : args ){
+            emitSignalMethod.addArgument( arg );
+
+            if( argumentComma ){
+                templateType += ",";
+                signalEmitCode += ",";
+            }
+
+            templateType += arg.type();
+            signalEmitCode += arg.name();
+            argumentComma = true;
+        }
+        templateType += ")>";
+        signalEmitCode += ");";
+
+        adapterMemberVar.setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
+                 .setName( "m_signal_" + si.name() )
+                 .setType( "std::shared_ptr<DBus::Signal" + templateType + ">" );
+
+        getSignalMethod = cppgenerate::Method::create()
+            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+            .setReturnType( "std::shared_ptr<DBus::Signal" + templateType + ">" )
+            .setName( "signal_" + si.name() )
+            .setCode( cppgenerate::CodeBlock::create().addLine( "return m_signal_" + si.name() + ";" ) );
+
+        emitSignalMethod.setName( si.name() )
+            .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
+            .setCode( cppgenerate::CodeBlock::create().addLine( signalEmitCode ) );
+
+        cls->addMemberVariable( adapterMemberVar )
+                .addMethod( getSignalMethod )
+                .addMethod( emitSignalMethod );
+
+        constructor->addCode( cppgenerate::CodeBlock::create()
+                              .addLine( "m_signal_" + si.name()
+                                        + " = create_signal" + templateType + "( \"" + si.name() + "\" );" ) );
+
     }
 
 }

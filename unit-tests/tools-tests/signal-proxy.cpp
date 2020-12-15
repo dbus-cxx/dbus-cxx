@@ -26,6 +26,6 @@ int main( int argc, char** argv ) {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
     std::shared_ptr<signalNameProxy> proxy = signalNameProxy::create( conn );
-    std::shared_ptr<DBus::SignalProxy<void(std::string)>> signalProxy = proxy->signal_exampleSignal();
+    std::shared_ptr<DBus::SignalProxy<void(std::string)>> signalProxy = proxy->getsignal_name_interfaceInterface()->signal_exampleSignal();
     signalProxy->connect( sigc::ptr_fun( dosomething ) );
 }

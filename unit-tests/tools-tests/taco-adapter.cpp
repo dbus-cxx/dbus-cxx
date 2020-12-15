@@ -12,6 +12,6 @@ int main() {
 
     TacoAdaptee taco;
     std::shared_ptr<com_amazon_josharenson_TacoOrdererInterfaceInterface> taco_interface =
-            com_amazon_josharenson_TacoOrdererInterfaceInterface::create( "taco.interface", &taco );
-    std::shared_ptr<DbusTacoAdapter> ptr = DbusTacoAdapter::create( conn, taco_interface, "/path" );
+            com_amazon_josharenson_TacoOrdererInterfaceInterface::create( &taco );
+    std::shared_ptr<DbusTacoAdapter> ptr = DbusTacoAdapter::create( conn, taco_interface );
 }
