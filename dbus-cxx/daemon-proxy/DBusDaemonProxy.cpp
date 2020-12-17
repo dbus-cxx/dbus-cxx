@@ -22,13 +22,13 @@ DBusDaemonProxy::DBusDaemonProxy( std::shared_ptr<DBus::Connection> conn, std::s
     m_method_ReloadConfig = this->create_method<void()>( "org.freedesktop.DBus", "ReloadConfig" );
     m_method_GetId = this->create_method<std::string()>( "org.freedesktop.DBus", "GetId" );
     m_method_GetConnectionCredentials = this->create_method<std::map<std::string, DBus::Variant>( std::string )>( "org.freedesktop.DBus", "GetConnectionCredentials" );
-    m_signalproxy_NameOwnerChanged = this->create_signal<void(std::string, std::string, std::string)>( "org.freedesktop.DBus", "NameOwnerChanged", signalCallingThread );
-    m_signalproxy_NameLost = this->create_signal<void(std::string)>( "org.freedesktop.DBus", "NameLost", signalCallingThread );
-    m_signalproxy_NameAcquired = this->create_signal<void(std::string)>( "org.freedesktop.DBus", "NameAcquired", signalCallingThread );
+    m_signalproxy_NameOwnerChanged = this->create_signal<void(std::string, std::string, std::string)>( "org.freedesktop.DBus", "NameOwnerChanged" );
+    m_signalproxy_NameLost = this->create_signal<void(std::string)>( "org.freedesktop.DBus", "NameLost" );
+    m_signalproxy_NameAcquired = this->create_signal<void(std::string)>( "org.freedesktop.DBus", "NameAcquired" );
     m_method_Get = this->create_method<DBus::Variant( std::string, std::string )>( "org.freedesktop.DBus.Properties", "Get" );
     m_method_GetAll = this->create_method<std::map<std::string, DBus::Variant>( std::string )>( "org.freedesktop.DBus.Properties", "GetAll" );
     m_method_Set = this->create_method<void( std::string, std::string, DBus::Variant )>( "org.freedesktop.DBus.Properties", "Set" );
-    m_signalproxy_PropertiesChanged = this->create_signal<void(std::string, std::map<std::string, DBus::Variant>, std::vector<std::string>)>( "org.freedesktop.DBus.Properties", "PropertiesChanged", signalCallingThread );
+    m_signalproxy_PropertiesChanged = this->create_signal<void(std::string, std::map<std::string, DBus::Variant>, std::vector<std::string>)>( "org.freedesktop.DBus.Properties", "PropertiesChanged" );
     m_method_Introspect = this->create_method<std::string()>( "org.freedesktop.DBus.Introspectable", "Introspect" );
     m_method_BecomeMonitor = this->create_method<void( std::vector<std::string>, uint32_t )>( "org.freedesktop.DBus.Monitoring", "BecomeMonitor" );
     m_method_GetStats = this->create_method<std::map<std::string, DBus::Variant>()>( "org.freedesktop.DBus.Debug.Stats", "GetStats" );

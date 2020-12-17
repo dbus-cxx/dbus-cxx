@@ -33,7 +33,7 @@ int main()
   std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 
   std::shared_ptr<DBus::SignalProxy<void(std::vector<double>) >> signal =
-      connection->create_signal_proxy<void(std::vector<double>) >(
+      connection->create_free_signal_proxy<void(std::vector<double>) >(
           DBus::MatchRuleBuilder::create()
             .setPath("/test/signal/Object")
             .setInterface("test.signal.Type")

@@ -44,6 +44,7 @@
 #include <poll.h>
 #include "utility.h"
 #include "daemon-proxy/DBusDaemonProxy.h"
+#include "interfaceproxy.h"
 
 #include <cstring>
 #include <fcntl.h>
@@ -91,6 +92,16 @@ struct PathHandlingEntry {
     std::thread::id handlingThread;
 };
 
+struct ObjectProxyThreadInfo {
+    std::shared_ptr<ObjectProxy> handler;
+    std::thread::id handlingThread;
+};
+
+struct FreeSignalThreadInfo {
+    std::shared_ptr<SignalProxyBase> handler;
+    std::thread::id handlingThread;
+};
+
 class Connection::priv_data {
 public:
     priv_data() :
@@ -116,9 +127,10 @@ public:
     std::map<std::thread::id, std::weak_ptr<ThreadDispatcher>> m_threadDispatchers;
     std::shared_ptr<DBusDaemonProxy> m_daemonProxy;
     sigc::signal<void()> m_needsDispatching;
-    std::mutex m_proxySignalsLock;
-    std::vector<std::shared_ptr<SignalProxyBase>> m_proxySignals;
-    std::vector<std::shared_ptr<SignalProxyBase>> m_allProxySignals;
+    std::mutex m_freeProxySignalsLock;
+    std::vector<FreeSignalThreadInfo> m_freeProxySignals;
+    std::mutex m_objectProxiesLock;
+    std::vector<ObjectProxyThreadInfo> m_objectProxies;
 
 
     FilterSignal m_filter_signal;
@@ -683,11 +695,33 @@ void Connection::process_call_message( std::shared_ptr<const CallMessage> callms
 
 void Connection::process_signal_message( std::shared_ptr<const SignalMessage> msg ) {
     {
-        // See if any of our handlers can handle this
-        std::unique_lock<std::mutex> lock( m_priv->m_proxySignalsLock );
+        // See if any of our free handlers can handle this
+        std::unique_lock<std::mutex> lock( m_priv->m_freeProxySignalsLock );
 
-        for( std::shared_ptr<SignalProxyBase> handler : m_priv->m_proxySignals ) {
-            handler->handle_signal( msg );
+        for( FreeSignalThreadInfo& sigInfo : m_priv->m_freeProxySignals ) {
+            if( sigInfo.handlingThread != m_priv->m_dispatchingThread ){
+                continue;
+            }
+
+            sigInfo.handler->handle_signal( msg );
+        }
+    }
+
+    {
+        // Tell all of our normal ObjectProxy classes to handle it as well
+        std::unique_lock lock( m_priv->m_objectProxiesLock );
+        std::vector<std::shared_ptr<SignalProxyBase>> proxies;
+
+        for( ObjectProxyThreadInfo& thrInfo : m_priv->m_objectProxies ){
+            if( thrInfo.handlingThread != m_priv->m_dispatchingThread ){
+                continue;
+            }
+
+            for( std::pair<std::string,std::shared_ptr<InterfaceProxy>> iface : thrInfo.handler->interfaces() ){
+                for( std::shared_ptr<SignalProxyBase> signal : iface.second->signals() ){
+                    signal->handle_signal( msg );
+                }
+            }
         }
     }
 
@@ -830,13 +864,15 @@ bool Connection::change_object_calling_thread( std::shared_ptr<ObjectPathHandler
     return true;
 }
 
-std::shared_ptr<ObjectProxy> Connection::create_object_proxy( const std::string& path ) {
+std::shared_ptr<ObjectProxy> Connection::create_object_proxy( const std::string& path, ThreadForCalling calling ) {
     std::shared_ptr<ObjectProxy> object = ObjectProxy::create( shared_from_this(), path );
+    register_object_proxy( object, calling );
     return object;
 }
 
-std::shared_ptr<ObjectProxy> Connection::create_object_proxy( const std::string& destination, const std::string& path ) {
+std::shared_ptr<ObjectProxy> Connection::create_object_proxy( const std::string& destination, const std::string& path, ThreadForCalling calling ) {
     std::shared_ptr<ObjectProxy> object = ObjectProxy::create( shared_from_this(), destination, path );
+    register_object_proxy( object, calling );
     return object;
 }
 
@@ -853,23 +889,24 @@ bool Connection::unregister_object( const std::string& path ) {
     return false;
 }
 
-std::shared_ptr<SignalProxyBase> Connection::add_signal_proxy( std::shared_ptr<SignalProxyBase> signal, ThreadForCalling calling ) {
+std::shared_ptr<SignalProxyBase> Connection::add_free_signal_proxy( std::shared_ptr<SignalProxyBase> signal, ThreadForCalling calling ) {
     if( !signal ) { return std::shared_ptr<SignalProxyBase>(); }
 
     SIMPLELOGGER_DEBUG( LOGGER_NAME, "Adding signal " << signal->interface_name() << ":" << signal->name() );
 
-    if( signal->connection() ) { signal->connection()->remove_signal_proxy( signal ); }
+    if( signal->connection() ) { signal->connection()->remove_free_signal_proxy( signal ); }
 
-    m_priv->m_allProxySignals.push_back( signal );
+    FreeSignalThreadInfo signalThreadinfo;
+    signalThreadinfo.handler = signal;
+    signalThreadinfo.handlingThread = thread_id_from_calling( calling );
 
-    if( calling == ThreadForCalling::DispatcherThread ||
-        ( calling == ThreadForCalling::CurrentThread &&
-            std::this_thread::get_id() == m_priv->m_dispatchingThread ) ) {
-        // We can call this from the dispatch thread, or we want it to be called from
-        // the current thread(which happens to be the dispatch thread)
-        std::unique_lock<std::mutex> lock( m_priv->m_proxySignalsLock );
-        m_priv->m_proxySignals.push_back( signal );
-    } else {
+    {
+        std::unique_lock<std::mutex> lock( m_priv->m_freeProxySignalsLock );
+
+        m_priv->m_freeProxySignals.push_back( signalThreadinfo );
+    }
+
+    if( signalThreadinfo.handlingThread != m_priv->m_dispatchingThread ) {
         // We need to give this signal to the appropriate ThreadDispatcher to handle
         std::unique_lock<std::mutex> lock( m_priv->m_threadDispatcherLock );
         std::map<std::thread::id, std::weak_ptr<ThreadDispatcher>>::iterator iter =
@@ -896,7 +933,7 @@ std::shared_ptr<SignalProxyBase> Connection::add_signal_proxy( std::shared_ptr<S
     return signal;
 }
 
-bool Connection::remove_signal_proxy( std::shared_ptr<SignalProxyBase> signal ) {
+bool Connection::remove_free_signal_proxy( std::shared_ptr<SignalProxyBase> signal ) {
     if( !signal ) { return false; }
 
     SIMPLELOGGER_DEBUG( LOGGER_NAME, "remove_signal_proxy with match rule " << signal->match_rule() );
@@ -906,19 +943,20 @@ bool Connection::remove_signal_proxy( std::shared_ptr<SignalProxyBase> signal ) 
     bool removed = false;
 
     {
-        std::unique_lock<std::mutex> lock( m_priv->m_proxySignalsLock );
-        std::vector<std::shared_ptr<SignalProxyBase>>::iterator it =
-                std::find( m_priv->m_proxySignals.begin(), m_priv->m_proxySignals.end(), signal );
+        std::unique_lock<std::mutex> lock( m_priv->m_freeProxySignalsLock );
 
-        if( it != m_priv->m_proxySignals.end() ) {
-            m_priv->m_proxySignals.erase( it );
-            removed = true;
+        std::vector<FreeSignalThreadInfo>::iterator it;
+        for( it = m_priv->m_freeProxySignals.begin();
+             it != m_priv->m_freeProxySignals.end();
+             it++ ){
+            if( it->handler == signal ){
+                break;
+            }
         }
 
-        it = std::find( m_priv->m_allProxySignals.begin(), m_priv->m_allProxySignals.end(), signal );
-
-        if( it != m_priv->m_allProxySignals.end() ) {
-            m_priv->m_allProxySignals.erase( it );
+        if( it != m_priv->m_freeProxySignals.end() ) {
+            m_priv->m_freeProxySignals.erase( it );
+            removed = true;
         }
     }
 
@@ -937,14 +975,21 @@ bool Connection::remove_signal_proxy( std::shared_ptr<SignalProxyBase> signal ) 
     return removed;
 }
 
-const std::vector<std::shared_ptr<SignalProxyBase>>& Connection::get_signal_proxies() {
-    return m_priv->m_proxySignals;
+const std::vector<std::shared_ptr<SignalProxyBase>> Connection::get_free_signal_proxies() {
+    std::unique_lock lock( m_priv->m_freeProxySignalsLock );
+    std::vector<std::shared_ptr<SignalProxyBase>> retval;
+
+    for( FreeSignalThreadInfo thrInfo : m_priv->m_freeProxySignals ){
+        retval.push_back( thrInfo.handler );
+    }
+
+    return retval;
 }
 
-std::vector<std::shared_ptr<SignalProxyBase>> Connection::get_signal_proxies( const std::string& interface_name ) {
+std::vector<std::shared_ptr<SignalProxyBase>> Connection::get_free_signal_proxies( const std::string& interface_name ) {
     std::vector<std::shared_ptr<SignalProxyBase>> ret;
 
-    for( std::shared_ptr<SignalProxyBase> base : m_priv->m_allProxySignals ) {
+    for( std::shared_ptr<SignalProxyBase> base : get_free_signal_proxies() ) {
         if( base->interface_name().compare( interface_name ) == 0 ) {
             ret.push_back( base );
         }
@@ -953,10 +998,10 @@ std::vector<std::shared_ptr<SignalProxyBase>> Connection::get_signal_proxies( co
     return ret;
 }
 
-std::vector<std::shared_ptr<SignalProxyBase>> Connection::get_signal_proxies( const std::string& interface_name, const std::string& member ) {
+std::vector<std::shared_ptr<SignalProxyBase>> Connection::get_free_signal_proxies( const std::string& interface_name, const std::string& member ) {
     std::vector<std::shared_ptr<SignalProxyBase>> ret;
 
-    for( std::shared_ptr<SignalProxyBase> base : m_priv->m_allProxySignals ) {
+    for( std::shared_ptr<SignalProxyBase> base : get_free_signal_proxies() ) {
         if( base->interface_name().compare( interface_name ) == 0 &&
             base->name().compare( member ) == 0 ) {
             ret.push_back( base );
@@ -1036,6 +1081,45 @@ void Connection::remove_invalid_threaddispatchers_and_associated_objects() {
                 it++;
             }
         }
+    }
+}
+
+bool Connection::change_object_proxy_calling_thread( std::shared_ptr<ObjectProxy> object,
+                                         ThreadForCalling calling ){
+    std::unique_lock lock( m_priv->m_objectProxiesLock );
+
+    for( ObjectProxyThreadInfo& thrInfo : m_priv->m_objectProxies ){
+        if( thrInfo.handler == object ){
+            if( calling == ThreadForCalling::CurrentThread ){
+                thrInfo.handlingThread = std::this_thread::get_id();
+            }else{
+                thrInfo.handlingThread = m_priv->m_dispatchingThread;
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Connection::register_object_proxy( std::shared_ptr<ObjectProxy> obj, ThreadForCalling calling ){
+    std::unique_lock lock( m_priv->m_objectProxiesLock );
+
+    ObjectProxyThreadInfo newInfo;
+    newInfo.handler = obj;
+    newInfo.handlingThread = thread_id_from_calling( calling );
+
+    m_priv->m_objectProxies.push_back( newInfo );
+
+    return true;
+}
+
+std::thread::id Connection::thread_id_from_calling( ThreadForCalling calling ){
+    if( calling == ThreadForCalling::CurrentThread ){
+        return std::this_thread::get_id();
+    }else{
+        return m_priv->m_dispatchingThread;
     }
 }
 

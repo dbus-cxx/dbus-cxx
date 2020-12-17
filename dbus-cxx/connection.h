@@ -294,14 +294,38 @@ public:
     bool change_object_calling_thread( std::shared_ptr<ObjectPathHandler> object,
                                        ThreadForCalling calling );
 
-    std::shared_ptr<ObjectProxy> create_object_proxy( const std::string& path );
+    /**
+     * Change the thread that the signals on this ObjectProxy will be called from.
+     * Note that this ObjectProxy must be related to this connection
+     *
+     * @param object The ObjectProxy that has the signals to listen for
+     * @param calling
+     * @return
+     */
+    bool change_object_proxy_calling_thread( std::shared_ptr<ObjectProxy> object,
+                                             ThreadForCalling calling );
 
-    std::shared_ptr<ObjectProxy> create_object_proxy( const std::string& destination, const std::string& path );
+    std::shared_ptr<ObjectProxy> create_object_proxy( const std::string& path,
+                                                      ThreadForCalling calling = ThreadForCalling::DispatcherThread );
+
+    std::shared_ptr<ObjectProxy> create_object_proxy( const std::string& destination, const std::string& path,
+                                                      ThreadForCalling calling = ThreadForCalling::DispatcherThread);
+
+    /**
+     * Add an ObjectProxy to this Connection.  Note that calling create_object_proxy() will call
+     * this method automatically.
+     *
+     * @param obj The ObjectProxy to register with this connection
+     * @return
+     */
+    bool register_object_proxy( std::shared_ptr<ObjectProxy> obj,
+                                ThreadForCalling calling = ThreadForCalling::DispatcherThread );
 
     bool unregister_object( const std::string& path );
 
     /**
-     * Create and return a signal proxy that lets you listen to signals sent on the DBus.
+     * Create and return a signal proxy that lets you listen to signals sent on the DBus as a free proxy.
+     * A free proxy is one that is not attached to an interface.
      *
      * Normally, you want to add signal proxies via Interface::add_signal.
      *
@@ -311,34 +335,43 @@ public:
      * This method automatically calls add_signal_proxy.
      */
     template<typename... T_arg>
-    std::shared_ptr<SignalProxy<T_arg...> > create_signal_proxy( const SignalMatchRule& rule,
+    std::shared_ptr<SignalProxy<T_arg...> > create_free_signal_proxy( const SignalMatchRule& rule,
                                                                  ThreadForCalling calling = ThreadForCalling::DispatcherThread ) {
         std::shared_ptr<SignalProxy<T_arg...> > sig;
         sig = SignalProxy<T_arg...>::create( rule );
-        this->add_signal_proxy( sig, calling );
+        this->add_free_signal_proxy( sig, calling );
         return sig;
     }
 
     /**
      * Adds the given signal proxy to the connection.
      */
-    std::shared_ptr<SignalProxyBase> add_signal_proxy( std::shared_ptr<SignalProxyBase> Signal,
+    std::shared_ptr<SignalProxyBase> add_free_signal_proxy( std::shared_ptr<SignalProxyBase> Signal,
                                                        ThreadForCalling calling = ThreadForCalling::DispatcherThread );
 
-    bool remove_signal_proxy( std::shared_ptr<SignalProxyBase> proxy );
+    /**
+     * Remove a free signal proxy, so that it will not be called anymore.
+     *
+     * @param proxy
+     * @return
+     */
+    bool remove_free_signal_proxy( std::shared_ptr<SignalProxyBase> proxy );
 
-    /** Gets all the signal handlers */
-    const std::vector<std::shared_ptr<SignalProxyBase>>& get_signal_proxies();
+    /** Gets all the free signal handlers */
+    const std::vector<std::shared_ptr<SignalProxyBase>> get_free_signal_proxies();
 
     /** Gets the signal handlers for a specific interface */
-    std::vector<std::shared_ptr<SignalProxyBase>> get_signal_proxies( const std::string& interface_name );
+    std::vector<std::shared_ptr<SignalProxyBase>> get_free_signal_proxies( const std::string& interface_name );
 
     /** Gets the signal handlers for a specific interface and member */
-    std::vector<std::shared_ptr<SignalProxyBase>> get_signal_proxies( const std::string& interface_name, const std::string& member );
+    std::vector<std::shared_ptr<SignalProxyBase>> get_free_signal_proxies( const std::string& interface_name, const std::string& member );
 
-    /** Create a signal, that when it is emitted will send that signal over the DBus  */
+    /**
+     * Create a free signal, that when it is emitted will send that signal over the DBus.
+     * A free signal is a signal that is not associated with an Object.
+     */
     template <class T_arg>
-    std::shared_ptr<Signal<T_arg> > create_signal( const std::string& path, const std::string& interface_name, const std::string& member ) {
+    std::shared_ptr<Signal<T_arg> > create_free_signal( const std::string& path, const std::string& interface_name, const std::string& member ) {
         std::shared_ptr<Signal<T_arg> > sig;
         sig = Signal<T_arg>::create( path, interface_name, member );
         sig->set_connection( shared_from_this() );
@@ -404,6 +437,8 @@ private:
 
     void process_call_message( std::shared_ptr<const CallMessage> msg );
     void process_signal_message( std::shared_ptr<const SignalMessage> msg );
+
+    std::thread::id thread_id_from_calling( ThreadForCalling calling );
 
 private:
     class priv_data;

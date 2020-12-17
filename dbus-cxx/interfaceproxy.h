@@ -161,7 +161,7 @@ public:
     //      std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
     template <class T_arg>
-    std::shared_ptr<SignalProxy<T_arg >> create_signal( const std::string& sig_name, ThreadForCalling calling ) {
+    std::shared_ptr<SignalProxy<T_arg >> create_signal( const std::string& sig_name ) {
         std::shared_ptr< SignalProxy<T_arg> > sig;
         SignalMatchRule match = MatchRuleBuilder::create()
             .setPath( this->path() )
@@ -169,7 +169,7 @@ public:
             .setMember( sig_name )
             .asSignalMatch();
         sig = SignalProxy<T_arg>::create( match );
-        this->add_signal( sig, calling );
+        this->add_signal( sig );
         return sig;
     }
 
@@ -177,7 +177,7 @@ public:
 
     std::shared_ptr<SignalProxyBase> signal( const std::string& signame );
 
-    bool add_signal( std::shared_ptr<SignalProxyBase> sig, ThreadForCalling calling );
+    bool add_signal( std::shared_ptr<SignalProxyBase> sig );
 
     bool remove_signal( const std::string& signame );
 
@@ -188,8 +188,6 @@ public:
     bool has_signal( std::shared_ptr<SignalProxyBase> sig ) const;
 
 private:
-    void on_object_set_connection( std::shared_ptr<Connection> conn );
-
     void on_object_set_path( const std::string& path );
 
     void set_object( ObjectProxy* obj );

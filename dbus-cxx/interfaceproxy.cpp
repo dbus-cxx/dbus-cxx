@@ -44,7 +44,6 @@ public:
     const std::string m_name;
     Methods m_methods;
     Signals m_signals;
-    std::map<std::shared_ptr<SignalProxyBase>, ThreadForCalling> m_callingMap;
     mutable std::shared_mutex m_methods_rwlock;
     mutable std::shared_mutex m_properties_rwlock;
     std::map<std::string,std::shared_ptr<PropertyProxyBase>> m_properties;
@@ -66,7 +65,7 @@ InterfaceProxy::~ InterfaceProxy( ) {
             return;
         }
 
-        conn->remove_signal_proxy( m_priv->m_updated_proxy );
+        conn->remove_free_signal_proxy( m_priv->m_updated_proxy );
     }
 }
 
@@ -80,7 +79,7 @@ void InterfaceProxy::set_object( ObjectProxy* obj ) {
     std::shared_ptr<Connection> conn = connection().lock();
     if( conn ){
         m_priv->m_updated_proxy =
-            conn->create_signal_proxy<void(std::string,std::map<std::string,DBus::Variant>,std::vector<std::string>)>(
+            conn->create_free_signal_proxy<void(std::string,std::map<std::string,DBus::Variant>,std::vector<std::string>)>(
                 DBus::MatchRuleBuilder::create()
                 .setPath( path() )
                 .setInterface( DBUS_CXX_PROPERTIES_INTERFACE )
@@ -242,7 +241,7 @@ std::shared_ptr<SignalProxyBase> InterfaceProxy::signal( const std::string& sign
     return std::shared_ptr<SignalProxyBase>();
 }
 
-bool InterfaceProxy::add_signal( std::shared_ptr<SignalProxyBase> sig, ThreadForCalling calling ) {
+bool InterfaceProxy::add_signal( std::shared_ptr<SignalProxyBase> sig ) {
     // is it a valid signal?
     if( !sig ) { return false; }
 
@@ -256,17 +255,6 @@ bool InterfaceProxy::add_signal( std::shared_ptr<SignalProxyBase> sig, ThreadFor
     // add it to the signal set
     m_priv->m_signals.insert( sig );
 
-    // connect it
-    std::shared_ptr<Connection> conn = connection().lock();
-
-    if( conn && conn->is_valid() ) {
-        conn->add_signal_proxy( sig, calling );
-    } else {
-        return false;
-    }
-
-    m_priv->m_callingMap[ sig ] = calling;
-
     return true;
 }
 
@@ -279,14 +267,7 @@ bool InterfaceProxy::remove_signal( std::shared_ptr<SignalProxyBase> sig ) {
 
     if( !this->has_signal( sig ) ) { return false; }
 
-    std::shared_ptr<Connection> conn = connection().lock();
-
-    if( conn ) {
-        conn->remove_signal_proxy( sig );
-    }
-
     m_priv->m_signals.erase( sig );
-    m_priv->m_callingMap.erase( sig );
     return true;
 }
 
@@ -300,13 +281,6 @@ bool InterfaceProxy::has_signal( const std::string& signame ) const {
 
 bool InterfaceProxy::has_signal( std::shared_ptr<SignalProxyBase> sig ) const {
     return m_priv->m_signals.find( sig ) != m_priv->m_signals.end();
-}
-
-void InterfaceProxy::on_object_set_connection( std::shared_ptr< Connection > conn ) {
-    for( std::shared_ptr<SignalProxyBase> sig : m_priv->m_signals ) {
-        ThreadForCalling calling = m_priv->m_callingMap[ sig ];
-        conn->add_signal_proxy( sig, calling );
-    }
 }
 
 void InterfaceProxy::on_object_set_path( const std::string& path ) {

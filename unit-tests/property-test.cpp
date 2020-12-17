@@ -84,7 +84,7 @@ bool property_set_readonly(){
 bool property_signal_emitted(){
     std::shared_ptr<DBus::InterfaceProxy> iface = proxy->interface_by_name( "dbuscxx.interface" );
     std::shared_ptr<DBus::SignalProxy<void(std::string,std::map<std::string,DBus::Variant>,std::vector<std::string>)>> sig =
-            conn->create_signal_proxy<void(std::string,std::map<std::string,DBus::Variant>,std::vector<std::string>)>(
+            conn->create_free_signal_proxy<void(std::string,std::map<std::string,DBus::Variant>,std::vector<std::string>)>(
                 DBus::MatchRuleBuilder::create()
                 .setPath( "/test" )
                 .setInterface( DBUS_CXX_PROPERTIES_INTERFACE )

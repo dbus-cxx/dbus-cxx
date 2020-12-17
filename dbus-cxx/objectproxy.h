@@ -160,12 +160,12 @@ public:
      */
     template <class T_type>
     std::shared_ptr<SignalProxy<T_type> >
-    create_signal( const std::string& interface_name, const std::string& sig_name, ThreadForCalling calling ) {
+    create_signal( const std::string& interface_name, const std::string& sig_name ) {
         std::shared_ptr<InterfaceProxy> interface_ptr = this->interface_by_name( interface_name );
 
         if( !interface_ptr ) { interface_ptr = this->create_interface( interface_name ); }
 
-        return interface_ptr->create_signal<T_type>( sig_name, calling );
+        return interface_ptr->create_signal<T_type>( sig_name );
     }
 
     template <class T_type>

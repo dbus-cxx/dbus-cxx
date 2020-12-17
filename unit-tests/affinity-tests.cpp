@@ -88,7 +88,7 @@ static void receiveMethodCall() {
 bool affinity_signal_dispatcher_thread() {
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_signal_proxy<void()>(
+    std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
                 .setInterface( "interface.name" )
                 .setMember( "myname" )
@@ -97,7 +97,7 @@ bool affinity_signal_dispatcher_thread() {
 
     proxy->connect( sigc::ptr_fun( receiveSignal ) );
 
-    std::shared_ptr<DBus::Signal<void()>> signal = conn->create_signal<void()>( "/", "interface.name", "myname" );
+    std::shared_ptr<DBus::Signal<void()>> signal = conn->create_free_signal<void()>( "/", "interface.name", "myname" );
 
     signal->emit();
 
@@ -115,7 +115,7 @@ bool affinity_signal_main_thread() {
     std::shared_ptr<AffinityThreadDispatcher> afDisp = std::shared_ptr<AffinityThreadDispatcher>( new AffinityThreadDispatcher );
     conn->add_thread_dispatcher( afDisp );
 
-    std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_signal_proxy<void()>(
+    std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
                 .setInterface( "interface.name" )
                 .setMember( "myname" )
@@ -124,7 +124,7 @@ bool affinity_signal_main_thread() {
 
     proxy->connect( sigc::ptr_fun( receiveSignal ) );
 
-    std::shared_ptr<DBus::Signal<void()>> signal = conn->create_signal<void()>( "/", "interface.name", "myname" );
+    std::shared_ptr<DBus::Signal<void()>> signal = conn->create_free_signal<void()>( "/", "interface.name", "myname" );
 
     signal->emit();
 

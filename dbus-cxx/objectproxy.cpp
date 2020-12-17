@@ -85,10 +85,6 @@ std::weak_ptr<Connection> ObjectProxy::connection() const {
 
 void ObjectProxy::set_connection( std::shared_ptr<Connection> conn ) {
     m_priv->m_connection = conn;
-
-    for( Interfaces::iterator i = m_priv->m_interfaces.begin(); i != m_priv->m_interfaces.end(); i++ ) {
-        i->second->on_object_set_connection( conn );
-    }
 }
 
 const std::string& ObjectProxy::destination() const {

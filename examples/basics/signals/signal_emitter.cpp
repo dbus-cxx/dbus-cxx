@@ -35,7 +35,7 @@ int main()
 {
   std::shared_ptr<DBus::Connection> connection = DBus::Connection::create( DBus::BusType::SESSION );
 
-  std::shared_ptr<DBus::Signal<void(std::string)>> signal = connection->create_signal<void(std::string)>("/test/signal/Object", "test.signal.Type", "Test");
+  std::shared_ptr<DBus::Signal<void(std::string)>> signal = connection->create_free_signal<void(std::string)>("/test/signal/Object", "test.signal.Type", "Test");
 
   const char* sigvalue1 = "Hello";
   std::string sigvalue2("World");

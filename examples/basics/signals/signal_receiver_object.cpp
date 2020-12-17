@@ -31,7 +31,7 @@ class Calculator: public DBus::ObjectProxy
         m_method_sub = this->create_method<double(double,double)>("Calculator.Basic", "sub");
         m_method_mul = this->create_method<double(double,double)>("Calculator.Basic", "mul");
         m_method_div = this->create_method<double(double,double)>("Calculator.Basic", "div");
-        m_signal_calculation = this->create_signal<void(std::string,double,double,double)>("Calculator.Basic", "calculation", DBus::ThreadForCalling::DispatcherThread);
+        m_signal_calculation = this->create_signal<void(std::string,double,double,double)>("Calculator.Basic", "calculation");
       }
 
   public:

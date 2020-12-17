@@ -62,4 +62,4 @@ add_xml_test( containertypes.xml adapter "structtypesAdapter.h;structtypesAdapte
 add_xml_test( simpletypes.xml adapter "SimpleTypesAdapter.h;SimpleTypesAdapter.cpp;test_simpletype_interfaceInterface.h;test_simpletype_interfaceInterface.cpp;test_simpletype_interface.h;test_simpletype_interface.cpp" simple-adapter )
 add_xml_test( signal-interface.xml adapter "signalNameAdapter.h;signalNameAdapter.cpp;signal_name_interfaceInterface.h;signal_name_interfaceInterface.cpp;signal_name_interface.h;signal_name_interface.cpp" signal-adapter )
 add_xml_test( signal-interface.xml proxy "signalNameProxy.h;signalNameProxy.cpp;signal_name_interfaceProxy.h;signal_name_interfaceProxy.cpp" signal-proxy )
-add_xml_test( org.freedesktop.NetworkManager.xml proxy "NetworkManagerProxy.h;NetworkManagerProxy.cpp" nm-proxy )
+add_xml_test( org.freedesktop.NetworkManager.xml proxy "NetworkManagerProxy.h;NetworkManagerProxy.cpp;org_freedesktop_NetworkManagerProxy.h;org_freedesktop_NetworkManagerProxy.cpp" nm-proxy )
