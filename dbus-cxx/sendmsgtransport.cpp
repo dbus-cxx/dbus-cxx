@@ -165,7 +165,7 @@ public:
     ~priv_data() {
         free( rx_msg.msg_iov[0].iov_base );
         free( rx_msg.msg_control );
-        free( tx_msg.msg_control );
+        free( tx_control_data );
     }
 
     int m_fd;
