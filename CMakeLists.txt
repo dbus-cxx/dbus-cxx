@@ -61,7 +61,13 @@ option( ENABLE_QT_SUPPORT "Build libdbuscxx-qt for integration with Qt applicati
 #
 configure_file( dbus-cxx-config.h.cmake dbus-cxx/dbus-cxx-config.h )
 if( ${ENABLE_ASAN} )
-	set( CMAKE_CXX_FLAGS "-fsanitize=address -fsanitize=null -fsanitize=return -fsanitize=object-size -fsanitize=bool -fsanitize=enum" )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
+            -fsanitize=address \
+            -fsanitize=null \
+            -fsanitize=return \
+            -fsanitize=object-size \
+            -fsanitize=bool \
+            -fsanitize=enum" )
 endif()
 
 if( UNIX )
@@ -424,3 +430,5 @@ endif( BUILD_TESTING )
 message(STATUS "Library Support:" )
 message(STATUS "  Qt .............................. : ${ENABLE_QT_SUPPORT}")
 message(STATUS "  GLib ............................ : ${ENABLE_GLIB_SUPPORT}")
+
+message( "flags: ${CMAKE_CXX_FLAGS}")

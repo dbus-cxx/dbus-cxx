@@ -35,16 +35,14 @@ int main( int argc, const char** argv )
   int make_proxy=0;
   int make_adapter=0;
   int output_to_file = 0;
-  const char* xml_file=NULL;
-  const char* file_prefix = "";
-  const char* output_dir = ".";
+  char* xml_file = nullptr;
+  char* output_dir = nullptr;
   int c;
   DBus::CodeGenerator generator;
   std::string outputDirString;
 
   struct poptOption option_table[] = {
     { "xml",          'x', POPT_ARG_STRING, &xml_file,       0, "The file containing the XML specification" },
-    //{ "prefix",       'p', POPT_ARG_STRING, &file_prefix,    0, "A prefix to place on all output files" },
     { "file",         'f', POPT_ARG_NONE,   &output_to_file, 0, "Output to files [default=no]" },
     { "output_dir",       'o', POPT_ARG_STRING, &output_dir,    0, 
          "The output directory for files(only if outputting to files)[default=.]" },
@@ -54,7 +52,7 @@ int main( int argc, const char** argv )
          "Adapters are used when you want to implement a service [default=no]" },
     { "verbose",        0, POPT_ARG_NONE,   &verbose,        0, "Verbose printing of output" },
     POPT_AUTOHELP
-    { NULL, 0, 0, NULL, 0 }
+    POPT_TABLEEND
   };
 
   opt_context = poptGetContext(NULL, argc, argv, option_table, 0 );
@@ -98,7 +96,11 @@ int main( int argc, const char** argv )
         return 1;
     }
 
-    outputDirString = std::string( output_dir );
+    if( output_dir ){
+        outputDirString = std::string( output_dir );
+    }else{
+        outputDirString = ".";
+    }
     if( outputDirString.back() != '/' ){
         outputDirString += "/";
     }
@@ -110,6 +112,9 @@ int main( int argc, const char** argv )
     if( make_adapter ){
         generator.generateAdapterClasses( output_to_file, outputDirString );
     }
+
+    free( xml_file );
+    free( output_dir );
 
     return 0;
 }
