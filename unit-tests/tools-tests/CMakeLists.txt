@@ -63,3 +63,4 @@ add_xml_test( simpletypes.xml adapter "SimpleTypesAdapter.h;SimpleTypesAdapter.c
 add_xml_test( signal-interface.xml adapter "signalNameAdapter.h;signalNameAdapter.cpp;signal_name_interfaceInterface.h;signal_name_interfaceInterface.cpp;signal_name_interface.h;signal_name_interface.cpp" signal-adapter )
 add_xml_test( signal-interface.xml proxy "signalNameProxy.h;signalNameProxy.cpp;signal_name_interfaceProxy.h;signal_name_interfaceProxy.cpp" signal-proxy )
 add_xml_test( org.freedesktop.NetworkManager.xml proxy "NetworkManagerProxy.h;NetworkManagerProxy.cpp;org_freedesktop_NetworkManagerProxy.h;org_freedesktop_NetworkManagerProxy.cpp" nm-proxy )
+add_xml_test( org.freedesktop.Avahi.Server.xml proxy "AvahiServerProxy.h;AvahiServerProxy.cpp;org_freedesktop_Avahi_ServerProxy.h;org_freedesktop_Avahi_ServerProxy.cpp;org_freedesktop_Avahi_Server2Proxy.h;org_freedesktop_Avahi_Server2Proxy.cpp" avahi-proxy )

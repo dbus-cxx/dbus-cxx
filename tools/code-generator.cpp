@@ -1090,7 +1090,12 @@ void CodeGenerator::handle_arg_tag( std::string parentElement, std::map<std::str
         snprintf( buffer, 10, "arg%d", m_argNum );
         arg.setName( std::string( buffer ) );
     }else{
-        arg.setName( tagAttrs[ "name" ] );
+        std::string argName = tagAttrs[ "name" ];
+        if( argName == "interface" ){
+            // 'interface' is invalid due to us #defining it for Windows support
+            argName = "_interface";
+        }
+        arg.setName( argName );
     }
 
     if( tagAttrs[ "direction" ] == "out" && parentElement == "method" ){

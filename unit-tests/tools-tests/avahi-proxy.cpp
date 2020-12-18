@@ -16,12 +16,13 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include "NetworkManagerProxy.h"
+
+#include "AvahiServerProxy.h"
 
 int main( int argc, char** argv ) {
     std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-    std::shared_ptr<NetworkManagerProxy> proxy = NetworkManagerProxy::create( conn, "org.freedesktop.NetworkManager", "" );
-    proxy->getorg_freedesktop_NetworkManagerInterface()->signal_DeviceAdded();
+    std::shared_ptr<AvahiServerProxy> avahiproxy =
+            AvahiServerProxy::create( conn, "org.freedesktop.Avahi", "/org/freedesktop/Avahi" );
 }
