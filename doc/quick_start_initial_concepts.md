@@ -42,50 +42,15 @@ Slots are similar to function pointers in C, but can also be a method
 of a specific class. The details of this are available in the \c sigc++
 documentation and are beyond the scope of this tutorial.
 
-\section quick_start_concept_678 Concepts #6, #7 and #8: Smart Pointers, pointer and create()
+\section quick_start_concept_678 Concepts #6, #7: Smart Pointers and create()
 
-\par
-An early design decision was made to focus on the use of smart pointers as
-defined in the ANSI C++ committee's \c tr1 (Technical Report 1), which as
-of this writing has been accepted by the committee and recommended to ISO
-for incorporation as the first revision to the C++ standard. A reference
-implementation can be found in the boost library, the \c std::tr1 namespace
-of gcc 4.0 or greater, or the \c C++0x draft standard in gcc 4.3 or greater.
+DBus-cxx makes extensive use of smart pointers to help manage the memory of a
+class.  In order for this scheme to work properly, most classes cannot be
+initialized on their own(constructors are private).  To create an instance
+of a class, use the `create()` method on that class:
 
-\par
-Two key concepts are the \c pointer typedef and the \c create method defined
-in each dbus-cxx class.
-
-\par
-The \c pointer typedef is defined \e within \e each \e class and is
-typedefed to a smart pointer to that \e specific class. Thus,
-\c DBus::Connection::pointer is a smart pointer to a D-Bus Connection
-endpoint, and \c DBus::CallMessage::pointer is a smart pointer to a D-Bus
-call message.
-
-\par
-Each class also has static \c create() methods with parameters that are
-identical to the class' constructors. Class constructors are \c protected,
-so in general you cannot access them.
-
-\par
-Instead, you will need to use the class' \c create() method to dynamically
-creates an instance of the class. This method will returns a smart pointer
-of the appropriate type for that class similar to the way the \c new
-operator dynamically creates an object and returns a raw pointer to the
-newly created object.
-
-\par
-Since the \c create() method is static, you do not need an instance of the
-class to call it; \c Classname::create() is sufficient. Thus, to create
-a new dbus-cxx call message you would use \c DBus::CallMessage::create()
-and to create a new dbus-cxx connection you would use
-\c DBus::Connection::create().
-
-\par
-Naturally, the smart pointer returned from \c create() can be assigned to
-the class' \c pointer type, which allows you to use a syntax such as:
-\code DBus::CallMessage::pointer my_callmessage = DBus::CallMessage::create(); \endcode
+```
+std::shared_ptr<DBus::Dispatcher> disp = DBus::StandaloneDispatcher::create();
 
 <b>Continue On:</b> \ref quick_start_example_0
 

@@ -36,12 +36,14 @@ introspection-like documents.
  Pre-built Debian packages may be found here: <a href="http://apt.rm5248.com/">http://apt.rm5248.com/</a>.  These may or may not work properly with Ubuntu.
 
  Debian/Ubuntu package description
- - \b dbus-cxx0 - Libraries needed to run applications
+ - \b dbus-cxx2 - Libraries needed to run applications
  - \b dbus-cxx-dev - Headers and libraries for developing applications with dbus-cxx
  - \b dbus-cxx-doc - Developer's documentation including devhelp docs
  - \b dbus-cxx-tools - Development tools, et. al. such as  [dbus-cxx-xml2cpp](@ref xml2cpp)
- - \b dbus-cxx-glibmm0 - Libraries need to run applications that integrate dbus-cxx into glibmm
- - \b dbus-cxx-glibmm-dev - Headers and libraries for developing applications that will integrate dbus-cxx into glibmm
+ - \b dbus-cxx-glib2 - Libraries need to run applications that integrate dbus-cxx into glib
+ - \b dbus-cxx-glib-dev - Headers and libraries for developing applications that will integrate dbus-cxx into glib
+ - \b dbus-cxx-qt2 - Libraries need to run applications that integrate dbus-cxx into Qt
+ - \b dbus-cxx-qt-dev - Headers and libraries for developing applications that will integrate dbus-cxx into Qt
  
 
  \htmlonly <img src="sourcecode-small.png" alt=""/> \endhtmlonly

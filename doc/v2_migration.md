@@ -106,20 +106,6 @@ compatible), and that the library itself will be ABI compatible.
 * Exceptions thrown are no longer `std::shared_ptr`s
 * Many typedefs have been removed(see [this thread][1] for justifications)
 
-========
-# NOTES FOR REVIEW
-* What should the template of signals be?  Currently, it is similar to v1, except
- that the first template arg(retrun val) has been removed.  This is because DBus
- signals can't have a return value.  However, this makes them very different from
- methods, which take the method type as the template param.
-* Make naming more consistent - sometimes it's `c_style`, other times its CamelCase
-* Removed signal creation methods that let you get the raw signal data
- (`signal_proxy_simple`).  Is this required at all?  It seems weird to me that we
- would want to do this, unless we were worried about sniffing the bus.
-* Do we still want `DBus::PendingCall`?
-* How should DBus::FileDescriptor work?  Currently you need to create a new
- `shared_ptr`, but is this overkill?
-
 # Features Removed
 
 The following features have been removed.  Generally, these features were removed
