@@ -430,5 +430,3 @@ endif( BUILD_TESTING )
 message(STATUS "Library Support:" )
 message(STATUS "  Qt .............................. : ${ENABLE_QT_SUPPORT}")
 message(STATUS "  GLib ............................ : ${ENABLE_GLIB_SUPPORT}")
-
-message( "flags: ${CMAKE_CXX_FLAGS}")
