@@ -157,16 +157,16 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage() {
             uint8_t endian = m.demarshal_uint8_t();
 
             if( endian == 'l' ) {
-                m.setEndianess( Endianess::Little );
+                m.set_endianess( Endianess::Little );
             }else if( endian != 'B' ){
                 // Bad endianess
                 purgeData();
                 return std::shared_ptr<DBus::Message>();
             }
 
-            m.setDataOffset( 4 );
+            m.set_data_offset( 4 );
             uint32_t bodyToRead = m.demarshal_uint32_t();
-            m.setDataOffset( 12 );
+            m.set_data_offset( 12 );
             headerArraySize = m.demarshal_uint32_t();
 
             if( (bodyToRead + headerArraySize + 12) >

@@ -54,16 +54,16 @@ public:
      *
      * @param data
      */
-    void setData( const uint8_t* data, uint32_t dataLen );
+    void set_data( const uint8_t* data, uint32_t dataLen );
 
-    void setEndianess( Endianess endian );
+    void set_endianess( Endianess endian );
 
     /**
      * Set the offset in the data to demarshal.
      *
      * @param offset
      */
-    void setDataOffset( uint32_t offset );
+    void set_data_offset( uint32_t offset );
 
     void align( int alignment );
 

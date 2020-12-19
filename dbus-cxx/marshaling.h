@@ -52,9 +52,9 @@ public:
      *
      * @param data
      */
-    void setData( std::vector<uint8_t>* data );
+    void set_data( std::vector<uint8_t>* data );
 
-    void setEndianess( Endianess endian );
+    void set_endianess( Endianess endian );
 
     void marshal( bool v );
     void marshal( uint8_t v );
@@ -79,7 +79,7 @@ public:
      * @param offset The location to set the value
      * @param value The actual value to set.
      */
-    void marshalAtOffset( uint32_t offset, uint32_t value );
+    void marshal_at_offset( uint32_t offset, uint32_t value );
 
     uint32_t currentOffset() const;
 

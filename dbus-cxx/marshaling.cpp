@@ -215,11 +215,11 @@ void Marshaling::marshalLongLittle( uint64_t toMarshal ) {
     m_priv->m_data->push_back( ( toMarshal & 0xFF00000000000000 ) >> 56 );
 }
 
-void Marshaling::setData( std::vector<uint8_t>* data ) {
+void Marshaling::set_data( std::vector<uint8_t>* data ) {
     m_priv->m_data = data;
 }
 
-void Marshaling::setEndianess( Endianess endian ) {
+void Marshaling::set_endianess( Endianess endian ) {
     m_priv->m_endian = endian;
 }
 
@@ -239,7 +239,7 @@ void Marshaling::marshal( const Variant& v ) {
     }
 }
 
-void Marshaling::marshalAtOffset( uint32_t offset, uint32_t value ) {
+void Marshaling::marshal_at_offset( uint32_t offset, uint32_t value ) {
     if( m_priv->m_endian == Endianess::Little ) {
         ( *m_priv->m_data )[offset++] = ( value & 0x000000FF ) >> 0;
         ( *m_priv->m_data )[offset++] = ( value & 0x0000FF00 ) >> 8;

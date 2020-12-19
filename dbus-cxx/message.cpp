@@ -248,7 +248,7 @@ bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
     }
 
     // The size of the header array is always at offset 12
-    marshal.marshalAtOffset( 12, static_cast<uint32_t>( vec->size() ) - 16 );
+    marshal.marshal_at_offset( 12, static_cast<uint32_t>( vec->size() ) - 16 );
 
     // Align the message data to an 8-byte boundary and add the data!
     marshal.align( 8 );
@@ -278,7 +278,7 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
     std::vector<int> real_fds;
 
     if( demarshal.demarshal_uint8_t() == 'l' ) {
-        demarshal.setEndianess( Endianess::Little );
+        demarshal.set_endianess( Endianess::Little );
         msgEndian = Endianess::Little;
     }
 

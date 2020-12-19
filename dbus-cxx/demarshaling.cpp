@@ -338,10 +338,10 @@ uint32_t Demarshaling::current_offset() const {
     return m_priv->m_dataPos;
 }
 
-void Demarshaling::setEndianess( Endianess endian ) {
+void Demarshaling::set_endianess( Endianess endian ) {
     m_priv->m_endian = endian;
 }
 
-void Demarshaling::setDataOffset( uint32_t offset ) {
+void Demarshaling::set_data_offset( uint32_t offset ) {
     m_priv->m_dataPos = offset;
 }
