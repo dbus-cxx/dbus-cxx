@@ -279,7 +279,7 @@ MessageAppendIterator& MessageAppendIterator::operator<<( const std::shared_ptr<
 
     if( !v ) { return *this; }
 
-    raw_fd = v->getDescriptor();
+    raw_fd = v->descriptor();
 
     if( m_priv->m_currentContainer == ContainerType::None ) {
         m_priv->m_message->append_signature( signature( v ) );

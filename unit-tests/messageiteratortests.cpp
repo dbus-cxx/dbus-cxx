@@ -230,11 +230,11 @@ bool call_message_iterator_insertion_extraction_operator_filedescriptor() {
     DBus::MessageIterator iter2( msg );
     v2 = ( std::shared_ptr<DBus::FileDescriptor> )iter2;
 
-    if( write( v->getDescriptor(), firstString, strlen( firstString ) ) < 0 ) {
+    if( write( v->descriptor(), firstString, strlen( firstString ) ) < 0 ) {
         return false;
     }
 
-    if( write( v2->getDescriptor(), secondString, strlen( secondString ) ) < 0 ) {
+    if( write( v2->descriptor(), secondString, strlen( secondString ) ) < 0 ) {
         return false;
     }
 
@@ -269,11 +269,11 @@ bool call_message_append_extract_iterator_filedescriptor() {
     DBus::MessageIterator iter2( msg );
     iter2 >> v2;
 
-    if( write( v->getDescriptor(), firstString, strlen( firstString ) ) < 0 ) {
+    if( write( v->descriptor(), firstString, strlen( firstString ) ) < 0 ) {
         return false;
     }
 
-    if( write( v2->getDescriptor(), secondString, strlen( secondString ) ) < 0 ) {
+    if( write( v2->descriptor(), secondString, strlen( secondString ) ) < 0 ) {
         return false;
     }
 

@@ -58,7 +58,7 @@ int main( int argc, char** argv ){
   std::shared_ptr<DBus::FileDescriptor> fd;
   fd = methodref();
   
-  if( write( fd->getDescriptor(), "A String 0", 10 ) < 0 ){
+  if( write( fd->descriptor(), "A String 0", 10 ) < 0 ){
     std::cerr << "Error writing to file descriptor: " << strerror( errno ) << std::endl;
     return 1;
   }

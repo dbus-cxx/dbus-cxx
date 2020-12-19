@@ -55,7 +55,7 @@ std::shared_ptr<DBus::FileDescriptor> get_filedescriptor() {
 
 // Server Function
 void set_filedescriptor( std::shared_ptr<DBus::FileDescriptor> fd ) {
-    std::async( std::launch::async, write_to_fd, fd->getDescriptor() );
+    std::async( std::launch::async, write_to_fd, fd->descriptor() );
 }
 
 // Client Function
@@ -86,7 +86,7 @@ bool filedescriptor_get() {
     std::shared_ptr<DBus::FileDescriptor> fd = ( *fd_return_method_proxy )();
     char bytes[ 64 ];
 
-    int bytesGot = ::read( fd->getDescriptor(), bytes, 64 );
+    int bytesGot = ::read( fd->descriptor(), bytes, 64 );
 
     if( bytesGot < 0 ) {
         std::cerr << "Unable to read: " << strerror( errno ) << std::endl;

@@ -51,7 +51,7 @@ public:
 
     ~FileDescriptor() {}
 
-    int getDescriptor() const {
+    int descriptor() const {
         return m_fd;
     }
 
