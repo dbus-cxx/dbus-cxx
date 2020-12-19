@@ -177,6 +177,10 @@ void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& 
 
         cppgenerate::Class newClass;
         std::string proxyClassName = i.cppname() + "Proxy";
+        std::string proxyClassNameWithNamespace = proxyClassName;
+        if( m_rootNode.genNamespace().length() > 0 ){
+            proxyClassNameWithNamespace = m_rootNode.genNamespace() + "::" + proxyClassName;
+        }
         newClass.setName( proxyClassName )
                 .addSystemInclude( "dbus-cxx.h" )
                 .addSystemInclude( "stdint.h" )
@@ -188,9 +192,9 @@ void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& 
                             .setName( "create" )
                             .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
                             .setStatic( true )
-                            .setReturnType( "std::shared_ptr<" + proxyClassName + ">" )
+                            .setReturnType( "std::shared_ptr<" + proxyClassNameWithNamespace + ">" )
                             .addCode( cppgenerate::CodeBlock::create()
-                                      .addLine( "return std::shared_ptr<" + proxyClassName + ">( new " + proxyClassName + "( name ));") )
+                                      .addLine( "return std::shared_ptr<" + proxyClassNameWithNamespace + ">( new " + proxyClassNameWithNamespace + "( name ));") )
                             .addArgument( cppgenerate::Argument::create()
                                           .setName( "name" )
                                           .setType( "std::string" )
@@ -214,17 +218,18 @@ void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& 
         mainProxyClass.addMemberVariable( cppgenerate::MemberVariable::create()
                                           .setAccessModifier( cppgenerate::AccessModifier::PROTECTED )
                                           .setName( "m_" + proxyClassName )
-                                          .setType( "std::shared_ptr<" + proxyClassName + ">" ) )
+                                          .setType( "std::shared_ptr<" + proxyClassNameWithNamespace + ">" ) )
                 .addLocalInclude( newClass.getName() + ".h" )
                 .addMethod( cppgenerate::Method::create()
                             .setName( "get" + i.cppname() + "Interface" )
                             .setAccessModifier( cppgenerate::AccessModifier::PUBLIC )
-                            .setReturnType( "std::shared_ptr<" + proxyClassName + ">" )
+                            .setReturnType( "std::shared_ptr<" + proxyClassNameWithNamespace + ">" )
                             .addCode( cppgenerate::CodeBlock::create()
                                       .addLine( "return m_" + proxyClassName + ";" ))
                             );
         mainProxyConstructor.addCode( cppgenerate::CodeBlock::create()
-                                      .addLine( "m_" + proxyClassName + " = " + proxyClassName + "::create( \"" + i.name() + "\" );") );
+                                      .addLine( "m_" + proxyClassName + " = " + proxyClassNameWithNamespace + "::create( \"" + i.name() + "\" );")
+                                      .addLine( "this->add_interface( m_" + proxyClassName + " );" ) );
 
         proxyClasses.push_back( newClass );
     }
