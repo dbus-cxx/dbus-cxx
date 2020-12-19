@@ -59,7 +59,7 @@ bool SignalMessage::set_path( const std::string& p ) {
 Path SignalMessage::path() const {
     DBus::Variant memberName = header_field( MessageHeaderFields::Path );
 
-    if( memberName.currentType() == DataType::OBJECT_PATH ) {
+    if( memberName.type() == DataType::OBJECT_PATH ) {
         return memberName.to_path();
     }
 
@@ -91,7 +91,7 @@ bool SignalMessage::set_interface( const std::string& i ) {
 std::string SignalMessage::interface_name() const {
     DBus::Variant memberName = header_field( MessageHeaderFields::Interface );
 
-    if( memberName.currentType() == DataType::STRING ) {
+    if( memberName.type() == DataType::STRING ) {
         return memberName.to_string();
     }
 
@@ -106,7 +106,7 @@ bool SignalMessage::set_member( const std::string& m ) {
 std::string SignalMessage::member() const {
     DBus::Variant memberName = header_field( MessageHeaderFields::Member );
 
-    if( memberName.currentType() == DataType::STRING ) {
+    if( memberName.type() == DataType::STRING ) {
         return memberName.to_string();
     }
 

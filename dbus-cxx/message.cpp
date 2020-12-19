@@ -140,7 +140,7 @@ bool Message::set_destination( const std::string& s ) {
 std::string Message::destination() const {
     Variant destination = header_field( MessageHeaderFields::Destination );
 
-    if( destination.currentType() == DataType::STRING ) {
+    if( destination.type() == DataType::STRING ) {
         return destination.to_string();
     }
 
@@ -150,7 +150,7 @@ std::string Message::destination() const {
 std::string Message::sender() const {
     Variant sender = header_field( MessageHeaderFields::Sender );
 
-    if( sender.currentType() == DataType::STRING ) {
+    if( sender.type() == DataType::STRING ) {
         return sender.to_string();
     }
 
@@ -172,7 +172,7 @@ MessageAppendIterator Message::append() {
 Signature Message::signature() const {
     Variant v = header_field( MessageHeaderFields::Signature );
 
-    if( v.currentType() == DataType::SIGNATURE ) {
+    if( v.type() == DataType::SIGNATURE ) {
         return v.to_signature();
     }
 
@@ -221,7 +221,7 @@ bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
 
     if( mustHaveSerial ) {
         // Make sure that we have a header for our serial and it is not 0
-        if( serialHeader.currentType() == DataType::UINT32 ) {
+        if( serialHeader.type() == DataType::UINT32 ) {
             uint32_t tmpSerial = serialHeader.to_uint32();
 
             if( tmpSerial == 0 ) {
@@ -240,7 +240,7 @@ bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
     marshal.marshal( static_cast<uint32_t>( 0 ) ); // The size of the header array; we update this later
 
     for( const std::pair<const MessageHeaderFields, Variant>& entry : m_priv->m_headerMap ) {
-        if( entry.second.currentType() == DataType::INVALID ) { continue; }
+        if( entry.second.type() == DataType::INVALID ) { continue; }
 
         marshal.align( 8 );
         marshal.marshal( header_field_to_int( entry.first ) );
@@ -372,7 +372,7 @@ void Message::append_signature( std::string toappend ) {
     DBus::Variant val = m_priv->m_headerMap[ MessageHeaderFields::Signature ];
     std::string newval;
 
-    if( val.currentType() != DataType::INVALID ) {
+    if( val.type() != DataType::INVALID ) {
         Signature sig = val.to_signature();
         newval += sig.str();
     }

@@ -323,7 +323,7 @@ HandlerResult Interface::handle_properties_message( std::shared_ptr<Connection> 
         std::map<std::string,DBus::Variant> retval;
 
         for( std::shared_ptr<DBus::PropertyBase> prop : m_priv->m_properties ){
-            if( prop->variant_value().currentType() == DataType::INVALID ){
+            if( prop->variant_value().type() == DataType::INVALID ){
                 // The property has not been set, so we must assume that it does not exist
                 continue;
             }
@@ -348,7 +348,7 @@ HandlerResult Interface::handle_properties_message( std::shared_ptr<Connection> 
         message >> interfaceName >> propertyName;
 
         for( std::shared_ptr<DBus::PropertyBase> prop : m_priv->m_properties ){
-            if( prop->variant_value().currentType() == DataType::INVALID ){
+            if( prop->variant_value().type() == DataType::INVALID ){
                 // The property has not been set, so we must assume that it does not exist
                 continue;
             }
@@ -372,7 +372,7 @@ HandlerResult Interface::handle_properties_message( std::shared_ptr<Connection> 
         errMsg = "Unable to find property " + propertyName + " on interface " + interfaceName;
 
         for( std::shared_ptr<DBus::PropertyBase> prop : m_priv->m_properties ){
-            if( prop->variant_value().currentType() == DataType::INVALID ){
+            if( prop->variant_value().type() == DataType::INVALID ){
                 // The property has not been set, so we must assume that it does not exist
                 continue;
             }

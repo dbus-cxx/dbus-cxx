@@ -54,7 +54,7 @@ bool ErrorMessage::operator == ( const ErrorMessage& m ) const {
 std::string ErrorMessage::name() const {
     Variant msgName = header_field( MessageHeaderFields::Error_Name );
 
-    if( msgName.currentType() == DataType::STRING ) {
+    if( msgName.type() == DataType::STRING ) {
         return msgName.to_string();
     }
 
@@ -73,7 +73,7 @@ std::string ErrorMessage::message() const {
     Variant signature = header_field( MessageHeaderFields::Signature );
     std::string retval;
 
-    if( signature.currentType() == DataType::SIGNATURE ) {
+    if( signature.type() == DataType::SIGNATURE ) {
         Signature value = signature.to_signature();
 
         if( value.begin().type() == DataType::STRING ) {
@@ -98,7 +98,7 @@ bool ErrorMessage::set_reply_serial( uint32_t s ) {
 uint32_t ErrorMessage::reply_serial() const {
     Variant field = header_field( MessageHeaderFields::Reply_Serial );
 
-    if( field.currentType() == DataType::UINT32 ) {
+    if( field.type() == DataType::UINT32 ) {
         return field.to_uint32();
     }
 

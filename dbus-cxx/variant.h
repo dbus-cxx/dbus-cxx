@@ -102,7 +102,7 @@ public:
 
     Signature signature() const;
 
-    DataType currentType() const;
+    DataType type() const;
 
     const std::vector<uint8_t>* marshaled() const;
 

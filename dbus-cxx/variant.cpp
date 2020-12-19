@@ -155,7 +155,7 @@ DBus::Signature Variant::signature() const {
     return m_signature;
 }
 
-DBus::DataType Variant::currentType() const {
+DBus::DataType Variant::type() const {
     return m_currentType;
 }
 
@@ -472,7 +472,7 @@ int Variant::data_alignment() const {
 }
 
 bool Variant::operator==( const Variant& other ) const {
-    bool sameType = other.currentType() == currentType();
+    bool sameType = other.type() == type();
     bool vectorsEqual = false;
 
     if( sameType ) {
@@ -650,9 +650,9 @@ Variant::operator DBus::Signature(){
 namespace DBus {
 
 std::ostream& operator<<( std::ostream& os, const Variant& var ) {
-    os << "DBus::Variant[" << var.currentType() << "=";
+    os << "DBus::Variant[" << var.type() << "=";
 
-    switch( var.currentType() ) {
+    switch( var.type() ) {
     case DataType::BYTE:
         os << var.to_uint8();
         break;

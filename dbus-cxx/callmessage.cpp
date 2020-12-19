@@ -106,7 +106,7 @@ void CallMessage::set_path( const std::string& p ) {
 Path CallMessage::path() const {
     Variant field = header_field( MessageHeaderFields::Path );
 
-    if( field.currentType() == DataType::OBJECT_PATH ) {
+    if( field.type() == DataType::OBJECT_PATH ) {
         return field.to_path();
     }
 
@@ -120,7 +120,7 @@ void CallMessage::set_interface( const std::string& i ) {
 std::string CallMessage::interface_name() const {
     Variant iface = header_field( MessageHeaderFields::Interface );
 
-    if( iface.currentType() == DataType::STRING ) {
+    if( iface.type() == DataType::STRING ) {
         return iface.to_string();
     }
 
@@ -134,7 +134,7 @@ void CallMessage::set_member( const std::string& m ) {
 std::string CallMessage::member() const {
     Variant member = header_field( MessageHeaderFields::Member );
 
-    if( member.currentType() == DataType::STRING ) {
+    if( member.type() == DataType::STRING ) {
         return member.to_string();
     }
 

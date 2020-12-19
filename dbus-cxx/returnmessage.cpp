@@ -45,7 +45,7 @@ bool ReturnMessage::set_reply_serial( uint32_t s ) {
 uint32_t ReturnMessage::reply_serial() const {
     Variant field = header_field( MessageHeaderFields::Reply_Serial );
 
-    if( field.currentType() == DataType::UINT32 ) {
+    if( field.type() == DataType::UINT32 ) {
         return field.to_uint32();
     }
 

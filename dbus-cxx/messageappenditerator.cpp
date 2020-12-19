@@ -304,7 +304,7 @@ MessageAppendIterator& MessageAppendIterator::operator<<( const std::shared_ptr<
 MessageAppendIterator& MessageAppendIterator::operator<<( const Variant& v ) {
     if( !this->is_valid() ) { return *this; }
 
-    if( v.currentType() == DataType::INVALID ) {
+    if( v.type() == DataType::INVALID ) {
         return *this;
     }
 
