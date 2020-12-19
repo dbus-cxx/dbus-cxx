@@ -56,5 +56,7 @@
 #include <dbus-cxx/filedescriptor.h>
 #include <dbus-cxx/simplelogger_defs.h>
 #include <dbus-cxx/standalonedispatcher.h>
+#include <dbus-cxx/propertyproxy.h>
+#include <dbus-cxx/property.h>
 
 #endif

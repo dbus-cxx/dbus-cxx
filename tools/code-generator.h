@@ -86,18 +86,8 @@ private:
     XML_Parser m_parser;
     std::string m_xmlData;
     std::stack<std::string> m_tagStack;
-    std::vector<cppgenerate::Class> m_proxyClasses;
-    std::vector<cppgenerate::Class> m_adapterClasses;
-    std::vector<cppgenerate::Class> m_adapteeClasses;
-    cppgenerate::Method m_currentProxyMethod;
-    cppgenerate::Method m_currentAdapteeMethod;
-    cppgenerate::Constructor m_currentProxyConstructor;
-    cppgenerate::Constructor m_currentAdapterConstructor;
     SignalInfo m_currentSignal;
     int m_argNum;
-    std::string m_returnName;
-
-    // --------
     NodeInfo m_rootNode;
     InterfaceInfo m_currentInterface;
     MethodInfo m_currentMethodInfo;
