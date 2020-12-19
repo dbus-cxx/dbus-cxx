@@ -49,10 +49,10 @@ bool signal_tx_rx() {
     std::shared_ptr<DBus::Signal<void(std::string)>> signal = conn->create_free_signal<void(std::string)>( "/test/signal", "test.signal.type", "Path" );
     std::shared_ptr<DBus::SignalProxy<void(std::string)>> proxy = conn->create_free_signal_proxy<void(std::string)>(
                 DBus::MatchRuleBuilder::create()
-                .setPath( "/test/signal" )
-                .setInterface( "test.signal.type" )
-                .setMember( "Path" )
-                .asSignalMatch(),
+                .set_path( "/test/signal" )
+                .set_interface( "test.signal.type" )
+                .set_member( "Path" )
+                .as_signal_match(),
                 DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( sigHandle ) );
@@ -70,10 +70,10 @@ bool signal_void_txrx() {
     std::shared_ptr<DBus::Signal<void()>> signal = conn->create_free_signal<void()>( "/test/signal", "test.signal.type", "ExampleMember" );
     std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
-                .setPath( "/test/signal" )
-                .setInterface( "test.signal.type" )
-                .setMember( "ExampleMember" )
-                .asSignalMatch(),
+                .set_path( "/test/signal" )
+                .set_interface( "test.signal.type" )
+                .set_member( "ExampleMember" )
+                .as_signal_match(),
                 DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( voidSigHandle ) );
@@ -91,8 +91,8 @@ bool signal_path_match_only() {
     std::shared_ptr<DBus::Signal<void()>> signal = conn->create_free_signal<void()>( "/test/signal", "test.signal.type", "ExampleMember" );
     std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
-                .setPath( "/test/signal" )
-                .asSignalMatch(),
+                .set_path( "/test/signal" )
+                .as_signal_match(),
                 DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( voidSigHandle ) );
@@ -110,8 +110,8 @@ bool signal_interface_match_only() {
     std::shared_ptr<DBus::Signal<void()>> signal = conn->create_free_signal<void()>( "/test/signal", "test.signal.type", "ExampleMember" );
     std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
-                .setInterface( "test.signal.type" )
-                .asSignalMatch(),
+                .set_interface( "test.signal.type" )
+                .as_signal_match(),
                 DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( voidSigHandle ) );
@@ -129,8 +129,8 @@ bool signal_member_match_only() {
     std::shared_ptr<DBus::Signal<void()>> signal = conn->create_free_signal<void()>( "/test/signal", "test.signal.type", "ExampleMember" );
     std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
-                .setMember( "ExampleMember" )
-                .asSignalMatch(),
+                .set_member( "ExampleMember" )
+                .as_signal_match(),
                 DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( voidSigHandle ) );
@@ -148,15 +148,15 @@ bool signal_multiple_handlers() {
     std::shared_ptr<DBus::Signal<void()>> signal = conn->create_free_signal<void()>( "/test/signal", "test.signal.type", "ExampleMember" );
     std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
-                .setPath( "/test/signal" )
-                .setInterface( "test.signal.type" )
-                .setMember( "ExampleMember" )
-                .asSignalMatch(),
+                .set_path( "/test/signal" )
+                .set_interface( "test.signal.type" )
+                .set_member( "ExampleMember" )
+                .as_signal_match(),
                 DBus::ThreadForCalling::DispatcherThread );
     std::shared_ptr<DBus::SignalProxy<void()>> proxy2 = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
-                .setMember( "ExampleMember" )
-                .asSignalMatch(),
+                .set_member( "ExampleMember" )
+                .as_signal_match(),
                 DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( voidSigHandle ) );
@@ -175,15 +175,15 @@ bool signal_remove_handler() {
     std::shared_ptr<DBus::Signal<void()>> signal = conn->create_free_signal<void()>( "/test/signal", "test.signal.type", "ExampleMember" );
     std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
-                .setPath( "/test/signal" )
-                .setInterface( "test.signal.type" )
-                .setMember( "ExampleMember" )
-                .asSignalMatch(),
+                .set_path( "/test/signal" )
+                .set_interface( "test.signal.type" )
+                .set_member( "ExampleMember" )
+                .as_signal_match(),
                 DBus::ThreadForCalling::DispatcherThread );
     std::shared_ptr<DBus::SignalProxy<void()>> proxy2 = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
-                .setMember( "ExampleMember" )
-                .asSignalMatch(),
+                .set_member( "ExampleMember" )
+                .as_signal_match(),
                 DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( voidSigHandle ) );

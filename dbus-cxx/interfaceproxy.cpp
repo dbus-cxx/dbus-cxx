@@ -81,10 +81,10 @@ void InterfaceProxy::set_object( ObjectProxy* obj ) {
         m_priv->m_updated_proxy =
             conn->create_free_signal_proxy<void(std::string,std::map<std::string,DBus::Variant>,std::vector<std::string>)>(
                 DBus::MatchRuleBuilder::create()
-                .setPath( path() )
-                .setInterface( DBUS_CXX_PROPERTIES_INTERFACE )
-                .setMember( "PropertiesChanged" )
-                .asSignalMatch()
+                .set_path( path() )
+                .set_interface( DBUS_CXX_PROPERTIES_INTERFACE )
+                .set_member( "PropertiesChanged" )
+                .as_signal_match()
                 );
 
         m_priv->m_updated_proxy->connect( sigc::mem_fun( *this, &InterfaceProxy::property_updated ) );

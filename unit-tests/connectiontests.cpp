@@ -43,9 +43,9 @@ bool connection_create_signal_proxy() {
 
     std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
-                .setInterface( "interface.name" )
-                .setMember( "myname" )
-                .asSignalMatch(),
+                .set_interface( "interface.name" )
+                .set_member( "myname" )
+                .as_signal_match(),
                 DBus::ThreadForCalling::DispatcherThread );
 
     std::vector<std::shared_ptr<DBus::SignalProxyBase>> map = conn->get_free_signal_proxies();
@@ -66,9 +66,9 @@ bool connection_get_signal_proxy_by_iface() {
 
     std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
-                .setInterface( "interface.name" )
-                .setMember( "myname" )
-                .asSignalMatch(),
+                .set_interface( "interface.name" )
+                .set_member( "myname" )
+                .as_signal_match(),
                 DBus::ThreadForCalling::DispatcherThread );
 
     std::vector<std::shared_ptr<DBus::SignalProxyBase>> signals = conn->get_free_signal_proxies( "interface.name" );
@@ -82,9 +82,9 @@ bool connection_get_signal_proxy_by_iface_and_name() {
 
     std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
-                .setInterface( "interface.name" )
-                .setMember( "myname" )
-                .asSignalMatch(),
+                .set_interface( "interface.name" )
+                .set_member( "myname" )
+                .as_signal_match(),
                 DBus::ThreadForCalling::DispatcherThread );
 
 

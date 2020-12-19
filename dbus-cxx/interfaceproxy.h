@@ -164,10 +164,10 @@ public:
     std::shared_ptr<SignalProxy<T_arg >> create_signal( const std::string& sig_name ) {
         std::shared_ptr< SignalProxy<T_arg> > sig;
         SignalMatchRule match = MatchRuleBuilder::create()
-            .setPath( this->path() )
-            .setInterface( name() )
-            .setMember( sig_name )
-            .asSignalMatch();
+            .set_path( this->path() )
+            .set_interface( name() )
+            .set_member( sig_name )
+            .as_signal_match();
         sig = SignalProxy<T_arg>::create( match );
         this->add_signal( sig );
         return sig;

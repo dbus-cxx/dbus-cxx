@@ -44,50 +44,50 @@ MatchRuleBuilder::MatchRuleBuilder() :
     m_priv( std::make_unique<MatchRuleData>() )
 {}
 
-MatchRuleBuilder& MatchRuleBuilder::setPath( const std::string& path ) {
+MatchRuleBuilder& MatchRuleBuilder::set_path( const std::string& path ) {
     m_priv->m_path = path;
     return *this;
 }
 
-MatchRuleBuilder& MatchRuleBuilder::setInterface( const std::string& interface_name ) {
+MatchRuleBuilder& MatchRuleBuilder::set_interface( const std::string& interface_name ) {
     m_priv->m_interface = interface_name;
     return *this;
 }
 
-MatchRuleBuilder& MatchRuleBuilder::setMember( const std::string& member ) {
+MatchRuleBuilder& MatchRuleBuilder::set_member( const std::string& member ) {
     m_priv->m_member = member;
     return *this;
 }
 
-MatchRuleBuilder& MatchRuleBuilder::setSender( const std::string& sender ) {
+MatchRuleBuilder& MatchRuleBuilder::set_sender( const std::string& sender ) {
     m_priv->m_sender = sender;
     return *this;
 }
 
-MatchRuleBuilder& MatchRuleBuilder::setDestination( const std::string& destination ) {
+MatchRuleBuilder& MatchRuleBuilder::set_destination( const std::string& destination ) {
     m_priv->m_destination = destination;
     return *this;
 }
 
-SignalMatchRule MatchRuleBuilder::asSignalMatch(){
+SignalMatchRule MatchRuleBuilder::as_signal_match(){
     SignalMatchRule sig( m_priv );
 
     return sig;
 }
 
-MethodCallMatchRule MatchRuleBuilder::asMethodCallMatch(){
+MethodCallMatchRule MatchRuleBuilder::as_method_call_match(){
     MethodCallMatchRule meth( m_priv );
 
     return meth;
 }
 
-MethodReturnMatchRule MatchRuleBuilder::asMethodReturnMatch(){
+MethodReturnMatchRule MatchRuleBuilder::as_method_return_match(){
     MethodReturnMatchRule meth( m_priv );
 
     return meth;
 }
 
-ErrorMatchRule MatchRuleBuilder::asErrorMatch(){
+ErrorMatchRule MatchRuleBuilder::as_error_match(){
     ErrorMatchRule err( m_priv );
 
     return err;
@@ -104,19 +104,19 @@ MatchRule::MatchRule( std::string type, std::shared_ptr<MatchRuleData> data ) :
     m_priv->m_type = type;
 }
 
-std::string MatchRule::getPath() const {
+std::string MatchRule::path() const {
     return m_priv->m_path;
 }
 
-std::string MatchRule::getInterface() const {
+std::string MatchRule::dbus_interface() const {
     return m_priv->m_interface;
 }
 
-std::string MatchRule::getMember() const {
+std::string MatchRule::member() const {
     return m_priv->m_member;
 }
 
-std::string MatchRule::getMatchRule() const {
+std::string MatchRule::match_rule() const {
     std::string match_rule = "type='" + m_priv->m_type + "'";
 
     if( !m_priv->m_interface.empty() ) { match_rule += ",interface='"   + m_priv->m_interface   + "'"; }

@@ -35,13 +35,13 @@ protected:
     MatchRule( std::string type, const std::shared_ptr<MatchRuleData> );
 
 public:
-    std::string getMatchRule() const;
+    std::string match_rule() const;
 
-    std::string getPath() const;
+    std::string path() const;
 
-    std::string getInterface() const;
+    std::string dbus_interface() const;
 
-    std::string getMember() const;
+    std::string member() const;
 
 private:
     DBUS_CXX_PROPAGATE_CONST( std::shared_ptr<MatchRuleData> ) m_priv;
@@ -89,23 +89,23 @@ protected:
     MatchRuleBuilder();
 
 public:
-    MatchRuleBuilder& setPath( const std::string& path );
+    MatchRuleBuilder& set_path( const std::string& path );
 
-    MatchRuleBuilder& setInterface( const std::string& interface_name );
+    MatchRuleBuilder& set_interface( const std::string& interface_name );
 
-    MatchRuleBuilder& setMember( const std::string& member );
+    MatchRuleBuilder& set_member( const std::string& member );
 
-    MatchRuleBuilder& setSender( const std::string& sender );
+    MatchRuleBuilder& set_sender( const std::string& sender );
 
-    MatchRuleBuilder& setDestination( const std::string& destination );
+    MatchRuleBuilder& set_destination( const std::string& destination );
 
-    SignalMatchRule asSignalMatch();
+    SignalMatchRule as_signal_match();
 
-    MethodCallMatchRule asMethodCallMatch();
+    MethodCallMatchRule as_method_call_match();
 
-    MethodReturnMatchRule asMethodReturnMatch();
+    MethodReturnMatchRule as_method_return_match();
 
-    ErrorMatchRule asErrorMatch();
+    ErrorMatchRule as_error_match();
 
     static MatchRuleBuilder create();
 

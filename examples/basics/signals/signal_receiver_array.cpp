@@ -35,10 +35,10 @@ int main()
   std::shared_ptr<DBus::SignalProxy<void(std::vector<double>) >> signal =
       connection->create_free_signal_proxy<void(std::vector<double>) >(
           DBus::MatchRuleBuilder::create()
-            .setPath("/test/signal/Object")
-            .setInterface("test.signal.Type")
-            .setMember("Test")
-            .asSignalMatch(),
+            .set_path("/test/signal/Object")
+            .set_interface("test.signal.Type")
+            .set_member("Test")
+            .as_signal_match(),
           DBus::ThreadForCalling::DispatcherThread );
 
   signal->connect( sigc::ptr_fun(print) );

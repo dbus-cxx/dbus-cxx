@@ -86,10 +86,10 @@ bool property_signal_emitted(){
     std::shared_ptr<DBus::SignalProxy<void(std::string,std::map<std::string,DBus::Variant>,std::vector<std::string>)>> sig =
             conn->create_free_signal_proxy<void(std::string,std::map<std::string,DBus::Variant>,std::vector<std::string>)>(
                 DBus::MatchRuleBuilder::create()
-                .setPath( "/test" )
-                .setInterface( DBUS_CXX_PROPERTIES_INTERFACE )
-                .setMember( "PropertiesChanged" )
-                .asSignalMatch()
+                .set_path( "/test" )
+                .set_interface( DBUS_CXX_PROPERTIES_INTERFACE )
+                .set_member( "PropertiesChanged" )
+                .as_signal_match()
                 );
 
     int done = 0;

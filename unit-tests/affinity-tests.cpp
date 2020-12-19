@@ -90,9 +90,9 @@ bool affinity_signal_dispatcher_thread() {
 
     std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
-                .setInterface( "interface.name" )
-                .setMember( "myname" )
-                .asSignalMatch(),
+                .set_interface( "interface.name" )
+                .set_member( "myname" )
+                .as_signal_match(),
                 DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( receiveSignal ) );
@@ -117,9 +117,9 @@ bool affinity_signal_main_thread() {
 
     std::shared_ptr<DBus::SignalProxy<void()>> proxy = conn->create_free_signal_proxy<void()>(
                 DBus::MatchRuleBuilder::create()
-                .setInterface( "interface.name" )
-                .setMember( "myname" )
-                .asSignalMatch(),
+                .set_interface( "interface.name" )
+                .set_member( "myname" )
+                .as_signal_match(),
                 DBus::ThreadForCalling::CurrentThread );
 
     proxy->connect( sigc::ptr_fun( receiveSignal ) );

@@ -32,9 +32,9 @@ public:
 };
 
 SignalProxyBase::SignalProxyBase( const SignalMatchRule& matchRule ):
-    SignalBase( matchRule.getPath(), matchRule.getInterface(), matchRule.getMember() ),
+    SignalBase( matchRule.path(), matchRule.dbus_interface(), matchRule.member() ),
     m_priv( std::make_unique<priv_data>() ) {
-    m_priv->m_match_rule = matchRule.getMatchRule();
+    m_priv->m_match_rule = matchRule.match_rule();
 }
 
 SignalProxyBase::~SignalProxyBase() {
