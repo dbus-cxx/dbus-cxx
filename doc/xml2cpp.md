@@ -26,26 +26,16 @@ The extended attributes per XML element are:
 * node
   * **cppname** - The base name of the c++ class adapter and proxy
   * **gen-namespace** - The namespace the c++ adapter and proxy will be generated into
-  * **orig-namespace** - The namespace of the object being adapted
-  * **dest** - Used to create a default value for the \c dest parameter of a proxy
-  * **path** - Used to create a default value for the \c path parameter of both proxies and adapters
-  * **cppinclude** - A free form string that will follow a `#include` line in the adapter
-  * **file-prefix** - A per-node filename prefix prepended to the class name on output
+  * **dest** - Used to create a default value for the \c dest parameter of a proxy(e.g. `org.freedesktop.Notifications`)
+  * **path** - Used to create a default value for the \c path parameter of both proxies and adapters(e.g. `/org/freedesktop/Notifications`)
 * interface
-  * **ignored** - If set to "1" this interface will not be built for the proxy or adapter
-* signal
-  * **accessor** - The accessor method used to obtain the adaptee's signal
-  * **ignored** - If set to "1" this signal will not be built for the proxy or adapter
-* method
-  * **cppname** - Renames the DBus method to the provided name in the proxy and adapter
-  * **const** - Makes the proxy method a const method (useful when subclassing virtual methods)
-  * **virtual** - Prefixes the method with keyword virtual (useful for improving readability of virtual methods)
-* arg
- * **cpptype** - Defines the C++ type to be used when creating proxies/adapters for this argument. Useful for wrapping enumerations.
+  * **ignored** - If set to "true" this interface will not be built for the proxy or adapter
+  * **cppname** - The The name of the generated C++ interface class
 
 ## Proxy Example
 
-The following is an example of a DBus introspection document from [Avahi][avahi-server]:
+The following is an example of a DBus introspection document from [Avahi][avahi-server-browser] (with the appropriate
+dbus-cxx annotations):
 
 ~~~{.xml}
 <?xml version="1.0" standalone='no'?><!--*-nxml-*-->
@@ -71,199 +61,45 @@ The following is an example of a DBus introspection document from [Avahi][avahi-
   02111-1307 USA.
 -->
 
-<node>
+<node cppname="ServiceBrowser" gen-namespace="Avahi">
 
- <interface name="org.freedesktop.DBus.Introspectable">
+  <interface name="org.freedesktop.DBus.Introspectable">
     <method name="Introspect">
-      <arg name="data" type="s" direction="out"/>
+      <arg name="data" type="s" direction="out" />
     </method>
   </interface>
 
-  <interface name="org.freedesktop.Avahi.Server">
+  <interface name="org.freedesktop.Avahi.ServiceBrowser">
 
-    <method name="GetVersionString">
-      <arg name="version" type="s" direction="out"/>
-    </method>
+    <method name="Free"/>
 
-    <method name="GetAPIVersion">
-      <arg name="version" type="u" direction="out"/>
-    </method>
+    <method name="Start"/>
 
-    <method name="GetHostName">
-      <arg name="name" type="s" direction="out"/>
-    </method>
-    <method name="SetHostName">
-      <arg name="name" type="s" direction="in"/>
-    </method>
-    <method name="GetHostNameFqdn">
-      <arg name="name" type="s" direction="out"/>
-    </method>
-    <method name="GetDomainName">
-      <arg name="name" type="s" direction="out"/>
-    </method>
+    <signal name="ItemNew">
+      <arg name="interface" type="i"/>
+      <arg name="protocol" type="i"/>
+      <arg name="name" type="s"/>
+      <arg name="type" type="s"/>
+      <arg name="domain" type="s"/>
+      <arg name="flags" type="u"/>
+    </signal>
 
-    <method name="IsNSSSupportAvailable">
-      <arg name="yes" type="b" direction="out"/>
-    </method>
+    <signal name="ItemRemove">
+      <arg name="interface" type="i"/>
+      <arg name="protocol" type="i"/>
+      <arg name="name" type="s"/>
+      <arg name="type" type="s"/>
+      <arg name="domain" type="s"/>
+      <arg name="flags" type="u"/>
+    </signal>
 
-    <method name="GetState">
-      <arg name="state" type="i" direction="out"/>
-    </method>
-
-    <signal name="StateChanged">
-      <arg name="state" type="i"/>
+    <signal name="Failure">
       <arg name="error" type="s"/>
     </signal>
 
-    <method name="GetLocalServiceCookie">
-      <arg name="cookie" type="u" direction="out"/>
-    </method>
+    <signal name="AllForNow"/>
 
-    <method name="GetAlternativeHostName">
-      <arg name="name" type="s" direction="in"/>
-      <arg name="name" type="s" direction="out"/>
-    </method>
-
-    <method name="GetAlternativeServiceName">
-      <arg name="name" type="s" direction="in"/>
-      <arg name="name" type="s" direction="out"/>
-    </method>
-
-    <method name="GetNetworkInterfaceNameByIndex">
-      <arg name="index" type="i" direction="in"/>
-      <arg name="name" type="s" direction="out"/>
-    </method>
-    <method name="GetNetworkInterfaceIndexByName">
-      <arg name="name" type="s" direction="in"/>
-      <arg name="index" type="i" direction="out"/>
-    </method>
-
-    <method name="ResolveHostName">
-      <arg name="interface" type="i" direction="in"/>
-      <arg name="protocol" type="i" direction="in"/>
-      <arg name="name" type="s" direction="in"/>
-      <arg name="aprotocol" type="i" direction="in"/>
-      <arg name="flags" type="u" direction="in"/>
-
-      <arg name="interface" type="i" direction="out"/>
-      <arg name="protocol" type="i" direction="out"/>
-      <arg name="name" type="s" direction="out"/>
-      <arg name="aprotocol" type="i" direction="out"/>
-      <arg name="address" type="s" direction="out"/>
-      <arg name="flags" type="u" direction="out"/>
-    </method>
-
-    <method name="ResolveAddress">
-      <arg name="interface" type="i" direction="in"/>
-      <arg name="protocol" type="i" direction="in"/>
-      <arg name="address" type="s" direction="in"/>
-      <arg name="flags" type="u" direction="in"/>
-
-      <arg name="interface" type="i" direction="out"/>
-      <arg name="protocol" type="i" direction="out"/>
-      <arg name="aprotocol" type="i" direction="out"/>
-      <arg name="address" type="s" direction="out"/>
-      <arg name="name" type="s" direction="out"/>
-      <arg name="flags" type="u" direction="out"/>
-    </method>
-
-    <method name="ResolveService">
-      <arg name="interface" type="i" direction="in"/>
-      <arg name="protocol" type="i" direction="in"/>
-      <arg name="name" type="s" direction="in"/>
-      <arg name="type" type="s" direction="in"/>
-      <arg name="domain" type="s" direction="in"/>
-      <arg name="aprotocol" type="i" direction="in"/>
-      <arg name="flags" type="u" direction="in"/>
-
-      <arg name="interface" type="i" direction="out"/>
-      <arg name="protocol" type="i" direction="out"/>
-      <arg name="name" type="s" direction="out"/>
-      <arg name="type" type="s" direction="out"/>
-      <arg name="domain" type="s" direction="out"/>
-      <arg name="host" type="s" direction="out"/>
-      <arg name="aprotocol" type="i" direction="out"/>
-      <arg name="address" type="s" direction="out"/>
-      <arg name="port" type="q" direction="out"/>
-      <arg name="txt" type="aay" direction="out"/>
-      <arg name="flags" type="u" direction="out"/>
-    </method>
-
-    <method name="EntryGroupNew">
-      <arg name="path" type="o" direction="out"/>
-    </method>
-
-    <method name="DomainBrowserNew">
-      <arg name="interface" type="i" direction="in"/>
-      <arg name="protocol" type="i" direction="in"/>
-      <arg name="domain" type="s" direction="in"/>
-      <arg name="btype" type="i" direction="in"/>
-      <arg name="flags" type="u" direction="in"/>
-
-      <arg name="path" type="o" direction="out"/>
-    </method>
-
-    <method name="ServiceTypeBrowserNew">
-      <arg name="interface" type="i" direction="in"/>
-      <arg name="protocol" type="i" direction="in"/>
-      <arg name="domain" type="s" direction="in"/>
-      <arg name="flags" type="u" direction="in"/>
-
-      <arg name="path" type="o" direction="out"/>
-    </method>
-
-    <method name="ServiceBrowserNew">
-      <arg name="interface" type="i" direction="in"/>
-      <arg name="protocol" type="i" direction="in"/>
-      <arg name="type" type="s" direction="in"/>
-      <arg name="domain" type="s" direction="in"/>
-      <arg name="flags" type="u" direction="in"/>
-
-      <arg name="path" type="o" direction="out"/>
-    </method>
-
-    <method name="ServiceResolverNew">
-      <arg name="interface" type="i" direction="in"/>
-      <arg name="protocol" type="i" direction="in"/>
-      <arg name="name" type="s" direction="in"/>
-      <arg name="type" type="s" direction="in"/>
-      <arg name="domain" type="s" direction="in"/>
-      <arg name="aprotocol" type="i" direction="in"/>
-      <arg name="flags" type="u" direction="in"/>
-
-      <arg name="path" type="o" direction="out"/>
-    </method>
-
-    <method name="HostNameResolverNew">
-      <arg name="interface" type="i" direction="in"/>
-      <arg name="protocol" type="i" direction="in"/>
-      <arg name="name" type="s" direction="in"/>
-      <arg name="aprotocol" type="i" direction="in"/>
-      <arg name="flags" type="u" direction="in"/>
-
-      <arg name="path" type="o" direction="out"/>
-    </method>
-
-    <method name="AddressResolverNew">
-      <arg name="interface" type="i" direction="in"/>
-      <arg name="protocol" type="i" direction="in"/>
-      <arg name="address" type="s" direction="in"/>
-      <arg name="flags" type="u" direction="in"/>
-
-      <arg name="path" type="o" direction="out"/>
-    </method>
-
-    <method name="RecordBrowserNew">
-      <arg name="interface" type="i" direction="in"/>
-      <arg name="protocol" type="i" direction="in"/>
-      <arg name="name" type="s" direction="in"/>
-      <arg name="clazz" type="q" direction="in"/>
-      <arg name="type" type="q" direction="in"/>
-      <arg name="flags" type="u" direction="in"/>
-
-      <arg name="path" type="o" direction="out"/>
-    </method>
-
+    <signal name="CacheExhausted"/>
 
   </interface>
 </node>
@@ -271,422 +107,168 @@ The following is an example of a DBus introspection document from [Avahi][avahi-
 
 To make a proxy, run `dbus-cxx-xml2cpp` as follows:
 
-    dbus-cxx-xml2cpp  --proxy --xml=/path/to/org.freedesktop.Avahi.Server.xml
+    dbus-cxx-xml2cpp  --proxy --xml=/path/to/org.freedesktop.Avahi.ServiceBrowser.xml --file
 
-The output will be similar to the following:
-
-~~~{.cpp}
-
-#ifndef NONAME_PROXY_H
-#define NONAME_PROXY_H
-
-#include <dbus-cxx.h>
-#include <memory>
-#include <stdint.h>
-#include <string>
-class NONAME_Proxy
- : public DBus::ObjectProxy {
-protected:
-NONAME_Proxy(DBus::Connection::pointer conn, std::string dest, std::string path ) : DBus::ObjectProxy( conn, dest, path ){
-m_method_Introspect = this->create_method<std::string>("org.freedesktop.DBus.Introspectable","Introspect");
-m_method_GetVersionString = this->create_method<std::string>("org.freedesktop.Avahi.Server","GetVersionString");
-m_method_GetAPIVersion = this->create_method<uint32_t>("org.freedesktop.Avahi.Server","GetAPIVersion");
-m_method_GetHostName = this->create_method<std::string>("org.freedesktop.Avahi.Server","GetHostName");
-m_method_SetHostName = this->create_method<void,std::string>("org.freedesktop.Avahi.Server","SetHostName");
-m_method_GetHostNameFqdn = this->create_method<std::string>("org.freedesktop.Avahi.Server","GetHostNameFqdn");
-m_method_GetDomainName = this->create_method<std::string>("org.freedesktop.Avahi.Server","GetDomainName");
-m_method_IsNSSSupportAvailable = this->create_method<bool>("org.freedesktop.Avahi.Server","IsNSSSupportAvailable");
-m_method_GetState = this->create_method<int32_t>("org.freedesktop.Avahi.Server","GetState");
-m_method_GetLocalServiceCookie = this->create_method<uint32_t>("org.freedesktop.Avahi.Server","GetLocalServiceCookie");
-m_method_GetAlternativeHostName = this->create_method<std::string,std::string>("org.freedesktop.Avahi.Server","GetAlternativeHostName");
-m_method_GetAlternativeServiceName = this->create_method<std::string,std::string>("org.freedesktop.Avahi.Server","GetAlternativeServiceName");
-m_method_GetNetworkInterfaceNameByIndex = this->create_method<std::string,int32_t>("org.freedesktop.Avahi.Server","GetNetworkInterfaceNameByIndex");
-m_method_GetNetworkInterfaceIndexByName = this->create_method<int32_t,std::string>("org.freedesktop.Avahi.Server","GetNetworkInterfaceIndexByName");
-m_method_ResolveHostName = this->create_method<uint32_t,int32_t,int32_t,std::string,int32_t,uint32_t>("org.freedesktop.Avahi.Server","ResolveHostName");
-m_method_ResolveAddress = this->create_method<uint32_t,int32_t,int32_t,std::string,uint32_t>("org.freedesktop.Avahi.Server","ResolveAddress");
-m_method_ResolveService = this->create_method<uint32_t,int32_t,int32_t,std::string,std::string,std::string,int32_t,uint32_t>("org.freedesktop.Avahi.Server","ResolveService");
-m_method_EntryGroupNew = this->create_method<DBus::Path>("org.freedesktop.Avahi.Server","EntryGroupNew");
-m_method_DomainBrowserNew = this->create_method<DBus::Path,int32_t,int32_t,std::string,int32_t,uint32_t>("org.freedesktop.Avahi.Server","DomainBrowserNew");
-m_method_ServiceTypeBrowserNew = this->create_method<DBus::Path,int32_t,int32_t,std::string,uint32_t>("org.freedesktop.Avahi.Server","ServiceTypeBrowserNew");
-m_method_ServiceBrowserNew = this->create_method<DBus::Path,int32_t,int32_t,std::string,std::string,uint32_t>("org.freedesktop.Avahi.Server","ServiceBrowserNew");
-m_method_ServiceResolverNew = this->create_method<DBus::Path,int32_t,int32_t,std::string,std::string,std::string,int32_t,uint32_t>("org.freedesktop.Avahi.Server","ServiceResolverNew");
-m_method_HostNameResolverNew = this->create_method<DBus::Path,int32_t,int32_t,std::string,int32_t,uint32_t>("org.freedesktop.Avahi.Server","HostNameResolverNew");
-m_method_AddressResolverNew = this->create_method<DBus::Path,int32_t,int32_t,std::string,uint32_t>("org.freedesktop.Avahi.Server","AddressResolverNew");
-m_method_RecordBrowserNew = this->create_method<DBus::Path,int32_t,int32_t,std::string,uint16_t,uint16_t,uint32_t>("org.freedesktop.Avahi.Server","RecordBrowserNew");
-
-}
-public:
-std::shared_ptr<NONAME_Proxy> create(DBus::Connection::pointer conn, std::string dest, std::string path ){
-return std::shared_ptr<NONAME_Proxy>( new NONAME_Proxy( conn, dest, path ) );
-
-}
-std::string Introspect( ){
-return (*m_method_Introspect)();
-
-}
-std::string GetVersionString( ){
-return (*m_method_GetVersionString)();
-
-}
-uint32_t GetAPIVersion( ){
-return (*m_method_GetAPIVersion)();
-
-}
-std::string GetHostName( ){
-return (*m_method_GetHostName)();
-
-}
-void SetHostName(std::string name ){
-return (*m_method_SetHostName)(name);
-
-}
-std::string GetHostNameFqdn( ){
-return (*m_method_GetHostNameFqdn)();
-
-}
-std::string GetDomainName( ){
-return (*m_method_GetDomainName)();
-
-}
-bool IsNSSSupportAvailable( ){
-return (*m_method_IsNSSSupportAvailable)();
-
-}
-int32_t GetState( ){
-return (*m_method_GetState)();
-
-}
-uint32_t GetLocalServiceCookie( ){
-return (*m_method_GetLocalServiceCookie)();
-
-}
-std::string GetAlternativeHostName(std::string name ){
-return (*m_method_GetAlternativeHostName)(name);
-
-}
-std::string GetAlternativeServiceName(std::string name ){
-return (*m_method_GetAlternativeServiceName)(name);
-
-}
-std::string GetNetworkInterfaceNameByIndex(int32_t index ){
-return (*m_method_GetNetworkInterfaceNameByIndex)(index);
-
-}
-int32_t GetNetworkInterfaceIndexByName(std::string name ){
-return (*m_method_GetNetworkInterfaceIndexByName)(name);
-
-}
-uint32_t ResolveHostName(int32_t interface, int32_t protocol, std::string name, int32_t aprotocol, uint32_t flags ){
-return (*m_method_ResolveHostName)(interface,protocol,name,aprotocol,flags);
-
-}
-uint32_t ResolveAddress(int32_t interface, int32_t protocol, std::string address, uint32_t flags ){
-return (*m_method_ResolveAddress)(interface,protocol,address,flags);
-
-}
-uint32_t ResolveService(int32_t interface, int32_t protocol, std::string name, std::string type, std::string domain, int32_t aprotocol, uint32_t flags ){
-return (*m_method_ResolveService)(interface,protocol,name,type,domain,aprotocol,flags);
-
-}
-DBus::Path EntryGroupNew( ){
-return (*m_method_EntryGroupNew)();
-
-}
-DBus::Path DomainBrowserNew(int32_t interface, int32_t protocol, std::string domain, int32_t btype, uint32_t flags ){
-return (*m_method_DomainBrowserNew)(interface,protocol,domain,btype,flags);
-
-}
-DBus::Path ServiceTypeBrowserNew(int32_t interface, int32_t protocol, std::string domain, uint32_t flags ){
-return (*m_method_ServiceTypeBrowserNew)(interface,protocol,domain,flags);
-
-}
-DBus::Path ServiceBrowserNew(int32_t interface, int32_t protocol, std::string type, std::string domain, uint32_t flags ){
-return (*m_method_ServiceBrowserNew)(interface,protocol,type,domain,flags);
-
-}
-DBus::Path ServiceResolverNew(int32_t interface, int32_t protocol, std::string name, std::string type, std::string domain, int32_t aprotocol, uint32_t flags ){
-return (*m_method_ServiceResolverNew)(interface,protocol,name,type,domain,aprotocol,flags);
-
-}
-DBus::Path HostNameResolverNew(int32_t interface, int32_t protocol, std::string name, int32_t aprotocol, uint32_t flags ){
-return (*m_method_HostNameResolverNew)(interface,protocol,name,aprotocol,flags);
-
-}
-DBus::Path AddressResolverNew(int32_t interface, int32_t protocol, std::string address, uint32_t flags ){
-return (*m_method_AddressResolverNew)(interface,protocol,address,flags);
-
-}
-DBus::Path RecordBrowserNew(int32_t interface, int32_t protocol, std::string name, uint16_t clazz, uint16_t type, uint32_t flags ){
-return (*m_method_RecordBrowserNew)(interface,protocol,name,clazz,type,flags);
-
-}
-protected:
-    DBus::MethodProxy<std::string>::pointer  m_method_Introspect;
-    DBus::MethodProxy<std::string>::pointer  m_method_GetVersionString;
-    DBus::MethodProxy<uint32_t>::pointer  m_method_GetAPIVersion;
-    DBus::MethodProxy<std::string>::pointer  m_method_GetHostName;
-    DBus::MethodProxy<void,std::string>::pointer  m_method_SetHostName;
-    DBus::MethodProxy<std::string>::pointer  m_method_GetHostNameFqdn;
-    DBus::MethodProxy<std::string>::pointer  m_method_GetDomainName;
-    DBus::MethodProxy<bool>::pointer  m_method_IsNSSSupportAvailable;
-    DBus::MethodProxy<int32_t>::pointer  m_method_GetState;
-    DBus::MethodProxy<uint32_t>::pointer  m_method_GetLocalServiceCookie;
-    DBus::MethodProxy<std::string,std::string>::pointer  m_method_GetAlternativeHostName;
-    DBus::MethodProxy<std::string,std::string>::pointer  m_method_GetAlternativeServiceName;
-    DBus::MethodProxy<std::string,int32_t>::pointer  m_method_GetNetworkInterfaceNameByIndex;
-    DBus::MethodProxy<int32_t,std::string>::pointer  m_method_GetNetworkInterfaceIndexByName;
-    DBus::MethodProxy<uint32_t,int32_t,int32_t,std::string,int32_t,uint32_t>::pointer  m_method_ResolveHostName;
-    DBus::MethodProxy<uint32_t,int32_t,int32_t,std::string,uint32_t>::pointer  m_method_ResolveAddress;
-    DBus::MethodProxy<uint32_t,int32_t,int32_t,std::string,std::string,std::string,int32_t,uint32_t>::pointer  m_method_ResolveService;
-    DBus::MethodProxy<DBus::Path>::pointer  m_method_EntryGroupNew;
-    DBus::MethodProxy<DBus::Path,int32_t,int32_t,std::string,int32_t,uint32_t>::pointer  m_method_DomainBrowserNew;
-    DBus::MethodProxy<DBus::Path,int32_t,int32_t,std::string,uint32_t>::pointer  m_method_ServiceTypeBrowserNew;
-    DBus::MethodProxy<DBus::Path,int32_t,int32_t,std::string,std::string,uint32_t>::pointer  m_method_ServiceBrowserNew;
-    DBus::MethodProxy<DBus::Path,int32_t,int32_t,std::string,std::string,std::string,int32_t,uint32_t>::pointer  m_method_ServiceResolverNew;
-    DBus::MethodProxy<DBus::Path,int32_t,int32_t,std::string,int32_t,uint32_t>::pointer  m_method_HostNameResolverNew;
-    DBus::MethodProxy<DBus::Path,int32_t,int32_t,std::string,uint32_t>::pointer  m_method_AddressResolverNew;
-    DBus::MethodProxy<DBus::Path,int32_t,int32_t,std::string,uint16_t,uint16_t,uint32_t>::pointer  m_method_RecordBrowserNew;
-};
-#endif /* NONAME_PROXY_H */
-~~~
-
-As you can see, while we do have methods and they are named appropriately, the class name is `NONAME`
-and not very useful at that point.  So, we will modify the XML with a few attributes, so that our
-generated class has a better name(Full output omitted for brevity):
-
-~~~{.xml}
-<node cppname="Avahi">
-
- <interface name="org.freedesktop.DBus.Introspectable">
-    <method name="Introspect">
-      <arg name="data" type="s" direction="out"/>
-    </method>
-  </interface>
-
-  <interface name="org.freedesktop.Avahi.Server">
-
-    <method name="GetVersionString">
-      <arg name="version" type="s" direction="out"/>
-    </method>
-
-    <method name="GetAPIVersion">
-      <arg name="version" type="u" direction="out"/>
-    </method>
-
-    ...
-
-  </interface>
-</node>
-~~~
-
-Now the code looks like the following:
+Several files will be output for this introspection file, one `ObjectProxy`:
 
 ~~~{.cpp}
-#ifndef AVAHIPROXY_H
-#define AVAHIPROXY_H
+#ifndef SERVICEBROWSERPROXY_H
+#define SERVICEBROWSERPROXY_H
 
 #include <dbus-cxx.h>
 #include <memory>
 #include <stdint.h>
 #include <string>
-class AvahiProxy
+#include "org_freedesktop_Avahi_ServiceBrowserProxy.h"
+namespace Avahi {
+class ServiceBrowserProxy
  : public DBus::ObjectProxy {
-protected:
-AvahiProxy(DBus::Connection::pointer conn, std::string dest, std::string path ) : DBus::ObjectProxy( conn, dest, path ){
-m_method_Introspect = this->create_method<std::string>("org.freedesktop.DBus.Introspectable","Introspect");
-m_method_GetVersionString = this->create_method<std::string>("org.freedesktop.Avahi.Server","GetVersionString");
-m_method_GetAPIVersion = this->create_method<uint32_t>("org.freedesktop.Avahi.Server","GetAPIVersion");
-
-}
 public:
-std::shared_ptr<AvahiProxy> create(DBus::Connection::pointer conn, std::string dest, std::string path ){
-return std::shared_ptr<AvahiProxy>( new AvahiProxy( conn, dest, path ) );
-
-}
-std::string Introspect( ){
-return (*m_method_Introspect)();
-
-}
-std::string GetVersionString( ){
-return (*m_method_GetVersionString)();
-
-}
-uint32_t GetAPIVersion( ){
-return (*m_method_GetAPIVersion)();
-
-}
+ServiceBrowserProxy(std::shared_ptr<DBus::Connection> conn, std::string dest, std::string path, DBus::ThreadForCalling signalCallingThread = DBus::ThreadForCalling::DispatcherThread );
+public:
+    static std::shared_ptr<ServiceBrowserProxy> create(std::shared_ptr<DBus::Connection> conn, std::string dest, std::string path, DBus::ThreadForCalling signalCallingThread = DBus::ThreadForCalling::DispatcherThread );
+    std::shared_ptr<Avahi::org_freedesktop_Avahi_ServiceBrowserProxy> getorg_freedesktop_Avahi_ServiceBrowserInterface( );
 protected:
-    DBus::MethodProxy<std::string>::pointer  m_method_Introspect;
-    DBus::MethodProxy<std::string>::pointer  m_method_GetVersionString;
-    DBus::MethodProxy<uint32_t>::pointer  m_method_GetAPIVersion;
+    std::shared_ptr<Avahi::org_freedesktop_Avahi_ServiceBrowserProxy> m_org_freedesktop_Avahi_ServiceBrowserProxy;
 };
-#endif /* AVAHIPROXY_H */
+} /* namespace Avahi */
+#endif /* SERVICEBROWSERPROXY_H */
+
 ~~~
 
-If we want to namespace the class, we can do that as well:
+And one `InterfaceProxy`:
 
-~~~{.xml}
-<node cppname="Avahi" gen-namespace="AvahiNamespace">
-
- <interface name="org.freedesktop.DBus.Introspectable">
-    <method name="Introspect">
-      <arg name="data" type="s" direction="out"/>
-    </method>
-  </interface>
-
-  <interface name="org.freedesktop.Avahi.Server">
-
-    <method name="GetVersionString">
-      <arg name="version" type="s" direction="out"/>
-    </method>
-
-    <method name="GetAPIVersion">
-      <arg name="version" type="u" direction="out"/>
-    </method>
-
-    ...
-
-  </interface>
-</node>
-~~~
-
-This results in the following:
-
-~~~~~{.xml}
-
-#ifndef AVAHIPROXY_H
-#define AVAHIPROXY_H
+~~~{.cpp}
+#ifndef ORG_FREEDESKTOP_AVAHI_SERVICEBROWSERPROXY_H
+#define ORG_FREEDESKTOP_AVAHI_SERVICEBROWSERPROXY_H
 
 #include <dbus-cxx.h>
 #include <memory>
 #include <stdint.h>
 #include <string>
-namespace AvahiNamespace {
-class AvahiProxy
- : public DBus::ObjectProxy {
+namespace Avahi {
+class org_freedesktop_Avahi_ServiceBrowserProxy
+ : public DBus::InterfaceProxy {
 protected:
-AvahiProxy(DBus::Connection::pointer conn, std::string dest, std::string path ) : DBus::ObjectProxy( conn, dest, path ){
-m_method_Introspect = this->create_method<std::string>("org.freedesktop.DBus.Introspectable","Introspect");
-m_method_GetVersionString = this->create_method<std::string>("org.freedesktop.Avahi.Server","GetVersionString");
-m_method_GetAPIVersion = this->create_method<uint32_t>("org.freedesktop.Avahi.Server","GetAPIVersion");
-
-}
+org_freedesktop_Avahi_ServiceBrowserProxy(std::string name );
 public:
-std::shared_ptr<AvahiProxy> create(DBus::Connection::pointer conn, std::string dest, std::string path ){
-return std::shared_ptr<AvahiProxy>( new AvahiProxy( conn, dest, path ) );
-
-}
-std::string Introspect( ){
-return (*m_method_Introspect)();
-
-}
-std::string GetVersionString( ){
-return (*m_method_GetVersionString)();
-
-}
-uint32_t GetAPIVersion( ){
-return (*m_method_GetAPIVersion)();
-
-}
+    static std::shared_ptr<Avahi::org_freedesktop_Avahi_ServiceBrowserProxy> create(std::string name = "org.freedesktop.Avahi.ServiceBrowser" );
+    void Free( );
+    void Start( );
+    std::shared_ptr<DBus::SignalProxy<void(int32_t,int32_t,std::string,std::string,std::string,uint32_t)>> signal_ItemNew( );
+    std::shared_ptr<DBus::SignalProxy<void(int32_t,int32_t,std::string,std::string,std::string,uint32_t)>> signal_ItemRemove( );
+    std::shared_ptr<DBus::SignalProxy<void(std::string)>> signal_Failure( );
+    std::shared_ptr<DBus::SignalProxy<void()>> signal_AllForNow( );
+    std::shared_ptr<DBus::SignalProxy<void()>> signal_CacheExhausted( );
 protected:
-    DBus::MethodProxy<std::string>::pointer  m_method_Introspect;
-    DBus::MethodProxy<std::string>::pointer  m_method_GetVersionString;
-    DBus::MethodProxy<uint32_t>::pointer  m_method_GetAPIVersion;
+    std::shared_ptr<DBus::MethodProxy<void()>>  m_method_Free;
+    std::shared_ptr<DBus::MethodProxy<void()>>  m_method_Start;
+    std::shared_ptr<DBus::SignalProxy<void(int32_t,int32_t,std::string,std::string,std::string,uint32_t)>> m_signalproxy_ItemNew;
+    std::shared_ptr<DBus::SignalProxy<void(int32_t,int32_t,std::string,std::string,std::string,uint32_t)>> m_signalproxy_ItemRemove;
+    std::shared_ptr<DBus::SignalProxy<void(std::string)>> m_signalproxy_Failure;
+    std::shared_ptr<DBus::SignalProxy<void()>> m_signalproxy_AllForNow;
+    std::shared_ptr<DBus::SignalProxy<void()>> m_signalproxy_CacheExhausted;
 };
-} /* namespace AvahiNamespace */
-#endif /* AVAHIPROXY_H */
-~~~~~
+} /* namespace Avahi */
+#endif /* ORG_FREEDESKTOP_AVAHI_SERVICEBROWSERPROXY_H */
+~~~
+
+Each interface that is found in the Introspection XML document will hav a new class created for it,
+and added to the main proxy class for use.  The generated methods will act just as normal methods on
+an object that exists in the local application, but they will get called ver the bus.  Signals
+are prefixed with `signal_` to make it more obvious what they are.  Properties are similar to methods,
+in that they do not have a prefix before them.
+
 
 ## Adapter Example
 
 If we instead want to implement a class from an already-existing introspection document, we create an adapter
 using the following command:
 
-    dbus-cxx-xml2cpp  --adapter --xml=/path/to/org.freedesktop.Avahi.Server.xml -f
+    dbus-cxx-xml2cpp  --adapter --xml=/path/to/org.freedesktop.Avahi.ServerBrowser.xml --file
 
-Note: Because this creates two classes(an adapter and an adaptee), we must send it to a file.
+Several classes will be generated.  As before, we get one class per interface that is in the instrospection file,
+a master Adapter class, plus a pure virtual class that we must implement in order to receive method calls.
 
-The generated files look like this:
+The main adapter class, which is what you will need to export on the bus:
 
-AvahiAdaptee.h:
 ~~~{.cpp}
-#ifndef AVAHIADAPTEE_H
-#define AVAHIADAPTEE_H
-
-class AvahiAdaptee
-{
-public:
-virtual std::string Introspect( ) = 0;
-virtual std::string GetVersionString( ) = 0;
-virtual uint32_t GetAPIVersion( ) = 0;
-};
-#endif /* AVAHIADAPTEE_H */
-~~~
-
-AvahiAdapter.h:
-~~~{.cpp}
-#ifndef AVAHIADAPTER_H
-#define AVAHIADAPTER_H
+#ifndef SERVICEBROWSERADAPTER_H
+#define SERVICEBROWSERADAPTER_H
 
 #include <dbus-cxx.h>
 #include <memory>
 #include <stdint.h>
 #include <string>
-#include "AvahiAdaptee.h"
-class AvahiAdapter
+#include "org_freedesktop_Avahi_ServiceBrowserInterface.h"
+namespace Avahi {
+class ServiceBrowserAdapter
  : public DBus::Object {
+public:
+ServiceBrowserAdapter(std::shared_ptr<org_freedesktop_Avahi_ServiceBrowserInterface> _org_freedesktop_Avahi_ServiceBrowserInterface, std::string path );
+public:
+    static std::shared_ptr<ServiceBrowserAdapter> create(std::shared_ptr<DBus::Connection> connection, std::shared_ptr<org_freedesktop_Avahi_ServiceBrowserInterface> _org_freedesktop_Avahi_ServiceBrowserInterface, std::string path, DBus::ThreadForCalling calling_thread = DBus::ThreadForCalling::DispatcherThread );
+};
+} /* namespace Avahi */
+#endif /* SERVICEBROWSERADAPTER_H */
+~~~
+
+The adapter class, whic contains the signals on this interface.  You must also give it a pointerto a pure virtual
+class that implements the methods on this interface:
+
+~~~{.cpp}
+#ifndef ORG_FREEDESKTOP_AVAHI_SERVICEBROWSERINTERFACE_H
+#define ORG_FREEDESKTOP_AVAHI_SERVICEBROWSERINTERFACE_H
+
+#include <dbus-cxx.h>
+#include <memory>
+#include <stdint.h>
+#include <string>
+#include "org_freedesktop_Avahi_ServiceBrowser.h"
+namespace Avahi {
+class org_freedesktop_Avahi_ServiceBrowserInterface
+ : public DBus::Interface {
+private:
+org_freedesktop_Avahi_ServiceBrowserInterface(org_freedesktop_Avahi_ServiceBrowser* adaptee, std::string name );
+public:
+    static std::shared_ptr<org_freedesktop_Avahi_ServiceBrowserInterface> create(org_freedesktop_Avahi_ServiceBrowser* adaptee, std::string name = "org.freedesktop.Avahi.ServiceBrowser" );
+    std::shared_ptr<DBus::Signal<void(int32_t,int32_t,std::string,std::string,std::string,uint32_t)>> signal_ItemNew( );
+    void ItemNew(int32_t _interface, int32_t protocol, std::string name, std::string type, std::string domain, uint32_t flags );
+    std::shared_ptr<DBus::Signal<void(int32_t,int32_t,std::string,std::string,std::string,uint32_t)>> signal_ItemRemove( );
+    void ItemRemove(int32_t _interface, int32_t protocol, std::string name, std::string type, std::string domain, uint32_t flags );
+    std::shared_ptr<DBus::Signal<void(std::string)>> signal_Failure( );
+    void Failure(std::string error );
+    std::shared_ptr<DBus::Signal<void()>> signal_AllForNow( );
+    void AllForNow( );
+    std::shared_ptr<DBus::Signal<void()>> signal_CacheExhausted( );
+    void CacheExhausted( );
 protected:
-AvahiAdapter(AvahiAdaptee* adaptee, std::string path );
-public:
-    static std::shared_ptr<AvahiAdapter> create(AvahiAdaptee* adaptee, std::string path );
+    std::shared_ptr<DBus::Signal<void(int32_t,int32_t,std::string,std::string,std::string,uint32_t)>> m_signal_ItemNew;
+    std::shared_ptr<DBus::Signal<void(int32_t,int32_t,std::string,std::string,std::string,uint32_t)>> m_signal_ItemRemove;
+    std::shared_ptr<DBus::Signal<void(std::string)>> m_signal_Failure;
+    std::shared_ptr<DBus::Signal<void()>> m_signal_AllForNow;
+    std::shared_ptr<DBus::Signal<void()>> m_signal_CacheExhausted;
 };
-#endif /* AVAHIADAPTER_H */
+} /* namespace Avahi */
+#endif /* ORG_FREEDESKTOP_AVAHI_SERVICEBROWSERINTERFACE_H */
 ~~~
 
-AvahiAdapter.cpp:
-~~~{.cpp}
-#include "AvahiAdapter.h"
-
-AvahiAdapter::AvahiAdapter(AvahiAdaptee* adaptee, std::string path ) : DBus::Object( path ){
-DBus::MethodBase::pointer temp_method;
-temp_method = this->create_method<std::string>( "org.freedesktop.DBus.Introspectable", "Introspect",sigc::mem_fun( adaptee, &AvahiAdaptee::Introspect ) );
-temp_method = this->create_method<std::string>( "org.freedesktop.Avahi.Server", "GetVersionString",sigc::mem_fun( adaptee, &AvahiAdaptee::GetVersionString ) );
-temp_method = this->create_method<uint32_t>( "org.freedesktop.Avahi.Server", "GetAPIVersion",sigc::mem_fun( adaptee, &AvahiAdaptee::GetAPIVersion ) );
-
-}
-std::shared_ptr<AvahiAdapter> AvahiAdapter::create(AvahiAdaptee* adaptee, std::string path ){
-return std::shared_ptr<AvahiAdapter>( new AvahiAdapter( adaptee, path ) );
-
-}
-~~~
-
-Now we simply includ our `AvahiAdaptee.h` and implement the methods as appropriate:
+And finally, the pure virtual class that must be implemented in order to have methods that are called over the DBus:
 
 ~~~{.cpp}
-#include "AvahiAdapter.h"
+#ifndef ORG_FREEDESKTOP_AVAHI_SERVICEBROWSER_H
+#define ORG_FREEDESKTOP_AVAHI_SERVICEBROWSER_H
 
-class MyAdaptee : public AvahiAdaptee {
+class org_freedesktop_Avahi_ServiceBrowser
+{
 public:
-MyAdaptee(){}
-virtual std::string Introspect( ){
-    return "introspection-document-here";
-}
-virtual std::string GetVersionString( ){
-    return "1.0";
-}
-virtual uint32_t GetAPIVersion( ){
-    return 1;
-}
+    virtual void Free( ) = 0;
+    virtual void Start( ) = 0;
 };
-
-int main(){
-    MyAdaptee adaptee;
-
-    std::shared_ptr<AvahiAdapter> adapter = AvahiAdapter::create( &adaptee, "path" );
-
-    /* Eventually, we export the object using adapter->register_with_connection( DBus::Connection ); */
-}
+#endif /* ORG_FREEDESKTOP_AVAHI_SERVICEBROWSER_H */
 ~~~
 
+The idea behind the pure virtual class is that any class that needs to be called over the DBus needs only a minimal
+amount of support in order to add the ability to have methods called over the bus.
 
-[avahi-server]:https://github.com/lathiat/avahi/blob/b902ea8f8615605e12ed6a3b64e7a11b71a759eb/avahi-daemon/org.freedesktop.Avahi.Server.xml
+[avahi-server-browser]:https://github.com/lathiat/avahi/blob/d1e71b320d96d0f213ecb0885c8313039a09f693/avahi-daemon/org.freedesktop.Avahi.ServiceBrowser.xml

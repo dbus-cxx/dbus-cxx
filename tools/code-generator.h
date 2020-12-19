@@ -91,6 +91,7 @@ private:
     NodeInfo m_rootNode;
     InterfaceInfo m_currentInterface;
     MethodInfo m_currentMethodInfo;
+    bool m_ignoreInterface;
 };
 
 }

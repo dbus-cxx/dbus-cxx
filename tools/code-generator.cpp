@@ -65,7 +65,20 @@ void CodeGenerator::start_element( std::string tagName, std::map<std::string,std
         std::string cppName = interfaceName;
         std::replace( cppName.begin(), cppName.end(), '.', '_' );
         m_currentInterface = InterfaceInfo( interfaceName );
+
+        std::map<std::string,std::string>::iterator it = tagAttrs.find( "cppname" );
+        if( it != tagAttrs.end() ){
+            cppName = it->second;
+        }
         m_currentInterface.setCppname( cppName );
+
+        m_ignoreInterface = false;
+        it = tagAttrs.find( "ignored" );
+        if( it != tagAttrs.end() ){
+            if( it->second == "true" ){
+                m_ignoreInterface = true;
+            }
+        }
     }else if( tagName.compare( "method" ) == 0 ){
         handle_method_tag( tagAttrs );
     }else if( tagName.compare( "signal" ) == 0 ){
@@ -83,6 +96,7 @@ void CodeGenerator::end_element( std::string tagName ){
     if( tagName == "method" ){
         m_currentInterface.addMethodInfo( m_currentMethodInfo );
     }else if( tagName == "interface" ){
+        if( m_ignoreInterface ) return;
         m_rootNode.addInterfaceInfo( m_currentInterface );
     }else if( tagName == "signal" ){
         m_currentInterface.addSignalInfo( m_currentSignal );
