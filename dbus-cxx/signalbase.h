@@ -50,16 +50,16 @@ protected:
 
     SignalBase( const std::string& interface_name, const std::string& name );
 
-    SignalBase( std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface_name, const std::string& name );
+    SignalBase( std::weak_ptr<Connection> connection, const std::string& path, const std::string& interface_name, const std::string& name );
 
-    SignalBase( std::shared_ptr<Connection> connection, const std::string& interface_name, const std::string& name );
+    SignalBase( std::weak_ptr<Connection> connection, const std::string& interface_name, const std::string& name );
 
 public:
     virtual ~SignalBase();
 
     std::shared_ptr<Connection> connection();
 
-    void set_connection( std::shared_ptr<Connection> connection );
+    void set_connection( std::weak_ptr<Connection> connection );
 
     const std::string& sender() const;
 

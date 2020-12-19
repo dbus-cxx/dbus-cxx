@@ -88,6 +88,10 @@ void InterfaceProxy::set_object( ObjectProxy* obj ) {
                 );
 
         m_priv->m_updated_proxy->connect( sigc::mem_fun( *this, &InterfaceProxy::property_updated ) );
+
+        for( std::shared_ptr<SignalProxyBase> sig : m_priv->m_signals ){
+            conn->add_match( sig->match_rule() );
+        }
     }
 }
 
@@ -254,6 +258,11 @@ bool InterfaceProxy::add_signal( std::shared_ptr<SignalProxyBase> sig ) {
 
     // add it to the signal set
     m_priv->m_signals.insert( sig );
+
+    std::shared_ptr<Connection> conn = connection().lock();
+    if( conn ){
+        conn->add_match( sig->match_rule() );
+    }
 
     return true;
 }

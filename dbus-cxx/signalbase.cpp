@@ -49,7 +49,7 @@ SignalBase::SignalBase( const std::string& interface_name, const std::string& na
     m_priv->m_name = name;
 }
 
-SignalBase::SignalBase( std::shared_ptr<Connection> connection, const std::string& path, const std::string& interface_name, const std::string& name ):
+SignalBase::SignalBase( std::weak_ptr<Connection> connection, const std::string& path, const std::string& interface_name, const std::string& name ):
     m_priv( std::make_unique<priv_data>() ) {
     m_priv->m_connection = connection;
     m_priv->m_path = path;
@@ -57,7 +57,7 @@ SignalBase::SignalBase( std::shared_ptr<Connection> connection, const std::strin
     m_priv->m_name = name;
 }
 
-SignalBase::SignalBase( std::shared_ptr<Connection> connection, const std::string& interface_name, const std::string& name ):
+SignalBase::SignalBase( std::weak_ptr<Connection> connection, const std::string& interface_name, const std::string& name ):
     m_priv( std::make_unique<priv_data>() ) {
     m_priv->m_connection = connection;
     m_priv->m_interface = interface_name;
@@ -71,7 +71,7 @@ std::shared_ptr< Connection > SignalBase::connection() {
     return m_priv->m_connection.lock();
 }
 
-void DBus::SignalBase::set_connection( std::shared_ptr< Connection > connection ) {
+void DBus::SignalBase::set_connection( std::weak_ptr< Connection > connection ) {
     m_priv->m_connection = connection;
 }
 

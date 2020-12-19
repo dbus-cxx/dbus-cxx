@@ -103,7 +103,7 @@ protected:
 
     void internal_callback( T_type... args ) {
         std::shared_ptr<SignalMessage> __msg = SignalMessage::create( path(), interface_name(), name() );
-        DBUSCXX_DEBUG_STDSTR( "DBus.signal", "Sending following signal: "
+        DBUSCXX_DEBUG_STDSTR( "DBus.Signal", "Sending following signal: "
             << __msg->path()
             << " "
             << __msg->interface_name()
@@ -114,7 +114,7 @@ protected:
 
         ( *__msg << ... << args );
         bool result = this->handle_dbus_outgoing( __msg );
-        DBUSCXX_DEBUG_STDSTR( "dbus.signal", "signal::internal_callback: result=" << result );
+        DBUSCXX_DEBUG_STDSTR( "DBus.Signal", "signal::internal_callback: result=" << result );
     }
 };
 

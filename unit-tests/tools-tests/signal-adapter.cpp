@@ -23,6 +23,9 @@ class SignalNameAdaptee : public signal_name_interface {
 };
 
 int main( int argc, char** argv ) {
+    DBus::setLoggingFunction( DBus::logStdErr );
+    DBus::setLogLevel( SL_TRACE );
+
     std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
@@ -31,5 +34,8 @@ int main( int argc, char** argv ) {
             signal_name_interfaceInterface::create( &adaptee );
     std::shared_ptr<signalNameAdapter> sigAdapt = signalNameAdapter::create( conn, signalNameInterface );
 
-    //sigAdapt->exampleSignal( "foobar" );
+    signalNameInterface->signal_exampleSignal()->emit( "hi there" );
+    conn->flush();
+
+    return 0;
 }

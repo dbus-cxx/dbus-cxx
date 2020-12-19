@@ -169,17 +169,17 @@ bool Interface::add_signal( std::shared_ptr<SignalBase> sig ) {
 
     if( !sig ) { return false; }
 
-    SIMPLELOGGER_DEBUG( "dbus.Interface", "Interface(" << this->name() << ")::add_signal (" << sig->name() << ")" );
+    SIMPLELOGGER_DEBUG( LOGGER_NAME, "Interface(" << this->name() << ")::add_signal (" << sig->name() << ")" );
 
     std::unique_lock lock( m_priv->m_signals_rwlock );
 
     // Do we already have the signal?
     if( m_priv->m_signals.find( sig ) != m_priv->m_signals.end() ) {
-        SIMPLELOGGER_DEBUG( "dbus.Interface", "Interface(" << this->name() << ")::add_signal (" << sig->name() << ") failed since signal is already present" );
+        SIMPLELOGGER_DEBUG( LOGGER_NAME, "Interface(" << this->name() << ")::add_signal (" << sig->name() << ") failed since signal is already present" );
         // If so, we won't add it again
         result = false;
     } else {
-        SIMPLELOGGER_DEBUG( "dbus.Interface", "Interface(" << this->name() << ")::add_signal (" << sig->name() << ") succeeded" );
+        SIMPLELOGGER_DEBUG( LOGGER_NAME, "Interface(" << this->name() << ")::add_signal (" << sig->name() << ") succeeded" );
         m_priv->m_signals.insert( sig );
         sig->set_path( this->path() );
         sig->set_interface( m_priv->m_name );
@@ -462,6 +462,11 @@ void Interface::property_updated( DBus::PropertyBase* prop ){
 
 void Interface::set_connection( std::weak_ptr<Connection> conn ){
     m_priv->m_connection = conn;
+
+    std::unique_lock lock( m_priv->m_signals_rwlock );
+    for( std::shared_ptr<SignalBase> signal : m_priv->m_signals ){
+        signal->set_connection( conn );
+    }
 }
 
 }

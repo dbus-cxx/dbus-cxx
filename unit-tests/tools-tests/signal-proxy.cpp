@@ -17,15 +17,34 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include "signalNameProxy.h"
+#include <iostream>
 
-static void dosomething( std::string ) {
+static std::string value;
+
+static void dosomething( std::string in ) {
+    value = in;
 }
 
 int main( int argc, char** argv ) {
+    DBus::setLoggingFunction( DBus::logStdErr );
+    DBus::setLogLevel( SL_TRACE );
+
     std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
     std::shared_ptr<signalNameProxy> proxy = signalNameProxy::create( conn );
     std::shared_ptr<DBus::SignalProxy<void(std::string)>> signalProxy = proxy->getsignal_name_interfaceInterface()->signal_exampleSignal();
     signalProxy->connect( sigc::ptr_fun( dosomething ) );
+
+    if( argc > 1 ){
+        std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
+
+        if( value == "hi there" ){
+            return 0;
+        }
+
+        return 1;
+    }
+
+    return 0;
 }
