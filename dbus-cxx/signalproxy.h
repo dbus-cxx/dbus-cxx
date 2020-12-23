@@ -34,7 +34,6 @@
 #define DBUSCXX_SIGNALPROXYBASE_H
 
 namespace DBus {
-struct MessageHandlerAccumulator;
 template <typename type> class SignalProxy;
 
 /**

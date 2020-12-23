@@ -28,7 +28,6 @@ public:
     priv_data() {}
 
     std::string m_match_rule;
-    sigc::signal<HandlerResult( std::shared_ptr<const SignalMessage> )>::accumulated<MessageHandlerAccumulator> m_signal_dbus_incoming;
 };
 
 SignalProxyBase::SignalProxyBase( const SignalMatchRule& matchRule ):

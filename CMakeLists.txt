@@ -160,7 +160,6 @@ set( DBUS_CXX_SOURCES
 # headers that need to go in the include/dbus-cxx directory
 set( DBUS_CXX_HEADERS
     dbus-cxx.h
-    dbus-cxx/accumulators.h
     dbus-cxx/callmessage.h
     dbus-cxx/dispatcher.h
     dbus-cxx/enums.h

@@ -20,7 +20,6 @@
 #include <dbus-cxx/interfaceproxy.h>
 #include <dbus-cxx/signalmessage.h>
 #include <dbus-cxx/errormessage.h>
-#include <dbus-cxx/accumulators.h>
 #include <algorithm>
 #include <cassert>
 #include <memory>

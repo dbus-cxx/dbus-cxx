@@ -24,7 +24,6 @@
 #endif
 
 #include <dbus-cxx/dbus-cxx-config.h>
-#include <dbus-cxx/accumulators.h>
 #include <dbus-cxx/callmessage.h>
 #include <dbus-cxx/connection.h>
 #include <dbus-cxx/signal.h>

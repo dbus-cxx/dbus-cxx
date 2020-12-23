@@ -67,7 +67,6 @@ class ReturnMessage;
 class SignalMessage;
 class Timeout;
 class Watch;
-struct InterruptablePredicateAccumulatorDefaultFalse;
 class ThreadDispatcher;
 class ErrorMessage;
 class DBusDaemonProxy;
