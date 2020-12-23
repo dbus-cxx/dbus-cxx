@@ -26,8 +26,8 @@ static void dosomething( std::string in ) {
 }
 
 int main( int argc, char** argv ) {
-    DBus::setLoggingFunction( DBus::logStdErr );
-    DBus::setLogLevel( SL_TRACE );
+    DBus::set_logging_function( DBus::log_std_err );
+    DBus::set_log_level( SL_TRACE );
 
     std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
     std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );

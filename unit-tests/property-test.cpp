@@ -165,8 +165,8 @@ int main( int argc, char** argv ) {
     bool ret = false;
     bool is_client = std::string( argv[1] ) == "client";
 
-    DBus::setLoggingFunction( DBus::logStdErr );
-    DBus::setLogLevel( SL_TRACE );
+    DBus::set_logging_function( DBus::log_std_err );
+    DBus::set_log_level( SL_TRACE );
 
     dispatch = DBus::StandaloneDispatcher::create();
     conn = dispatch->create_connection( DBus::BusType::SESSION );

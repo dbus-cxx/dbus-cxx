@@ -834,8 +834,8 @@ int main( int argc, char** argv ) {
     std::string test_name = argv[1];
     bool ret = false;
 
-    DBus::setLoggingFunction( DBus::logStdErr );
-    DBus::setLogLevel( SL_DEBUG );
+    DBus::set_logging_function( DBus::log_std_err );
+    DBus::set_log_level( SL_DEBUG );
 
     ADD_TEST( bool );
     ADD_TEST( byte );

@@ -39,11 +39,11 @@ namespace DBus {
 
 static enum SL_LogLevel log_level = SL_INFO;
 
-void setLoggingFunction( simplelogger_log_function function ) {
+void set_logging_function( simplelogger_log_function function ) {
     dbuscxx_log_function = function;
 }
 
-void logStdErr( const char* logger_name, const struct SL_LogLocation* location,
+void log_std_err( const char* logger_name, const struct SL_LogLocation* location,
     const enum SL_LogLevel level,
     const char* log_string ) {
     if( level < log_level ) { return; }
@@ -60,7 +60,7 @@ void logStdErr( const char* logger_name, const struct SL_LogLocation* location,
     std::cerr << buffer << std::endl;
 }
 
-void setLogLevel( const enum SL_LogLevel level ) {
+void set_log_level( const enum SL_LogLevel level ) {
     log_level = level;
 }
 

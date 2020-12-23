@@ -95,14 +95,14 @@ namespace DBus {
  * Set the callback function that is used for printing log messages.
  * Set this to either your provided function, or use the built-in function DBus::logStdErr.
  */
-void setLoggingFunction( ::simplelogger_log_function function );
+void set_logging_function( ::simplelogger_log_function function );
 
 /**
  * Log messages to stderr(std::cerr).
  *
  * Format is: [thread-id] [logger-name] [level] - message(file:line)
  */
-void logStdErr( const char* logger_name, const struct ::SL_LogLocation* location,
+void log_std_err( const char* logger_name, const struct ::SL_LogLocation* location,
     const enum ::SL_LogLevel level,
     const char* log_string );
 
@@ -110,7 +110,7 @@ void logStdErr( const char* logger_name, const struct ::SL_LogLocation* location
  * When used in conjunction with DBus::logStdErr, will only print out log messages above the set level.
  * By default, this is set to SL_INFO
  */
-void setLogLevel( const enum ::SL_LogLevel level );
+void set_log_level( const enum ::SL_LogLevel level );
 
 /**
  * Print the vector as a hexdump output to the given output stream

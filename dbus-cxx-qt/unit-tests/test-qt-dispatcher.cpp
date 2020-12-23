@@ -12,8 +12,8 @@ int main(int argc, char** argv){
     bool use_qt_dispatcher = true;
     std::string dispatch_type( argv[ 1 ] );
 
-    DBus::setLoggingFunction( DBus::logStdErr );
-    DBus::setLogLevel( SL_TRACE );
+    DBus::set_logging_function( DBus::log_std_err );
+    DBus::set_log_level( SL_TRACE );
 
     if( dispatch_type == "standalone" ){
         use_qt_dispatcher = false;

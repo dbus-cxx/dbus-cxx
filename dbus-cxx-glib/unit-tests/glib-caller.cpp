@@ -22,8 +22,8 @@ int main(int argc, char** argv){
     std::shared_ptr<DBus::Dispatcher> disp;
     GMainLoop* mainLoop;
 
-    DBus::setLoggingFunction( DBus::logStdErr );
-    DBus::setLogLevel( SL_TRACE );
+    DBus::set_logging_function( DBus::log_std_err );
+    DBus::set_log_level( SL_TRACE );
 
     mainLoop = g_main_loop_new( nullptr, false );
 

@@ -216,8 +216,8 @@ int main( int argc, char** argv ) {
     std::string test_name = argv[1];
     bool ret = false;
 
-    DBus::setLoggingFunction( DBus::logStdErr );
-    DBus::setLogLevel( SL_TRACE );
+    DBus::set_logging_function( DBus::log_std_err );
+    DBus::set_log_level( SL_TRACE );
 
     dispatch = DBus::StandaloneDispatcher::create();
 
