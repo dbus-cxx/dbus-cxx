@@ -34,7 +34,7 @@ public:
 
 MethodBase::MethodBase( const std::string& name ):
     m_priv( std::make_unique<priv_data>( name ) ) {
-    SIMPLELOGGER_DEBUG( "dbus.MethodBase", "Creating new method with name " << name );
+    SIMPLELOGGER_DEBUG( "DBus.MethodBase", "Creating new method with name " << name );
 }
 
 MethodBase::~MethodBase() {}

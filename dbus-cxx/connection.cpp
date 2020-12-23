@@ -819,7 +819,7 @@ std::shared_ptr<Object> Connection::create_object( const std::string& path, Thre
 RegistrationStatus Connection::register_object( std::shared_ptr<ObjectPathHandler> object, ThreadForCalling calling ) {
     if( !object ) { return RegistrationStatus::Failed_Invalid_Object; }
 
-    SIMPLELOGGER_DEBUG( "dbus.Connection", "Connection::register_object at path " << object->path() );
+    SIMPLELOGGER_DEBUG( LOGGER_NAME, "Connection::register_object at path " << object->path() );
 
     std::unique_lock<std::mutex> lock( m_priv->m_pathHandlerLock );
 

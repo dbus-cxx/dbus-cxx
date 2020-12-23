@@ -31,6 +31,8 @@
 
 using DBus::priv::SimpleTransport;
 
+static const char* LOGGER_NAME = "DBus.SimpleTransport";
+
 enum class ReadingState {
     FirstHeaderPart,
     SecondHeaderPart,
@@ -68,7 +70,7 @@ SimpleTransport::SimpleTransport( int fd, bool initialize ) :
         if( ::write( m_priv->m_fd, &nulbyte, 1 ) < 0 ) {
             int my_errno = errno;
             std::string errmsg = strerror( errno );
-            SIMPLELOGGER_DEBUG( "dbus.SimpleTransport", "Unable to write nul byte: " + errmsg );
+            SIMPLELOGGER_DEBUG( LOGGER_NAME, "Unable to write nul byte: " + errmsg );
             m_priv->m_ok = false;
             close( m_priv->m_fd );
             errno = my_errno;
@@ -100,14 +102,14 @@ ssize_t SimpleTransport::writeMessage( std::shared_ptr<const Message> message, u
 
     debug_str << "Going to send the following bytes: " << std::endl;
     DBus::hexdump( &m_priv->m_sendBuffer, &debug_str );
-    SIMPLELOGGER_TRACE( "dbus.SimpleTransport", debug_str.str() );
+    SIMPLELOGGER_TRACE( LOGGER_NAME, debug_str.str() );
 
     ssize_t bytesWritten = ::write( m_priv->m_fd, m_priv->m_sendBuffer.data(), m_priv->m_sendBuffer.size() );
 
     if( bytesWritten < 0 ) {
         int my_errno = errno;
         std::string errmsg = strerror( errno );
-        SIMPLELOGGER_DEBUG( "dbus.SimpleTransport", "Unable to send message: " + errmsg );
+        SIMPLELOGGER_DEBUG( LOGGER_NAME, "Unable to send message: " + errmsg );
         errno = my_errno;
     }
 
@@ -133,7 +135,7 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage() {
 
         if( bytesRead == 0 ) {
             // End of the stream
-            SIMPLELOGGER_TRACE( "dbus.SimpleTransport", "End of stream: closing transport" );
+            SIMPLELOGGER_TRACE( LOGGER_NAME, "End of stream: closing transport" );
             m_priv->m_ok = false;
             return std::shared_ptr<DBus::Message>();
         }
@@ -246,7 +248,7 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage() {
             std::ostringstream debug_str;
             debug_str << "Going to create a message from the following data: " << std::endl;
             DBus::hexdump( m_priv->m_receiveBuffer, m_priv->m_receiveBufferLocation, &debug_str );
-            SIMPLELOGGER_TRACE( "dbus.SimpleTransport", debug_str.str() );
+            SIMPLELOGGER_TRACE( LOGGER_NAME, debug_str.str() );
 
             retmsg = Message::create_from_data( m_priv->m_receiveBuffer, m_priv->m_receiveBufferLocation );
 
