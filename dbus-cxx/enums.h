@@ -127,12 +127,6 @@ enum class StartReply {
     ALREADY_RUNNING,
 };
 
-
-enum class PrimaryFallback {
-    PRIMARY,
-    FALLBACK
-};
-
 enum class Endianess {
     Little,
     Big,
