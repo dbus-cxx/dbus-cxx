@@ -148,8 +148,8 @@ void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& 
         .setStatic( true )
         .setReturnType( "std::shared_ptr<" + mainClassName + ">" )
         .addCode( cppgenerate::CodeBlock::create()
-            .addLine( "std::shared_ptr<" + mainClassName + "> created = std::shared_ptr<" + mainClassName + ">( new " + mainClassName + "( conn, dest, path, signalCallingThread ) );" )
-                  .addLine( "conn->register_object_proxy( created );")
+            .addLine( "std::shared_ptr<" + mainClassName + "> created = std::shared_ptr<" + mainClassName + ">( new " + mainClassName + "( conn, dest, path ) );" )
+                  .addLine( "conn->register_object_proxy( created, signalCallingThread );")
                   .addLine( "return created;" ) )
         .addArgument( cppgenerate::Argument::create()
           .setType( "std::shared_ptr<DBus::Connection>" )
@@ -177,11 +177,7 @@ void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& 
         .addArgument( cppgenerate::Argument::create()
           .setType( "std::string" )
           .setName( "path" )
-          .setDefaultValue( m_rootNode.name() ) )
-        .addArgument( cppgenerate::Argument::create()
-          .setType( "DBus::ThreadForCalling" )
-          .setName( "signalCallingThread" )
-          .setDefaultValue( "DBus::ThreadForCalling::DispatcherThread" ) );
+          .setDefaultValue( m_rootNode.name() ) );
 
     for( InterfaceInfo i : m_rootNode.interfaces() ){
         if( i.name() == DBUS_CXX_PEER_INTERFACE ||
