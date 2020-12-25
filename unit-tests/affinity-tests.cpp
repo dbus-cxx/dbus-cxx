@@ -33,7 +33,7 @@ static bool rxMessage = false;
 class AffinityThreadDispatcher : public DBus::ThreadDispatcher {
 public:
     struct incoming_message {
-        std::shared_ptr<DBus::ObjectPathHandler> object;
+        std::shared_ptr<DBus::Object> object;
         std::shared_ptr<const DBus::CallMessage> message;
     };
 
@@ -41,7 +41,7 @@ public:
     std::vector<std::shared_ptr<const DBus::SignalMessage>> m_signalMessages;
     std::vector<incoming_message> m_messages;
 
-    void add_message( std::shared_ptr<DBus::ObjectPathHandler> object, std::shared_ptr<const DBus::CallMessage> message ) {
+    void add_message( std::shared_ptr<DBus::Object> object, std::shared_ptr<const DBus::CallMessage> message ) {
         incoming_message incoming;
         incoming.object = object;
         incoming.message = message;

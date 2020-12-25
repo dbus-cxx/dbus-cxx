@@ -21,14 +21,14 @@
 #include <QQueue>
 #include <QMutexLocker>
 #include <dbus-cxx/signalproxy.h>
-#include <dbus-cxx/objectpathhandler.h>
+#include <dbus-cxx/object.h>
 
 #include "qtthreaddispatcher.h"
 
 using DBus::Qt::QtThreadDispatcher;
 
 struct ObjectAndMessage{
-    std::shared_ptr<DBus::ObjectPathHandler> object;
+    std::shared_ptr<DBus::Object> object;
     std::shared_ptr<const DBus::CallMessage> message;
 };
 
@@ -58,7 +58,7 @@ std::shared_ptr<QtThreadDispatcher> QtThreadDispatcher::create(){
     return std::shared_ptr<QtThreadDispatcher>( new QtThreadDispatcher() );
 }
 
-void QtThreadDispatcher::add_message( std::shared_ptr<ObjectPathHandler> object, std::shared_ptr<const CallMessage> message ){
+void QtThreadDispatcher::add_message( std::shared_ptr<Object> object, std::shared_ptr<const CallMessage> message ){
     struct ObjectAndMessage objMsg;
 
     objMsg.object = object;

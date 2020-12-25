@@ -24,7 +24,7 @@
 namespace DBus {
 
 class Message;
-class ObjectPathHandler;
+class Object;
 class SignalProxyBase;
 class SignalMessage;
 class CallMessage;
@@ -61,7 +61,7 @@ public:
      * @param object The object to send the message to
      * @param message The message to send to the object
      */
-    virtual void add_message( std::shared_ptr<ObjectPathHandler> object, std::shared_ptr<const CallMessage> message ) = 0;
+    virtual void add_message( std::shared_ptr<Object> object, std::shared_ptr<const CallMessage> message ) = 0;
 
     /**
      * Add a signal proxy that must emit its signals from the thread represented

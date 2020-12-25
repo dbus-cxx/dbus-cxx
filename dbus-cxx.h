@@ -34,14 +34,11 @@
 #include <dbus-cxx/interface.h>
 #include <dbus-cxx/interfaceproxy.h>
 #include <dbus-cxx/messageappenditerator.h>
-#include <dbus-cxx/messagefilter.h>
 #include <dbus-cxx/message.h>
-#include <dbus-cxx/messagehandler.h>
 #include <dbus-cxx/messageiterator.h>
 #include <dbus-cxx/methodbase.h>
 #include <dbus-cxx/methodproxybase.h>
 #include <dbus-cxx/object.h>
-#include <dbus-cxx/objectpathhandler.h>
 #include <dbus-cxx/objectproxy.h>
 #include <dbus-cxx/pendingcall.h>
 #include <dbus-cxx/returnmessage.h>

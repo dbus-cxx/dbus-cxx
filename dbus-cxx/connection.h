@@ -20,7 +20,6 @@
  ***************************************************************************/
 #include <stdint.h>
 #include <dbus-cxx/signal.h>
-#include <dbus-cxx/messagefilter.h>
 #include <dbus-cxx/signalproxy.h>
 #include <dbus-cxx/threaddispatcher.h>
 #include <dbus-cxx/errormessage.h>
@@ -254,12 +253,6 @@ public:
     sigc::signal<void()>& signal_needs_dispatch();
 
     /**
-     * Signal emitted during dispatch. A slot returning true will cause the
-     * message to be filtered.
-     */
-    FilterSignal& signal_filter();
-
-    /**
      * Create and return a new object, registering the object automatically.  If the registering
      * fails, an invalid pointer will be returned.
      *
@@ -279,7 +272,7 @@ public:
      * @param calling The thread in which this object's methods will be called in.  Defaults to being the dispatching thread.
      * @return The status of registering an object to be exported.
      */
-    RegistrationStatus register_object( std::shared_ptr<ObjectPathHandler> object,
+    RegistrationStatus register_object( std::shared_ptr<Object> object,
         ThreadForCalling calling = ThreadForCalling::DispatcherThread );
 
     /**
@@ -290,7 +283,7 @@ public:
      * @param calling
      * @return
      */
-    bool change_object_calling_thread( std::shared_ptr<ObjectPathHandler> object,
+    bool change_object_calling_thread( std::shared_ptr<Object> object,
                                        ThreadForCalling calling );
 
     /**

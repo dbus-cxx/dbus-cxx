@@ -19,7 +19,6 @@
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <dbus-cxx/signal.h>
-#include <dbus-cxx/objectpathhandler.h>
 #include <dbus-cxx/interface.h>
 #include <dbus-cxx/dbus-cxx-config.h>
 #include <dbus-cxx/property.h>
@@ -59,7 +58,7 @@ template <typename T_type> class Method;
  *
  * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
  */
-class Object: public ObjectPathHandler {
+class Object {
 protected:
 
     /**
@@ -100,8 +99,31 @@ public:
 
     virtual ~Object();
 
-    /** Extends base version to include registering signals */
-    virtual void set_connection( std::shared_ptr<Connection> conn );
+    /** Returns the path this handler is associated with */
+    const Path& path() const;
+
+    /** Returns the connection this handler is registered with */
+    std::weak_ptr<Connection> connection() const;
+
+    /** Unregisters the handler */
+    bool unregister();
+
+    /** Emitted when this object is registered with a connection */
+    sigc::signal<void( std::shared_ptr<Connection> ) >& signal_registered();
+
+    /**
+     * Emitted when this object is unregistered from a connection
+     */
+    sigc::signal<void( std::shared_ptr<Connection> ) >& signal_unregistered();
+
+    /**
+     * Sets the connection that this object is on.
+     * Generally, you should not call this, as calling Connection::register_object
+     * will do this for you automatically.
+     *
+     * @param conn
+     */
+    void set_connection( std::shared_ptr<Connection> conn );
 
     /** Get all the interfaces associated with this Object instance */
     const Interfaces& interfaces() const;

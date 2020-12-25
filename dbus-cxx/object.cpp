@@ -26,7 +26,6 @@
 #include "dbus-cxx-private.h"
 #include "interface.h"
 #include "message.h"
-#include "objectpathhandler.h"
 #include "path.h"
 #include <sigc++/sigc++.h>
 #include "utility.h"
@@ -52,11 +51,15 @@ public:
     sigc::signal<void( std::shared_ptr<Interface> ) > m_signal_interface_added;
     sigc::signal<void( std::shared_ptr<Interface> ) > m_signal_interface_removed;
     InterfaceSignalNameConnections m_interface_signal_name_connections;
+    std::weak_ptr<Connection> m_connection;
+    Path m_path;
+    sigc::signal<void( std::shared_ptr<Connection> ) > m_signal_registered;
+    sigc::signal<void( std::shared_ptr<Connection> ) > m_signal_unregistered;
 };
 
 Object::Object( const std::string& path ):
-    ObjectPathHandler( path ),
     m_priv( std::make_unique<priv_data>() ) {
+    m_priv->m_path = path;
 }
 
 std::shared_ptr<Object> Object::create( const std::string& path ) {
@@ -66,9 +69,34 @@ std::shared_ptr<Object> Object::create( const std::string& path ) {
 Object::~ Object( ) {
 }
 
+const Path& Object::path() const {
+    return m_priv->m_path;
+}
+
+std::weak_ptr< Connection > Object::connection() const {
+    return m_priv->m_connection;
+}
+
+bool Object::unregister() {
+    std::shared_ptr connection = m_priv->m_connection.lock();
+
+    if( !connection ) { return true; }
+
+    return connection->unregister_object( m_priv->m_path );
+}
+
+sigc::signal< void( std::shared_ptr<Connection> )>& Object::signal_registered() {
+    return m_priv->m_signal_registered;
+}
+
+sigc::signal< void( std::shared_ptr<Connection> )>& Object::signal_unregistered() {
+    return m_priv->m_signal_unregistered;
+}
+
 void Object::set_connection( std::shared_ptr<Connection> conn ) {
     SIMPLELOGGER_DEBUG( LOGGER_NAME, "Object::set_connection" );
-    ObjectPathHandler::set_connection( conn );
+    unregister();
+    m_priv->m_connection = conn;
 
     for( Children::iterator c = m_priv->m_children.begin(); c != m_priv->m_children.end(); c++ ) {
         c->second->set_connection( conn );
@@ -240,7 +268,7 @@ bool Object::add_child( const std::string& name, std::shared_ptr<Object> child, 
 
     if( conn ) {
         m_priv->m_children[name] = child;
-        child->register_with_connection( conn );
+        child->set_connection( conn );
         return true;
     }
 

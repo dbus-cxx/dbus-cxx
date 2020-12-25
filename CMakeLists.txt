@@ -118,13 +118,10 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/interfaceproxy.cpp
     dbus-cxx/messageappenditerator.cpp
     dbus-cxx/message.cpp
-    dbus-cxx/messagefilter.cpp
-    dbus-cxx/messagehandler.cpp
     dbus-cxx/messageiterator.cpp
     dbus-cxx/methodbase.cpp
     dbus-cxx/methodproxybase.cpp
     dbus-cxx/object.cpp
-    dbus-cxx/objectpathhandler.cpp
     dbus-cxx/objectproxy.cpp
     dbus-cxx/path.cpp
     dbus-cxx/pendingcall.cpp
@@ -168,12 +165,9 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/filedescriptor.h
     dbus-cxx/headerlog.h
     dbus-cxx/messageappenditerator.h
-    dbus-cxx/messagefilter.h
     dbus-cxx/message.h
-    dbus-cxx/messagehandler.h
     dbus-cxx/messageiterator.h
     dbus-cxx/methodbase.h
-    dbus-cxx/objectpathhandler.h
     dbus-cxx/path.h
     dbus-cxx/pendingcall.h
     dbus-cxx/returnmessage.h

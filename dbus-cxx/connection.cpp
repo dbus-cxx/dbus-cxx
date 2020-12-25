@@ -28,10 +28,7 @@
 #include "dbus-cxx-private.h"
 #include "error.h"
 #include "message.h"
-#include "messagefilter.h"
-#include "messagehandler.h"
 #include "object.h"
-#include "objectpathhandler.h"
 #include "objectproxy.h"
 #include "path.h"
 #include "pendingcall.h"
@@ -44,6 +41,7 @@
 #include "utility.h"
 #include "daemon-proxy/DBusDaemonProxy.h"
 #include "interfaceproxy.h"
+#include "transport.h"
 
 #include <cstring>
 #include <fcntl.h>
@@ -87,7 +85,7 @@ struct OutgoingMessage {
 };
 
 struct PathHandlingEntry {
-    std::shared_ptr<ObjectPathHandler> handler;
+    std::shared_ptr<Object> handler;
     std::thread::id handlingThread;
 };
 
@@ -130,9 +128,6 @@ public:
     std::vector<FreeSignalThreadInfo> m_freeProxySignals;
     std::mutex m_objectProxiesLock;
     std::vector<ObjectProxyThreadInfo> m_objectProxies;
-
-
-    FilterSignal m_filter_signal;
 };
 
 Connection::Connection( BusType type ) {
@@ -800,10 +795,6 @@ sigc::signal< void() >& Connection::signal_needs_dispatch() {
     return m_priv->m_needsDispatching;
 }
 
-FilterSignal& Connection::signal_filter() {
-    return m_priv->m_filter_signal;
-}
-
 std::shared_ptr<Object> Connection::create_object( const std::string& path, ThreadForCalling calling ) {
     std::shared_ptr<Object> object = Object::create( path );
 
@@ -816,7 +807,7 @@ std::shared_ptr<Object> Connection::create_object( const std::string& path, Thre
     return object;
 }
 
-RegistrationStatus Connection::register_object( std::shared_ptr<ObjectPathHandler> object, ThreadForCalling calling ) {
+RegistrationStatus Connection::register_object( std::shared_ptr<Object> object, ThreadForCalling calling ) {
     if( !object ) { return RegistrationStatus::Failed_Invalid_Object; }
 
     SIMPLELOGGER_DEBUG( LOGGER_NAME, "Connection::register_object at path " << object->path() );
@@ -843,7 +834,7 @@ RegistrationStatus Connection::register_object( std::shared_ptr<ObjectPathHandle
     return RegistrationStatus::Success;
 }
 
-bool Connection::change_object_calling_thread( std::shared_ptr<ObjectPathHandler> object,
+bool Connection::change_object_calling_thread( std::shared_ptr<Object> object,
                                    ThreadForCalling calling ){
     std::unique_lock lock( m_priv->m_pathHandlerLock );
     std::map<std::string,PathHandlingEntry>::iterator it = m_priv->m_path_handler.find( object->path() );
