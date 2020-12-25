@@ -115,12 +115,6 @@ enum class HandlerResult {
     Not_Handled,
 };
 
-enum class FilterResult {
-    FILTER,
-    DONT_FILTER,
-    NEEDS_MEMORY
-};
-
 enum class StartReply {
     FAILED = 0,
     SUCCESS,
