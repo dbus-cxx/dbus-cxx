@@ -7,6 +7,12 @@ procedure call) and IPC(inter-process communications) mechanism.
 DBus-cxx provides an object-oriented view of all programs on the DBus, and
 allows an object-oriented way of exporting methods onto the DBus.
 
+This new 2.0 version(that you are looking at now) is a complete ground-up
+implementation of the DBus protocol, without libdbus, in part to fix a
+number of known multithreading issues with libdbus.  This also allows for
+templates to be used throughout the system, for methods, signals, and
+properties.
+
 Quick facts:
 
 License: GPL 3.0
