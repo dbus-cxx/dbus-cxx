@@ -1,5 +1,11 @@
 # DBus-cxx
 
+# This branch is obsolete
+
+This branch is considered to be obsolete, and will be getting very few
+(if any) updates in the future.  Users are encouraged to upgrade to
+the new 2.0 version of dbus-cxx.
+
 ## What is DBus-cxx?
 
 DBus-cxx is a C++ wrapper for DBus.  DBus is a Linux-specific RPC(remote
