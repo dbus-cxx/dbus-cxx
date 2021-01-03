@@ -46,3 +46,16 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper-qt-tests.sh
 
 add_test( NAME qt-dispatcher COMMAND dbus-wrapper-qt-tests.sh qt-dispatcher)
 add_test( NAME qt-threaddispatcher COMMAND dbus-wrapper-qt-tests.sh standalone)
+
+#
+# Recursive tests using the Qt dispatcher
+#
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper-recursive-signal.sh
+    ${CMAKE_CURRENT_BINARY_DIR}/dbus-wrapper-recursive-signal.sh COPYONLY)
+add_executable( test-recursive-signal-qt recursive-signal-test-qt.cpp )
+target_link_libraries( test-recursive-signal-qt ${TEST_LINK} )
+target_include_directories( test-recursive-signal-qt PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( test-recursive-signal-qt PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+set_property( TARGET test-recursive-signal-qt PROPERTY CXX_STANDARD 17 )
+
+add_test( NAME recursive-from-signal-qt COMMAND dbus-wrapper-recursive-signal.sh test)

@@ -288,6 +288,16 @@ set_property( TARGET test-recursive PROPERTY CXX_STANDARD 17 )
 
 add_test( NAME recursive-method-call COMMAND dbus-wrapper-recursive.sh test)
 
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper-recursive-signal.sh
+    ${CMAKE_CURRENT_BINARY_DIR}/dbus-wrapper-recursive-signal.sh COPYONLY)
+add_executable( test-recursive-signal recursive-signal-test.cpp )
+target_link_libraries( test-recursive-signal ${TEST_LINK} )
+target_include_directories( test-recursive-signal PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( test-recursive-signal PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+set_property( TARGET test-recursive-signal PROPERTY CXX_STANDARD 17 )
+
+add_test( NAME recursive-from-signal COMMAND dbus-wrapper-recursive-signal.sh test)
+
 #
 # Ensure that unset environment variables don't cause problems
 #
