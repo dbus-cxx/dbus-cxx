@@ -186,6 +186,8 @@ bool Interface::add_signal( std::shared_ptr<SignalBase> sig ) {
         result = true;
     }
 
+    sig->set_connection( m_priv->m_connection );
+
     return result;
 }
 
