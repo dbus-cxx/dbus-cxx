@@ -701,10 +701,10 @@ void Connection::process_signal_message( std::shared_ptr<const SignalMessage> ms
         }
     }
 
+    std::vector<std::shared_ptr<SignalProxyBase>> proxies;
     {
         // Tell all of our normal ObjectProxy classes to handle it as well
         std::unique_lock lock( m_priv->m_objectProxiesLock );
-        std::vector<std::shared_ptr<SignalProxyBase>> proxies;
 
         for( ObjectProxyThreadInfo& thrInfo : m_priv->m_objectProxies ){
             if( thrInfo.handlingThread != m_priv->m_dispatchingThread ){
@@ -713,10 +713,14 @@ void Connection::process_signal_message( std::shared_ptr<const SignalMessage> ms
 
             for( std::pair<std::string,std::shared_ptr<InterfaceProxy>> iface : thrInfo.handler->interfaces() ){
                 for( std::shared_ptr<SignalProxyBase> signal : iface.second->signals() ){
-                    signal->handle_signal( msg );
+                    proxies.push_back( signal );
                 }
             }
         }
+    }
+
+    for( std::shared_ptr<SignalProxyBase> proxyBase : proxies ){
+        proxyBase->handle_signal( msg );
     }
 
     // Give this signal to all of our ThreadDispatchers as well
