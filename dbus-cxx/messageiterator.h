@@ -43,8 +43,8 @@
     #define DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter) iter.operator DBus::Variant()
     #define DBUSCXX_MESSAGEITERATOR_OPERATOR_SIGNATURE(iter) iter.operator DBus::Signature()
 #else
-    #define DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(x) (DBus::Variant)iter
-    #define DBUSCXX_MESSAGEITERATOR_OPERATOR_SIGNATURE(x) (DBus::Signature)iter
+    #define DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter) (DBus::Variant)iter
+    #define DBUSCXX_MESSAGEITERATOR_OPERATOR_SIGNATURE(iter) (DBus::Signature)iter
 #endif
 
 namespace DBus {
