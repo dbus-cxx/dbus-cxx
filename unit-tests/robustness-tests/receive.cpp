@@ -31,8 +31,8 @@ int main( int argc, char** argv ) {
     numSignalsRx = 0;
     srand( time( nullptr ) );
 
-    DBus::setLogLevel( SL_DEBUG );
-    DBus::setLoggingFunction( DBus::logStdErr );
+    DBus::set_log_level( SL_DEBUG );
+    DBus::set_logging_function( DBus::log_std_err );
 
     //The dispatcher sends us information.  Make sure that it doesn't go out of scope or bad things will happen.
     std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::StandaloneDispatcher::create();
@@ -49,11 +49,12 @@ int main( int argc, char** argv ) {
     object->create_method<void( std::string )>( "com.rm5248.ReceiveInterface", "voidMethod", sigc::ptr_fun( voidMethod ) );
     object->create_method<int()>( "com.rm5248.ReceiveInterface", "randomWaitingMethod", sigc::ptr_fun( randomWaitingMethod ) );
 
-    std::shared_ptr<DBus::signal_proxy<int, int, std::string>> proxy = connection->create_signal_proxy<int, int, std::string>(
-                DBus::SignalMatchRule::create()
-                .setPath( "/" )
-                .setInterface( "com.rm5248.ReceiveInterface" )
-                .setMember( "SignalName" ),
+    std::shared_ptr<DBus::SignalProxy<void(int, int, std::string)>> proxy = connection->create_free_signal_proxy<void(int, int, std::string)>(
+                DBus::MatchRuleBuilder::create()
+                    .set_path( "/" )
+                    .set_interface( "com.rm5248.ReceiveInterface" )
+                    .set_member( "SignalName" )
+                    .as_signal_match(),
                 DBus::ThreadForCalling::DispatcherThread );
 
     proxy->connect( sigc::ptr_fun( signalRxMethod ) );

@@ -26,8 +26,8 @@ int main( int argc, char** argv ) {
             ( "com.rm5248.ReceiveInterface", "randomWaitingMethod" ) );
 
     std::shared_ptr<DBus::Object> localObj = connection->create_object( "/", DBus::ThreadForCalling::DispatcherThread );
-    std::shared_ptr<DBus::signal<int, int, std::string>> sigSend =
-            localObj->create_signal<int, int, std::string>( "com.rm5248.ReceiveInterface", "SignalName" );
+    std::shared_ptr<DBus::Signal<void(int, int, std::string)>> sigSend =
+            localObj->create_signal<void(int, int, std::string)>( "com.rm5248.ReceiveInterface", "SignalName" );
 
     try {
         while( currentTimes++ < maxTimes ) {
