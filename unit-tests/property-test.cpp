@@ -20,6 +20,7 @@
 #include <iostream>
 #include <string>
 #include "test_macros.h"
+#include <thread>
 
 static std::shared_ptr<DBus::Dispatcher> dispatch;
 static std::shared_ptr<DBus::Connection> conn;

@@ -49,6 +49,7 @@
 
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <thread>
 
 #define DBUSCXX_REQUEST_NAME_REPLY_PRIMARY_OWNER 0x01
 #define DBUSCXX_REQUEST_NAME_REPLY_IN_QUEUE 0x02

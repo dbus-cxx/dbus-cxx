@@ -18,6 +18,8 @@
  ***************************************************************************/
 #include "matchrule.h"
 
+#include <string>
+
 using DBus::MatchRuleBuilder;
 using DBus::MatchRule;
 using DBus::SignalMatchRule;

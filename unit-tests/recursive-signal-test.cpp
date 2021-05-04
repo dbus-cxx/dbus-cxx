@@ -19,6 +19,7 @@
 
 #include <dbus-cxx.h>
 #include <iostream>
+#include <thread>
 
 static std::shared_ptr<DBus::Dispatcher> dispatch;
 static std::shared_ptr<DBus::Connection> conn;
