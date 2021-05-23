@@ -16,7 +16,7 @@ project( dbus-cxx )
 
 cmake_minimum_required( VERSION 3.12 )
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake-modules")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake-modules")
 
 include( CheckIncludeFiles )
 include( GNUInstallDirs )
@@ -93,8 +93,8 @@ endif( ${DBUS_CXX_HAS_CXXABI_H} )
 
 # Check for std::propaogate_const
 try_compile( DBUS_CXX_HAS_PROP_CONST
-    "${CMAKE_BINARY_DIR}/temp"
-    "${CMAKE_SOURCE_DIR}/cmake-tests/propagate-const.cpp"
+    "${PROJECT_BINARY_DIR}/temp"
+    "${PROJECT_SOURCE_DIR}/cmake-tests/propagate-const.cpp"
     CMAKE_FLAGS -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_STANDARD_REQUIRED=ON
 )
 
@@ -211,10 +211,10 @@ set( DBUS_CXX_HEADERS
 )
 
 set( DBUS_CXX_INCLUDE_DIRECTORIES 
-    ${CMAKE_CURRENT_SOURCE_DIR} 
-    ${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx )
+    ${PROJECT_SOURCE_DIR} 
+    ${PROJECT_SOURCE_DIR}/dbus-cxx
+    ${PROJECT_BINARY_DIR}
+    ${PROJECT_BINARY_DIR}/dbus-cxx )
 include_directories( ${DBUS_CXX_INCLUDE_DIRECTORIES} 
     ${dbus_INCLUDE_DIRS} 
     ${sigc_INCLUDE_DIRS} )
@@ -296,7 +296,7 @@ foreach(FILE ${DBUS_CXX_HEADERS} )
     install( FILES ${FILE} DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/${DIR} )
 endforeach()
 install( FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
+    ${PROJECT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
     DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/dbus-cxx )
 
 #
@@ -319,10 +319,10 @@ SET(PKG_CONFIG_REQUIRES
 )
 
 CONFIGURE_FILE(
-    "${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx-2.0.pc.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-2.0.pc"
+    "${PROJECT_SOURCE_DIR}/dbus-cxx-2.0.pc.cmake"
+    "${PROJECT_BINARY_DIR}/dbus-cxx-2.0.pc"
 )
-INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-2.0.pc"
+INSTALL( FILES "${PROJECT_BINARY_DIR}/dbus-cxx-2.0.pc"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
 #
@@ -346,21 +346,21 @@ endif( ENABLE_TOOLS )
 if( BUILD_SITE )
     find_package( Doxygen 
                   REQUIRED dot )
-    file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/doc/
-          DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/doc/ )
-    configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile
-                    ${CMAKE_CURRENT_BINARY_DIR}/doc @ONLY )
+    file( COPY ${PROJECT_SOURCE_DIR}/doc/
+          DESTINATION ${PROJECT_BINARY_DIR}/doc/ )
+    configure_file( ${PROJECT_SOURCE_DIR}/doc/Doxyfile
+                    ${PROJECT_BINARY_DIR}/doc @ONLY )
 
     add_custom_target( doc_doxygen ALL
         COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
         DEPENDS dbus-cxx
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM )
     add_custom_target( tar_site ALL
         COMMAND tar -czf dbus-cxx-website-${PKG_VERSION}.tar.gz -C doc/reference/html .
         DEPENDS doc_doxygen
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         VERBATIM )
 endif( BUILD_SITE )
 
