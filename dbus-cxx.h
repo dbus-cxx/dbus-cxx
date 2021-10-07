@@ -20,7 +20,7 @@
 #define DBUSCXX_DBUS_H
 
 #if !(__cplusplus >= 201703L)
-#error "dbus-cxx requires at least C++17."
+#error "dbus-cxx requires at least C++17.  Check your compiler flags(-std=c++17 for GCC/clang, /Zc:__cplusplus /std:c++17 for MSVC)"
 #endif
 
 #include <dbus-cxx/dbus-cxx-config.h>
