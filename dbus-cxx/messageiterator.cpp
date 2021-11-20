@@ -22,9 +22,12 @@
 #include "message.h"
 #include "types.h"
 #include "variant.h"
+#include "dbus-cxx-private.h"
 
 #include <unistd.h>
 #include <fcntl.h>
+
+static const char* LOGGER_NAME = "DBus.MessageIterator";
 
 namespace DBus {
 
@@ -60,7 +63,10 @@ MessageIterator::MessageIterator( DataType d,
 
     if( d == DataType::ARRAY ) {
         m_priv->m_subiterInfo.m_subiterDataType = d;
-        m_priv->m_subiterInfo.m_arrayLastPosition = m_priv->m_demarshal->current_offset() + m_priv->m_demarshal->demarshal_uint32_t();
+        uint32_t array_len = m_priv->m_demarshal->demarshal_uint32_t();
+        m_priv->m_subiterInfo.m_arrayLastPosition = m_priv->m_demarshal->current_offset() + array_len;
+        SIMPLELOGGER_TRACE_STDSTR( LOGGER_NAME,
+                                   "Extracting array.  new position: " << m_priv->m_demarshal->current_offset() << " array len: " << array_len);
     } else if( d == DataType::VARIANT ) {
         Signature demarshaled_sig = demarshal->demarshal_signature();
         m_priv->m_subiterInfo.m_variantSignature = demarshaled_sig;
@@ -115,7 +121,7 @@ bool MessageIterator::is_valid() const {
 
     if( m_priv->m_subiterInfo.m_subiterDataType == DataType::ARRAY ) {
         // We are in a subiter here, figure out if we're at the end of the array yet
-        if( m_priv->m_demarshal->current_offset() > m_priv-> m_subiterInfo.m_arrayLastPosition ) {
+        if( m_priv->m_demarshal->current_offset() >= m_priv-> m_subiterInfo.m_arrayLastPosition ) {
             return false;
         }
 

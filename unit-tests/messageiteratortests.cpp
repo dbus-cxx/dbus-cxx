@@ -496,6 +496,40 @@ bool call_message_append_extract_iterator_correct_variant_signature() {
     return true;
 }
 
+bool call_message_append_extract_iterator_array_array_bytes(){
+    std::vector<std::vector<uint8_t>> sv, sv2;
+    std::vector<uint8_t> v, v2;
+    const int outer_array_size = 6;
+    const int inner_array_size = 35;
+
+    for( int y = 0; y < outer_array_size; y++ ) {
+        v.clear();
+
+        for( int i = 0; i < inner_array_size; i++ ) {
+            v.push_back( 200 + i );
+        }
+
+        sv.push_back( v );
+    }
+
+    std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+    DBus::MessageAppendIterator iter1( msg );
+    iter1 << sv;
+
+    DBus::MessageIterator iter2( msg );
+    iter2 >> sv2;
+
+    TEST_EQUALS_RET_FAIL( sv.size(), sv2.size() );
+
+    for( int y = 0; y < outer_array_size; y++ ) {
+        for( int i = 0; i < inner_array_size; i++ ) {
+            TEST_EQUALS_RET_FAIL( ( sv[ y ] )[i], ( sv2[y] )[i] );
+        }
+    }
+
+    return true;
+}
+
 template <typename T>
 bool test_numeric_call_message_iterator_insertion_extraction_operator( T v ) {
     T v2 = 0;
@@ -864,6 +898,7 @@ int main( int argc, char** argv ) {
     ADD_TEST( map_string_string );
     ADD_TEST( map_string_string_many );
     ADD_TEST( correct_variant_signature );
+    ADD_TEST( array_array_bytes );
 
     ADD_TEST2( bool );
     ADD_TEST2( byte );

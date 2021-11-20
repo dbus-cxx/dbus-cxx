@@ -66,6 +66,7 @@ add_test( NAME messageiterator-map-string-variant-many COMMAND test-messageitera
 add_test( NAME messageiterator-map-string-string COMMAND test-messageiterator map_string_string)
 add_test( NAME messageiterator-map-string-string_many COMMAND test-messageiterator map_string_string_many)
 add_test( NAME messageiterator-map-correct-signature COMMAND test-messageiterator correct_variant_signature)
+add_test( NAME messageiterator-array_array_byte COMMAND test-messageiterator array_array_bytes)
 
 add_test( NAME messageiterator-Bool2 COMMAND test-messageiterator bool-2)
 add_test( NAME messageiterator-Byte2 COMMAND test-messageiterator byte-2)
