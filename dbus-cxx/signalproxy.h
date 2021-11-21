@@ -51,6 +51,8 @@ public:
 
     const std::string& match_rule() const;
 
+    void update_match_rule();
+
 protected:
     SignalProxyBase( const SignalMatchRule& matchRule );
 
@@ -92,9 +94,6 @@ public:
 
     static std::shared_ptr<SignalProxy> create( const SignalMatchRule& matchRule )
     { return std::shared_ptr<SignalProxy>( new SignalProxy( matchRule ) ); }
-
-    //    virtual std::shared_ptr<signal_base> clone()
-    //    { return std::shared_ptr<signal_base>( new signal_proxy(*this) ); }
 
 protected:
     HandlerResult on_dbus_incoming( std::shared_ptr<const SignalMessage> msg ) {

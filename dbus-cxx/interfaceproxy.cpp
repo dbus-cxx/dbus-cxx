@@ -90,6 +90,14 @@ void InterfaceProxy::set_object( ObjectProxy* obj ) {
         m_priv->m_updated_proxy->connect( sigc::mem_fun( *this, &InterfaceProxy::property_updated ) );
 
         for( std::shared_ptr<SignalProxyBase> sig : m_priv->m_signals ){
+            // If we have created SignalProxies before the set_object call
+            // (by, for example, creating them in the constructor)
+            // the path will have not been set.  To fix this, remove any matches
+            // that we may have added already, set the new path to use, and update
+            // the match rule on the signal so we can re-add it.
+            conn->remove_match( sig->match_rule() );
+            sig->set_path( path() );
+            sig->update_match_rule();
             conn->add_match( sig->match_rule() );
         }
     }

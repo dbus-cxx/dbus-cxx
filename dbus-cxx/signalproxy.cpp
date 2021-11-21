@@ -65,5 +65,14 @@ bool SignalProxyBase::matches( std::shared_ptr<const SignalMessage> msg ) {
     return true;
 }
 
+void SignalProxyBase::update_match_rule(){
+    m_priv->m_match_rule = MatchRuleBuilder::create()
+            .set_path( path() )
+            .set_interface( interface_name() )
+            .set_member( name() )
+            .as_signal_match()
+            .match_rule();
+}
+
 }
 

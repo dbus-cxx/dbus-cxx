@@ -328,7 +328,10 @@ void Connection::add_match_nonblocking( const std::string& rule ) {
 }
 
 bool Connection::remove_match( const std::string& rule ) {
-    m_priv->m_daemonProxy->RemoveMatch( rule );
+    if( m_priv->m_daemonProxy ){
+        m_priv->m_daemonProxy->RemoveMatch( rule );
+    }
+
     return true;
 }
 
