@@ -129,6 +129,7 @@ public:
     std::vector<FreeSignalThreadInfo> m_freeProxySignals;
     std::mutex m_objectProxiesLock;
     std::vector<ObjectProxyThreadInfo> m_objectProxies;
+    std::map<std::string,int> m_listeningSignals;
 };
 
 Connection::Connection( BusType type ) {
@@ -316,6 +317,14 @@ bool Connection::add_match( const std::string& rule ) {
     SIMPLELOGGER_DEBUG( LOGGER_NAME, "Adding the following match: " << rule );
 
     if( m_priv->m_daemonProxy ) {
+        std::map<std::string,int>::iterator it =
+                m_priv->m_listeningSignals.find( rule );
+        if( it == m_priv->m_listeningSignals.end() ){
+            m_priv->m_listeningSignals[ rule ] = 1;
+        }else{
+            int count = m_priv->m_listeningSignals[ rule ];
+            m_priv->m_listeningSignals[ rule ] = count + 1;
+        }
         m_priv->m_daemonProxy->AddMatch( rule );
     }
 
@@ -329,7 +338,17 @@ void Connection::add_match_nonblocking( const std::string& rule ) {
 
 bool Connection::remove_match( const std::string& rule ) {
     if( m_priv->m_daemonProxy ){
-        m_priv->m_daemonProxy->RemoveMatch( rule );
+        std::map<std::string,int>::iterator it =
+                m_priv->m_listeningSignals.find( rule );
+        if( it != m_priv->m_listeningSignals.end() ){
+            int count = m_priv->m_listeningSignals[ rule ];
+            count--;
+            m_priv->m_listeningSignals[ rule ] = count;
+
+            if( count == 0 ){
+                m_priv->m_daemonProxy->RemoveMatch( rule );
+            }
+        }
     }
 
     return true;
