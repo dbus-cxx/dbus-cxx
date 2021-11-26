@@ -1,3 +1,9 @@
+dbus-cxx (2.1.0) jessie; urgency=medium
+
+  * Maintenance release.  Fixed a few bugs with signals and arrays of array of bytes
+
+ -- Robert Middleton <robert.middleton@rm5248.com>  Fri, 26 Nov 2021 11:01:03 -0500
+
 dbus-cxx (2.0.0) jessie; urgency=medium
 
   * Bumped version of dbus-cxx
