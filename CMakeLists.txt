@@ -11,10 +11,8 @@
 #                                                                         
 #   You should have received a copy of the GNU General Public License     
 #   along with this software. If not see <http://www.gnu.org/licenses/>.  
-
-project( dbus-cxx )
-
 cmake_minimum_required( VERSION 3.12 )
+project( dbus-cxx VERSION 2.1.1 )
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake-modules")
 
@@ -29,12 +27,9 @@ IF( CMAKE_BUILD_TYPE MATCHES Debug )
 include( CodeCoverage )
 ENDIF( CMAKE_BUILD_TYPE MATCHES Debug )
 
-# version information
-set( DBUS_CXX_PACKAGE_MAJOR_VERSION 2 )
-set( DBUS_CXX_PACKAGE_MINOR_VERSION 1 )
-set( DBUS_CXX_PACKAGE_MICRO_VERSION 0 )
-set( PKG_VERSION ${DBUS_CXX_PACKAGE_MAJOR_VERSION}.${DBUS_CXX_PACKAGE_MINOR_VERSION}.${DBUS_CXX_PACKAGE_MICRO_VERSION} )
-set( DBUS_CXX_MAJMIN_VERSION ${DBUS_CXX_PACKAGE_MAJOR_VERSION}.${DBUS_CXX_PACKAGE_MINOR_VERSION} )
+# The INCLUDE_VERSION variable is used for includes
+# it is related to, but not the same as, the normal project version
+set( DBUS_CXX_INCLUDE_VERSION 2.0 )
 
 # Our required dependencies: libsigc++ 3.0
 pkg_check_modules( sigc REQUIRED sigc++-3.0 )
@@ -293,11 +288,11 @@ install( TARGETS ${install_targets}
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
 foreach(FILE ${DBUS_CXX_HEADERS} )
     get_filename_component(DIR ${FILE} DIRECTORY)
-    install( FILES ${FILE} DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/${DIR} )
+    install( FILES ${FILE} DESTINATION include/dbus-cxx-${DBUS_CXX_INCLUDE_VERSION}/${DIR} )
 endforeach()
 install( FILES
     ${PROJECT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
-    DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/dbus-cxx )
+    DESTINATION include/dbus-cxx-${DBUS_CXX_INCLUDE_VERSION}/dbus-cxx )
 
 #
 # pkg-config script creation and install
@@ -306,7 +301,7 @@ SET(PKG_CONFIG_LIBDIR
     "\${prefix}/lib"
 )
 SET(PKG_CONFIG_INCLUDEDIR
-    "\${prefix}/include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}"
+    "\${prefix}/include/dbus-cxx-${DBUS_CXX_INCLUDE_VERSION}"
 )
 SET(PKG_CONFIG_LIBS
     "-L\${libdir} -ldbus-cxx"
@@ -358,7 +353,7 @@ if( BUILD_SITE )
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM )
     add_custom_target( tar_site ALL
-        COMMAND tar -czf dbus-cxx-website-${PKG_VERSION}.tar.gz -C doc/reference/html .
+        COMMAND tar -czf dbus-cxx-website-${dbus-cxx_VERSION}.tar.gz -C doc/reference/html .
         DEPENDS doc_doxygen
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         VERBATIM )
@@ -389,7 +384,7 @@ endif( ENABLE_CODE_COVERAGE_REPORT )
 #
 # Cpack for creating the dist files
 #
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "dbus-cxx-${PKG_VERSION}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "dbus-cxx-${dbus-cxx_VERSION}")
 set(CPACK_SOURCE_GENERATOR "TGZ")
 set(CPACK_SOURCE_IGNORE_FILES ".git/;build/")
 include(CPack)

@@ -1,3 +1,9 @@
+dbus-cxx (2.1.1) UNRELEASED; urgency=medium
+
+  * Minor fix for version installation
+
+ -- Robert Middleton <robert.middleton@rm5248.com>  Sat, 11 Dec 2021 11:41:23 -0500
+
 dbus-cxx (2.1.0) jessie; urgency=medium
 
   * Maintenance release.  Fixed a few bugs with signals and arrays of array of bytes
