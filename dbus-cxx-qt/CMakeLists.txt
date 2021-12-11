@@ -40,7 +40,7 @@ SET(PKG_CONFIG_LIBDIR
     "\${prefix}/lib"
 )
 SET(PKG_CONFIG_INCLUDEDIR
-    "\${prefix}/include/dbus-cxx-qt-${DBUS_CXX_MAJMIN_VERSION}"
+    "\${prefix}/include/dbus-cxx-qt-${DBUS_CXX_INCLUDE_VERSION}"
 )
 SET(PKG_CONFIG_LIBS
     "-L\${libdir} -ldbus-cxx-qt"
@@ -67,4 +67,4 @@ set( install_targets ${install_targets} dbus-cxx-qt )
 install( TARGETS ${install_targets}
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
-install( FILES ${dbus-cxx-qt-headers} DESTINATION include/dbus-cxx-qt-${DBUS_CXX_MAJMIN_VERSION} )
+install( FILES ${dbus-cxx-qt-headers} DESTINATION include/dbus-cxx-qt-${DBUS_CXX_INCLUDE_VERSION} )
