@@ -20,7 +20,7 @@
 #define DBUSCXX_MATCH_RULE_H
 
 #include <memory>
-#include "dbus-cxx-config.h"
+#include <dbus-cxx/dbus-cxx-config.h>
 
 namespace DBus {
 

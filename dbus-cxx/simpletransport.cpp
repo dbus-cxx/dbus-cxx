@@ -18,7 +18,7 @@
  ***************************************************************************/
 #include "simpletransport.h"
 
-#include <dbus-cxx-private.h>
+#include "dbus-cxx-private.h"
 #include "demarshaling.h"
 #include "message.h"
 #include "utility.h"
