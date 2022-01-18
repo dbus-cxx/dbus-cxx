@@ -19,7 +19,7 @@
 #ifndef DBUSCXX_SASL_H
 #define DBUSCXX_SASL_H
 
-#include <dbus-cxx-config.h>
+#include <dbus-cxx/dbus-cxx-config.h>
 
 #include <memory>
 #include <stdint.h>

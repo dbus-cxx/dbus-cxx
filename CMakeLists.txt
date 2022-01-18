@@ -207,9 +207,7 @@ set( DBUS_CXX_HEADERS
 
 set( DBUS_CXX_INCLUDE_DIRECTORIES 
     ${PROJECT_SOURCE_DIR} 
-    ${PROJECT_SOURCE_DIR}/dbus-cxx
-    ${PROJECT_BINARY_DIR}
-    ${PROJECT_BINARY_DIR}/dbus-cxx )
+    ${PROJECT_BINARY_DIR} )
 include_directories( ${DBUS_CXX_INCLUDE_DIRECTORIES} 
     ${dbus_INCLUDE_DIRS} 
     ${sigc_INCLUDE_DIRS} )

@@ -21,8 +21,8 @@
 #include "dbus-cxx-private.h"
 #include "utility.h"
 #include "validator.h"
+#include "message.h"
 
-#include <message.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
