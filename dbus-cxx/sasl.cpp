@@ -70,7 +70,7 @@ std::tuple<bool, bool, std::vector<uint8_t>> SASL::authenticate() {
     bool success = false;
     bool negotiatedFD = false;
     std::vector<uint8_t> serverGUID;
-    __uid_t uid = getuid();
+    uid_t uid = getuid();
     std::string line;
     std::smatch regex_match;
 
