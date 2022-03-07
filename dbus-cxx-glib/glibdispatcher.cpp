@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later OR BSD-3-Clause
+// SPDX-License-Identifier: LGPL-3.0-or-later OR BSD-3-Clause
 /***************************************************************************
  *   Copyright (C) 2007,2008,2009,2010 by Rick L. Vinyard, Jr.             *
  *   rvinyard@cs.nmsu.edu                                                  *
