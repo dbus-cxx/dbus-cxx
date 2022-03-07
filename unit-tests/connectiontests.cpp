@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later OR BSD-3-Clause
+// SPDX-License-Identifier: LGPL-3.0-or-later OR BSD-3-Clause
 /***************************************************************************
  *   Copyright (C) 2019 by Robert Middleton                                *
  *   robert.middleton@rm5248.com                                           *

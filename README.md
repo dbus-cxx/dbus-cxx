@@ -15,7 +15,7 @@ properties.
 
 Quick facts:
 
-License: GPL 3.0
+License: LGPL 3.0 or BSD-3-Clause
 
 Website: http://dbus-cxx.github.io
 
