@@ -47,6 +47,8 @@ public:
 ObjectProxy::ObjectProxy( std::shared_ptr<Connection> conn, const std::string& destination, const std::string& path ):
     m_priv( std::make_unique<priv_data>( conn, destination, path ) ) {
     add_interface( m_priv->m_peerInterface );
+    add_interface( m_priv->m_introspectableInterface );
+    add_interface( m_priv->m_propertiesInterface );
 }
 
 std::shared_ptr<ObjectProxy> ObjectProxy::create( const std::string& path ) {
