@@ -192,6 +192,13 @@ public:
 
     std::shared_ptr<PropertiesInterfaceProxy> getPropertiesInterface();
 
+    /**
+     * @brief Gets the children nodes paths
+     *
+     * @return vector of paths for the child nodes
+     */
+    std::vector<Path> getChildPaths() const;
+
 private:
     class priv_data;
 
