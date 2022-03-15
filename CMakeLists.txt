@@ -225,6 +225,9 @@ if( LIBRT )
 	list( APPEND DBUS_CXX_LIBRARIES ${LIBRT} )
 endif( LIBRT )
 
+find_package(LibXml2 REQUIRED)
+set( DBUS_CXX_LIBRARIES ${DBUS_CXX_LIBRARIES} LibXml2::LibXml2 )
+
 if( WIN32 )
     if( CMAKE_SYSTEM_VERSION )
         set( ver ${CMAKE_SYSTEM_VERSION} )
