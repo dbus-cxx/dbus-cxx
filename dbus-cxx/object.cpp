@@ -153,7 +153,7 @@ std::shared_ptr<Interface> Object::create_interface( const std::string& name ) {
 
     if( !this->add_interface( interface_ptr ) ) { return std::shared_ptr<Interface>(); }
 
-    if( !m_priv->m_default_interface && name.empty() ) { this->set_default_interface( interface_ptr->name() ); }
+    if( !m_priv->m_default_interface && !name.empty() ) { this->set_default_interface( interface_ptr->name() ); }
 
     return interface_ptr;
 }
