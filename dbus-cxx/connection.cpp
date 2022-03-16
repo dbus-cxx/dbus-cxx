@@ -119,6 +119,7 @@ public:
     std::mutex m_objectProxiesLock;
     std::vector<ObjectProxyThreadInfo> m_objectProxies;
     std::map<std::string,int> m_listeningSignals;
+    std::shared_ptr< DBus::Object > m_root_object;
 };
 
 Connection::Connection( BusType type ) {
@@ -812,6 +813,19 @@ sigc::signal< void() >& Connection::signal_needs_dispatch() {
 }
 
 std::shared_ptr<Object> Connection::create_object( const std::string& path, ThreadForCalling calling ) {
+    // all created objects must have a root object path
+    if (!m_priv->m_root_object) {
+        m_priv->m_root_object = Object::create( "/" );
+        if (!m_priv->m_root_object) {
+            return std::shared_ptr<Object>();
+        }
+
+        if( register_object( m_priv->m_root_object, calling ) != RegistrationStatus::Success ) {
+            return std::shared_ptr<Object>();
+        }
+    }
+
+    // now create the object and add it as child to the root object with adjusted path
     std::shared_ptr<Object> object = Object::create( path );
 
     if( !object ) { return object; }
@@ -819,6 +833,12 @@ std::shared_ptr<Object> Connection::create_object( const std::string& path, Thre
     if( register_object( object, calling ) != RegistrationStatus::Success ) {
         return std::shared_ptr<Object>();
     }
+
+    std::string adjusted_path = path;
+    if (adjusted_path.at(0) == '/') {
+        adjusted_path.erase(0, 1);
+    }
+    m_priv->m_root_object->add_child( adjusted_path, object );
 
     return object;
 }
