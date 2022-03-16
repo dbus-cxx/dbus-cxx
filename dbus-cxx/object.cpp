@@ -257,7 +257,6 @@ bool Object::add_child( const std::string& name, std::shared_ptr<Object> child, 
 
     if( conn ) {
         m_priv->m_children[name] = child;
-        child->set_connection( conn );
         return true;
     }
 
