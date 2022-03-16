@@ -11,6 +11,7 @@
 #include "connection.h"
 #include "interfaceproxy.h"
 #include <sigc++/sigc++.h>
+#include <libxml/parser.h>
 #include "standard-interfaces/peerinterfaceproxy.h"
 #include "standard-interfaces/introspectableinterfaceproxy.h"
 #include "standard-interfaces/propertiesinterfaceproxy.h"
@@ -281,6 +282,30 @@ std::shared_ptr<IntrospectableInterfaceProxy> ObjectProxy::getIntrospectableInte
 
 std::shared_ptr<PropertiesInterfaceProxy> ObjectProxy::getPropertiesInterface(){
     return m_priv->m_propertiesInterface;
+}
+
+std::vector<Path> ObjectProxy::getChildPaths() const
+{
+    std::vector<Path> result;
+    std::string introspect_str = m_priv->m_introspectableInterface->Introspect();
+
+    xmlDoc *doc = xmlReadMemory( introspect_str.c_str(), introspect_str.length(), "noname.xml", NULL, 0 );
+    if ( doc == NULL ) {
+        return result;
+    }
+
+    xmlNode *root_element = xmlDocGetRootElement(doc);
+    for (xmlNode *current_node = root_element->children; current_node; current_node = current_node->next) {
+        if ( !xmlStrcmp( current_node->name, ( const xmlChar * )"node" ) ) {
+            std::string name = reinterpret_cast< char* >( xmlGetProp( current_node, (const xmlChar *)"name" ) );
+            result.push_back( path() + "/" + name );
+        }
+    }
+
+    xmlFreeDoc(doc);
+    xmlCleanupParser();
+
+    return result;
 }
 
 }
