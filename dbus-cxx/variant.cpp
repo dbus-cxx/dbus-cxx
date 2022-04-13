@@ -11,6 +11,7 @@
 #include <dbus-cxx/dbus-cxx-private.h>
 #include <dbus-cxx/signatureiterator.h>
 #include <stdint.h>
+#include <utility>
 #include "enums.h"
 #include "path.h"
 #include "signature.h"
