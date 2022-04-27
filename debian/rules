@@ -24,6 +24,11 @@ include /usr/share/dpkg/default.mk
 #override_dh_auto_configure:
 #	dh_auto_configure -- --enable-doc
 
+CONFFLAGS=
+ifneq (, $(findstring nocheck, $(DEB_BUILD_OPTIONS)))
+CONFFLAGS=-DBUILD_TESTING=OFF
+endif
+
 # debmake generated override targets
 # This is example for Cmake (See http://bugs.debian.org/641051 )
 override_dh_auto_configure:
@@ -33,7 +38,8 @@ override_dh_auto_configure:
 	-DBUILD_SITE=on \
 	-DTOOLS_BUNDLED_CPPGENERATE=off \
         -DENABLE_QT_SUPPORT=on \
-        -DENABLE_GLIB_SUPPORT=on
+        -DENABLE_GLIB_SUPPORT=on \
+        $(CONFFLAGS)
 
 override_dh_auto_build:
 	dh_auto_build --builddirectory=build-deb
