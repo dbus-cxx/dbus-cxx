@@ -77,7 +77,7 @@ Description: Adds support to dbus-cxx (C++ bindings for dbus) for Qt integration
 Package: dbus-cxx-qt-dev
 Section: libdevel
 Architecture: any
-Depends: dbus-cxx-qt2 (= ${binary:Version})
+Depends: dbus-cxx-qt2 (= ${binary:Version}), dbus-cxx-dev
 Description: Headers for developing programs that will use dbus-cxx-qt
  dbus-cxx provides C++ bindings for the dbus library. dbus-cxx-qt
  provides dbus-cxx a means of integrating with Qt.
