@@ -628,12 +628,15 @@ void Connection::process_single_message() {
             reply_serial = std::static_pointer_cast<ErrorMessage>( msgToProcess )->reply_serial();
         }
 
-        if( m_priv->m_expectingResponses.find( reply_serial ) != m_priv->m_expectingResponses.end() ) {
-            // This is a response to something that a different thread is waiting for.
-            // Update the data and notify the thread!
-            m_priv->m_expectingResponses[ reply_serial ]->reply = msgToProcess;
-            m_priv->m_expectingResponses[ reply_serial ]->cv.notify_one();
-            return;
+        {
+            std::unique_lock<std::mutex> lock( m_priv->m_expectingResponsesLock );
+            if( m_priv->m_expectingResponses.find( reply_serial ) != m_priv->m_expectingResponses.end() ) {
+                // This is a response to something that a different thread is waiting for.
+                // Update the data and notify the thread!
+                m_priv->m_expectingResponses[ reply_serial ]->reply = msgToProcess;
+                m_priv->m_expectingResponses[ reply_serial ]->cv.notify_one();
+                return;
+            }
         }
     }
 
