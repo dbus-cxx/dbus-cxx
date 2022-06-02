@@ -43,5 +43,6 @@
 #include <dbus-cxx/standalonedispatcher.h>
 #include <dbus-cxx/propertyproxy.h>
 #include <dbus-cxx/property.h>
+#include <dbus-cxx/multiplereturn.h>
 
 #endif

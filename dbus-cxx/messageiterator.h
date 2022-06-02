@@ -40,6 +40,7 @@ namespace DBus {
 
 class FileDescriptor;
 class Message;
+template<typename ... T> class MultipleReturn;
 
 /**
  * Extraction iterator allowing values to be retrieved from a message
@@ -153,8 +154,10 @@ public:
         if( !this->is_array() ) {
             throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
         }
+        std::vector<T> ret;
+        get_array<T>(ret);
 
-        return get_array<T>();
+        return ret;
     }
 
     template <typename Key, typename Data>
@@ -239,6 +242,13 @@ public:
         }
     }
 
+    template <typename... T>
+    void get_multiplereturn(MultipleReturn<T...> &v) {
+        MessageIterator subiter = this->recurse();
+        MultipleReturn<T...> temp = v.createFromMessage( *this );
+        v = temp;
+    }
+
     template <typename Key, typename Data>
     std::map<Key, Data> get_dict() {
         std::map<Key, Data> newMap;
@@ -281,12 +291,27 @@ public:
         return *this;
     }
 
+    template<typename ... T>
+    MessageIterator& operator>>( MultipleReturn<T...>& v ) {
+        this->get_multiplereturn<T...>(v);
+        this->next();
+        return *this;
+    }
+
     template <typename T>
     MessageIterator& operator>>( T& v ) {
         v = static_cast<T>( *this );
         this->next();
         return *this;
     }
+
+    template<typename T>
+    T get(){
+        T ret = (T)(*this);
+        this->next();
+        return ret;
+    }
+
 
 private:
     SignatureIterator signature_iterator();

@@ -203,6 +203,7 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/standard-interfaces/introspectableinterfaceproxy.h
     dbus-cxx/standard-interfaces/propertiesinterfaceproxy.h
     dbus-cxx/daemon-proxy/DBusDaemonProxy.h
+    dbus-cxx/multiplereturn.h
 )
 
 set( DBUS_CXX_INCLUDE_DIRECTORIES 

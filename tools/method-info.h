@@ -42,7 +42,7 @@ public:
 private:
         std::string m_name;
         std::vector<cppgenerate::Argument> m_arguments;
-        std::string m_returnType;
+        std::vector<std::string> m_returnType;
         std::string m_returnArgName;
         std::vector<std::string> m_includes;
 };

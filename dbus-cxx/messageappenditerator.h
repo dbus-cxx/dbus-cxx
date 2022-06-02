@@ -77,6 +77,20 @@ public:
     MessageAppendIterator& operator<<( const std::shared_ptr<FileDescriptor> v );
     MessageAppendIterator& operator<<( const Variant& v );
 
+    template<typename ... T>
+    MessageAppendIterator& operator<<( const MultipleReturn<T...>& v ) {
+        std::string signature = DBus::priv::dbus_signature<T...>().dbus_sig();
+        this->open_container( ContainerType::None, signature.c_str() );
+        MessageAppendIterator* subiter = sub_iterator();
+        std::apply( [subiter]( auto&& ...arg ) mutable {
+                        ( *subiter << ... << arg );
+                    },
+                    v.m_data );
+        this->close_container();
+
+        return *this;
+    }
+
     template <typename T>
     MessageAppendIterator& operator<<( const std::vector<T>& v ) {
         bool success;
