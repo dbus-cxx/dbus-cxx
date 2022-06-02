@@ -29,7 +29,7 @@ public:
 
         std::string returnType() const;
 
-        void setReturnType( std::string type );
+        void addReturnValue( std::string type );
 
         std::string returnArgName() const;
 

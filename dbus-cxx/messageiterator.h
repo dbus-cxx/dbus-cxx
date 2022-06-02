@@ -31,9 +31,11 @@
     */
     #define DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter) iter.operator DBus::Variant()
     #define DBUSCXX_MESSAGEITERATOR_OPERATOR_SIGNATURE(iter) iter.operator DBus::Signature()
+    #define DBUSCXX_MESSAGEITERATOR_OPERATOR_MULTIPLE_RETURN(iter) iter.operator DBus::MultipleReturn()
 #else
     #define DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter) (DBus::Variant)iter
     #define DBUSCXX_MESSAGEITERATOR_OPERATOR_SIGNATURE(iter) (DBus::Signature)iter
+    #define DBUSCXX_MESSAGEITERATOR_OPERATOR_MULTIPLE_RETURN(iter) (DBus::MultipleReturn)iter
 #endif
 
 namespace DBus {

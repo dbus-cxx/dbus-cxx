@@ -79,14 +79,11 @@ public:
 
     template<typename ... T>
     MessageAppendIterator& operator<<( const MultipleReturn<T...>& v ) {
-        std::string signature = DBus::priv::dbus_signature<T...>().dbus_sig();
-        this->open_container( ContainerType::None, signature.c_str() );
-        MessageAppendIterator* subiter = sub_iterator();
-        std::apply( [subiter]( auto&& ...arg ) mutable {
-                        ( *subiter << ... << arg );
+        std::string signature = signature_multiple_return_data(v);
+        std::apply( [this]( auto&& ...arg ) mutable {
+                        ( *this << ... << arg );
                     },
                     v.m_data );
-        this->close_container();
 
         return *this;
     }

@@ -197,6 +197,7 @@ add_test( NAME add-method-found COMMAND dbus-wrapper-introspection-tests.sh add_
 add_test( NAME first-argname-correct COMMAND dbus-wrapper-introspection-tests.sh first_argname_correct)
 add_test( NAME second-argname-correct COMMAND dbus-wrapper-introspection-tests.sh second_argname_correct)
 add_test( NAME signal-found COMMAND dbus-wrapper-introspection-tests.sh signal_found)
+add_test( NAME multi-return COMMAND dbus-wrapper-introspection-tests.sh multiple_return)
 
 #
 # Custom DBus address test - make sure that we can connect to an arbitary bus, not just the default session bus

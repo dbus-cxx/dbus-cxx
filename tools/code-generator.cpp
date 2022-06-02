@@ -832,7 +832,7 @@ void CodeGenerator::handle_arg_tag( std::string parentElement, std::map<std::str
     }
 
     if( tagAttrs[ "direction" ] == "out" && parentElement == "method" ){
-        m_currentMethodInfo.setReturnType( std::get<0>( types ) );
+        m_currentMethodInfo.addReturnValue( std::get<0>( types ) );
         m_currentMethodInfo.addIncludes( std::get<1>( types ) );
     }else if( parentElement == "method" ){
         m_currentMethodInfo.addArgument( arg );

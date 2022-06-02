@@ -43,7 +43,7 @@ std::string MethodInfo::returnType() const{
     }
 }
 
-void MethodInfo::setReturnType( std::string type ){
+void MethodInfo::addReturnValue( std::string type ){
     m_returnType.push_back(type);
 }
 

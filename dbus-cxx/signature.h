@@ -189,6 +189,9 @@ template <typename Key, typename Data> inline std::string signature_dict_data( c
     return sig;
 }
 
+template<typename... T_arg>
+inline std::string signature_multiple_return_data( const DBus::MultipleReturn<T_arg...>& );
+
 namespace priv {
 /*
  * dbus_signature class - signature of a given type
@@ -223,6 +226,12 @@ inline std::string signature( const std::tuple<T_arg...>& ) {
         DBUSCXX_STRUCT_END_CHAR_AS_STRING;
 }
 
+template<typename... T_arg>
+inline std::string signature_multiple_return_data( const DBus::MultipleReturn<T_arg...>& ){
+    priv::dbus_signature<T_arg...> sig;
+
+    return sig.dbus_sig();
+}
 
 inline
 std::ostream& operator<<( std::ostream& sout, const DBus::Signature& sig ) {

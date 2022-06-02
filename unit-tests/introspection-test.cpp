@@ -43,7 +43,8 @@ struct XMLParseResults {
         found_add_method_under_foowhat( false ),
         first_arg_name_correct( false ),
         second_arg_name_correct( false ),
-        found_signal( false )
+        found_signal( false ),
+        num_multi_return( 0 )
     {}
 
     bool found_iface_foowhat;
@@ -52,6 +53,7 @@ struct XMLParseResults {
     bool first_arg_name_correct;
     bool second_arg_name_correct;
     bool found_signal;
+    int num_multi_return;
 };
 
 XMLParseResults parseResults;
@@ -69,6 +71,10 @@ int add( int, int ) {
 }
 
 void doublefun( double ) {}
+
+DBus::MultipleReturn<int32_t,std::string> multi_return(){
+    return DBus::MultipleReturn<int32_t,std::string>( 5, "hi" );
+}
 
 //
 // XML parsing functions
@@ -117,6 +123,10 @@ static void startElement( void*, const XML_Char* name, const XML_Char** attrs ) 
 
         if( tagAttrs[ "name" ] == "second" && argNum == 2 && currentMethod == "add" ) {
             parseResults.second_arg_name_correct = true;
+        }
+
+        if( currentMethod == "multi" ){
+            parseResults.num_multi_return++;
         }
 
         argNum++;
@@ -229,6 +239,20 @@ bool introspect_signal_found() {
     return parseResults.found_signal;
 }
 
+bool introspect_multiple_return() {
+    std::string introspectionData = ( *introspection_method_proxy )();
+
+    XML_Parser parser = XML_ParserCreate( NULL );
+    XML_SetElementHandler( parser, startElement, endElement );
+
+    if( XML_Parse( parser, introspectionData.c_str(), introspectionData.size(), 1 ) == XML_STATUS_ERROR ) {
+        return false;
+    }
+
+    XML_ParserFree( parser );
+    return parseResults.num_multi_return == 2;
+}
+
 void client_setup() {
     proxy = conn->create_object_proxy( "dbuscxx.test", "/test" );
 
@@ -251,6 +275,8 @@ void server_setup() {
     object->create_method<void( double )>( "what.bob", "setBar", sigc::ptr_fun( doublefun ) );
 
     object->create_signal<void(std::string)>( "sig.interface", "tim" );
+
+    object->create_method<DBus::MultipleReturn<int32_t,std::string>()>( "foo.multi", "multi", sigc::ptr_fun( multi_return ) );
 }
 
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
@@ -279,6 +305,7 @@ int main( int argc, char** argv ) {
         ADD_TEST( first_argname_correct );
         ADD_TEST( second_argname_correct );
         ADD_TEST( signal_found );
+        ADD_TEST( multiple_return );
     } else {
         server_setup();
         ret = true;
