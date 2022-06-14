@@ -36,7 +36,7 @@ std::shared_ptr<DBus::MethodProxy<int( int, struct custom )>> int_custom_method_
 std::shared_ptr<DBus::MethodProxy<bool( std::tuple<int, double, std::string> )>> tuple_method_proxy;
 std::shared_ptr<DBus::MethodProxy<void( DBus::Variant )>> variant_proxy;
 std::shared_ptr<DBus::MethodProxy<void()>> nonexistant_proxy;
-std::shared_ptr<DBus::MethodProxy<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>(int32_t, int32_t, std::string, std::vector<int>)>> multiplereturn_method_proxy;
+std::shared_ptr<DBus::MethodProxy<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>> multiplereturn_method_proxy;
 
 std::shared_ptr<DBus::Object> object;
 std::shared_ptr<DBus::Method<int( int, int )>> int_method;
@@ -45,7 +45,7 @@ std::shared_ptr<DBus::Method<void( struct custom )>> void_custom_method;
 std::shared_ptr<DBus::Method<int( int, struct custom )>> int_custom_method2;
 std::shared_ptr<DBus::Method<bool( std::tuple<int, double, std::string> )>> tuple_method;
 std::shared_ptr<DBus::Method<void( DBus::Variant )>> variant_method;
-std::shared_ptr<DBus::Method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>(int32_t, int32_t, std::string, std::vector<int>)>> multiplereturn_method;
+std::shared_ptr<DBus::Method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>> multiplereturn_method;
 
 bool tuple_method_symbol( std::tuple<int, double, std::string> tup ) {
     bool retval = true;
@@ -79,8 +79,8 @@ int int_intcustom_symbol( int i, struct custom c ) {
 }
 
 DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>
-multiplereturn_symbol(int32_t i1, int32_t i2, std::string s1, std::vector<int> v1) {
-    return DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>(i1, i2, std::move(s1), std::move(v1));
+multiplereturn_symbol() {
+    return DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>(1, 1024, "test", {1, 2, 3, 4} );
 }
 
 void variant_method_symbol( DBus::Variant v ) {
@@ -97,7 +97,7 @@ void client_setup() {
     tuple_method_proxy = proxy->create_method<bool( std::tuple<int, double, std::string> )>( "foo.what", "tuple_method" );
     variant_proxy = proxy->create_method<void( DBus::Variant )>( "foo.what", "variant_method" );
     nonexistant_proxy = proxy->create_method<void()>( "foo.what", "nonexistant" );
-    multiplereturn_method_proxy = proxy->create_method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>(int32_t, int32_t, std::string, std::vector<int>)>( "foo.what", "multiplereturn" );
+    multiplereturn_method_proxy = proxy->create_method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>( "foo.what", "multiplereturn" );
 }
 
 void server_setup() {
@@ -112,7 +112,7 @@ void server_setup() {
     int_custom_method2 = object->create_method<int( int, struct custom )>( "foo.what", "int_intcustom", sigc::ptr_fun( int_intcustom_symbol ) );
     tuple_method = object->create_method<bool( std::tuple<int, double, std::string> )>( "foo.what", "tuple_method", sigc::ptr_fun( tuple_method_symbol ) );
     variant_method = object->create_method<void( DBus::Variant )>( "foo.what", "variant_method", sigc::ptr_fun( variant_method_symbol ) );
-    multiplereturn_method = object->create_method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>(int32_t, int32_t, std::string, std::vector<int>)>( "foo.what", "multiplereturn", sigc::ptr_fun( multiplereturn_symbol ) );
+    multiplereturn_method = object->create_method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>( "foo.what", "multiplereturn", sigc::ptr_fun( multiplereturn_symbol ) );
 }
 
 bool data_send_integers() {
@@ -147,8 +147,8 @@ bool data_send_intcustom() {
 
 bool data_send_multiplereturn() {
     DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>> val;
-    val = (*multiplereturn_method_proxy)(1, 1024, "test", {1, 2, 3, 4});
-    std::tuple<int32_t, int32_t, std::string, std::vector<int>> d = val;
+    val = (*multiplereturn_method_proxy)();
+    std::tuple<int32_t, int32_t, std::string, std::vector<int>> d = val.m_data;
     return (TEST_EQUALS(std::get<0>(d), 1)) &
            (TEST_EQUALS(std::get<1>(d), 1024)) &
            (TEST_EQUALS(std::get<2>(d), std::string("test"))) &

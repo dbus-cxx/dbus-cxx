@@ -27,10 +27,8 @@ namespace DBus {
 
     template<typename... Ts>
     class MultipleReturn {
-    private:
+    public:
         std::tuple<Ts...> m_data;
-
-
 
     public:
         MultipleReturn()= default;
@@ -39,10 +37,10 @@ namespace DBus {
             m_data = std::make_tuple(std::ref(args)...);
         };
 
-        template<typename... T>
-        operator std::tuple<T...>() {
-            return m_data;
-        }
+//        template<typename... T>
+//        operator std::tuple<T...>() {
+//            return m_data;
+//        }
 
         bool operator==(const MultipleReturn &other) const {
             return m_data == other.m_data;
