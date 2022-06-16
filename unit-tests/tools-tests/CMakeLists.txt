@@ -64,6 +64,7 @@ add_xml_test( signal-interface.xml adapter "signalNameAdapter.h;signalNameAdapte
 add_xml_test( signal-interface.xml proxy "signalNameProxy.h;signalNameProxy.cpp;signal_name_interfaceProxy.h;signal_name_interfaceProxy.cpp" signal-proxy )
 add_xml_test( org.freedesktop.NetworkManager.xml proxy "NetworkManagerProxy.h;NetworkManagerProxy.cpp;org_freedesktop_NetworkManagerProxy.h;org_freedesktop_NetworkManagerProxy.cpp" nm-proxy )
 add_xml_test( org.freedesktop.Avahi.Server.xml proxy "AvahiServerProxy.h;AvahiServerProxy.cpp;org_freedesktop_Avahi_ServerProxy.h;org_freedesktop_Avahi_ServerProxy.cpp;org_freedesktop_Avahi_Server2Proxy.h;org_freedesktop_Avahi_Server2Proxy.cpp" avahi-proxy )
+add_xml_test( multireturn.xml proxy "test_multireturn_interfaceProxy.h;test_multireturn_interfaceProxy.cpp;MultiReturnProxy.h;MultiReturnProxy.cpp" test-multireturn )
 
 #
 # Make sure that our generated code will work

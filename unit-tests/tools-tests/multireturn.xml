@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<node cppname="MultiReturn">
+    <interface name="test.multireturn.interface">
+        <method name="multireturn">
+            <arg type="i" name="first" direction="out"/>
+            <arg type="d" name="second" direction="out"/>
+        </method>
+    </interface>
+</node>
