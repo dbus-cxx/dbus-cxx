@@ -36,6 +36,8 @@ std::shared_ptr<DBus::MethodProxy<int( int, struct custom )>> int_custom_method_
 std::shared_ptr<DBus::MethodProxy<bool( std::tuple<int, double, std::string> )>> tuple_method_proxy;
 std::shared_ptr<DBus::MethodProxy<void( DBus::Variant )>> variant_proxy;
 std::shared_ptr<DBus::MethodProxy<void()>> nonexistant_proxy;
+std::shared_ptr<DBus::MethodProxy<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>> multiplereturn_method_proxy;
+std::shared_ptr<DBus::MethodProxy<DBus::MultipleReturn<int32_t>(int32_t)>> multiplereturn_method_proxy2;
 
 std::shared_ptr<DBus::Object> object;
 std::shared_ptr<DBus::Method<int( int, int )>> int_method;
@@ -44,6 +46,8 @@ std::shared_ptr<DBus::Method<void( struct custom )>> void_custom_method;
 std::shared_ptr<DBus::Method<int( int, struct custom )>> int_custom_method2;
 std::shared_ptr<DBus::Method<bool( std::tuple<int, double, std::string> )>> tuple_method;
 std::shared_ptr<DBus::Method<void( DBus::Variant )>> variant_method;
+std::shared_ptr<DBus::Method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>> multiplereturn_method;
+std::shared_ptr<DBus::Method<DBus::MultipleReturn<int32_t>(int32_t)>> multiplereturn_method2;
 
 bool tuple_method_symbol( std::tuple<int, double, std::string> tup ) {
     bool retval = true;
@@ -76,6 +80,16 @@ int int_intcustom_symbol( int i, struct custom c ) {
     return i + c.first + c.second;
 }
 
+DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>
+multiplereturn_symbol() {
+    return DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>(1, 1024, "test", {1, 2, 3, 4} );
+}
+
+DBus::MultipleReturn<int32_t>
+multiplereturn_symbol2(int32_t arg) {
+    return DBus::MultipleReturn<int32_t>( arg + 10 );
+}
+
 void variant_method_symbol( DBus::Variant v ) {
     std::cerr << "Got incoming variant: " << v << std::endl;
 }
@@ -90,6 +104,8 @@ void client_setup() {
     tuple_method_proxy = proxy->create_method<bool( std::tuple<int, double, std::string> )>( "foo.what", "tuple_method" );
     variant_proxy = proxy->create_method<void( DBus::Variant )>( "foo.what", "variant_method" );
     nonexistant_proxy = proxy->create_method<void()>( "foo.what", "nonexistant" );
+    multiplereturn_method_proxy = proxy->create_method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>( "foo.what", "multiplereturn" );
+    multiplereturn_method_proxy2 = proxy->create_method<DBus::MultipleReturn<int32_t>(int32_t)>( "foo.what", "multiplereturn2" );
 }
 
 void server_setup() {
@@ -104,6 +120,8 @@ void server_setup() {
     int_custom_method2 = object->create_method<int( int, struct custom )>( "foo.what", "int_intcustom", sigc::ptr_fun( int_intcustom_symbol ) );
     tuple_method = object->create_method<bool( std::tuple<int, double, std::string> )>( "foo.what", "tuple_method", sigc::ptr_fun( tuple_method_symbol ) );
     variant_method = object->create_method<void( DBus::Variant )>( "foo.what", "variant_method", sigc::ptr_fun( variant_method_symbol ) );
+    multiplereturn_method = object->create_method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>( "foo.what", "multiplereturn", sigc::ptr_fun( multiplereturn_symbol ) );
+    multiplereturn_method2 = object->create_method<DBus::MultipleReturn<int32_t>(int32_t)>( "foo.what", "multiplereturn2", sigc::ptr_fun( multiplereturn_symbol2 ) );
 }
 
 bool data_send_integers() {
@@ -134,6 +152,23 @@ bool data_send_intcustom() {
     int val = ( *int_custom_method_proxy2 )( 10, c );
 
     return TEST_EQUALS( val, 25 );
+}
+
+bool data_send_multiplereturn() {
+    DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>> val;
+    val = (*multiplereturn_method_proxy)();
+    std::tuple<int32_t, int32_t, std::string, std::vector<int>> d = val.m_data;
+    return (TEST_EQUALS(std::get<0>(d), 1)) &
+           (TEST_EQUALS(std::get<1>(d), 1024)) &
+           (TEST_EQUALS(std::get<2>(d), std::string("test"))) &
+           (TEST_EQUALS(std::get<3>(d), std::vector<int>({1, 2, 3, 4})));
+}
+
+bool data_send_multiplereturn2() {
+    DBus::MultipleReturn<int32_t> val;
+    val = (*multiplereturn_method_proxy2)(5);
+    std::tuple<int32_t> d = val.m_data;
+    return (TEST_EQUALS(std::get<0>(d), 15));
 }
 
 bool data_ping() {
@@ -243,6 +278,8 @@ int main( int argc, char** argv ) {
         ADD_TEST( variant_map );
         ADD_TEST( variant_tuple );
         ADD_TEST( nonexistant_method );
+        ADD_TEST(send_multiplereturn);
+        ADD_TEST(send_multiplereturn2);
     } else {
         server_setup();
         ret = true;

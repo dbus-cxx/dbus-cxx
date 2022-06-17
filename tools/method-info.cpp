@@ -5,12 +5,13 @@
  *   This file is part of the dbus-cxx library.                            *
  ***************************************************************************/
 #include "method-info.h"
+#include <sstream>
+#include <iterator>
 
 MethodInfo::MethodInfo(){}
 
 MethodInfo::MethodInfo( std::string name ) :
-    m_name( name ),
-    m_returnType( "void" )
+    m_name( name )
 {}
 
 void MethodInfo::addArgument( cppgenerate::Argument arg ){
@@ -26,11 +27,24 @@ std::string MethodInfo::name() const {
 }
 
 std::string MethodInfo::returnType() const{
-    return m_returnType;
+    if(m_returnType.size() > 1){
+	    std::stringstream returnType;
+	    returnType << "DBus::MultipleReturn<";
+	    std::copy(m_returnType.begin(), m_returnType.end()-1, std::ostream_iterator<std::string>(returnType, ","));
+	    returnType << m_returnType.back();
+	    returnType << ">";
+	    return returnType.str();
+    }
+    else if(m_returnType.size() == 1){
+      return m_returnType.front();
+    }
+    else{
+	    return "void";
+    }
 }
 
-void MethodInfo::setReturnType( std::string type ){
-    m_returnType = type;
+void MethodInfo::addReturnValue( std::string type ){
+    m_returnType.push_back(type);
 }
 
 std::string MethodInfo::returnArgName() const{

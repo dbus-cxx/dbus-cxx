@@ -21,6 +21,7 @@
 #include <sigc++/sigc++.h>
 #include <chrono>
 #include <dbus-cxx/demangle.h>
+#include <dbus-cxx/multiplereturn.h>
 
 #ifndef DBUSCXX_UTILITY_H
 #define DBUSCXX_UTILITY_H
@@ -168,6 +169,51 @@ public:
     }
 };
 
+template<typename... argn>
+class multireturn_signature;
+
+template<> class multireturn_signature<> {
+public:
+    std::string multireturn_sig() const {
+        return "";
+    }
+
+    std::string introspect( const std::vector<std::string>&, int, const std::string& ) const {
+        return "";
+    }
+};
+
+template<typename arg1, typename... argn>
+class multireturn_signature<arg1, argn...> : public multireturn_signature<argn...> {
+public:
+    std::string multireturn_sig() const {
+        std::string arg1_name = demangle<arg1>();
+        std::string remaining_args = multireturn_signature<argn...>::multireturn_sig();
+
+        if( remaining_args.size() > 1 ) {
+            arg1_name += ",";
+        }
+
+        return arg1_name + remaining_args;
+    }
+
+    std::string introspect( const std::vector<std::string>& names, int& idx, const std::string& spaces ) const {
+        arg1 arg;
+        std::ostringstream output;
+        std::string name = names.size() > idx ? names[idx] : "";
+        output << spaces;
+        output << "<arg ";
+
+        if( name.size() > 0 ) { output << "name=\"" << name << "\" "; }
+
+        output << "type=\"" << signature( arg ) << "\" ";
+        output << "direction=\"out\"/>\n";
+        idx++;
+        output << multireturn_signature<argn...>().introspect( names, idx, spaces );
+        return output.str();
+    }
+};
+
 
 /*
  * dbus_function_traits - given a function, get information about it needed for dbus operations.
@@ -255,6 +301,43 @@ struct dbus_function_traits<std::function<T_ret( Args... )>> {
         },
         tup_args );
         T_ret retval;
+
+        retval = std::apply( slot, tup_args );
+        retmsg << retval;
+    }
+};
+
+
+template<typename... T_ret,typename ...Args>
+struct dbus_function_traits<std::function<DBus::MultipleReturn<T_ret...>( Args... )>> {
+    std::string dbus_sig() const {
+        return dbus_signature<Args...>().dbus_sig();
+    }
+
+    std::string debug_string() const {
+        std::ostringstream ret;
+        ret << "DBus::MultipleReturn<" << multireturn_signature<T_ret...>().multireturn_sig() << ">";
+        ret << "(";
+        ret << method_signature<Args...>().method_sig();
+        ret << ")";
+        return ret.str();
+    }
+
+    std::string introspect( const std::vector<std::string>& names, int idx, const std::string& spaces ) const {
+        std::ostringstream sout;
+        sout << multireturn_signature<T_ret...>().introspect( names, idx, spaces );
+        sout << method_signature<Args...>().introspect( names, idx + 1, spaces );
+        return sout.str();
+    }
+
+    void extractAndCall( std::shared_ptr<const CallMessage> callmsg, std::shared_ptr<ReturnMessage> retmsg, sigc::slot<DBus::MultipleReturn<T_ret...>( Args... )> slot ) {
+        MessageIterator i = callmsg->begin();
+        std::tuple<Args...> tup_args;
+        std::apply( [i]( auto&& ...arg ) mutable {
+          ( void )( i >> ... >> arg );
+        },
+        tup_args );
+        DBus::MultipleReturn<T_ret...> retval;
 
         retval = std::apply( slot, tup_args );
         retmsg << retval;

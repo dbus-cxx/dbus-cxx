@@ -63,6 +63,7 @@ public:
 
 class FileDescriptor;
 class Variant;
+template<typename... T> class MultipleReturn;
 
 /**
  * Represents a DBus signature.  DBus signatures indicate what type of
@@ -159,6 +160,9 @@ inline std::string signature( Signature )   { return DBUSCXX_TYPE_SIGNATURE_AS_S
 inline std::string signature( Path )        { return DBUSCXX_TYPE_OBJECT_PATH_AS_STRING; }
 inline std::string signature( const DBus::Variant& )     { return DBUSCXX_TYPE_VARIANT_AS_STRING; }
 inline std::string signature( const std::shared_ptr<FileDescriptor> )  { return DBUSCXX_TYPE_UNIX_FD_AS_STRING; }
+template<typename... T>
+inline std::string signature( const DBus::MultipleReturn<T...>& )     { return DBUSCXX_TYPE_INVALID_AS_STRING; }
+
 
 template <typename T> inline std::string signature( const std::vector<T>& ) { T t; return DBUSCXX_TYPE_ARRAY_AS_STRING + signature( t ); }
 
@@ -184,6 +188,9 @@ template <typename Key, typename Data> inline std::string signature_dict_data( c
         DBUSCXX_DICT_ENTRY_END_CHAR_AS_STRING;
     return sig;
 }
+
+template<typename... T_arg>
+inline std::string signature_multiple_return_data( const DBus::MultipleReturn<T_arg...>& );
 
 namespace priv {
 /*
@@ -219,6 +226,12 @@ inline std::string signature( const std::tuple<T_arg...>& ) {
         DBUSCXX_STRUCT_END_CHAR_AS_STRING;
 }
 
+template<typename... T_arg>
+inline std::string signature_multiple_return_data( const DBus::MultipleReturn<T_arg...>& ){
+    priv::dbus_signature<T_arg...> sig;
+
+    return sig.dbus_sig();
+}
 
 inline
 std::ostream& operator<<( std::ostream& sout, const DBus::Signature& sig ) {

@@ -160,6 +160,8 @@ add_test( NAME variant-array COMMAND dbus-wrapper-data-tests.sh variant_array)
 add_test( NAME variant-map COMMAND dbus-wrapper-data-tests.sh variant_map)
 add_test( NAME variant-tuple COMMAND dbus-wrapper-data-tests.sh variant_tuple)
 add_test( NAME nonexistant-method COMMAND dbus-wrapper-data-tests.sh nonexistant_method )
+add_test( NAME multiplereturn COMMAND dbus-wrapper-data-tests.sh send_multiplereturn )
+add_test( NAME multiplereturn2 COMMAND dbus-wrapper-data-tests.sh send_multiplereturn2 )
 
 #
 # Signal tests - make sure we can tx and rx singals correctly
@@ -196,6 +198,7 @@ add_test( NAME add-method-found COMMAND dbus-wrapper-introspection-tests.sh add_
 add_test( NAME first-argname-correct COMMAND dbus-wrapper-introspection-tests.sh first_argname_correct)
 add_test( NAME second-argname-correct COMMAND dbus-wrapper-introspection-tests.sh second_argname_correct)
 add_test( NAME signal-found COMMAND dbus-wrapper-introspection-tests.sh signal_found)
+add_test( NAME multi-return COMMAND dbus-wrapper-introspection-tests.sh multiple_return)
 
 #
 # Custom DBus address test - make sure that we can connect to an arbitary bus, not just the default session bus

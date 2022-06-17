@@ -31,15 +31,18 @@
     */
     #define DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter) iter.operator DBus::Variant()
     #define DBUSCXX_MESSAGEITERATOR_OPERATOR_SIGNATURE(iter) iter.operator DBus::Signature()
+    #define DBUSCXX_MESSAGEITERATOR_OPERATOR_MULTIPLE_RETURN(iter) iter.operator DBus::MultipleReturn()
 #else
     #define DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter) (DBus::Variant)iter
     #define DBUSCXX_MESSAGEITERATOR_OPERATOR_SIGNATURE(iter) (DBus::Signature)iter
+    #define DBUSCXX_MESSAGEITERATOR_OPERATOR_MULTIPLE_RETURN(iter) (DBus::MultipleReturn)iter
 #endif
 
 namespace DBus {
 
 class FileDescriptor;
 class Message;
+template<typename ... T> class MultipleReturn;
 
 /**
  * Extraction iterator allowing values to be retrieved from a message
@@ -153,8 +156,10 @@ public:
         if( !this->is_array() ) {
             throw ErrorInvalidTypecast( "MessageIterator: Extracting non array into std::vector" );
         }
+        std::vector<T> ret;
+        get_array<T>(ret);
 
-        return get_array<T>();
+        return ret;
     }
 
     template <typename Key, typename Data>
@@ -171,6 +176,13 @@ public:
         std::tuple<T...> tup;
         get_struct<T...>( tup );
         return tup;
+    }
+
+    template <typename... T>
+    operator DBus::MultipleReturn<T...>() {
+        DBus::MultipleReturn<T...> multi_ret;
+        get_multiplereturn<T...>( multi_ret );
+        return multi_ret;
     }
 
     bool        get_bool();
@@ -239,6 +251,17 @@ public:
         }
     }
 
+    template <typename... T>
+    void get_multiplereturn(MultipleReturn<T...> &v) {
+        std::tuple<T...> tup;
+        std::apply( [this]( auto&& ...arg ) mutable {
+            ( *this >> ... >> arg );
+        },
+        tup );
+
+        v.m_data = tup;
+    }
+
     template <typename Key, typename Data>
     std::map<Key, Data> get_dict() {
         std::map<Key, Data> newMap;
@@ -281,12 +304,27 @@ public:
         return *this;
     }
 
+    template<typename ... T>
+    MessageIterator& operator>>( MultipleReturn<T...>& v ) {
+        this->get_multiplereturn<T...>(v);
+        this->next();
+        return *this;
+    }
+
     template <typename T>
     MessageIterator& operator>>( T& v ) {
         v = static_cast<T>( *this );
         this->next();
         return *this;
     }
+
+    template<typename T>
+    T get(){
+        T ret = (T)(*this);
+        this->next();
+        return ret;
+    }
+
 
 private:
     SignatureIterator signature_iterator();

@@ -77,6 +77,17 @@ public:
     MessageAppendIterator& operator<<( const std::shared_ptr<FileDescriptor> v );
     MessageAppendIterator& operator<<( const Variant& v );
 
+    template<typename ... T>
+    MessageAppendIterator& operator<<( const MultipleReturn<T...>& v ) {
+        std::string signature = signature_multiple_return_data(v);
+        std::apply( [this]( auto&& ...arg ) mutable {
+                        ( *this << ... << arg );
+                    },
+                    v.m_data );
+
+        return *this;
+    }
+
     template <typename T>
     MessageAppendIterator& operator<<( const std::vector<T>& v ) {
         bool success;
