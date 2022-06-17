@@ -178,6 +178,13 @@ public:
         return tup;
     }
 
+    template <typename... T>
+    operator DBus::MultipleReturn<T...>() {
+        DBus::MultipleReturn<T...> multi_ret;
+        get_multiplereturn<T...>( multi_ret );
+        return multi_ret;
+    }
+
     bool        get_bool();
     uint8_t     get_uint8();
     uint16_t    get_uint16();
