@@ -253,9 +253,13 @@ public:
 
     template <typename... T>
     void get_multiplereturn(MultipleReturn<T...> &v) {
-        MessageIterator subiter = this->recurse();
-        MultipleReturn<T...> temp = v.createFromMessage( *this );
-        v = temp;
+        std::tuple<T...> tup;
+        std::apply( [this]( auto&& ...arg ) mutable {
+            ( *this >> ... >> arg );
+        },
+        tup );
+
+        v.m_data = tup;
     }
 
     template <typename Key, typename Data>

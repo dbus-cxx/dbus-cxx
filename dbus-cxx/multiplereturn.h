@@ -37,11 +37,6 @@ namespace DBus {
             m_data = std::make_tuple(std::ref(args)...);
         };
 
-//        template<typename... T>
-//        operator std::tuple<T...>() {
-//            return m_data;
-//        }
-
         bool operator==(const MultipleReturn &other) const {
             return m_data == other.m_data;
         }
@@ -51,25 +46,9 @@ namespace DBus {
             return *this;
         }
 
-        template<std::size_t I = 0, typename... Tp>
-        inline static typename std::enable_if<I == sizeof...(Tp), void>::type
-        fill_tuple(std::tuple<Tp...> &t, [[maybe_unused]] const DBus::MessageIterator v) {}
-
-        template<std::size_t I = 0, typename... Tp>
-        inline static typename std::enable_if<I < sizeof...(Tp), void>::type
-        fill_tuple(std::tuple<Tp...> &t, DBus::MessageIterator v) {
-            std::get<I>(t) = v.get<std::remove_reference_t<std::tuple_element_t<I, std::tuple<Ts...>>>>();
-            fill_tuple<I + 1, Tp...>(t, v);
-        }
-
-        static MultipleReturn<Ts...> createFromMessage(MessageIterator iter) {
-            MultipleReturn<Ts...> v;
-            fill_tuple(v.m_data, iter);
-            return v;
-        }
-
     private:
         friend class MessageAppendIterator;
+        friend class MessageIterator;
     };
 
 }
