@@ -109,7 +109,7 @@ std::tuple<bool, int, std::vector<int>, std::chrono::milliseconds> priv::wait_fo
         toListen.push_back( pollfd );
     }
 
-    std::chrono::time_point start = std::chrono::high_resolution_clock::now();
+    std::chrono::time_point start = std::chrono::steady_clock::now();
 
     do {
         poll_ret = ::poll( toListen.data(), toListen.size(), timeout_ms );
@@ -117,7 +117,7 @@ std::tuple<bool, int, std::vector<int>, std::chrono::milliseconds> priv::wait_fo
         if( poll_ret >= 0 ) {
             timeout = poll_ret == 0 ? true : false;
             ms_waited = std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::high_resolution_clock::now() - start
+                    std::chrono::steady_clock::now() - start
                 );
 
             for( pollfd pollentry : toListen ) {
