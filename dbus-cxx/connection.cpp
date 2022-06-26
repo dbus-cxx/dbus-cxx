@@ -499,8 +499,9 @@ std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking( std::shared
              * Lock on the expecting response; when the response comes in, we will notify from
              * the dispatching thread
              */
+            std::chrono::time_point now = std::chrono::steady_clock::now();
             std::unique_lock<std::mutex> lock( ex->cv_lock );
-            bool status = ex->cv.wait_for( lock, std::chrono::milliseconds( msToWait ), [this, serial] {
+            bool status = ex->cv.wait_until( lock, now + std::chrono::milliseconds( msToWait ), [this, serial] {
                 std::unique_lock<std::mutex> lock( m_priv->m_expectingResponsesLock );
                 std::map<uint32_t, std::shared_ptr<ExpectingResponse>>::iterator it =
                     m_priv->m_expectingResponses.find( serial );
