@@ -460,5 +460,9 @@ void Interface::set_connection( std::weak_ptr<Connection> conn ){
     }
 }
 
+const std::set<std::shared_ptr<PropertyBase>>& Interface::properties(){
+    return m_priv->m_properties;
+}
+
 }
 
