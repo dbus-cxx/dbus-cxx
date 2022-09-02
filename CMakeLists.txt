@@ -12,7 +12,7 @@
 #   You should have received a copy of the GNU General Public License     
 #   along with this software. If not see <http://www.gnu.org/licenses/>.  
 cmake_minimum_required( VERSION 3.12 )
-project( dbus-cxx VERSION 2.2.0 )
+project( dbus-cxx VERSION 2.3.0 )
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake-modules")
 

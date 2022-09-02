@@ -1,3 +1,10 @@
+dbus-cxx (2.3.0) jessie; urgency=medium
+
+  * Various fixes
+  * Add in multiple return support
+
+ -- Robert Middleton <robert.middleton@rm5248.com>  Fri, 02 Sep 2022 17:27:07 -0400
+
 dbus-cxx (2.2.0) jessie; urgency=medium
 
   * Minor fix for version installation
