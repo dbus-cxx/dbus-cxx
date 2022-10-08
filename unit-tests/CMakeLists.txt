@@ -68,6 +68,7 @@ add_test( NAME messageiterator-map-string-string_many COMMAND test-messageiterat
 add_test( NAME messageiterator-map-correct-signature COMMAND test-messageiterator correct_variant_signature)
 add_test( NAME messageiterator-array_array_byte COMMAND test-messageiterator array_array_bytes)
 add_test( NAME messageiterator-array_array_int COMMAND test-messageiterator array_array_int)
+add_test( NAME messageiterator-complex-types COMMAND test-messageiterator complex_variants)
 
 add_test( NAME messageiterator-Bool2 COMMAND test-messageiterator bool-2)
 add_test( NAME messageiterator-Byte2 COMMAND test-messageiterator byte-2)
@@ -162,6 +163,7 @@ add_test( NAME variant-tuple COMMAND dbus-wrapper-data-tests.sh variant_tuple)
 add_test( NAME nonexistant-method COMMAND dbus-wrapper-data-tests.sh nonexistant_method )
 add_test( NAME multiplereturn COMMAND dbus-wrapper-data-tests.sh send_multiplereturn )
 add_test( NAME multiplereturn2 COMMAND dbus-wrapper-data-tests.sh send_multiplereturn2 )
+add_test( NAME send-complex COMMAND dbus-wrapper-data-tests.sh send_complex )
 
 #
 # Signal tests - make sure we can tx and rx singals correctly

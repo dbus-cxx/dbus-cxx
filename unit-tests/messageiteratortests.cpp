@@ -886,6 +886,52 @@ bool call_message_iterator_insertion_extraction_operator_struct() {
     return true;
 }
 
+bool call_message_append_extract_iterator_complex_variants(){
+    std::vector<DBus::Path> map1Keys = { "/foo/org/1", "/foo/org/2" };
+    std::vector<std::string> map2Keys = { "string1", "string2", "string3" };
+    std::vector<std::string> map3Keys = { "inner3-1", "inner3-2", "inner3-3" };
+    std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>> serialize;
+    std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>> result;
+
+    for( DBus::Path path : map1Keys ){
+        std::map<std::string, std::map<std::string, DBus::Variant>> map2;
+        for( std::string map2_key : map2Keys ){
+            std::map<std::string, DBus::Variant> map3;
+            for( std::string map3_key : map3Keys ){
+                map3[ map3_key ] = DBus::Variant( "this is a string" );
+            }
+
+            std::map<int, int> complexVariantMap;
+            complexVariantMap[5] = 6;
+            map3[ "complex-variant" ] = DBus::Variant(complexVariantMap);
+
+            map2[ map2_key ] = map3;
+        }
+
+        serialize[ path ] = map2;
+    }
+
+    std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+    DBus::MessageAppendIterator iter1( msg );
+    iter1 << serialize;
+
+    DBus::MessageIterator iter2( msg );
+    result = (std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>>) iter2;
+
+    std::map<int,int> complexVariantMap;
+    DBus::Variant complexVariant = result[ "/foo/org/1" ][ "string1" ][ "inner3-1" ];
+
+    std::cerr << complexVariant;
+
+    complexVariantMap = complexVariant.to_map<int,int>();
+
+
+    TEST_EQUALS_RET_FAIL( complexVariantMap[5], 6 );
+
+    return true;
+
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = call_message_append_extract_iterator_##name();\
         } \
@@ -936,6 +982,7 @@ int main( int argc, char** argv ) {
     ADD_TEST( correct_variant_signature );
     ADD_TEST( array_array_bytes );
     ADD_TEST( array_array_int );
+    ADD_TEST( complex_variants );
 
     ADD_TEST2( bool );
     ADD_TEST2( byte );
