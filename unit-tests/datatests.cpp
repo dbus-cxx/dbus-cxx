@@ -83,9 +83,9 @@ int int_intcustom_symbol( int i, struct custom c ) {
 }
 
 std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>> complex_custom_symbol() {
-    std::vector<DBus::Path> map1Keys = { "/foo/org/1", "/foo/org/2" };
-    std::vector<std::string> map2Keys = { "string1", "string2", "string3" };
-    std::vector<std::string> map3Keys = { "inner3-1", "inner3-2", "inner3-3" };
+    std::vector<DBus::Path> map1Keys = { "/foo/org/1", "/foo/org/blah" };
+    std::vector<std::string> map2Keys = { "string1", "a_longer_string", "x" };
+    std::vector<std::string> map3Keys = { "inner3-1 FIRST", "inner3-2", "inner3-3 num3" };
     std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>> result;
 
     for( DBus::Path path : map1Keys ){
