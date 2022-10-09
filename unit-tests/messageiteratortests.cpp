@@ -887,9 +887,9 @@ bool call_message_iterator_insertion_extraction_operator_struct() {
 }
 
 bool call_message_append_extract_iterator_complex_variants(){
-    std::vector<DBus::Path> map1Keys = { "/foo/org/1", "/foo/org/2" };
-    std::vector<std::string> map2Keys = { "string1", "string2", "string3" };
-    std::vector<std::string> map3Keys = { "inner3-1", "inner3-2", "inner3-3" };
+    std::vector<DBus::Path> map1Keys = { "/foo/org/1" };
+    std::vector<std::string> map2Keys = { "string1"};
+    std::vector<std::string> map3Keys = { "inner3-1" };
     std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>> serialize;
     std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>> result;
 
@@ -915,16 +915,16 @@ bool call_message_append_extract_iterator_complex_variants(){
     DBus::MessageAppendIterator iter1( msg );
     iter1 << serialize;
 
+    std::vector<uint8_t> vec;
+    msg->serialize_to_vector( &vec, 0 );
+
     DBus::MessageIterator iter2( msg );
     result = (std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>>) iter2;
 
     std::map<int,int> complexVariantMap;
-    DBus::Variant complexVariant = result[ "/foo/org/1" ][ "string1" ][ "inner3-1" ];
-
-    std::cerr << complexVariant;
+    DBus::Variant complexVariant = result[ "/foo/org/1" ][ "string1" ][ "complex-variant" ];
 
     complexVariantMap = complexVariant.to_map<int,int>();
-
 
     TEST_EQUALS_RET_FAIL( complexVariantMap[5], 6 );
 
@@ -951,7 +951,7 @@ int main( int argc, char** argv ) {
     bool ret = false;
 
     DBus::set_logging_function( DBus::log_std_err );
-    DBus::set_log_level( SL_DEBUG );
+    DBus::set_log_level( SL_TRACE );
 
     ADD_TEST( bool );
     ADD_TEST( byte );
