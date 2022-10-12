@@ -55,7 +55,9 @@ MessageIterator::MessageIterator( DataType d,
         uint32_t array_len = m_priv->m_demarshal->demarshal_uint32_t();
         m_priv->m_subiterInfo.m_arrayLastPosition = m_priv->m_demarshal->current_offset() + array_len;
         SIMPLELOGGER_TRACE_STDSTR( LOGGER_NAME,
-                                   "Extracting array.  new position: " << m_priv->m_demarshal->current_offset() << " array len: " << array_len);
+                                   "Extracting array.  new position: " << m_priv->m_demarshal->current_offset()
+                                   << " array len: " << array_len
+                                   << " array end pos: " << m_priv->m_subiterInfo.m_arrayLastPosition);
     } else if( d == DataType::VARIANT ) {
         Signature demarshaled_sig = demarshal->demarshal_signature();
         m_priv->m_subiterInfo.m_variantSignature = demarshaled_sig;
@@ -111,6 +113,9 @@ bool MessageIterator::is_valid() const {
     if( m_priv->m_subiterInfo.m_subiterDataType == DataType::ARRAY ) {
         // We are in a subiter here, figure out if we're at the end of the array yet
         if( m_priv->m_demarshal->current_offset() >= m_priv-> m_subiterInfo.m_arrayLastPosition ) {
+            SIMPLELOGGER_TRACE_STDSTR( LOGGER_NAME,
+                                       "Array extraction done.  new position: " << m_priv->m_demarshal->current_offset() );
+
             return false;
         }
 

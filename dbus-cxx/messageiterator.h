@@ -19,6 +19,8 @@
 #include <vector>
 #include "enums.h"
 #include "error.h"
+#include "headerlog.h"
+#include "signature.h"
 
 #ifndef DBUSCXX_MESSAGEITERATOR_H
 #define DBUSCXX_MESSAGEITERATOR_H
@@ -241,6 +243,7 @@ public:
             MessageIterator subSubiter = subiter.recurse();
 
             while( subSubiter.is_valid() ) {
+                DBUSCXX_DEBUG_STDSTR("DBus.MessageIterator", "Extracting dict entry(" << DBus::signature(dict) << ")");
                 subSubiter >> val_key;
                 subSubiter >> val_data;
                 dict[ val_key ] = val_data;
