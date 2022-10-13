@@ -69,7 +69,7 @@ add_test( NAME messageiterator-map-correct-signature COMMAND test-messageiterato
 add_test( NAME messageiterator-array_array_byte COMMAND test-messageiterator array_array_bytes)
 add_test( NAME messageiterator-array_array_int COMMAND test-messageiterator array_array_int)
 add_test( NAME messageiterator-complex-types COMMAND test-messageiterator complex_variants)
-add_test( NAME messageiterator-complex-types2 COMMAND test-messageiterator compex_variants2)
+add_test( NAME messageiterator-complex-types2 COMMAND test-messageiterator complex_variants2)
 
 add_test( NAME messageiterator-Bool2 COMMAND test-messageiterator bool-2)
 add_test( NAME messageiterator-Byte2 COMMAND test-messageiterator byte-2)

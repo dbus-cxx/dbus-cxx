@@ -64,6 +64,8 @@ MessageIterator::MessageIterator( DataType d,
         m_priv->m_signatureIterator = demarshaled_sig.begin();
     } else if( d == DataType::DICT_ENTRY || d == DataType::STRUCT ) {
         m_priv->m_demarshal->align( 8 );
+        SIMPLELOGGER_TRACE_STDSTR( LOGGER_NAME,
+                                   "Extracting DICT or STRUCT: aligning to 8 byte boundary.  Location: " << m_priv->m_demarshal->current_offset() );
     }
 
 }
@@ -112,6 +114,8 @@ bool MessageIterator::is_valid() const {
 
     if( m_priv->m_subiterInfo.m_subiterDataType == DataType::ARRAY ) {
         // We are in a subiter here, figure out if we're at the end of the array yet
+        SIMPLELOGGER_TRACE_STDSTR( LOGGER_NAME,
+                                   "Current offset: " << m_priv->m_demarshal->current_offset() << " last array pos: " << m_priv-> m_subiterInfo.m_arrayLastPosition  );
         if( m_priv->m_demarshal->current_offset() >= m_priv-> m_subiterInfo.m_arrayLastPosition ) {
             SIMPLELOGGER_TRACE_STDSTR( LOGGER_NAME,
                                        "Array extraction done.  new position: " << m_priv->m_demarshal->current_offset() );

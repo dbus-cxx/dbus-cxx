@@ -1125,6 +1125,25 @@ bool call_message_append_extract_iterator_complex_variants2(){
     DBus::MessageIterator iter2( message );
     result = (std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>>) iter2;
 
+    for (const auto & [path, path_map] : result){
+        std::cout << path << "\n";
+        for (const auto & [str, map2] : path_map){
+            std::cout << "    " << str << "\n";
+            for (const auto & [str2, variant] : map2){
+                std::cout << "        " << str2 << ":" << variant << "\n";
+
+            }
+        }
+    }
+
+    // Test a few of the returned values, make sure that they make sense
+    TEST_EQUALS_RET_FAIL( result.size(), 2 );
+    if( !TEST_STREQUALS( result["/org/bluez/hci0"]["org.bluez.Adapter1"]["Address"].to_string(), "00:1A:7D:DA:71:13" ) ){
+        return false;
+    }
+    std::vector<std::string> uuid_array = result["/org/bluez/hci0"]["org.bluez.Adapter1"]["UUIDs"];
+    TEST_EQUALS_RET_FAIL( uuid_array.size(), 9 );
+
     return true;
 }
 

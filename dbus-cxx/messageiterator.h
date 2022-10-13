@@ -242,8 +242,14 @@ public:
         while( subiter.is_valid() ) {
             MessageIterator subSubiter = subiter.recurse();
 
+            // When we recurse the second time, our demarshaling gets aligned.
+            // This may cause the subiter to then become invalid because of
+            // the new byte offset, so we need a second is_valid() check here.
+            if( !subiter.is_valid() ){
+                break;
+            }
+
             while( subSubiter.is_valid() ) {
-                DBUSCXX_DEBUG_STDSTR("DBus.MessageIterator", "Extracting dict entry(" << DBus::signature(dict) << ")");
                 subSubiter >> val_key;
                 subSubiter >> val_data;
                 dict[ val_key ] = val_data;
