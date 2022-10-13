@@ -33,6 +33,7 @@ std::shared_ptr<DBus::MethodProxy<int( int, int )>> int_method_proxy;
 std::shared_ptr<DBus::MethodProxy<void()>> void_method_proxy;
 std::shared_ptr<DBus::MethodProxy<void( struct custom )>> void_custom_method_proxy;
 std::shared_ptr<DBus::MethodProxy<int( int, struct custom )>> int_custom_method_proxy2;
+std::shared_ptr<DBus::MethodProxy<std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>>()>> complex_method_proxy;
 std::shared_ptr<DBus::MethodProxy<bool( std::tuple<int, double, std::string> )>> tuple_method_proxy;
 std::shared_ptr<DBus::MethodProxy<void( DBus::Variant )>> variant_proxy;
 std::shared_ptr<DBus::MethodProxy<void()>> nonexistant_proxy;
@@ -44,6 +45,7 @@ std::shared_ptr<DBus::Method<int( int, int )>> int_method;
 std::shared_ptr<DBus::Method<void()>> void_method;
 std::shared_ptr<DBus::Method<void( struct custom )>> void_custom_method;
 std::shared_ptr<DBus::Method<int( int, struct custom )>> int_custom_method2;
+std::shared_ptr<DBus::Method<std::map<DBus::Path, std::map<std::string, std::map<std::string,DBus::Variant>>>()>> complex_method;
 std::shared_ptr<DBus::Method<bool( std::tuple<int, double, std::string> )>> tuple_method;
 std::shared_ptr<DBus::Method<void( DBus::Variant )>> variant_method;
 std::shared_ptr<DBus::Method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>> multiplereturn_method;
@@ -80,6 +82,33 @@ int int_intcustom_symbol( int i, struct custom c ) {
     return i + c.first + c.second;
 }
 
+std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>> complex_custom_symbol() {
+    std::vector<DBus::Path> map1Keys = { "/foo/org/1", "/foo/org/blah" };
+    std::vector<std::string> map2Keys = { "string1", "a_longer_string", "x" };
+    std::vector<std::string> map3Keys = { "inner3-1 FIRST", "inner3-2", "inner3-3 num3" };
+    std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>> result;
+
+    for( DBus::Path path : map1Keys ){
+        std::map<std::string, std::map<std::string, DBus::Variant>> map2;
+        for( std::string map2_key : map2Keys ){
+            std::map<std::string, DBus::Variant> map3;
+            for( std::string map3_key : map3Keys ){
+                map3[ map3_key ] = DBus::Variant( "this is a string" );
+            }
+
+            std::map<int, int> complexVariantMap;
+            complexVariantMap[5] = 6;
+            map3[ "complex-variant" ] = DBus::Variant(complexVariantMap);
+
+            map2[ map2_key ] = map3;
+        }
+
+        result[ path ] = map2;
+    }
+
+    return result;
+}
+
 DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>
 multiplereturn_symbol() {
     return DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>(1, 1024, "test", {1, 2, 3, 4} );
@@ -101,6 +130,7 @@ void client_setup() {
     void_method_proxy = proxy->create_method<void()>( "foo.what", "void" );
     void_custom_method_proxy = proxy->create_method<void( struct custom )>( "foo.what", "void_custom" );
     int_custom_method_proxy2 = proxy->create_method<int( int, struct custom )>( "foo.what", "int_intcustom" );
+    complex_method_proxy = proxy->create_method<std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>>()>( "foo.what", "complex_custom" );
     tuple_method_proxy = proxy->create_method<bool( std::tuple<int, double, std::string> )>( "foo.what", "tuple_method" );
     variant_proxy = proxy->create_method<void( DBus::Variant )>( "foo.what", "variant_method" );
     nonexistant_proxy = proxy->create_method<void()>( "foo.what", "nonexistant" );
@@ -118,6 +148,7 @@ void server_setup() {
     void_method = object->create_method<void()>( "foo.what", "void", sigc::ptr_fun( void_method_symbol ) );
     void_custom_method = object->create_method<void( struct custom )>( "foo.what", "void_custom", sigc::ptr_fun( void_custom_method_symbol ) );
     int_custom_method2 = object->create_method<int( int, struct custom )>( "foo.what", "int_intcustom", sigc::ptr_fun( int_intcustom_symbol ) );
+    complex_method = object->create_method<std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>>()>( "foo.what", "complex_custom", sigc::ptr_fun( complex_custom_symbol ) );
     tuple_method = object->create_method<bool( std::tuple<int, double, std::string> )>( "foo.what", "tuple_method", sigc::ptr_fun( tuple_method_symbol ) );
     variant_method = object->create_method<void( DBus::Variant )>( "foo.what", "variant_method", sigc::ptr_fun( variant_method_symbol ) );
     multiplereturn_method = object->create_method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>( "foo.what", "multiplereturn", sigc::ptr_fun( multiplereturn_symbol ) );
@@ -152,6 +183,13 @@ bool data_send_intcustom() {
     int val = ( *int_custom_method_proxy2 )( 10, c );
 
     return TEST_EQUALS( val, 25 );
+}
+
+bool data_send_complex() {
+    std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>> val = ( *complex_method_proxy )();
+
+    //return TEST_EQUALS( val[0].at("s1"), 32 );
+    return true;
 }
 
 bool data_send_multiplereturn() {
@@ -271,6 +309,7 @@ int main( int argc, char** argv ) {
         ADD_TEST( void_method );
         ADD_TEST( void_custom );
         ADD_TEST( send_intcustom );
+        ADD_TEST( send_complex );
         ADD_TEST( ping );
         ADD_TEST( machine_uuid );
         ADD_TEST( tuple );

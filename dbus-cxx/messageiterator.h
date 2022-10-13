@@ -19,6 +19,8 @@
 #include <vector>
 #include "enums.h"
 #include "error.h"
+#include "headerlog.h"
+#include "signature.h"
 
 #ifndef DBUSCXX_MESSAGEITERATOR_H
 #define DBUSCXX_MESSAGEITERATOR_H
@@ -239,6 +241,13 @@ public:
 
         while( subiter.is_valid() ) {
             MessageIterator subSubiter = subiter.recurse();
+
+            // When we recurse the second time, our demarshaling gets aligned.
+            // This may cause the subiter to then become invalid because of
+            // the new byte offset, so we need a second is_valid() check here.
+            if( !subiter.is_valid() ){
+                break;
+            }
 
             while( subSubiter.is_valid() ) {
                 subSubiter >> val_key;
