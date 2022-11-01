@@ -20,6 +20,7 @@
  ***************************************************************************/
 #include "signalNameProxy.h"
 #include <iostream>
+#include <thread>
 
 static std::string value;
 
