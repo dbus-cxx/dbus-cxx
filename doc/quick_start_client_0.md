@@ -1,7 +1,7 @@
 Quick Start Client 0 {#quick_start_client_0}
 ==
 
-\section quick_start_server_0 A simple client
+\section begin A simple client
 
 \par
 This section provides an example of a simple client for our simple server.
@@ -42,37 +42,29 @@ int main()
 {
 \endcode
 
-\par Initialize the dbus-cxx library
-Before we do anything in dbus-cxx we must call the library's \c init() method
-which will take care of various initializations including the threading system.
-\code DBus::init(); \endcode
-
 \par Create a dispatcher to manage threads, timeouts and I/O watches
 Now, we will create a dispatcher to handle incoming and outgoing messages.
 Handling incoming and outgoing messages can be messy and the Dispatcher
-class handles much of this for us.
-\code DBus::Dispatcher::pointer dispatcher = DBus::Dispatcher::create(); \endcode
+class handles much of this for us.  Because this is a standalone example,
+we will use a StandloneDispatcher to do all of this work for us.
+\code
+std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::StandaloneDispatcher::create();
+\endcode
 
 \par Create a connection to the D-Bus session bus
 Now that we have a dispatcher we need to create a connection to the session bus.
-\code DBus::Connection::pointer conn = dispatcher->create_connection(DBus::BUS_SESSION); \endcode
-
-\par
-\par Request a name for our application on the bus
-Next, we need to request a name that will identify our application on the
-session bus.
 \code
-  ret = conn->request_name( "dbuscxx.quickstart_0.server", DBUS_NAME_FLAG_REPLACE_EXISTING );
-  if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) return 1;
+std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
 \endcode
+\par Note that unlike the server example, we do not request a name on the bus.  This is because
+we do not need to have a well-known name on the bus in order to call methods on other objects.
 
 \par Create a proxy object for the server's \c quickstart_0 object
 You'll notice that up to this point the code for the client and the server
-has been nearly identical. This is the point at which they will diverge.
+has been very similar. This is the point at which they will diverge.
 We will now create a proxy object for the object on the server.
 \code
-  DBus::ObjectProxy::pointer object;
-  object = connection->create_object_proxy("dbuscxx.quickstart_0.server", "/dbuscxx/quickstart_0");
+std::shared_ptr<DBus::ObjectProxy> object = connection->create_object_proxy("dbuscxx.quickstart_0.server", "/dbuscxx/quickstart_0");
 \endcode
 Note that we must use the name the server requested as well as the object
 path the server used when it created it's object when we create the
@@ -84,8 +76,8 @@ This will allow us to use function notation to call the method. When
 creating the proxy method we must use the same interface
 (\c "dbuscxx.Quickstart" ) and method name ( \c "add" ) as the server used.
 \code
-  DBus::MethodProxy<double,double,double>& add_proxy
-    = *(object->create_method<double,double,double>("dbuscxx.Quickstart","add"));
+DBus::MethodProxy<double(double,double)>& add_proxy
+    = *(object->create_method<double(double,double)>("dbuscxx.Quickstart","add"));
 \endcode
 
 \par Call our proxy method

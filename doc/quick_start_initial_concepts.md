@@ -51,6 +51,7 @@ of a class, use the `create()` method on that class:
 
 ```
 std::shared_ptr<DBus::Dispatcher> disp = DBus::StandaloneDispatcher::create();
+```
 
 <b>Continue On:</b> \ref quick_start_example_0
 
