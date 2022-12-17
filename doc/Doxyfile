@@ -1130,6 +1130,7 @@ HTML_EXTRA_FILES       = images/bug-small.png \
                          images/dbus-cxx-logo.svg \
                          images/download-small.png \
                          images/gplv3.png \
+                         images/lgplv3.png \
                          images/ubuntu-logo-tiny.png \
                          images/bugs-small.png \
                          images/dbus-cxx-logo.png \

@@ -139,4 +139,4 @@ introspection-like documents.
  <br><hr>
 
  \par License
- dbus-cxx is released under the \htmlonly <a href="http://www.gnu.org/licenses/gpl-3.0-standalone.html"><img src="gplv3.png" alt="GPLv3"/></a> \endhtmlonly
+ dbus-cxx is released under the \htmlonly <a href="https://www.gnu.org/licenses/lgpl-3.0.txt"><img src="lgplv3.png" alt="LGPLv3"/></a> \endhtmlonly
