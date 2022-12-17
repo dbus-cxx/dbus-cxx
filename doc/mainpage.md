@@ -3,15 +3,12 @@ dbus-cxx Library {#mainpage}
 
 
 # About
-dbus-cxx is a C++ wrapper for dbus. It exposes the C API to allow direct
-manipulation and relies on sigc++ to provide an OO interface. Also included
-is dbus-cxx-xml2cpp to generate proxy and adapter interfaces from DBus XML
+dbus-cxx is a C++ implementation of the DBus protocol. It does not use the reference C
+implementation of libdbus at all in order to provide a tight C++-like interface, and to
+fix known multithreading problems with libdbus.  libsigc++ is used to help provide an
+OO interface to the bus.
+Also included is dbus-cxx-xml2cpp to generate proxy and adapter interfaces from DBus XML
 introspection-like documents.
-
- \htmlonly
- <script type="text/javascript" src="https://www.ohloh.net/p/330958/widgets/project_users.js?style=red"></script><br>
- <script type="text/javascript" src="https://www.ohloh.net/p/330958/widgets/project_partner_badge.js"></script>
- \endhtmlonly
 
  <br><hr>
 
