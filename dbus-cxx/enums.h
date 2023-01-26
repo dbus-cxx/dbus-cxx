@@ -5,6 +5,7 @@
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
  ***************************************************************************/
+#include <cstdint>
 #include <ostream>
 
 #ifndef DBUSCXX_ENUMS_H
