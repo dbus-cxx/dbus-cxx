@@ -23,9 +23,15 @@ set( dbus-cxx-qt-sources dbus-cxx-qt.cpp qtthreaddispatcher.cpp qtdispatcher.cpp
 
 add_compile_definitions( "QT_NO_KEYWORDS" )
 
-add_library( dbus-cxx-qt SHARED ${dbus-cxx-qt-sources} )
-set_target_properties( dbus-cxx-qt PROPERTIES VERSION 2.0.0 SOVERSION 2 )
-target_link_libraries( dbus-cxx-qt Qt5::Core dbus-cxx ${sigc_LIBS} -lrt )
+add_library( dbus-cxx-qt SHARED ${dbus-cxx-qt-sources} ${dbus-cxx-qt-headers} )
+set_target_properties( dbus-cxx-qt PROPERTIES
+    VERSION 2.0.0 SOVERSION 2
+    PUBLIC_HEADER "${dbus-cxx-qt-headers}"
+)
+target_link_libraries( dbus-cxx-qt PUBLIC Qt5::Core dbus-cxx ${sigc_LIBS} -lrt )
+target_include_directories( dbus-cxx-qt INTERFACE
+    $<INSTALL_INTERFACE:include/dbus-cxx-qt-${DBUS_CXX_INCLUDE_VERSION}>
+)
 
 set_property( TARGET dbus-cxx-qt PROPERTY CXX_STANDARD 17 )
 
@@ -63,8 +69,9 @@ INSTALL( FILES "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-qt-2.0.pc"
 #
 # Library install information
 #
-set( install_targets ${install_targets} dbus-cxx-qt )
-install( TARGETS ${install_targets}
+install( TARGETS dbus-cxx-qt
+    EXPORT dbus-cxxTargets
+    COMPONENT qt
+    PUBLIC_HEADER DESTINATION include/dbus-cxx-qt-${DBUS_CXX_INCLUDE_VERSION}
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
-install( FILES ${dbus-cxx-qt-headers} DESTINATION include/dbus-cxx-qt-${DBUS_CXX_INCLUDE_VERSION} )

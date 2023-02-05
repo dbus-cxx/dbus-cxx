@@ -17,18 +17,19 @@ pkg_check_modules( glib REQUIRED glib-2.0 )
 set( dbus-cxx-glib-headers dbus-cxx-glib.h glibdispatcher.h )
 set( dbus-cxx-glib-sources glibdispatcher.cpp )
 
-add_library( dbus-cxx-glib SHARED ${dbus-cxx-glib-sources} )
-set_target_properties( dbus-cxx-glib PROPERTIES VERSION 2.0.0 SOVERSION 2 )
-add_dependencies( dbus-cxx-glib dbus-cxx )
-set_property( TARGET dbus-cxx-glib PROPERTY CXX_STANDARD 17 )
+add_library( dbus-cxx-glib SHARED ${dbus-cxx-glib-sources} ${dbus-cxx-glib-headers} )
+set_target_properties( dbus-cxx-glib PROPERTIES
+    VERSION 2.0.0 SOVERSION 2
+    PUBLIC_HEADER "${dbus-cxx-glib-headers}"
+)
+target_link_libraries( dbus-cxx-glib PUBLIC dbus-cxx ${sigc_LIBS} -lrt )
+target_include_directories( dbus-cxx-glib INTERFACE
+    $<INSTALL_INTERFACE:include/dbus-cxx-glib-${DBUS_CXX_INCLUDE_VERSION}>
+)
 target_include_directories( dbus-cxx-glib PUBLIC ${glib_INCLUDE_DIRS} )
 target_link_libraries( dbus-cxx-glib ${glib_LIBS} )
 
-set( install_targets ${install_targets} dbus-cxx-glib )
-install( TARGETS ${install_targets}
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
-install( FILES ${dbus-cxx-glib-headers} DESTINATION include/dbus-cxx-glib-${DBUS_CXX_MAJMIN_VERSION} )
+set_property( TARGET dbus-cxx-glib PROPERTY CXX_STANDARD 17 )
 
 if( BUILD_TESTING )
     add_subdirectory( unit-tests )
@@ -41,7 +42,7 @@ SET(PKG_CONFIG_LIBDIR
     "\${prefix}/lib"
 )
 SET(PKG_CONFIG_INCLUDEDIR
-    "\${prefix}/include/dbus-cxx-glib-${DBUS_CXX_MAJMIN_VERSION}"
+    "\${prefix}/include/dbus-cxx-glib-${DBUS_CXX_INCLUDE_VERSION}"
 )
 SET(PKG_CONFIG_LIBS
     "-L\${libdir} -ldbus-cxx-glib"
@@ -63,8 +64,9 @@ INSTALL( FILES "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-glib-2.0.pc"
 #
 # Library install information
 #
-set( install_targets ${install_targets} dbus-cxx-glib )
-install( TARGETS ${install_targets}
+install( TARGETS dbus-cxx-glib
+    EXPORT dbus-cxxTargets
+    COMPONENT glib
+    PUBLIC_HEADER DESTINATION include/dbus-cxx-glib-${DBUS_CXX_INCLUDE_VERSION}
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
-install( FILES ${dbus-cxx-glib-headers} DESTINATION include/dbus-cxx-glib-${DBUS_CXX_MAJMIN_VERSION} )

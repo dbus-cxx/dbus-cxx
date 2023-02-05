@@ -260,6 +260,9 @@ link_directories( ${sigc_LIBRARY_DIRS} )
 add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} ${DBUS_CXX_HEADERS} )
 set_target_properties( dbus-cxx PROPERTIES VERSION 2.0.0 SOVERSION 2 )
 target_link_libraries( dbus-cxx ${DBUS_CXX_LIBRARIES} )
+target_include_directories( dbus-cxx INTERFACE
+    $<INSTALL_INTERFACE:include/dbus-cxx-${DBUS_CXX_INCLUDE_VERSION}>
+)
 
 # Dbus-cxx requires at least C++17 due to libsigc++-3.0
 set_property( TARGET dbus-cxx PROPERTY CXX_STANDARD 17 )
@@ -281,8 +284,9 @@ endif( ENABLE_QT_SUPPORT )
 #
 # Library install information
 #
-set( install_targets ${install_targets} dbus-cxx )
-install( TARGETS ${install_targets}
+install( TARGETS dbus-cxx
+    COMPONENT dbus-cxx
+    EXPORT dbus-cxxTargets
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
 foreach(FILE ${DBUS_CXX_HEADERS} )
@@ -318,6 +322,24 @@ CONFIGURE_FILE(
 )
 INSTALL( FILES "${PROJECT_BINARY_DIR}/dbus-cxx-2.0.pc"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+
+#
+# Support for find_package
+#
+install(EXPORT dbus-cxxTargets
+  FILE        dbus-cxxConfig.cmake
+  NAMESPACE     dbus-cxx::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/dbus-cxx
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/dbus-cxxConfigVersion.cmake"
+  VERSION       ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+install(FILES   "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxxConfigVersion.cmake"
+  DESTINATION   ${CMAKE_INSTALL_LIBDIR}/cmake/dbus-cxx
+)
 
 #
 # Include the directory for the examples
