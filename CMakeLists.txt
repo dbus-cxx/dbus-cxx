@@ -31,6 +31,13 @@ ENDIF( CMAKE_BUILD_TYPE MATCHES Debug )
 # it is related to, but not the same as, the normal project version
 set( DBUS_CXX_INCLUDE_VERSION 2.0 )
 
+# version information
+set( DBUS_CXX_PACKAGE_MAJOR_VERSION 2 )
+set( DBUS_CXX_PACKAGE_MINOR_VERSION 3 )
+set( DBUS_CXX_PACKAGE_MICRO_VERSION 0 )
+set( PKG_VERSION ${DBUS_CXX_PACKAGE_MAJOR_VERSION}.${DBUS_CXX_PACKAGE_MINOR_VERSION}.${DBUS_CXX_PACKAGE_MICRO_VERSION} )
+set( DBUS_CXX_MAJMIN_VERSION ${DBUS_CXX_PACKAGE_MAJOR_VERSION}.${DBUS_CXX_PACKAGE_MINOR_VERSION} )
+
 # Our required dependencies: libsigc++ 3.0
 pkg_check_modules( sigc REQUIRED sigc++-3.0 )
 
