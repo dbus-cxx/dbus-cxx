@@ -31,6 +31,9 @@ ENDIF( CMAKE_BUILD_TYPE MATCHES Debug )
 # it is related to, but not the same as, the normal project version
 set( DBUS_CXX_INCLUDE_VERSION 2.0 )
 
+# version information
+set( PKG_VERSION ${dbus-cxx_VERSION} )
+
 # Our required dependencies: libsigc++ 3.0
 pkg_check_modules( sigc REQUIRED sigc++-3.0 )
 
