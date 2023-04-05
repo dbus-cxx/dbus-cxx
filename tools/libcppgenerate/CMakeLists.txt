@@ -63,9 +63,11 @@ set_property( TARGET objlib PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 add_library( cppgenerate SHARED $<TARGET_OBJECTS:objlib>)
 set_target_properties( cppgenerate PROPERTIES VERSION ${CPPGENERATE_VERSION} SOVERSION ${CPPGENERATE_MAJOR} )
+target_include_directories( cppgenerate INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} )
 
 add_library( cppgenerate_static STATIC $<TARGET_OBJECTS:objlib>)
 set_target_properties( cppgenerate_static PROPERTIES OUTPUT_NAME cppgenerate )
+target_include_directories( cppgenerate_static INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} )
 
 #
 # Install information
@@ -116,8 +118,8 @@ IF( UNIX )
         "${CMAKE_CURRENT_BINARY_DIR}/cppgenerate-static.pc"
     )
     INSTALL( FILES 
-             "${CMAKE_BINARY_DIR}/cppgenerate.pc"
-             "${CMAKE_BINARY_DIR}/cppgenerate-static.pc"
+             "${CMAKE_CURRENT_BINARY_DIR}/cppgenerate.pc"
+             "${CMAKE_CURRENT_BINARY_DIR}/cppgenerate-static.pc"
              DESTINATION lib/pkgconfig)
 ENDIF( UNIX )
 
