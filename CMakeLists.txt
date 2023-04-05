@@ -12,17 +12,16 @@
 #   You should have received a copy of the GNU General Public License     
 #   along with this software. If not see <http://www.gnu.org/licenses/>.  
 
-project( dbus-cxx )
-
 cmake_minimum_required( VERSION 3.1 )
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake-modules")
+project( dbus-cxx )
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules")
 
 include( CheckIncludeFiles )
 include( GNUInstallDirs )
 include( FindPkgConfig )
 include( CheckTypeSize )
-include( CodeCoverage )
 
 # version information
 set( DBUS_CXX_PACKAGE_MAJOR_VERSION 0 )
@@ -32,8 +31,10 @@ set( PKG_VERSION ${DBUS_CXX_PACKAGE_MAJOR_VERSION}.${DBUS_CXX_PACKAGE_MINOR_VERS
 set( DBUS_CXX_MAJMIN_VERSION ${DBUS_CXX_PACKAGE_MAJOR_VERSION}.${DBUS_CXX_PACKAGE_MINOR_VERSION} )
 
 # Our required dependencies are libdbus and libsigc++
-pkg_check_modules( dbus REQUIRED dbus-1>=1.3 )
-pkg_check_modules( sigc REQUIRED sigc++-2.0 )
+find_package(DBus REQUIRED)
+
+find_package(SIGCXX REQUIRED)
+find_package(Threads REQUIRED)
 
 # Dbus-cxx requires at least C++11
 set( CMAKE_CXX_STANDARD 11 )
@@ -136,24 +137,20 @@ set( DBUS_CXX_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
 )
 
-set( DBUS_CXX_INCLUDE_DIRECTORIES 
-    ${CMAKE_CURRENT_SOURCE_DIR} 
-    ${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx )
-include_directories( ${DBUS_CXX_INCLUDE_DIRECTORIES} 
-    ${dbus_INCLUDE_DIRS} 
-    ${sigc_INCLUDE_DIRS} )
-
-
 #
 # Target for the library
 #
-add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} )
-#add_library( dbus-cxx-static STATIC ${DBUS_CXX_SOURCES} )
+add_library( dbus-cxx ${DBUS_CXX_SOURCES} )
 set_target_properties( dbus-cxx PROPERTIES VERSION 1.0.0 SOVERSION 1 )
-target_link_libraries( dbus-cxx ${dbus_LIBS} ${sigc_LIBS} -lrt -pthread )
-target_compile_options( dbus-cxx PUBLIC -pthread )
+target_link_libraries( dbus-cxx PUBLIC sigc++::sigc++ dbus-1 Threads::Threads )
+target_link_libraries( dbus-cxx INTERFACE systemd )
+target_include_directories( dbus-cxx PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx>
+    $<INSTALL_INTERFACE:include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}>
+    $<INSTALL_INTERFACE:include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/dbus-cxx>
+)
 
 #
 # If GLIBMM is used, add in the appropriate packages
@@ -220,12 +217,20 @@ endforeach( filename )
 #
 # Library install information
 #
-set( install_targets ${install_targets} dbus-cxx )
-install( TARGETS ${install_targets}
+install( TARGETS dbus-cxx
+    COMPONENT dbus-cxx
+    EXPORT dbus-cxxTargets
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
-install( FILES ${DBUS_CXX_HEADERS} DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION}/dbus-cxx )
-install( FILES ${DBUS_CXX_HEADERS1} DESTINATION include/dbus-cxx-${DBUS_CXX_MAJMIN_VERSION} )
+
+SET_TARGET_PROPERTIES(
+    dbus-cxx
+    PROPERTIES
+    PUBLIC_HEADER ${DBUS_CXX_HEADERS} ${DBUS_CXX_HEADERS1}
+)
+
 
 #
 # pkg-config script creation and install
@@ -253,15 +258,17 @@ CONFIGURE_FILE(
     "${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx-1.0.pc.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-1.0.pc"
 )
-INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-1.0.pc"
+INSTALL( FILES "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-1.0.pc"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+
+
 
 if( ENABLE_GLIBMM )
     CONFIGURE_FILE(
         "${CMAKE_CURRENT_SOURCE_DIR}/dbus-cxx-glibmm-1.0.pc.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-glibmm-1.0.pc"
     )
-    INSTALL( FILES "${CMAKE_BINARY_DIR}/dbus-cxx-glibmm-1.0.pc"
+    INSTALL( FILES "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-glibmm-1.0.pc"
             DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 endif( ENABLE_GLIBMM )
 
@@ -304,6 +311,35 @@ if( BUILD_SITE )
 endif( BUILD_SITE )
 
 #
+# Support for find_package
+#
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}-config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+    @ONLY
+)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}-config-version.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+    @ONLY
+)
+INSTALL(
+    FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/
+)
+INSTALL( FILES "${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules/FindDBus.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/dbus-cxx"
+    COMPONENT dbus-cxx)
+INSTALL( FILES "${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules/FindSIGCXX.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/dbus-cxx"
+    COMPONENT dbus-cxx)
+INSTALL(EXPORT dbus-cxxTargets
+    FILE        dbus-cxxTargets.cmake
+    NAMESPACE   dbus-cxx::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/dbus-cxx
+    COMPONENT dbus-cxx
+)
+#
 # Check if tests are enabled
 #
 if( ENABLE_TESTS )
@@ -315,6 +351,7 @@ endif( ENABLE_TESTS )
 # See if code coverage is enabled
 #
 if( ENABLE_CODE_COVERAGE_REPORT )
+    include( CodeCoverage )
     APPEND_COVERAGE_COMPILER_FLAGS()
     set(COVERAGE_LCOV_EXCLUDES 'unit-tests/*' '/usr/include/*' '/usr/local/include/*' )
     SETUP_TARGET_FOR_COVERAGE_LCOV(

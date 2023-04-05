@@ -1,0 +1,25 @@
+SET(prefix "@CMAKE_INSTALL_PREFIX@")
+SET(exec_prefix "@CMAKE_INSTALL_PREFIX@")
+SET(dbus-cxx_FOUND "TRUE")
+
+# Get current dir
+get_filename_component(_CONFIG_SELF_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+# Save old modules path
+set(_save_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+
+# Add the cmake directory to the module path so we can use the installed find script
+list(APPEND CMAKE_MODULE_PATH "${_CONFIG_SELF_DIR}")
+
+# Handle dependencies:
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(DBus)
+find_dependency(SIGCXX)
+
+include(DBusGenerate)
+# Restore old modules path
+set(CMAKE_MODULE_PATH ${_save_CMAKE_MODULE_PATH})
+
+include("${CMAKE_CURRENT_LIST_DIR}/dbus-cxxTargets.cmake")
