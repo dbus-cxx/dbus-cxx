@@ -234,9 +234,6 @@ public:
 
     template <typename Key, typename Data>
     void get_dict( std::map<Key, Data>& dict ) {
-        Key val_key;
-        Data val_data;
-
         MessageIterator subiter = this->recurse();
 
         while( subiter.is_valid() ) {
@@ -250,6 +247,9 @@ public:
             }
 
             while( subSubiter.is_valid() ) {
+                Key val_key;
+                Data val_data;
+
                 subSubiter >> val_key;
                 subSubiter >> val_data;
                 dict[ val_key ] = val_data;
