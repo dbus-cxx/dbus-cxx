@@ -1147,6 +1147,52 @@ bool call_message_append_extract_iterator_complex_variants2(){
     return true;
 }
 
+bool call_message_append_extract_iterator_nested_map() {
+    std::map<std::string, std::map<std::string, int>> objects1{
+        {
+            "/org/bluez",
+            std::map< std::string, int >{
+                {"org.bluez.AgentManager1", 1},
+                {"org.bluez.ProfileManager1", 2},
+                {"org.freedesktop.DBus.Introspectable", 3},
+            },
+        },
+        {
+            "/org/bluez/hci0",
+            std::map< std::string, int >{
+                {"org.bluez.Adapter1", 4},
+                {"org.bluez.GattManager1", 5},
+                {"org.bluez.LEAdvertisingManager1", 6},
+                {"org.bluez.Media1", 7},
+                {"org.bluez.NetworkServer1", 8},
+                {"org.freedesktop.DBus.Introspectable", 9},
+                {"org.freedesktop.DBus.Properties", 10},
+            },
+        },
+        {
+            "/org/bluez/hci0/dev_B3_FD_3F_52_43_2C",
+            std::map< std::string, int >{
+                {"org.bluez.Device1", 11},
+                {"org.bluez.MediaControl1", 12},
+                {"org.freedesktop.DBus.Introspectable", 13},
+                {"org.freedesktop.DBus.Properties", 14},
+            },
+        },
+    };
+    std::map<std::string, std::map<std::string, int>> objects2;
+
+    std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+    DBus::MessageAppendIterator iter1( msg );
+    iter1 << objects1;
+
+    DBus::MessageIterator iter2( msg );
+    objects2 = (std::map<std::string, std::map<std::string, int>>)iter2;
+
+    TEST_EQUALS_RET_FAIL( objects1, objects2 );
+
+    return true;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = call_message_append_extract_iterator_##name();\
         } \
@@ -1199,6 +1245,7 @@ int main( int argc, char** argv ) {
     ADD_TEST( array_array_int );
     ADD_TEST( complex_variants );
     ADD_TEST( complex_variants2 );
+    ADD_TEST( nested_map );
 
     ADD_TEST2( bool );
     ADD_TEST2( byte );
