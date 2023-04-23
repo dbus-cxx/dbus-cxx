@@ -18,6 +18,7 @@
 #include <dbus-cxx/dbus-cxx-private.h>
 #include <dbus-cxx/simplelogger.h>
 #include "validator.h"
+#include "utility.h"
 
 #include <unistd.h>
 
@@ -29,7 +30,7 @@ class Message::priv_data {
 public:
     priv_data() :
         m_valid( true ),
-        m_endianess( Endianess::Big ),
+        m_endianess( DBus::default_endianess() ),
         m_flags( 0 ),
         m_serial( 0 )
     {}
@@ -169,12 +170,16 @@ Signature Message::signature() const {
 }
 
 bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) const {
-    Marshaling marshal( vec, Endianess::Big );
+    Marshaling marshal( vec, DBus::default_endianess() );
     Variant serialHeader = header_field( MessageHeaderFields::Reply_Serial );
     bool mustHaveSerial = false;
 
     vec->reserve( vec->size() + m_priv->m_body.size() + 256 );
-    marshal.marshal( static_cast<uint8_t>( 'B' ) );
+    if(DBus::default_endianess() == Endianess::Little){
+        marshal.marshal( static_cast<uint8_t>( 'l' ) );
+    }else{
+        marshal.marshal( static_cast<uint8_t>( 'B' ) );
+    }
 
     switch( type() ) {
     case MessageType::INVALID:

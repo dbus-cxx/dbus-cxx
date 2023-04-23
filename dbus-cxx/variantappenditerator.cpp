@@ -11,6 +11,7 @@
 #include <dbus-cxx/types.h>
 #include <dbus-cxx/marshaling.h>
 #include <dbus-cxx/validator.h>
+#include "utility.h"
 
 using DBus::priv::VariantAppendIterator;
 
@@ -33,13 +34,13 @@ public:
 
 VariantAppendIterator::VariantAppendIterator( Variant* variant ):
     m_priv( std::make_shared<priv_data>( variant ) ) {
-    m_priv->m_marshaling = Marshaling( &variant->m_marshaled, Endianess::Big );
+    m_priv->m_marshaling = Marshaling( &variant->m_marshaled, DBus::default_endianess());
 }
 
 VariantAppendIterator::VariantAppendIterator( Variant* variant, ContainerType t ) :
     m_priv( std::make_shared<priv_data>( variant ) ) {
     m_priv->m_currentContainer = t;
-    m_priv->m_marshaling = Marshaling( &m_priv->m_workingBuffer, Endianess::Big );
+    m_priv->m_marshaling = Marshaling( &m_priv->m_workingBuffer, DBus::default_endianess() );
 }
 
 VariantAppendIterator::~VariantAppendIterator() {

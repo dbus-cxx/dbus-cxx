@@ -18,6 +18,7 @@
 #include "signature.h"
 #include "types.h"
 #include "validator.h"
+#include "utility.h"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -47,12 +48,12 @@ MessageAppendIterator::MessageAppendIterator( ContainerType container ) {
 
 MessageAppendIterator::MessageAppendIterator( Message& message, ContainerType container ) {
     m_priv = std::make_shared<priv_data>();
-    m_priv->m_marshaling = Marshaling( message.body(), Endianess::Big );
+    m_priv->m_marshaling = Marshaling( message.body(), DBus::default_endianess() );
     m_priv->m_message = &message;
     m_priv->m_currentContainer = container;
 
     if( container != ContainerType::None ) {
-        m_priv->m_marshaling = Marshaling( &m_priv->m_workingBuffer, Endianess::Big );
+        m_priv->m_marshaling = Marshaling( &m_priv->m_workingBuffer, DBus::default_endianess() );
     }
 }
 
@@ -62,11 +63,11 @@ MessageAppendIterator::MessageAppendIterator( std::shared_ptr<Message> message, 
     m_priv->m_currentContainer = container;
 
     if( message ) {
-        m_priv->m_marshaling = Marshaling( message->body(), Endianess::Big );
+        m_priv->m_marshaling = Marshaling( message->body(), DBus::default_endianess() );
     }
 
     if( container != ContainerType::None ) {
-        m_priv->m_marshaling = Marshaling( &m_priv->m_workingBuffer, Endianess::Big );
+        m_priv->m_marshaling = Marshaling( &m_priv->m_workingBuffer, DBus::default_endianess() );
     }
 }
 
