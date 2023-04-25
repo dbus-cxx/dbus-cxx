@@ -24,9 +24,28 @@
 /* Extern function for logging in headers */
 simplelogger_log_function dbuscxx_log_function = nullptr;
 
+[[gnu::constructor]]
+static void  configure_endianess(){
+    char* env_var = getenv("DBUSCXX_ENDIANESS");
+    if(env_var == nullptr){
+        return;
+    }
+
+    if(env_var[0] == 0){
+        return;
+    }
+
+    if(env_var[0] == 'B'){
+        DBus::set_default_endianess(DBus::Endianess::Big);
+    }else if(env_var[0] == 'l'){
+        DBus::set_default_endianess(DBus::Endianess::Little);
+    }
+}
+
 namespace DBus {
 
 static enum SL_LogLevel log_level = SL_INFO;
+static Endianess lib_default_endianess = Endianess::Big;
 
 void set_logging_function( simplelogger_log_function function ) {
     dbuscxx_log_function = function;
@@ -136,7 +155,16 @@ std::tuple<bool, int, std::vector<int>, std::chrono::milliseconds> priv::wait_fo
 
     return std::make_tuple( timeout, poll_ret, fdsToRead, ms_waited );
 }
+
+void set_default_endianess(DBus::Endianess endianess){
+    lib_default_endianess = endianess;
 }
+
+DBus::Endianess default_endianess(){
+    return lib_default_endianess;
+}
+
+} /* namespace DBus */
 
 
 

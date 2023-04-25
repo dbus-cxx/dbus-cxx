@@ -8,6 +8,7 @@
 #include <dbus-cxx/variantiterator.h>
 #include <dbus-cxx/demarshaling.h>
 #include <dbus-cxx/dbus-cxx-private.h>
+#include "utility.h"
 
 static const char* LOGGER_NAME = "DBus.VariantIterator";
 
@@ -41,7 +42,7 @@ VariantIterator::VariantIterator() {
 VariantIterator::VariantIterator( const Variant* variant ) {
     m_priv = std::make_shared<priv_data>();
     m_priv->m_variant = variant;
-    m_priv->m_demarshal = std::make_shared<Demarshaling>( variant->m_marshaled.data(), variant->m_marshaled.size(), Endianess::Big );
+    m_priv->m_demarshal = std::make_shared<Demarshaling>( variant->m_marshaled.data(), variant->m_marshaled.size(), DBus::default_endianess() );
     m_priv->m_signatureIterator = variant->signature().begin();
 }
 

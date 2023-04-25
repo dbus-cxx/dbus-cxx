@@ -15,6 +15,7 @@
 #include "enums.h"
 #include "path.h"
 #include "signature.h"
+#include "utility.h"
 
 static const char* LOGGER_NAME = "DBus.Variant";
 
@@ -30,7 +31,7 @@ Variant::Variant( uint8_t byte ) :
     m_currentType( DataType::BYTE ),
     m_signature( DBus::signature( byte ) ),
     m_dataAlignment( 1 ) {
-    Marshaling marshal( &m_marshaled, Endianess::Big );
+    Marshaling marshal( &m_marshaled, DBus::default_endianess() );
     marshal.marshal( byte );
 }
 
@@ -38,7 +39,7 @@ Variant::Variant( bool b ) :
     m_currentType( DataType::BOOLEAN ),
     m_signature( DBus::signature( b ) ),
     m_dataAlignment( 4 ) {
-    Marshaling marshal( &m_marshaled, Endianess::Big );
+    Marshaling marshal( &m_marshaled, DBus::default_endianess() );
     marshal.marshal( b );
 }
 
@@ -46,7 +47,7 @@ Variant::Variant( int16_t i ) :
     m_currentType( DataType::INT16 ),
     m_signature( DBus::signature( i ) ),
     m_dataAlignment( 2 ) {
-    Marshaling marshal( &m_marshaled, Endianess::Big );
+    Marshaling marshal( &m_marshaled, DBus::default_endianess() );
     marshal.marshal( i );
 }
 
@@ -54,7 +55,7 @@ Variant::Variant( uint16_t i ):
     m_currentType( DataType::UINT16 ),
     m_signature( DBus::signature( i ) ),
     m_dataAlignment( 2 ) {
-    Marshaling marshal( &m_marshaled, Endianess::Big );
+    Marshaling marshal( &m_marshaled, DBus::default_endianess() );
     marshal.marshal( i );
 }
 
@@ -62,7 +63,7 @@ Variant::Variant( int32_t i ) :
     m_currentType( DataType::INT32 ),
     m_signature( DBus::signature( i ) ),
     m_dataAlignment( 4 ) {
-    Marshaling marshal( &m_marshaled, Endianess::Big );
+    Marshaling marshal( &m_marshaled, DBus::default_endianess() );
     marshal.marshal( i );
 }
 
@@ -70,7 +71,7 @@ Variant::Variant( uint32_t i ) :
     m_currentType( DataType::UINT32 ),
     m_signature( DBus::signature( i ) ),
     m_dataAlignment( 4 ) {
-    Marshaling marshal( &m_marshaled, Endianess::Big );
+    Marshaling marshal( &m_marshaled, DBus::default_endianess() );
     marshal.marshal( i );
 }
 
@@ -78,7 +79,7 @@ Variant::Variant( int64_t i ) :
     m_currentType( DataType::INT64 ),
     m_signature( DBus::signature( i ) ),
     m_dataAlignment( 8 ) {
-    Marshaling marshal( &m_marshaled, Endianess::Big );
+    Marshaling marshal( &m_marshaled, DBus::default_endianess() );
     marshal.marshal( i );
 }
 
@@ -86,7 +87,7 @@ Variant::Variant( uint64_t i ) :
     m_currentType( DataType::UINT64 ),
     m_signature( DBus::signature( i ) ),
     m_dataAlignment( 8 ) {
-    Marshaling marshal( &m_marshaled, Endianess::Big );
+    Marshaling marshal( &m_marshaled, DBus::default_endianess() );
     marshal.marshal( i );
 }
 
@@ -94,7 +95,7 @@ Variant::Variant( double i ) :
     m_currentType( DataType::DOUBLE ),
     m_signature( DBus::signature( i ) ),
     m_dataAlignment( 8 ) {
-    Marshaling marshal( &m_marshaled, Endianess::Big );
+    Marshaling marshal( &m_marshaled, DBus::default_endianess() );
     marshal.marshal( i );
 }
 
@@ -105,7 +106,7 @@ Variant::Variant( std::string str ) :
     m_currentType( DataType::STRING ),
     m_signature( DBus::signature( str ) ),
     m_dataAlignment( 4 ) {
-    Marshaling marshal( &m_marshaled, Endianess::Big );
+    Marshaling marshal( &m_marshaled, DBus::default_endianess() );
     marshal.marshal( str );
 }
 
@@ -113,7 +114,7 @@ Variant::Variant( DBus::Signature sig ) :
     m_currentType( DataType::SIGNATURE ),
     m_signature( DBus::signature( sig ) ),
     m_dataAlignment( 1 ) {
-    Marshaling marshal( &m_marshaled, Endianess::Big );
+    Marshaling marshal( &m_marshaled, DBus::default_endianess() );
     marshal.marshal( sig );
 }
 
@@ -121,7 +122,7 @@ Variant::Variant( DBus::Path path )  :
     m_currentType( DataType::OBJECT_PATH ),
     m_signature( DBus::signature( path ) ),
     m_dataAlignment( 4 ) {
-    Marshaling marshal( &m_marshaled, Endianess::Big );
+    Marshaling marshal( &m_marshaled, DBus::default_endianess() );
     marshal.marshal( path );
 }
 
@@ -153,7 +154,7 @@ DBus::Variant Variant::createFromMessage( MessageIterator iter ) {
     Variant v;
     DBus::DataType dt = iter.signature_iterator().type();
     TypeInfo ti( dt );
-    Marshaling marshal( &v.m_marshaled, Endianess::Big );
+    Marshaling marshal( &v.m_marshaled, DBus::default_endianess() );
 
     v.m_signature = DBus::Signature( iter.signature() );
     v.m_currentType = dt;
@@ -233,7 +234,7 @@ void Variant::recurseArray( MessageIterator iter, Marshaling* marshal ) {
     DataType dt = iter.signature_iterator().type();
     TypeInfo ti( dt );
     std::vector<uint8_t> workingData;
-    Marshaling workingMarshal( &workingData, Endianess::Big );
+    Marshaling workingMarshal( &workingData, DBus::default_endianess() );
 
     while( iter.is_valid() ) {
         switch( dt ) {

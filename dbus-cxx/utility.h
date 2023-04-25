@@ -119,6 +119,18 @@ void hexdump( const std::vector<uint8_t>* vec, std::ostream* stream );
  */
 void hexdump( const uint8_t* vec, const uint32_t len, std::ostream* stream );
 
+/**
+ * Set the default endianess that the library uses in order to send messages.
+ * By default, all messages are sent in big endian order.
+ *
+ * You may also set the environment variable DBUSCXX_ENDIANESS to either 'B' or 'l' to set the endianess.
+ * This requires your compiler to have constructor support.
+ *
+ * @param endianess
+ */
+void set_default_endianess(DBus::Endianess endianess);
+
+DBus::Endianess default_endianess();
 
 namespace priv {
 /*
