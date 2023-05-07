@@ -1,3 +1,9 @@
+dbus-cxx (2.4.0) UNRELEASED; urgency=medium
+
+  * Various fixes
+
+ -- Robert Middleton <robert.middleton@rm5248.com>  Sun, 07 May 2023 12:17:19 -0400
+
 dbus-cxx (2.3.0) jessie; urgency=medium
 
   * Various fixes
