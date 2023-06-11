@@ -135,7 +135,7 @@ Variant::Variant( const Variant& other ) :
 
 Variant::Variant( Variant&& other ) :
     m_currentType( std::exchange( other.m_currentType, DataType::INVALID ) ),
-    m_signature( std::exchange( other.m_signature, "" ) ),
+    m_signature( std::move( other.m_signature ) ),
     m_marshaled( std::move( other.m_marshaled ) ),
     m_dataAlignment( std::exchange( other.m_dataAlignment, 0 ) ){
 }
