@@ -423,7 +423,7 @@ VariantIterator::operator std::string() {
     }
 }
 
-VariantIterator::operator Variant() {
+VariantIterator::operator DBus::Variant() {
     switch( this->arg_type() ) {
     case DataType::VARIANT: return get_variant();
 

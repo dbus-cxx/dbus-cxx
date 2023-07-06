@@ -13,13 +13,15 @@
 #   along with this software. If not see <http://www.gnu.org/licenses/>.  
 
 set( dbus-cxx-compat-sources
-        fcntl.c
-        getdtablesize.c
-        pipe2.c
-        poll.c
-        posix_win.c
+        compat/fcntl.c
+        compat/getdtablesize.c
+        compat/pipe2.c
+        compat/poll.c
+        compat/posix_win.c
 )
 
-add_library( dbus-cxx-compat OBJECT ${dbus-cxx-compat-sources} )
-target_include_directories( dbus-cxx-compat PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" )
-target_link_libraries( dbus-cxx-compat PUBLIC "Ws2_32.lib" )
+target_sources(dbus-cxx PRIVATE ${dbus-cxx-compat-sources})
+target_include_directories (dbus-cxx PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+
+cmake_policy(SET CMP0079 NEW)  # allow linking libraries in dbus-cxx from this subdirectory
+target_link_libraries( dbus-cxx "Ws2_32.lib" )

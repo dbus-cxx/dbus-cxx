@@ -458,14 +458,5 @@ void SendmsgTransport::purgeData(){
 //    too long to fit in the supplied buffers, and MSG_PEEK is not set in
 //    the flags argument, the excess bytes shall be discarded....
     // https://man7.org/linux/man-pages/man3/recvmsg.3p.html
-    struct msghdr hdr;
-    struct iovec iov;
-
-    ::memset( &hdr, 0, sizeof( hdr ) );
-    ::memset( &iov, 0, sizeof( iov ) );
-
-    hdr.msg_iov = &iov;
-    hdr.msg_iovlen = 1;
-
     m_priv->receive( 0, m_priv->rx_control_capacity, 0, 0 );
 }

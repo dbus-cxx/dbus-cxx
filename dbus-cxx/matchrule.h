@@ -8,6 +8,7 @@
 #ifndef DBUSCXX_MATCH_RULE_H
 #define DBUSCXX_MATCH_RULE_H
 
+#include <string>
 #include <memory>
 #include <dbus-cxx/dbus-cxx-config.h>
 

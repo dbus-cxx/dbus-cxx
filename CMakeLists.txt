@@ -229,6 +229,18 @@ if( LIBRT )
 	list( APPEND DBUS_CXX_LIBRARIES ${LIBRT} )
 endif( LIBRT )
 
+
+#
+# Target for the library
+#
+link_directories( ${sigc_LIBRARY_DIRS} )
+add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} ${DBUS_CXX_HEADERS} )
+set_target_properties( dbus-cxx PROPERTIES VERSION 2.0.0 SOVERSION 2 )
+target_link_libraries( dbus-cxx ${DBUS_CXX_LIBRARIES} )
+target_include_directories( dbus-cxx INTERFACE
+    $<INSTALL_INTERFACE:include/dbus-cxx-${DBUS_CXX_INCLUDE_VERSION}>
+)
+
 if( WIN32 )
     if( CMAKE_SYSTEM_VERSION )
         set( ver ${CMAKE_SYSTEM_VERSION} )
@@ -253,19 +265,7 @@ if( WIN32 )
     endif( MSVC AND (MSVC_VERSION GREATER_EQUAL 1914) )
 
     add_subdirectory( compat )
-    list( APPEND DBUS_CXX_LIBRARIES dbus-cxx-compat )
 endif( WIN32 )
-
-#
-# Target for the library
-#
-link_directories( ${sigc_LIBRARY_DIRS} )
-add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} ${DBUS_CXX_HEADERS} )
-set_target_properties( dbus-cxx PROPERTIES VERSION 2.0.0 SOVERSION 2 )
-target_link_libraries( dbus-cxx ${DBUS_CXX_LIBRARIES} )
-target_include_directories( dbus-cxx INTERFACE
-    $<INSTALL_INTERFACE:include/dbus-cxx-${DBUS_CXX_INCLUDE_VERSION}>
-)
 
 # Dbus-cxx requires at least C++17 due to libsigc++-3.0
 set_property( TARGET dbus-cxx PROPERTY CXX_STANDARD 17 )
