@@ -61,7 +61,7 @@ public:
     operator int64_t();
     operator double();
     operator std::string();
-    operator Variant();
+    operator DBus::Variant();
 
     template <typename T>
     operator std::vector<T>() {
