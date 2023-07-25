@@ -128,6 +128,7 @@ Connection::Connection( BusType type ) {
         char* env_address = getenv( "DBUS_SESSION_BUS_ADDRESS" );
 
         if( env_address == nullptr ) {
+            SIMPLELOGGER_ERROR( LOGGER_NAME, "Env `DBUS_SESSION_BUS_ADDRESS` not found, fail to open transport" );
             return;
         }
 
@@ -200,7 +201,7 @@ Connection::operator bool() const {
 }
 
 bool Connection::is_valid() const {
-    return m_priv->m_transport.operator bool() && m_priv->m_transport->is_valid();
+    return m_priv->m_transport && m_priv->m_transport.operator bool() && m_priv->m_transport->is_valid();
 }
 
 bool Connection::bus_register() {
