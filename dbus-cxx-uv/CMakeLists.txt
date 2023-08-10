@@ -50,7 +50,7 @@ SET(PKG_CONFIG_CFLAGS
     "-I\${includedir}"
 )
 SET(PKG_CONFIG_REQUIRES
-    "dbus-cxx-2.0, libuv1"
+    "dbus-cxx-2.0, libuv"
 )
 
 CONFIGURE_FILE(
