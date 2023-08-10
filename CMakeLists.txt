@@ -53,6 +53,7 @@ if( BUILD_TESTING )
 option( ENABLE_ROBUSTNESS_TESTS "Enable extended robustness tests.  These can be long-running tests." OFF)
 endif( BUILD_TESTING )
 option( ENABLE_QT_SUPPORT "Build libdbuscxx-qt for integration with Qt applications" OFF )
+option( ENABLE_UV_SUPPORT "Build libdbuscxx-uv for integration with libuv applications" OFF )
 
 #
 # Configure our compile options
@@ -285,6 +286,13 @@ if( ENABLE_QT_SUPPORT )
 endif( ENABLE_QT_SUPPORT )
 
 #
+# If libuv should be supported, add in the appropriate code
+#
+if( ENABLE_UV_SUPPORT )
+    add_subdirectory( dbus-cxx-uv )
+endif( ENABLE_UV_SUPPORT )
+
+#
 # Library install information
 #
 install( TARGETS dbus-cxx
@@ -442,3 +450,4 @@ endif( BUILD_TESTING )
 message(STATUS "Library Support:" )
 message(STATUS "  Qt .............................. : ${ENABLE_QT_SUPPORT}")
 message(STATUS "  GLib ............................ : ${ENABLE_GLIB_SUPPORT}")
+message(STATUS "  libuv ........................... : ${ENABLE_UV_SUPPORT}")
