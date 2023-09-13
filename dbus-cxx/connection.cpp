@@ -729,7 +729,8 @@ void Connection::process_call_message( std::shared_ptr<const CallMessage> callms
 void Connection::process_signal_message( std::shared_ptr<const SignalMessage> msg ) {
     {
         // See if any of our free handlers can handle this
-        std::unique_lock<std::mutex> lock( m_priv->m_freeProxySignalsLock );
+        std::unique_lock<std::mutex> lock( m_priv->m_freeProxySignalsLock, std::try_to_lock );
+        if ( !lock.owns_lock() ) return;
 
         for( FreeSignalThreadInfo& sigInfo : m_priv->m_freeProxySignals ) {
             if( sigInfo.handlingThread != m_priv->m_dispatchingThread ){
