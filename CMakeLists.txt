@@ -411,6 +411,9 @@ endif( ENABLE_CODE_COVERAGE_REPORT )
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "dbus-cxx-${dbus-cxx_VERSION}")
 set(CPACK_SOURCE_GENERATOR "TGZ")
 set(CPACK_SOURCE_IGNORE_FILES ".git/;build/")
+
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGE_CONTACT "https://github.com/dbus-cxx/dbus-cxx")
 include(CPack)
 
 #
