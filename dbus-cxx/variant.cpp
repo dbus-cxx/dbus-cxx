@@ -12,6 +12,7 @@
 #include <dbus-cxx/signatureiterator.h>
 #include <stdint.h>
 #include <utility>
+#include <assert.h>
 #include "enums.h"
 #include "path.h"
 #include "signature.h"
@@ -161,6 +162,8 @@ DBus::Variant Variant::createFromMessage( MessageIterator iter ) {
     v.m_dataAlignment = ti.alignment();
     iter.align( ti.alignment() );
 
+    SIMPLELOGGER_TRACE_STDSTR( LOGGER_NAME, "Creating variant with signature " << v.m_signature );
+
     switch( dt ) {
     case DataType::BYTE:
         marshal.marshal( iter.get_uint8() );
@@ -297,6 +300,11 @@ void Variant::recurseArray( MessageIterator iter, Marshaling* marshal ) {
         case DataType::STRUCT:
             recurseStruct( iter.recurse(), &workingMarshal );
             break;
+        case DataType::VARIANT:
+        {
+            Variant v = Variant::createFromMessage( iter.recurse() );
+            marshal->marshal(v);
+        }
         }
 
         iter++;
@@ -375,10 +383,17 @@ void Variant::recurseDictEntry( MessageIterator iter, Marshaling* marshal ) {
         case DataType::DICT_ENTRY:
             recurseDictEntry( iter.recurse(), marshal );
             break;
+
+        case DataType::VARIANT:
+        {
+            Variant v = Variant::createFromMessage( iter.recurse() );
+            marshal->marshal(v);
+        }
+            break;
         }
 
-        sigit++;
         iter++;
+        sigit++;
     }
 }
 
@@ -447,6 +462,11 @@ void Variant::recurseStruct( MessageIterator iter, Marshaling* marshal ) {
         case DataType::DICT_ENTRY:
             recurseDictEntry( iter.recurse(), marshal );
             break;
+        case DataType::VARIANT:
+        {
+            Variant v = Variant::createFromMessage( iter.recurse() );
+            marshal->marshal(v);
+        }
         }
 
         sigit++;

@@ -70,6 +70,7 @@ add_test( NAME messageiterator-array_array_byte COMMAND test-messageiterator arr
 add_test( NAME messageiterator-array_array_int COMMAND test-messageiterator array_array_int)
 add_test( NAME messageiterator-complex-types COMMAND test-messageiterator complex_variants)
 add_test( NAME messageiterator-complex-types2 COMMAND test-messageiterator complex_variants2)
+add_test( NAME messageiterator-complex-types3 COMMAND test-messageiterator complex_variants3)
 add_test( NAME messageiterator-nested-map COMMAND test-messageiterator nested_map)
 
 add_test( NAME messageiterator-Bool2 COMMAND test-messageiterator bool-2)
