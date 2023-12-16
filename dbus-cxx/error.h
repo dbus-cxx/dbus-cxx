@@ -429,6 +429,12 @@ public:
         : Error( nullptr, message ) {}
 };
 
+class ErrorUnableToParse : public Error {
+public:
+    ErrorUnableToParse( const char* message = nullptr )
+        : Error( nullptr, message ) {}
+};
+
 }
 
 #endif

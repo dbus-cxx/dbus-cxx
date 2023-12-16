@@ -12,6 +12,7 @@
 #include <dbus-cxx/signatureiterator.h>
 #include <stdint.h>
 #include <utility>
+#include <assert.h>
 #include "enums.h"
 #include "path.h"
 #include "signature.h"
@@ -150,6 +151,249 @@ DBus::DataType Variant::type() const {
     return m_currentType;
 }
 
+Variant Variant::createFromDemarshal(Signature sig, std::shared_ptr<Demarshaling> demarshal) {
+    Variant v;
+    SignatureIterator sigiter = sig.begin();
+    DBus::DataType dt = sigiter.type();
+    TypeInfo ti( dt );
+    Marshaling marshal( &v.m_marshaled, DBus::default_endianess() );
+
+    v.m_signature = sig;
+    v.m_currentType = dt;
+    v.m_dataAlignment = ti.alignment();
+    demarshal->align( ti.alignment() );
+
+    switch( dt ){
+    case DataType::BYTE:
+        marshal.marshal( demarshal->demarshal_uint8_t() );
+        break;
+
+    case  DataType::BOOLEAN:
+        marshal.marshal( demarshal->demarshal_boolean() );
+        break;
+
+    case  DataType::INT16:
+        marshal.marshal( demarshal->demarshal_int16_t() );
+        break;
+
+    case  DataType::UINT16:
+        marshal.marshal( demarshal->demarshal_uint16_t() );
+        break;
+
+    case  DataType::INT32:
+        marshal.marshal( demarshal->demarshal_int32_t() );
+        break;
+
+    case  DataType::UINT32:
+        marshal.marshal( demarshal->demarshal_uint32_t() );
+        break;
+
+    case  DataType::INT64:
+        marshal.marshal( demarshal->demarshal_int64_t() );
+        break;
+
+    case  DataType::UINT64:
+        marshal.marshal( demarshal->demarshal_uint64_t() );
+        break;
+
+    case  DataType::DOUBLE:
+        marshal.marshal( demarshal->demarshal_double() );
+        break;
+
+    case  DataType::STRING:
+        marshal.marshal( demarshal->demarshal_string() );
+        break;
+
+    case  DataType::OBJECT_PATH:
+        marshal.marshal( demarshal->demarshal_string() );
+        break;
+
+    case  DataType::SIGNATURE:
+        marshal.marshal( demarshal->demarshal_signature() );
+        break;
+
+    case DBus::DataType::ARRAY:
+        v.recurseArray( sigiter.recurse(), demarshal, &marshal );
+        break;
+
+    default:
+        // Not yet supported
+    {
+        std::string err_text = "Type ";
+        err_text.push_back( (char)dt );
+        err_text.append( " currently unable to be parsed in variant" );
+        throw ErrorUnableToParse(err_text.c_str());
+        }
+    }
+
+    return v;
+}
+
+void Variant::recurseArray( SignatureIterator iter, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal ){
+
+    DataType dt = iter.type();
+    TypeInfo ti( dt );
+    std::vector<uint8_t> workingData;
+    Marshaling workingMarshal( &workingData, DBus::default_endianess() );
+    uint32_t array_size = demarshal->demarshal_uint32_t();
+    uint32_t current_location = demarshal->current_offset();
+    uint32_t ending_offset = current_location + array_size;
+
+    marshal->marshal( array_size );
+
+    while( current_location < ending_offset ) {
+        switch( dt ) {
+        case DataType::BYTE:
+            marshal->marshal( demarshal->demarshal_uint8_t() );
+            break;
+
+        case  DataType::BOOLEAN:
+            marshal->marshal( demarshal->demarshal_boolean() );
+            break;
+
+        case  DataType::INT16:
+            marshal->marshal( demarshal->demarshal_int16_t() );
+            break;
+
+        case  DataType::UINT16:
+            marshal->marshal( demarshal->demarshal_uint16_t() );
+            break;
+
+        case  DataType::INT32:
+            marshal->marshal( demarshal->demarshal_int32_t() );
+            break;
+
+        case  DataType::UINT32:
+            marshal->marshal( demarshal->demarshal_uint32_t() );
+            break;
+
+        case  DataType::INT64:
+            marshal->marshal( demarshal->demarshal_int64_t() );
+            break;
+
+        case  DataType::UINT64:
+            marshal->marshal( demarshal->demarshal_uint64_t() );
+            break;
+
+        case  DataType::DOUBLE:
+            marshal->marshal( demarshal->demarshal_double() );
+            break;
+
+        case  DataType::STRING:
+            marshal->marshal( demarshal->demarshal_string() );
+            break;
+
+        case  DataType::OBJECT_PATH:
+            marshal->marshal( demarshal->demarshal_string() );
+            break;
+
+        case  DataType::SIGNATURE:
+            marshal->marshal( demarshal->demarshal_signature() );
+            break;
+
+        case DataType::DICT_ENTRY:
+            recurseDictEntry( iter.recurse(), demarshal, &workingMarshal );
+            break;
+
+        default:
+            // Not yet supported
+        {
+            std::string err_text = "Type ";
+            err_text.push_back( (char)dt );
+            err_text.append( " currently unable to be parsed in variant" );
+            throw ErrorUnableToParse(err_text.c_str());
+            }
+        }
+
+        current_location = demarshal->current_offset();
+    }
+}
+
+void Variant::recurseDictEntry( SignatureIterator iter, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal ){
+    DataType dt = iter.type();
+    TypeInfo ti( dt );
+    std::vector<uint8_t> workingData;
+    Marshaling workingMarshal( &workingData, DBus::default_endianess() );
+
+    while( iter.is_valid() ) {
+        switch( dt ) {
+        case DataType::BYTE:
+            workingMarshal.marshal( demarshal->demarshal_uint8_t() );
+            break;
+
+        case  DataType::BOOLEAN:
+            workingMarshal.marshal( demarshal->demarshal_boolean() );
+            break;
+
+        case  DataType::INT16:
+            workingMarshal.marshal( demarshal->demarshal_int16_t() );
+            break;
+
+        case  DataType::UINT16:
+            workingMarshal.marshal( demarshal->demarshal_uint16_t() );
+            break;
+
+        case  DataType::INT32:
+            workingMarshal.marshal( demarshal->demarshal_int32_t() );
+            break;
+
+        case  DataType::UINT32:
+            workingMarshal.marshal( demarshal->demarshal_uint32_t() );
+            break;
+
+        case  DataType::INT64:
+            workingMarshal.marshal( demarshal->demarshal_int64_t() );
+            break;
+
+        case  DataType::UINT64:
+            workingMarshal.marshal( demarshal->demarshal_uint64_t() );
+            break;
+
+        case  DataType::DOUBLE:
+            workingMarshal.marshal( demarshal->demarshal_double() );
+            break;
+
+        case  DataType::STRING:
+            workingMarshal.marshal( demarshal->demarshal_string() );
+            break;
+
+        case  DataType::OBJECT_PATH:
+            workingMarshal.marshal( demarshal->demarshal_string() );
+            break;
+
+        case  DataType::SIGNATURE:
+            workingMarshal.marshal( demarshal->demarshal_signature() );
+            break;
+
+        case DataType::ARRAY:
+            recurseArray( iter.recurse(), demarshal, &workingMarshal );
+            break;
+
+        case DataType::DICT_ENTRY:
+            recurseDictEntry( iter.recurse(), demarshal, &workingMarshal );
+            break;
+
+        default:
+            // Not yet supported
+        {
+            std::string err_text = "Type ";
+            err_text.push_back( (char)dt );
+            err_text.append( " currently unable to be parsed in variant" );
+            throw ErrorUnableToParse(err_text.c_str());
+            }
+        }
+
+        iter++;
+    }
+
+    marshal->marshal( static_cast<uint32_t>( workingData.size() ) );
+    marshal->align( ti.alignment() );
+
+    for( uint8_t byte : workingData ) {
+        marshal->marshal( byte );
+    }
+}
+
 DBus::Variant Variant::createFromMessage( MessageIterator iter ) {
     Variant v;
     DBus::DataType dt = iter.signature_iterator().type();
@@ -160,6 +404,8 @@ DBus::Variant Variant::createFromMessage( MessageIterator iter ) {
     v.m_currentType = dt;
     v.m_dataAlignment = ti.alignment();
     iter.align( ti.alignment() );
+
+    SIMPLELOGGER_TRACE_STDSTR( LOGGER_NAME, "Creating variant with signature " << v.m_signature );
 
     switch( dt ) {
     case DataType::BYTE:
@@ -297,6 +543,11 @@ void Variant::recurseArray( MessageIterator iter, Marshaling* marshal ) {
         case DataType::STRUCT:
             recurseStruct( iter.recurse(), &workingMarshal );
             break;
+        case DataType::VARIANT:
+        {
+            Variant v = Variant::createFromMessage( iter.recurse() );
+            marshal->marshal(v);
+        }
         }
 
         iter++;
@@ -375,10 +626,17 @@ void Variant::recurseDictEntry( MessageIterator iter, Marshaling* marshal ) {
         case DataType::DICT_ENTRY:
             recurseDictEntry( iter.recurse(), marshal );
             break;
+
+        case DataType::VARIANT:
+        {
+            Variant v = Variant::createFromMessage( iter.recurse() );
+            marshal->marshal(v);
+        }
+            break;
         }
 
-        sigit++;
         iter++;
+        sigit++;
     }
 }
 
@@ -447,6 +705,11 @@ void Variant::recurseStruct( MessageIterator iter, Marshaling* marshal ) {
         case DataType::DICT_ENTRY:
             recurseDictEntry( iter.recurse(), marshal );
             break;
+        case DataType::VARIANT:
+        {
+            Variant v = Variant::createFromMessage( iter.recurse() );
+            marshal->marshal(v);
+        }
         }
 
         sigit++;

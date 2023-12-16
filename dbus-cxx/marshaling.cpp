@@ -222,6 +222,7 @@ void Marshaling::marshal( const Variant& v ) {
         + 12 /* Extra alignment bytes, if needed */ );
 
     marshal( signature );
+    align(v.data_alignment());
 
     for( const uint8_t& byte : *data ) {
         m_priv->m_data->push_back( byte );
