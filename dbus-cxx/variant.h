@@ -171,11 +171,15 @@ public:
     }
 
     static Variant createFromMessage( MessageIterator iter );
+    static Variant createFromDemarshal( Signature sig, std::shared_ptr<Demarshaling> demarshal );
 
 private:
     void recurseArray( MessageIterator iter, Marshaling* marshal );
     void recurseDictEntry( MessageIterator iter, Marshaling* marshal );
     void recurseStruct( MessageIterator iter, Marshaling* marshal );
+
+    void recurseArray( SignatureIterator iter, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal );
+    void recurseDictEntry( SignatureIterator iter, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal );
 
 private:
     DataType m_currentType;

@@ -517,9 +517,9 @@ std::string VariantIterator::get_string() {
 }
 
 DBus::Variant VariantIterator::get_variant() {
-    // TODO if you need to use an API that has a variant inside of a variant...
-    // go and punch the person who made that API in the face.
-    return Variant();
+    Signature sig = m_priv->m_demarshal->demarshal_signature();
+
+    return DBus::Variant::createFromDemarshal(sig, m_priv->m_demarshal );
 }
 
 DBus::Signature VariantIterator::get_signature() {

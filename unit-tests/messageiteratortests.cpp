@@ -1306,15 +1306,30 @@ bool call_message_append_extract_iterator_complex_variants3() {
     DBus::MessageIterator iter1( message );
     result = (DBus::Variant) iter1;
 
-    std::cerr << result.type() << "\n";
-
     DBus::hexdump(result.marshaled(), &std::cerr);
 
+    // The variant signature is a{sv}
+    // WHY?!  YOU CAN JUST RETURN THAT IN THE FIRST F&*ING PLACE!
+    // WHAT IS THE POINT OF PUTTING IN A F&*NING VARIANT?!
 
-    for (const auto & [key, value] : (std::map<std::string,DBus::Variant>)result){
-        std::cout << key << "\n";
-        std::cout << "  " << value.type() << "\n";
+    std::map<std::string,DBus::Variant> map_data = (std::map<std::string,DBus::Variant>)result;
+
+    for (const auto & [key, value] : map_data){
+        std::cerr << key << "\n";
+        std::cerr << "  " << value.type() << "\n";
     }
+
+    std::cerr << std::flush;
+
+    std::vector<std::string> auth_alg = map_data["AuthAlg"];
+    std::vector<std::string> pairwise = map_data["Pairwise"];
+
+    if(!TEST_STREQUALS(auth_alg[0], "open")){
+        return false;
+    }
+
+    TEST_EQUALS_RET_FAIL(map_data["MaxScanSSID"].type(), DBus::DataType::INT32);
+    TEST_EQUALS_RET_FAIL(pairwise.size(), 5);
 
     return true;
 }
