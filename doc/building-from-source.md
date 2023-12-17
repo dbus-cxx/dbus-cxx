@@ -23,7 +23,9 @@ DBus-cxx depends on the following libraries:
 On Debian-based systems, you should be able to install with the following
 commands(as root/sudo):
 
+```
     apt-get install libdbus-1-dev cmake libexpat1-dev
+```
 
 Note that as of the writing of this guide(October 2020), libsigc++-3.0 has not yet
 been added to the Debian repositoreis, and you will need to build this dependency
@@ -31,11 +33,13 @@ manually.
 
 When checking out from GIT, the easiest way to build is as such:
 
+```
     mkdir build
     cd build
     cmake ..
     make
     sudo make install
+```
 
 ## 2. What are the requirements to build the tools?
 
@@ -86,3 +90,14 @@ There are two tools provided with dbus-cxx:
   is created when you want to talk with a remote object
 
 dbus-cxx-introspect - print out the introspection XML for a specified service
+
+## 7. Building a .deb package
+
+If you are on a Debian/Ubuntu based system, you can build the .deb packages for DBus-cxx:
+
+```
+dpkg-buildpackage -us -uc -b
+```
+
+Newer versions of Debian(12+) and Ubuntu(23.04+) contain libsigc++-3.0, so this dependency
+can be installed through apt.
