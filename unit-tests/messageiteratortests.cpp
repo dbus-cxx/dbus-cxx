@@ -388,7 +388,7 @@ bool call_message_append_extract_iterator_map_string_string() {
     themap[ "first" ] = "what";
     themap[ "second" ] = "hi";
 
-    std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "methodName" );
+    std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
     DBus::MessageAppendIterator iter1( msg );
     iter1 << themap;
 
@@ -917,8 +917,6 @@ bool call_message_append_extract_iterator_complex_variants(){
 
     std::vector<uint8_t> vec;
     msg->serialize_to_vector( &vec, 0 );
-
-    DBus::hexdump( &vec, &std::cerr );
 
     DBus::MessageIterator iter2( msg );
     result = (std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>>) iter2;

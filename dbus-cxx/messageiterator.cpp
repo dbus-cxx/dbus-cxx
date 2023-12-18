@@ -596,10 +596,7 @@ std::shared_ptr<FileDescriptor> MessageIterator::get_filedescriptor() {
 }
 
 Variant MessageIterator::get_variant() {
-//    MessageIterator subiter = this->recurse();
-    SIMPLELOGGER_TRACE(LOGGER_NAME, "Offset before sig: " << m_priv->m_demarshal->current_offset() );
     DBus::Signature sig = get_signature();
-    SIMPLELOGGER_TRACE(LOGGER_NAME, "Offset after sig: " << m_priv->m_demarshal->current_offset() );
 
     return Variant::createFromDemarshal( sig, m_priv->m_demarshal );
 }
