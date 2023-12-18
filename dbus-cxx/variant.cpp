@@ -400,6 +400,10 @@ DBus::Variant Variant::createFromMessage( MessageIterator iter ) {
     TypeInfo ti( dt );
     Marshaling marshal( &v.m_marshaled, DBus::default_endianess() );
 
+    // Note: when createFromMessage is called, the signature has already been demarshalled.
+    // This could be a problem if you want to re-use the variant, since the signature is not quite
+    // correct.  I wonder if this is part of the various different problems we've had with parsing variants?
+
     v.m_signature = DBus::Signature( iter.signature() );
     v.m_currentType = dt;
     v.m_dataAlignment = ti.alignment();
