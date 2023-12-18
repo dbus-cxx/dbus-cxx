@@ -105,8 +105,7 @@ bool Signature::is_singleton() const {
     return m_priv->m_valid &&
         m_priv->m_startingNode != nullptr &&
         m_priv->m_startingNode->m_dataType != DataType::INVALID  &&
-        m_priv->m_startingNode->m_next == nullptr &&
-        m_priv->m_startingNode->m_sub == nullptr;
+        m_priv->m_startingNode->m_next == nullptr;
 }
 
 std::shared_ptr<priv::SignatureNode> Signature::create_signature_tree( std::string::const_iterator* it,

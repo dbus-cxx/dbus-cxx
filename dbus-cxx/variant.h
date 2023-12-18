@@ -103,6 +103,9 @@ public:
 
     template <typename T>
     std::vector<T> to_vector() {
+        if( m_currentType != DataType::ARRAY ) {
+            throw ErrorBadVariantCast();
+        }
         priv::VariantIterator vi( this );
 
         std::vector<T> retval = vi;
@@ -112,6 +115,9 @@ public:
 
     template <typename Key, typename Value>
     std::map<Key, Value> to_map() {
+        if( m_currentType != DataType::ARRAY ) {
+            throw ErrorBadVariantCast();
+        }
         priv::VariantIterator vi( this );
 
         std::map<Key, Value> retval = vi;
@@ -121,6 +127,9 @@ public:
 
     template <typename ...T>
     std::tuple<T...> to_tuple() {
+        if( m_currentType != DataType::STRUCT ) {
+            throw ErrorBadVariantCast();
+        }
         std::tuple<T...> tup;
         priv::VariantIterator vi( this );
 

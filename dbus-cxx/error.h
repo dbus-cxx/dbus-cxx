@@ -429,9 +429,21 @@ public:
         : Error( nullptr, message ) {}
 };
 
+/**
+ * We were unable to parse(something is unimplemented?)
+ */
 class ErrorUnableToParse : public Error {
 public:
     ErrorUnableToParse( const char* message = nullptr )
+        : Error( nullptr, message ) {}
+};
+
+/**
+ * An invalid message was tried to be parsed.
+ */
+class ErrorInvalidMessage : public Error {
+public:
+    ErrorInvalidMessage( const char* message = nullptr )
         : Error( nullptr, message ) {}
 };
 

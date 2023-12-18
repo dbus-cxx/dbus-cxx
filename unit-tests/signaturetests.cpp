@@ -249,6 +249,22 @@ bool signature_create_from_struct_in_array() {
     return sig_output == "a(it)";
 }
 
+bool signature_single_type1() {
+    DBus::Signature sig( "i" );
+
+    TEST_EQUALS_RET_FAIL( sig.is_singleton(), true );
+
+    return true;
+}
+
+bool signature_single_type2() {
+    DBus::Signature sig( "ai" );
+
+    TEST_EQUALS_RET_FAIL( sig.is_singleton(), true );
+
+    return true;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = signature_##name();\
         } \
@@ -278,6 +294,8 @@ int main( int argc, char** argv ) {
     ADD_TEST( single_bool );
 
     ADD_TEST( create_from_struct_in_array );
+    ADD_TEST( single_type1 );
+    ADD_TEST( single_type2 );
 
     return !ret;
 }

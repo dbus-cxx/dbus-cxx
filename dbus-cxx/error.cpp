@@ -14,7 +14,9 @@ Error::Error() {
 }
 
 Error::Error( const char* name, const char* message ) {
-    m_name = std::string( name );
+    if( name ) {
+        m_name = std::string( name );
+    }
 
     if( message != nullptr ) {
         m_message = std::string( message );
