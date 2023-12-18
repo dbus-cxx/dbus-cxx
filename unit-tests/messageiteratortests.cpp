@@ -388,7 +388,7 @@ bool call_message_append_extract_iterator_map_string_string() {
     themap[ "first" ] = "what";
     themap[ "second" ] = "hi";
 
-    std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+    std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "methodName" );
     DBus::MessageAppendIterator iter1( msg );
     iter1 << themap;
 

@@ -242,8 +242,6 @@ void Variant::recurseArray( SignatureIterator sigit, std::shared_ptr<Demarshalin
     TypeInfo ti( dt );
     std::vector<uint8_t> workingData;
     Marshaling workingMarshal( &workingData, DBus::default_endianess() );
-    demarshal->align( ti.alignment() );
-
     uint32_t array_size = demarshal->demarshal_uint32_t();
     uint32_t current_location = demarshal->current_offset();
     uint32_t ending_offset = current_location + array_size;
@@ -256,6 +254,7 @@ void Variant::recurseArray( SignatureIterator sigit, std::shared_ptr<Demarshalin
         if(dt == DataType::DICT_ENTRY){
             recurseDictEntry( sigit.recurse(), demarshal, marshal, ending_offset );
         }else{
+            demarshal->align( ti.alignment() );
             marshal->align( ti.alignment() );
             remarshal( dt, sigit, demarshal, marshal );
         }
@@ -706,6 +705,19 @@ void Variant::remarshal(DataType dt, SignatureIterator sigit, std::shared_ptr<De
 
     case DBus::DataType::STRUCT:
         recurseStruct( sigit.recurse(), demarshal, marshal );
+        break;
+
+    case DBus::DataType::VARIANT:
+    {
+        Signature sig = demarshal->demarshal_signature();
+        Variant v = createFromDemarshal(sig, demarshal);
+        marshal->marshal(sig);
+        TypeInfo ti( v.type() );
+        marshal->align( ti.alignment() );
+        for( const uint8_t byte : *v.marshaled() ){
+            marshal->marshal(byte);
+        }
+    }
         break;
 
     default:

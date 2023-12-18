@@ -58,10 +58,6 @@ MessageIterator::MessageIterator( DataType d,
                                    "Extracting array.  new position: " << m_priv->m_demarshal->current_offset()
                                    << " array len: " << array_len
                                    << " array end pos: " << m_priv->m_subiterInfo.m_arrayLastPosition);
-    } else if( d == DataType::VARIANT ) {
-        Signature demarshaled_sig = demarshal->demarshal_signature();
-        m_priv->m_subiterInfo.m_variantSignature = demarshaled_sig;
-        m_priv->m_signatureIterator = demarshaled_sig.begin();
     } else if( d == DataType::DICT_ENTRY || d == DataType::STRUCT ) {
         m_priv->m_demarshal->align( 8 );
         SIMPLELOGGER_TRACE_STDSTR( LOGGER_NAME,
