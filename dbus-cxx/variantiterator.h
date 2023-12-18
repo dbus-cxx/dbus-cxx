@@ -115,9 +115,9 @@ public:
     operator std::tuple<T...>() {
         std::tuple<T...> tup;
 
-        //VariantIterator subiter = this->recurse();
-        std::apply( [this]( auto&& ...arg ) mutable {
-            ( *this >> ... >> arg );
+        VariantIterator subiter = this->recurse();
+        std::apply( [subiter]( auto&& ...arg ) mutable {
+            ( subiter >> ... >> arg );
         },
         tup );
 

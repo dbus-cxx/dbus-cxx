@@ -918,6 +918,8 @@ bool call_message_append_extract_iterator_complex_variants(){
     std::vector<uint8_t> vec;
     msg->serialize_to_vector( &vec, 0 );
 
+    DBus::hexdump( &vec, &std::cerr );
+
     DBus::MessageIterator iter2( msg );
     result = (std::map<DBus::Path, std::map<std::string, std::map<std::string, DBus::Variant>>>) iter2;
 
