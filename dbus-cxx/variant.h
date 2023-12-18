@@ -179,8 +179,12 @@ public:
         return to_tuple<T...>();
     }
 
+    /**
+     * Obsolete, do not call
+     */
+    [[deprecated]]
     static Variant createFromMessage( MessageIterator iter );
-//    static Variant createFromMessage2( MessageIterator* iter );
+
     static Variant createFromDemarshal( Signature sig, std::shared_ptr<Demarshaling> demarshal );
 
 private:
@@ -188,6 +192,22 @@ private:
     void recurseDictEntry( SignatureIterator iter, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal, uint32_t ending_offset );
     void recurseStruct( SignatureIterator sigit, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal );
     void remarshal(DataType dt, SignatureIterator sigit, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal);
+
+    /**
+     * Obsolete, do not call
+     */
+    [[deprecated]]
+    void recurseArray( MessageIterator iter, Marshaling* marshal );
+    /**
+     * Obsolete, do not call
+     */
+    [[deprecated]]
+    void recurseDictEntry( MessageIterator iter, Marshaling* marshal );
+    /**
+     * Obsolete, do not call
+     */
+    [[deprecated]]
+    void recurseStruct( MessageIterator iter, Marshaling* marshal );
 
 private:
     DataType m_currentType;

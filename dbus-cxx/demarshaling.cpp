@@ -9,7 +9,6 @@
 #include <cstring>
 #include <stdint.h>
 #include <cassert>
-#include <iostream>
 
 using DBus::Demarshaling;
 
@@ -124,8 +123,6 @@ std::string Demarshaling::demarshal_string() {
     is_valid( len + 1 );
     const char* start = reinterpret_cast<const char*>( m_priv->m_data + m_priv->m_dataPos );
     std::string ret = std::string( start, len );
-
-    std::cerr << "demarshal string " << ret << "\n";
 
     m_priv->m_dataPos += len + 1;
 
