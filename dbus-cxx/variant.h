@@ -185,13 +185,13 @@ public:
     [[deprecated]]
     static Variant createFromMessage( MessageIterator iter );
 
-    static Variant createFromDemarshal( Signature sig, std::shared_ptr<Demarshaling> demarshal );
+    static Variant createFromDemarshal( Signature sig, std::shared_ptr<Demarshaling> demarshal, const std::vector<int>& filedescriptors, uint32_t depth );
 
 private:
-    void recurseArray( SignatureIterator iter, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal );
-    void recurseDictEntry( SignatureIterator iter, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal, uint32_t ending_offset );
-    void recurseStruct( SignatureIterator sigit, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal );
-    void remarshal(DataType dt, SignatureIterator sigit, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal);
+    void recurseArray( SignatureIterator iter, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal, const std::vector<int>& filedescriptors, uint32_t depth );
+    void recurseDictEntry( SignatureIterator iter, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal, uint32_t ending_offset, const std::vector<int>& filedescriptors, uint32_t depth );
+    void recurseStruct( SignatureIterator sigit, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal, const std::vector<int>& filedescriptors, uint32_t depth );
+    void remarshal(DataType dt, SignatureIterator sigit, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal, const std::vector<int>& filedescriptors, uint32_t depth);
 
     /**
      * Obsolete, do not call

@@ -597,8 +597,9 @@ std::shared_ptr<FileDescriptor> MessageIterator::get_filedescriptor() {
 
 Variant MessageIterator::get_variant() {
     DBus::Signature sig = get_signature();
+    const std::vector<int> descriptors = m_priv->m_message->filedescriptors();
 
-    return Variant::createFromDemarshal( sig, m_priv->m_demarshal );
+    return Variant::createFromDemarshal( sig, m_priv->m_demarshal, descriptors, 0 );
 }
 
 Signature MessageIterator::get_signature() {

@@ -10,6 +10,7 @@
 #include <dbus-cxx/marshaling.h>
 #include <dbus-cxx/dbus-cxx-private.h>
 #include <dbus-cxx/signatureiterator.h>
+#include <dbus-cxx/validator.h>
 #include <stdint.h>
 #include <utility>
 #include <assert.h>
@@ -151,12 +152,17 @@ DBus::DataType Variant::type() const {
     return m_currentType;
 }
 
-Variant Variant::createFromDemarshal(Signature sig, std::shared_ptr<Demarshaling> demarshal) {
+Variant Variant::createFromDemarshal( Signature sig, std::shared_ptr<Demarshaling> demarshal, const std::vector<int>& filedescriptors, uint32_t depth ) {
     Variant v;
     SignatureIterator sigiter = sig.begin();
     DBus::DataType dt = sigiter.type();
     TypeInfo ti( dt );
     Marshaling marshal( &v.m_marshaled, DBus::default_endianess() );
+
+    depth++;
+    if( depth > Validator::maximum_message_depth() ) {
+        throw ErrorMessageNestedTooDeep();
+    }
 
     v.m_signature = sig;
     v.m_currentType = dt;
@@ -215,11 +221,11 @@ Variant Variant::createFromDemarshal(Signature sig, std::shared_ptr<Demarshaling
         break;
 
     case DBus::DataType::ARRAY:
-        v.recurseArray( sigiter.recurse(), demarshal, &marshal );
+        v.recurseArray( sigiter.recurse(), demarshal, &marshal, filedescriptors, depth );
         break;
 
     case DBus::DataType::STRUCT:
-        v.recurseStruct( sigiter.recurse(), demarshal, &marshal );
+        v.recurseStruct( sigiter.recurse(), demarshal, &marshal, filedescriptors, depth );
         break;
 
     default:
@@ -241,7 +247,7 @@ Variant Variant::createFromDemarshal(Signature sig, std::shared_ptr<Demarshaling
     return v;
 }
 
-void Variant::recurseArray( SignatureIterator sigit, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal ){
+void Variant::recurseArray( SignatureIterator sigit, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal, const std::vector<int>& filedescriptors, uint32_t depth ){
     DataType dt = sigit.type();
     TypeInfo ti( dt );
     std::vector<uint8_t> workingData;
@@ -250,29 +256,39 @@ void Variant::recurseArray( SignatureIterator sigit, std::shared_ptr<Demarshalin
     uint32_t current_location = demarshal->current_offset();
     uint32_t ending_offset = current_location + array_size;
 
+    depth++;
+    if( depth > Validator::maximum_message_depth() ) {
+        throw ErrorMessageNestedTooDeep();
+    }
+
     marshal->marshal( array_size );
 
     SIMPLELOGGER_TRACE(LOGGER_NAME, "Creating Variant array with signature " << sigit.type() << ".  Current: " << current_location << " ending: " << ending_offset );
 
     while( current_location < ending_offset ) {
         if(dt == DataType::DICT_ENTRY){
-            recurseDictEntry( sigit.recurse(), demarshal, marshal, ending_offset );
+            recurseDictEntry( sigit.recurse(), demarshal, marshal, ending_offset, filedescriptors, depth );
         }else{
             demarshal->align( ti.alignment() );
             marshal->align( ti.alignment() );
-            remarshal( dt, sigit, demarshal, marshal );
+            remarshal( dt, sigit, demarshal, marshal, filedescriptors, depth );
         }
 
         current_location = demarshal->current_offset();
     }
 }
 
-void Variant::recurseDictEntry( SignatureIterator iter, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal, uint32_t ending_offset ){
+void Variant::recurseDictEntry( SignatureIterator iter, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal, uint32_t ending_offset, const std::vector<int>& filedescriptors, uint32_t depth ){
     DataType key_type = iter.type();
     iter++;
     DataType value_type = iter.type();
     TypeInfo ti( key_type );
     uint32_t current_location = demarshal->current_offset();
+
+    depth++;
+    if( depth > Validator::maximum_message_depth() ) {
+        throw ErrorMessageNestedTooDeep();
+    }
 
     marshal->align(8);
     demarshal->align(8);
@@ -283,8 +299,8 @@ void Variant::recurseDictEntry( SignatureIterator iter, std::shared_ptr<Demarsha
     while( current_location < ending_offset ) {
         demarshal->align(8);
         marshal->align(8);
-        remarshal( key_type, iter, demarshal, marshal );
-        remarshal( value_type, iter, demarshal, marshal );
+        remarshal( key_type, iter, demarshal, marshal, filedescriptors, depth );
+        remarshal( value_type, iter, demarshal, marshal, filedescriptors, depth );
 
         current_location = demarshal->current_offset();
     }
@@ -300,21 +316,26 @@ void Variant::recurseDictEntry( MessageIterator iter, Marshaling* marshal ){}
 
 void Variant::recurseStruct( MessageIterator iter, Marshaling* marshal ){}
 
-void Variant::recurseStruct( SignatureIterator sigit, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal ) {
+void Variant::recurseStruct( SignatureIterator sigit, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal, const std::vector<int>& filedescriptors, uint32_t depth ) {
     marshal->align( 8 );
     demarshal->align( 8 );
+
+    depth++;
+    if( depth > Validator::maximum_message_depth() ) {
+        throw ErrorMessageNestedTooDeep();
+    }
 
     while( sigit.is_valid() ) {
         DataType dt = sigit.type();
         TypeInfo ti( dt );
 
-        remarshal( dt, sigit, demarshal, marshal );
+        remarshal( dt, sigit, demarshal, marshal, filedescriptors, depth );
 
         sigit++;
     }
 }
 
-void Variant::remarshal(DataType dt, SignatureIterator sigit, std::shared_ptr<Demarshaling> demarshal, Marshaling *marshal){
+void Variant::remarshal(DataType dt, SignatureIterator sigit, std::shared_ptr<Demarshaling> demarshal, Marshaling *marshal, const std::vector<int>& filedescriptors, uint32_t depth ){
     switch( dt ) {
     case DataType::BYTE:
         marshal->marshal( demarshal->demarshal_uint8_t() );
@@ -365,17 +386,17 @@ void Variant::remarshal(DataType dt, SignatureIterator sigit, std::shared_ptr<De
         break;
 
     case DBus::DataType::ARRAY:
-        recurseArray( sigit.recurse(), demarshal, marshal );
+        recurseArray( sigit.recurse(), demarshal, marshal, filedescriptors, depth );
         break;
 
     case DBus::DataType::STRUCT:
-        recurseStruct( sigit.recurse(), demarshal, marshal );
+        recurseStruct( sigit.recurse(), demarshal, marshal, filedescriptors, depth );
         break;
 
     case DBus::DataType::VARIANT:
     {
         Signature sig = demarshal->demarshal_signature();
-        Variant v = createFromDemarshal(sig, demarshal);
+        Variant v = createFromDemarshal(sig, demarshal, filedescriptors, depth );
         marshal->marshal(sig);
         TypeInfo ti( v.type() );
         marshal->align( ti.alignment() );

@@ -447,6 +447,12 @@ public:
         : Error( nullptr, message ) {}
 };
 
+class ErrorMessageNestedTooDeep : public Error {
+public:
+    ErrorMessageNestedTooDeep( const char* message = nullptr )
+        : Error( nullptr, message ) {}
+};
+
 }
 
 #endif

@@ -518,8 +518,9 @@ std::string VariantIterator::get_string() {
 
 DBus::Variant VariantIterator::get_variant() {
     Signature sig = m_priv->m_demarshal->demarshal_signature();
+    std::vector<int> descriptors;
 
-    return DBus::Variant::createFromDemarshal(sig, m_priv->m_demarshal );
+    return DBus::Variant::createFromDemarshal(sig, m_priv->m_demarshal, descriptors, 0 );
 }
 
 DBus::Signature VariantIterator::get_signature() {
