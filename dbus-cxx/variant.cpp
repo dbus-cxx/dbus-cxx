@@ -226,8 +226,12 @@ Variant Variant::createFromDemarshal(Signature sig, std::shared_ptr<Demarshaling
         // Not yet supported
     {
         std::string err_text = "Type ";
-        err_text.push_back( (char)dt );
-        err_text.append( " currently unable to be parsed in variant" );
+        if(dt == DataType::INVALID){
+            err_text.append( "(invalid)" );
+        }else{
+            err_text.push_back( (char)dt );
+        }
+        err_text.append( " unable to be parsed in variant" );
         throw ErrorUnableToParse(err_text.c_str());
         }
     }
@@ -273,7 +277,8 @@ void Variant::recurseDictEntry( SignatureIterator iter, std::shared_ptr<Demarsha
     marshal->align(8);
     demarshal->align(8);
 
-    SIMPLELOGGER_TRACE(LOGGER_NAME, "Creating Variant dict entry with types " << key_type << "," << value_type );
+    SIMPLELOGGER_TRACE(LOGGER_NAME, "Creating Variant dict entry with types " << key_type << "," << value_type
+                       << ".  Current offset: " << current_location << " ending offset: " << ending_offset );
 
     while( current_location < ending_offset ) {
         demarshal->align(8);
@@ -374,8 +379,37 @@ void Variant::remarshal(DataType dt, SignatureIterator sigit, std::shared_ptr<De
         marshal->marshal(sig);
         TypeInfo ti( v.type() );
         marshal->align( ti.alignment() );
-        for( const uint8_t byte : *v.marshaled() ){
-            marshal->marshal(byte);
+
+
+        // Note that when the Variant marshals a DICT, it will make sure to align
+        // the DICT_ENTRY on an 8-byte boundary, which results in padding being
+        // inserted into the data stream.  This padding is not always needed,
+        // so we remove the padding and then do the alignment here.
+        const std::vector<uint8_t>* dataToMarshal = v.marshaled();
+        bool isDict = false;
+        if( v.type() == DataType::ARRAY ){
+            // determine if we have a dict or not.  If we do, remove padding
+            for( DBus::SignatureIterator sig_it = sig.begin().recurse();
+                 sig_it != sig.end();
+                 sig_it++ ){
+                if( sig_it.type() == DataType::DICT_ENTRY ){
+                    isDict = true;
+                    break;
+                }
+            }
+        }
+
+        for( size_t x = 0; x < dataToMarshal->size(); x++ ) {
+            if( isDict &&
+                    (x == 4 || x == 5 || x == 6 || x == 7) ){
+                // Ignore the 4 padding bytes that the variant inserts
+                continue;
+            }
+            if( isDict && x == 8 ){
+                // make sure to align for all of the dict entries
+                marshal->align( 8 );
+            }
+            marshal->marshal( (*dataToMarshal)[x] );
         }
     }
         break;

@@ -128,10 +128,41 @@ VariantAppendIterator& VariantAppendIterator::operator<<( const Path& v ) {
 VariantAppendIterator& VariantAppendIterator::operator<<( const Variant& v ){
     if( m_priv->m_subiter ) { this->close_container(); }
 
-    // The variant should already be correctly marshaled at this point, so just copy the bytes?
-    const std::vector<uint8_t>* marshaled = v.marshaled();
-    for( uint8_t byte : *marshaled ){
-        m_priv->m_marshaling.marshal( byte );
+    // The variant body is marshaled, but first we need to marshal the signature of the variant
+    m_priv->m_marshaling.marshal( v.m_signature );
+    m_priv->m_marshaling.align( v.data_alignment() );
+    TypeInfo ti( v.m_currentType );
+    Signature sig = v.m_signature;
+
+    // Note that when the Variant marshals a DICT, it will make sure to align
+    // the DICT_ENTRY on an 8-byte boundary, which results in padding being
+    // inserted into the data stream.  This padding is not always needed,
+    // so we remove the padding and then do the alignment here.
+    const std::vector<uint8_t>* dataToMarshal = v.marshaled();
+    bool isDict = false;
+    if( v.type() == DataType::ARRAY ){
+        // determine if we have a dict or not.  If we do, remove padding
+        for( DBus::SignatureIterator sig_it = sig.begin().recurse();
+             sig_it != sig.end();
+             sig_it++ ){
+            if( sig_it.type() == DataType::DICT_ENTRY ){
+                isDict = true;
+                break;
+            }
+        }
+    }
+
+    for( size_t x = 0; x < dataToMarshal->size(); x++ ) {
+        if( isDict &&
+                (x == 4 || x == 5 || x == 6 || x == 7) ){
+            // Ignore the 4 padding bytes that the variant inserts
+            continue;
+        }
+        if( isDict && x == 8 ){
+            // make sure to align for all of the dict entries
+            m_priv->m_marshaling.align( 8 );
+        }
+        m_priv->m_marshaling.marshal( (*dataToMarshal)[x] );
     }
 
     return *this;

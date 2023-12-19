@@ -1334,6 +1334,46 @@ bool call_message_append_extract_iterator_complex_variants3() {
     return true;
 }
 
+bool call_message_append_extract_iterator_variant_deep () {
+    // Deeply nest a variant, make sure it parses correctly
+    std::map<int32_t, DBus::Variant> map1;
+    map1[0x50] = DBus::Variant("hello");
+    map1[0x90] = DBus::Variant(9);
+
+    std::map<std::string, DBus::Variant> map2;
+    map2["whut"] = DBus::Variant(map1);
+
+    std::map<uint8_t,DBus::Variant> map3;
+    map3[123] = DBus::Variant(map2);
+
+    std::map<int16_t,DBus::Variant> map4;
+    map4[25236] = DBus::Variant(map3);
+
+    DBus::Variant first = DBus::Variant(map4);
+
+    std::shared_ptr<DBus::CallMessage> msg = DBus::CallMessage::create( "/org/freedesktop/DBus", "method" );
+    DBus::MessageAppendIterator iter1( msg );
+    iter1 << first;
+
+    DBus::MessageIterator iter2( msg );
+    DBus::Variant second;
+    second = DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT( iter2 );
+
+    std::map<int16_t,DBus::Variant> second_map4 = (std::map<int16_t,DBus::Variant>)second;
+    TEST_ASSERT_RET_FAIL(second_map4.find(25236) != second_map4.end());
+
+    std::map<uint8_t,DBus::Variant> second_map3 = second_map4[25236];
+    TEST_ASSERT_RET_FAIL(second_map3.find(123) != second_map3.end());
+
+    std::map<std::string, DBus::Variant> second_map2 = second_map3[123];
+    TEST_ASSERT_RET_FAIL(second_map2.find("whut") != second_map2.end());
+
+    std::map<int32_t, DBus::Variant> second_map1 = second_map2["whut"];
+    TEST_EQUALS_RET_FAIL(second_map1.size(), 2);
+
+    return true;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = call_message_append_extract_iterator_##name();\
         } \
@@ -1388,6 +1428,7 @@ int main( int argc, char** argv ) {
     ADD_TEST( complex_variants2 );
     ADD_TEST( nested_map );
     ADD_TEST( complex_variants3 );
+    ADD_TEST( variant_deep );
 
     ADD_TEST2( bool );
     ADD_TEST2( byte );
