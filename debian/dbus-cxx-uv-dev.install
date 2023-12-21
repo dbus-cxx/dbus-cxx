@@ -1,0 +1,3 @@
+usr/include/dbus-cxx-uv-2.0/*
+usr/lib/*/libdbus-cxx-uv.so
+usr/lib/*/pkgconfig/dbus-cxx-uv-2.0.pc

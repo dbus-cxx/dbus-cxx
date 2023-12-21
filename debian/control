@@ -14,6 +14,7 @@ Build-Depends: cmake,
                libglib2.0-dev,
                libpopt-dev,
                libsigc++-3.0-dev,
+               libuv1-dev,
                qtbase5-dev,
                xsltproc
 Standards-Version: 3.9.5
@@ -83,3 +84,20 @@ Description: Headers for developing programs that will use dbus-cxx-qt
  provides dbus-cxx a means of integrating with Qt.
  This package contains the libraries and header files needed for
  developing dbus-cxx-qt applications.
+
+Package: dbus-cxx-uv2
+Section: libs
+Architecture: any
+Depends: dbus-cxx2 (= ${binary:Version}), ${misc:Depends}, ${shlibs:Depends}
+Description: Adds support to dbus-cxx (C++ bindings for dbus) for libuv integration
+ Adds support to dbus-cxx (C++ bindings for dbus) for libuv integration
+
+Package: dbus-cxx-uv-dev
+Section: libdevel
+Architecture: any
+Depends: dbus-cxx-uv2 (= ${binary:Version}), dbus-cxx-dev
+Description: Headers for developing programs that will use dbus-cxx-uv
+ dbus-cxx provides C++ bindings for the dbus library. dbus-cxx-uv
+ provides dbus-cxx a means of integrating with libuv.
+ This package contains the libraries and header files needed for
+ developing dbus-cxx-uv applications.
