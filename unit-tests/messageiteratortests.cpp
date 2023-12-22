@@ -1374,6 +1374,35 @@ bool call_message_append_extract_iterator_variant_deep () {
     return true;
 }
 
+bool call_message_append_extract_iterator_variant_array () {
+    uint8_t packet_bytes[78] = {
+    0x6c, 0x02, 0x01, 0x01, 0x0e, 0x00, 0x00, 0x00, /* l....... */
+    0x46, 0x00, 0x00, 0x00, 0x2f, 0x00, 0x00, 0x00, /* F.../... */
+    0x06, 0x01, 0x73, 0x00, 0x06, 0x00, 0x00, 0x00, /* ..s..... */
+    0x3a, 0x31, 0x2e, 0x32, 0x35, 0x33, 0x00, 0x00, /* :1.253.. */
+    0x05, 0x01, 0x75, 0x00, 0x42, 0x00, 0x00, 0x00, /* ..u.B... */
+    0x08, 0x01, 0x67, 0x00, 0x01, 0x76, 0x00, 0x00, /* ..g..v.. */
+    0x07, 0x01, 0x73, 0x00, 0x06, 0x00, 0x00, 0x00, /* ..s..... */
+    0x3a, 0x31, 0x2e, 0x32, 0x35, 0x31, 0x00, 0x00, /* :1.251.. */
+    0x02, 0x61, 0x79, 0x00, 0x06, 0x00, 0x00, 0x00, /* .ay..... */
+    0xda, 0x9c, 0x67, 0x5e, 0xe2, 0xc3              /* ..g^.. */
+    };
+
+    std::shared_ptr<DBus::Message> message = DBus::Message::create_from_data( packet_bytes, sizeof(packet_bytes) );
+
+    DBus::Variant result;
+    DBus::MessageIterator iter1( message );
+    result = (DBus::Variant) iter1;
+
+    std::vector<uint8_t> macAddress = (std::vector<uint8_t>)result;
+
+    if(macAddress.size() != 6){
+        return false;
+    }
+
+    return true;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = call_message_append_extract_iterator_##name();\
         } \
@@ -1429,6 +1458,7 @@ int main( int argc, char** argv ) {
     ADD_TEST( nested_map );
     ADD_TEST( complex_variants3 );
     ADD_TEST( variant_deep );
+    ADD_TEST( variant_array );
 
     ADD_TEST2( bool );
     ADD_TEST2( byte );

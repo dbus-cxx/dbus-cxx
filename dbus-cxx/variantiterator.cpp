@@ -56,8 +56,9 @@ VariantIterator::VariantIterator( DataType d,
     m_priv->m_signatureIterator = sig;
 
     if( d == DataType::ARRAY ) {
+        uint32_t array_size = m_priv->m_demarshal->demarshal_uint32_t();
         m_priv->m_subiterInfo.m_subiterDataType = d;
-        m_priv->m_subiterInfo.m_arrayLastPosition = m_priv->m_demarshal->current_offset() + m_priv->m_demarshal->demarshal_uint32_t();
+        m_priv->m_subiterInfo.m_arrayLastPosition = m_priv->m_demarshal->current_offset() + array_size;
     } else if( d == DataType::VARIANT ) {
         Signature demarshaled_sig = demarshal->demarshal_signature();
         m_priv->m_subiterInfo.m_variantSignature = demarshaled_sig;
@@ -78,7 +79,7 @@ bool VariantIterator::is_valid() const {
 
     if( m_priv->m_subiterInfo.m_subiterDataType == DataType::ARRAY ) {
         // We are in a subiter here, figure out if we're at the end of the array yet
-        if( m_priv->m_demarshal->current_offset() > m_priv-> m_subiterInfo.m_arrayLastPosition ) {
+        if( m_priv->m_demarshal->current_offset() >= m_priv-> m_subiterInfo.m_arrayLastPosition ) {
             return false;
         }
 
