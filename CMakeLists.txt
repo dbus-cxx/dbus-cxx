@@ -55,6 +55,17 @@ endif( BUILD_TESTING )
 option( ENABLE_QT_SUPPORT "Build libdbuscxx-qt for integration with Qt applications" OFF )
 option( ENABLE_UV_SUPPORT "Build libdbuscxx-uv for integration with libuv applications" OFF )
 
+# With glibc >= 2.35, it seems that we no longer need to link with -lrt:
+# https://sourceware.org/pipermail/libc-alpha/2021-August/129718.html
+# Quick n dirty for now, need to find automatically
+option( LINK_LIBRT "Link with -lrt.  Not needed for glibc >= 2.35." OFF )
+
+if( ${LINK_LIBRT} )
+    set(LIBRT "-lrt")
+else()
+    set(LIBRT "")
+endif()
+
 #
 # Configure our compile options
 #

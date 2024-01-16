@@ -13,7 +13,7 @@
 #   along with this software. If not see <http://www.gnu.org/licenses/>.
 
 set( TEST_INCLUDES ${sigc_INCLUDE_DIRS} ${cppgenerate_INCLUDE_DIRS} )
-set( TEST_LINK dbus-cxx dbus-cxx-glib ${glib_LDFLAGS} ${sigc_LDFLAGS} ${popt_LDFLAGS} ${expat_LDFLAGS} -lrt )
+set( TEST_LINK dbus-cxx dbus-cxx-glib ${glib_LDFLAGS} ${sigc_LDFLAGS} ${popt_LDFLAGS} ${expat_LDFLAGS} ${LIBRT} )
 
 link_directories( ${CMAKE_BINARY_DIR} )
 

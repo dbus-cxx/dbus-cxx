@@ -15,7 +15,7 @@ endif( TOOLS_BUNDLED_CPPGENERATE )
 pkg_check_modules( popt REQUIRED popt )
 
 set( TOOLS_INCLUDES ${dbus_INCLUDE_DIRS} ${sigc_INCLUDE_DIRS} ${cppgenerate_INCLUDE_DIRS} )
-set( TOOLS_LINK dbus-cxx ${dbus_LDFLAGS} ${sigc_LDFLAGS} ${popt_LDFLAGS} ${expat_LDFLAGS} -lrt )
+set( TOOLS_LINK dbus-cxx ${dbus_LDFLAGS} ${sigc_LDFLAGS} ${popt_LDFLAGS} ${expat_LDFLAGS} ${LIBRT} )
 
 link_directories( ${CMAKE_BINARY_DIR} )
 

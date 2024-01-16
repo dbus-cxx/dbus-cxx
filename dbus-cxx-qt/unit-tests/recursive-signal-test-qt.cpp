@@ -21,6 +21,7 @@
 
 #include <dbus-cxx-qt.h>
 #include <iostream>
+#include <thread>
 
 #include <QCoreApplication>
 #include <QTimer>

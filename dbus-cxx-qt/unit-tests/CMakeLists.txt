@@ -19,7 +19,7 @@ set(CMAKE_AUTOUIC ON)
 find_package(Qt5 COMPONENTS Core REQUIRED)
 
 set( TEST_INCLUDES ${sigc_INCLUDE_DIRS} ${cppgenerate_INCLUDE_DIRS} )
-set( TEST_LINK dbus-cxx dbus-cxx-qt Qt5::Core ${sigc_LDFLAGS} ${popt_LDFLAGS} ${expat_LDFLAGS} -lrt )
+set( TEST_LINK dbus-cxx dbus-cxx-qt Qt5::Core ${sigc_LDFLAGS} ${popt_LDFLAGS} ${expat_LDFLAGS} ${LIBRT} )
 
 link_directories( ${CMAKE_BINARY_DIR} )
 

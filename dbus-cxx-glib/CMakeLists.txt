@@ -22,7 +22,7 @@ set_target_properties( dbus-cxx-glib PROPERTIES
     VERSION 2.0.0 SOVERSION 2
     PUBLIC_HEADER "${dbus-cxx-glib-headers}"
 )
-target_link_libraries( dbus-cxx-glib PUBLIC dbus-cxx ${sigc_LIBS} -lrt )
+target_link_libraries( dbus-cxx-glib PUBLIC dbus-cxx ${sigc_LIBS} ${LIBRT} )
 target_include_directories( dbus-cxx-glib INTERFACE
     $<INSTALL_INTERFACE:include/dbus-cxx-glib-${DBUS_CXX_INCLUDE_VERSION}>
 )
