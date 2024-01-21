@@ -57,8 +57,10 @@ option( ENABLE_UV_SUPPORT "Build libdbuscxx-uv for integration with libuv applic
 
 # With glibc >= 2.35, it seems that we no longer need to link with -lrt:
 # https://sourceware.org/pipermail/libc-alpha/2021-August/129718.html
-# Quick n dirty for now, need to find automatically
-option( LINK_LIBRT "Link with -lrt.  Not needed for glibc >= 2.35." OFF )
+# Note: this is also the case with Debian 11(Bullseye) which uses glibc
+# version 2.31.  So maybe we haven't needed to link with -lrt for a while?
+# Keep this option until at least June 2026(EOL support for Debian 11)
+option( LINK_LIBRT "Link with -lrt.  Not needed for glibc >= 2.31 or so" OFF )
 
 if( ${LINK_LIBRT} )
     set(LIBRT "-lrt")
