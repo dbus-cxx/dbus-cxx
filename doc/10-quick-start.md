@@ -345,7 +345,7 @@ We will now create a proxy object for the object on the server.
 std::shared_ptr<DBus::ObjectProxy> object = connection->create_object_proxy("dbuscxx.quickstart_0.server", "/dbuscxx/quickstart_0");
 ```
 Note that we must use the name the server requested as well as the object
-path the server used when it created it's object when we create the
+path the server used when it created its object when we create the
 proxy object.
 
 Now we create a proxy `add` method for the server object's `add` method.
