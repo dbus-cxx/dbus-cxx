@@ -40,7 +40,7 @@ Example:
 std::shared_ptr<DBus::Dispatcher> dispatch = DBus::StandaloneDispatcher::create();
 std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
 
-/* Create an object whos methods will be called from the DispatcherThread created by the StandaloneDispatcher */
+/* Create an object whose methods will be called from the DispatcherThread created by the StandaloneDispatcher */
 std::shared_ptr<DBus::Object> obj =
                 conn->create_object( "/example", DBus::ThreadForCalling::DispatcherThread );
 
@@ -65,7 +65,7 @@ Example with dispatching in main thread:
 std::shared_ptr<DBus::Dispatcher> disp = DBus::Qt::QtDispatcher::create();
 std::shared_ptr<DBus::Connection> conn = disp->create_connection( DBus::BusType::SESSION );
 
-/* Create an object whos methods will be called from the main thread(which also is the dispatcher thread) */
+/* Create an object whose methods will be called from the main thread(which also is the dispatcher thread) */
 std::shared_ptr<DBus::Object> obj =
                 conn->create_object( "/example", DBus::ThreadForCalling::DispatcherThread );
 
@@ -86,7 +86,7 @@ std::shared_ptr<DBus::Qt::QtThreadDispatcher> thrDisp = DBus::Qt::QtThreadDispat
 conn->add_thread_dispatcher( thrDisp );
 
 
-/* Create an object whos methods will be called from the main thread(which is not the dispatcher thread) */
+/* Create an object whose methods will be called from the main thread(which is not the dispatcher thread) */
 std::shared_ptr<DBus::Object> obj =
                 conn->create_object( "/example", DBus::ThreadForCalling::CurrentThread );
 

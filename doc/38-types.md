@@ -23,6 +23,6 @@ DBus-cxx supports all DBus types.  The following table summarizes the type in C+
 |DICT\_ENTRY(Note 2)|`std::map`|
 |UNIX\_FD(`h`)  |[DBus::FileDescriptor](@ref DBus.FileDescriptor)|
 
-**Note 1:** Structs use `()` on the bus as their signature - meaining `(i)` is a struct containing one INT32, `(dib)` is a struct containing a DOUBLE, INT32, BOOLEAN.
+**Note 1:** Structs use `()` on the bus as their signature - meaning `(i)` is a struct containing one INT32, `(dib)` is a struct containing a DOUBLE, INT32, BOOLEAN.
 
 **Note 2:** In DBus, dicts are shown as arrays with curly brackets.  So `a{is}` is a map of integers to strings: `std::map<int32_t,std::string>`
