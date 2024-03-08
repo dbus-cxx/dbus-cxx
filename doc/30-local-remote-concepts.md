@@ -111,5 +111,5 @@ looks:
 
 ![remote-objects-img]
 
-[local-objects-img]: local.png
-[remote-objects-img]: remote.png
+[local-objects-img]: images/local.png
+[remote-objects-img]: images/remote.png
