@@ -2,10 +2,10 @@ include( ../../examples-common.cmake )
 
 if( ${dbus_FOUND} )
 	add_executable( signal-emitter-c signal_emitter_c.cpp  )
-	target_link_libraries( signal-emitter-c ${EXAMPLES_LINK} ${dbus_LDFLAGS} )
+	target_link_libraries( signal-emitter-c ${EXAMPLES_LINK} PkgConfig::dbus )
 
 	add_executable( signal-receiver-c signal_receiver_c.cpp  )
-	target_link_libraries( signal-receiver-c ${EXAMPLES_LINK} ${dbus_LDFLAGS} )
+	target_link_libraries( signal-receiver-c ${EXAMPLES_LINK} PkgConfig::dbus )
 endif( ${dbus_FOUND} )
 
 add_executable( signal-emitter-raw signal_emitter_raw.cpp  )

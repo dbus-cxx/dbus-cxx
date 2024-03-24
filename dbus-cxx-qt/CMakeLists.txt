@@ -28,8 +28,9 @@ set_target_properties( dbus-cxx-qt PROPERTIES
     VERSION 2.0.0 SOVERSION 2
     PUBLIC_HEADER "${dbus-cxx-qt-headers}"
 )
-target_link_libraries( dbus-cxx-qt PUBLIC Qt5::Core dbus-cxx ${sigc_LIBS} ${LIBRT} )
+target_link_libraries( dbus-cxx-qt PUBLIC Qt5::Core dbus-cxx PkgConfig::sigc ${LIBRT} )
 target_include_directories( dbus-cxx-qt INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include/dbus-cxx-qt-${DBUS_CXX_INCLUDE_VERSION}>
 )
 

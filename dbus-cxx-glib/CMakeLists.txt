@@ -12,7 +12,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this software. If not see <http://www.gnu.org/licenses/>.
 
-pkg_check_modules( glib REQUIRED glib-2.0 )
+pkg_check_modules( glib REQUIRED IMPORTED_TARGET glib-2.0 )
 
 set( dbus-cxx-glib-headers dbus-cxx-glib.h glibdispatcher.h )
 set( dbus-cxx-glib-sources glibdispatcher.cpp )
@@ -22,12 +22,12 @@ set_target_properties( dbus-cxx-glib PROPERTIES
     VERSION 2.0.0 SOVERSION 2
     PUBLIC_HEADER "${dbus-cxx-glib-headers}"
 )
-target_link_libraries( dbus-cxx-glib PUBLIC dbus-cxx ${sigc_LIBS} ${LIBRT} )
+target_link_libraries( dbus-cxx-glib PUBLIC dbus-cxx PkgConfig::sigc ${LIBRT} )
 target_include_directories( dbus-cxx-glib INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include/dbus-cxx-glib-${DBUS_CXX_INCLUDE_VERSION}>
 )
-target_include_directories( dbus-cxx-glib PUBLIC ${glib_INCLUDE_DIRS} )
-target_link_libraries( dbus-cxx-glib ${glib_LIBS} )
+target_link_libraries( dbus-cxx-glib PUBLIC PkgConfig::glib )
 
 set_property( TARGET dbus-cxx-glib PROPERTY CXX_STANDARD 17 )
 

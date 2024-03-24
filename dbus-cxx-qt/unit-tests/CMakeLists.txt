@@ -18,16 +18,17 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt5 COMPONENTS Core REQUIRED)
 
-set( TEST_INCLUDES ${sigc_INCLUDE_DIRS} ${cppgenerate_INCLUDE_DIRS} )
-set( TEST_LINK dbus-cxx dbus-cxx-qt Qt5::Core ${sigc_LDFLAGS} ${popt_LDFLAGS} ${expat_LDFLAGS} ${LIBRT} )
+pkg_check_modules( expat REQUIRED IMPORTED_TARGET expat )
+pkg_check_modules( popt REQUIRED IMPORTED_TARGET popt )
+
+set( TEST_INCLUDES ${cppgenerate_INCLUDE_DIRS} )
+set( TEST_LINK dbus-cxx dbus-cxx-qt Qt5::Core PkgConfig::sigc PkgConfig::popt PkgConfig::expat ${LIBRT} )
 
 link_directories( ${CMAKE_BINARY_DIR} )
 
 include_directories( ${CMAKE_SOURCE_DIR}/dbus-cxx
     ${CMAKE_BINARY_DIR}/dbus-cxx
-    ${CMAKE_SOURCE_DIR}/dbus-cxx-qt
-    ${dbus_INCLUDE_DIRS}
-    ${sigc_INCLUDE_DIRS} )
+    ${CMAKE_SOURCE_DIR}/dbus-cxx-qt )
 
 add_executable( test-qt-dispatcher test-qt-dispatcher.cpp calleeclass.cpp )
 target_link_libraries( test-qt-dispatcher ${TEST_LINK} )

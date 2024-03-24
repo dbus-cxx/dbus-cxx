@@ -1,4 +1,4 @@
-# 
+#
 # This file is part of libcppgenerate
 #
 # Copyright 2018 Robert Middleton robert.middleton@rm5248.com
@@ -29,7 +29,7 @@ option( ENABLE_EXAMPLES "Enable the examples" OFF )
 #
 # Sources
 #
-set( CPPGENERATE_SOURCES 
+set( CPPGENERATE_SOURCES
   cppgenerate/class.cpp
   cppgenerate/method.cpp
   cppgenerate/variable.cpp
@@ -62,9 +62,11 @@ add_library( objlib OBJECT ${CPPGENERATE_SOURCES} ${CPPGENERATE_HEADERS} )
 set_property( TARGET objlib PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 add_library( cppgenerate SHARED $<TARGET_OBJECTS:objlib>)
+target_include_directories( cppgenerate INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>)
 set_target_properties( cppgenerate PROPERTIES VERSION ${CPPGENERATE_VERSION} SOVERSION ${CPPGENERATE_MAJOR} )
 
 add_library( cppgenerate_static STATIC $<TARGET_OBJECTS:objlib>)
+target_include_directories( cppgenerate_static INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>)
 set_target_properties( cppgenerate_static PROPERTIES OUTPUT_NAME cppgenerate )
 
 #
@@ -115,7 +117,7 @@ IF( UNIX )
         "${CMAKE_CURRENT_SOURCE_DIR}/cppgenerate-static.pc.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/cppgenerate-static.pc"
     )
-    INSTALL( FILES 
+    INSTALL( FILES
              "${CMAKE_BINARY_DIR}/cppgenerate.pc"
              "${CMAKE_BINARY_DIR}/cppgenerate-static.pc"
              DESTINATION lib/pkgconfig)
