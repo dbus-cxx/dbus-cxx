@@ -1,16 +1,16 @@
-#   This file is part of the dbus-cxx library.                            
-#                                                                         
-#   The dbus-cxx library is free software; you can redistribute it and/or 
-#   modify it under the terms of the GNU General Public License           
-#   version 3 as published by the Free Software Foundation.               
-#                                                                         
-#   The dbus-cxx library is distributed in the hope that it will be       
-#   useful, but WITHOUT ANY WARRANTY; without even the implied warranty   
-#   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU   
-#   General Public License for more details.                              
-#                                                                         
-#   You should have received a copy of the GNU General Public License     
-#   along with this software. If not see <http://www.gnu.org/licenses/>.  
+#   This file is part of the dbus-cxx library.
+#
+#   The dbus-cxx library is free software; you can redistribute it and/or
+#   modify it under the terms of the GNU General Public License
+#   version 3 as published by the Free Software Foundation.
+#
+#   The dbus-cxx library is distributed in the hope that it will be
+#   useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+#   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this software. If not see <http://www.gnu.org/licenses/>.
 cmake_minimum_required( VERSION 3.12 )
 project( dbus-cxx VERSION 2.5.1 )
 
@@ -18,7 +18,6 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake-modules")
 
 include( CheckIncludeFiles )
 include( GNUInstallDirs )
-include( FindPkgConfig )
 include( CheckTypeSize )
 include( CTest )
 include( CheckCXXSymbolExists )
@@ -26,6 +25,8 @@ include( CheckCXXCompilerFlag )
 IF( CMAKE_BUILD_TYPE MATCHES Debug )
 include( CodeCoverage )
 ENDIF( CMAKE_BUILD_TYPE MATCHES Debug )
+
+find_package(PkgConfig REQUIRED)
 
 # The INCLUDE_VERSION variable is used for includes
 # it is related to, but not the same as, the normal project version
@@ -35,7 +36,7 @@ set( DBUS_CXX_INCLUDE_VERSION 2.0 )
 set( PKG_VERSION ${dbus-cxx_VERSION} )
 
 # Our required dependencies: libsigc++ 3.0
-pkg_check_modules( sigc REQUIRED sigc++-3.0 )
+pkg_check_modules( sigc REQUIRED IMPORTED_TARGET sigc++-3.0 )
 
 #
 # Check our options
@@ -117,7 +118,7 @@ if( ${UNUSED_RESULT} )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-result" )
 endif( ${UNUSED_RESULT} )
 
-# 
+#
 # All sources
 #
 set( DBUS_CXX_SOURCES
@@ -223,12 +224,10 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/multiplereturn.h
 )
 
-set( DBUS_CXX_INCLUDE_DIRECTORIES 
-    ${PROJECT_SOURCE_DIR} 
+set( DBUS_CXX_INCLUDE_DIRECTORIES
+    ${PROJECT_SOURCE_DIR}
     ${PROJECT_BINARY_DIR} )
-include_directories( ${DBUS_CXX_INCLUDE_DIRECTORIES} 
-    ${dbus_INCLUDE_DIRS} 
-    ${sigc_INCLUDE_DIRS} )
+include_directories( ${DBUS_CXX_INCLUDE_DIRECTORIES} )
 
 
 #
@@ -236,7 +235,7 @@ include_directories( ${DBUS_CXX_INCLUDE_DIRECTORIES}
 #
 set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
-set( DBUS_CXX_LIBRARIES ${sigc_LIBRARIES} Threads::Threads )
+set( DBUS_CXX_LIBRARIES PkgConfig::sigc Threads::Threads )
 
 find_library( LIBRT rt )
 if( LIBRT )
@@ -247,11 +246,12 @@ endif( LIBRT )
 #
 # Target for the library
 #
-link_directories( ${sigc_LIBRARY_DIRS} )
 add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} ${DBUS_CXX_HEADERS} )
 set_target_properties( dbus-cxx PROPERTIES VERSION 2.0.0 SOVERSION 2 )
 target_link_libraries( dbus-cxx ${DBUS_CXX_LIBRARIES} )
 target_include_directories( dbus-cxx INTERFACE
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
     $<INSTALL_INTERFACE:include/dbus-cxx-${DBUS_CXX_INCLUDE_VERSION}>
 )
 
@@ -376,7 +376,7 @@ endif( ENABLE_EXAMPLES )
 # Include the directory for the tools
 #
 if( ENABLE_TOOLS )
-    pkg_check_modules( expat REQUIRED expat )
+    pkg_check_modules( expat REQUIRED IMPORTED_TARGET expat )
     add_subdirectory( tools )
 endif( ENABLE_TOOLS )
 
@@ -384,7 +384,7 @@ endif( ENABLE_TOOLS )
 # If we want to build the site, we must have doxygen
 #
 if( BUILD_SITE )
-    find_package( Doxygen 
+    find_package( Doxygen
                   REQUIRED dot )
     file( COPY ${PROJECT_SOURCE_DIR}/doc/
           DESTINATION ${PROJECT_BINARY_DIR}/doc/ )
@@ -408,7 +408,7 @@ endif( BUILD_SITE )
 # Check if tests are enabled
 #
 if( BUILD_TESTING )
-    pkg_check_modules( expat REQUIRED expat )
+    pkg_check_modules( expat REQUIRED IMPORTED_TARGET expat )
     add_subdirectory( unit-tests )
     if( ENABLE_TOOLS )
         add_subdirectory( unit-tests/tools-tests )

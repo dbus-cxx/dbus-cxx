@@ -1,13 +1,12 @@
+pkg_check_modules( popt REQUIRED IMPORTED_TARGET popt )
 
-set( TEST_INCLUDES ${sigc_INCLUDE_DIRS} ${cppgenerate_INCLUDE_DIRS} )
-set( TEST_LINK dbus-cxx ${sigc_LDFLAGS} ${popt_LDFLAGS} ${expat_LDFLAGS} ${LIBRT} )
+set( TEST_INCLUDES ${cppgenerate_INCLUDE_DIRS} )
+set( TEST_LINK dbus-cxx PkgConfig::sigc PkgConfig::popt PkgConfig::expat ${LIBRT} )
 
 link_directories( ${CMAKE_BINARY_DIR} )
 
 include_directories( ${CMAKE_SOURCE_DIR}/dbus-cxx
-    ${CMAKE_BINARY_DIR}/dbus-cxx 
-    ${dbus_INCLUDE_DIRS} 
-    ${sigc_INCLUDE_DIRS} )
+    ${CMAKE_BINARY_DIR}/dbus-cxx )
 
 if( ENABLE_ROBUSTNESS_TESTS )
     add_subdirectory( robustness-tests )
@@ -193,7 +192,7 @@ add_test( NAME remove-handler COMMAND dbus-wrapper.sh signal-tests remove_handle
 #
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper-introspection-tests.sh ${CMAKE_CURRENT_BINARY_DIR}/dbus-wrapper-introspection-tests.sh COPYONLY)
 add_executable( introspection-tests introspection-test.cpp )
-target_link_libraries( introspection-tests ${TEST_LINK} ${expat_LDFLAGS} )
+target_link_libraries( introspection-tests ${TEST_LINK} PkgConfig::expat )
 target_include_directories( introspection-tests PUBLIC ${CMAKE_SOURCE_DIR} )
 target_include_directories( introspection-tests PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
 set_property( TARGET introspection-tests PROPERTY CXX_STANDARD 17 )

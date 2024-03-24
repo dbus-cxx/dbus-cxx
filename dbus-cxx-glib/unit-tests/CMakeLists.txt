@@ -12,16 +12,17 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this software. If not see <http://www.gnu.org/licenses/>.
 
-set( TEST_INCLUDES ${sigc_INCLUDE_DIRS} ${cppgenerate_INCLUDE_DIRS} )
-set( TEST_LINK dbus-cxx dbus-cxx-glib ${glib_LDFLAGS} ${sigc_LDFLAGS} ${popt_LDFLAGS} ${expat_LDFLAGS} ${LIBRT} )
+pkg_check_modules( expat REQUIRED IMPORTED_TARGET expat )
+pkg_check_modules( popt REQUIRED IMPORTED_TARGET popt )
+
+set( TEST_INCLUDES ${cppgenerate_INCLUDE_DIRS} )
+set( TEST_LINK dbus-cxx dbus-cxx-glib PkgConfig::glib PkgConfig::sigc PkgConfig::popt PkgConfig::expat ${LIBRT} )
 
 link_directories( ${CMAKE_BINARY_DIR} )
 
 include_directories( ${CMAKE_SOURCE_DIR}/dbus-cxx
     ${CMAKE_BINARY_DIR}/dbus-cxx
-    ${CMAKE_SOURCE_DIR}/dbus-cxx-glib
-    ${dbus_INCLUDE_DIRS}
-    ${sigc_INCLUDE_DIRS} )
+    ${CMAKE_SOURCE_DIR}/dbus-cxx-glib )
 
 add_executable( test-glib-dispatcher test-glib-dispatcher.cpp calleeclass.cpp )
 target_link_libraries( test-glib-dispatcher ${TEST_LINK} )

@@ -22,8 +22,9 @@ set_target_properties( dbus-cxx-uv PROPERTIES
     VERSION 2.0.0 SOVERSION 2
     PUBLIC_HEADER "${dbus-cxx-uv-headers}"
 )
-target_link_libraries( dbus-cxx-uv PUBLIC dbus-cxx ${sigc_LIBS} ${LIBRT} )
+target_link_libraries( dbus-cxx-uv PUBLIC dbus-cxx PkgConfig::sigc ${LIBRT} )
 target_include_directories( dbus-cxx-uv INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include/dbus-cxx-uv-${DBUS_CXX_INCLUDE_VERSION}>
 )
 target_link_libraries( dbus-cxx-uv PUBLIC ${LIBUV_LIBRARIES} )

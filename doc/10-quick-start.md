@@ -33,10 +33,9 @@ this, simply add the following lines to your CMakeLists.txt:
 
 ```
 include( FindPkgConfig )
-pkg_check_modules( dbus-cxx REQUIRED dbus-cxx-2.0 )
+pkg_check_modules( dbus-cxx REQUIRED IMPORTED_TARGET dbus-cxx-2.0 )
 
-target_include_directories( exe ${dbus-cxx_INCLUDE_DIRS} )
-target_link_libraries( exe ${dbus-cxx_LDFLAGS} )
+target_link_libraries( exe PkgConfig::dbus-cxx )
 ```
 
 If you want to use the `find_package` directive of CMake, your CMakeLists.txt file
@@ -44,18 +43,17 @@ should look something like the following:
 
 ```
 include( FindPkgConfig )
-pkg_check_modules( sigc REQUIRED sigc++-3.0 )
+pkg_check_modules( sigc REQUIRED IMPORTED_TARGET sigc++-3.0 )
 find_package( dbus-cxx REQUIRED )
 find_package( Threads )
 
-target_link_libraries( exe dbus-cxx::dbus-cxx Threads::Threads ${sigc_LIBRARIES} )
-target_include_directories( exe PRIVATE ${sigc_INCLUDE_DIRS} )
+target_link_libraries( exe dbus-cxx::dbus-cxx Threads::Threads PkgConfig::sigc )
 ```
 
 Note that you need to use both pkg-config and the `find_package` directive,
 because libsigc++ does not provide a CMake package at this point.
 
-## qmake + dbus-cxx 
+## qmake + dbus-cxx
 
 Because of Qt's signal/slot mechanism, dbus-cxx will not work directly with Qt.  Assuming that you are using QMake,
 you will need to add the following lines to your .pro file:
@@ -66,11 +64,11 @@ unix:PKGCONFIG += dbus-cxx-qt-2.0
 ```
 Note that this will also allow you to use the Qt integration with dbus-cxx.
 
-At any point in your Qt program, you need to use Qt signals or slots, use the macros Q_SIGNALS or Q_SLOTS to define 
+At any point in your Qt program, you need to use Qt signals or slots, use the macros Q_SIGNALS or Q_SLOTS to define
 your signals/slots.
 
 ## Autotools + dbus-cxx
- 
+
 If you are using autotools, modify configure.ac (or configure.in ) with the following lines:
 ```
 PKG_CHECK_MODULES(PROJECT_DBUSCXX,[dbus-cxx-2.0 >= 2.0.0])
@@ -288,7 +286,7 @@ our `main()` function and the calls will be handled in the dispatcher's
 threads.
 ```{.cpp}
   std::this_thread::sleep_for(std::chrono::seconds(10));
-  
+
   return 0;
 }
 ```
@@ -377,10 +375,10 @@ Finally, we can print out the results.
 ------------------------
 The following pages provide the quick-start for dbus-cxx:
 
-1. @subpage quick_start_client_0.md 
-2. @subpage quick_start_cmake.md 
-3. @subpage quick_start_example_0.md 
-4. @subpage quick_start_initial_concepts.md 
-5. quick_start.md 
-6. quick_start_pkgconfig.md 
+1. @subpage quick_start_client_0.md
+2. @subpage quick_start_cmake.md
+3. @subpage quick_start_example_0.md
+4. @subpage quick_start_initial_concepts.md
+5. quick_start.md
+6. quick_start_pkgconfig.md
 7. quick_start_server_0.md
