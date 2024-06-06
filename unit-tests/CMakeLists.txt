@@ -168,6 +168,7 @@ add_test( NAME nonexistant-method COMMAND dbus-wrapper-data-tests.sh nonexistant
 add_test( NAME multiplereturn COMMAND dbus-wrapper-data-tests.sh send_multiplereturn )
 add_test( NAME multiplereturn2 COMMAND dbus-wrapper-data-tests.sh send_multiplereturn2 )
 add_test( NAME send-complex COMMAND dbus-wrapper-data-tests.sh send_complex )
+add_test( NAME error-return COMMAND dbus-wrapper-data-tests.sh error_return )
 
 #
 # Signal tests - make sure we can tx and rx singals correctly

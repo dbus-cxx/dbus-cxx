@@ -39,6 +39,7 @@ std::shared_ptr<DBus::MethodProxy<void( DBus::Variant )>> variant_proxy;
 std::shared_ptr<DBus::MethodProxy<void()>> nonexistant_proxy;
 std::shared_ptr<DBus::MethodProxy<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>> multiplereturn_method_proxy;
 std::shared_ptr<DBus::MethodProxy<DBus::MultipleReturn<int32_t>(int32_t)>> multiplereturn_method_proxy2;
+std::shared_ptr<DBus::MethodProxy<std::string()>> error_method_proxy;
 
 std::shared_ptr<DBus::Object> object;
 std::shared_ptr<DBus::Method<int( int, int )>> int_method;
@@ -50,6 +51,7 @@ std::shared_ptr<DBus::Method<bool( std::tuple<int, double, std::string> )>> tupl
 std::shared_ptr<DBus::Method<void( DBus::Variant )>> variant_method;
 std::shared_ptr<DBus::Method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>> multiplereturn_method;
 std::shared_ptr<DBus::Method<DBus::MultipleReturn<int32_t>(int32_t)>> multiplereturn_method2;
+std::shared_ptr<DBus::Method<std::string()>> error_method;
 
 bool tuple_method_symbol( std::tuple<int, double, std::string> tup ) {
     bool retval = true;
@@ -123,6 +125,10 @@ void variant_method_symbol( DBus::Variant v ) {
     std::cerr << "Got incoming variant: " << v << std::endl;
 }
 
+std::string error_method_symbol(){
+    throw std::runtime_error("error_message_here");
+}
+
 void client_setup() {
     proxy = conn->create_object_proxy( "dbuscxx.test", "/test" );
 
@@ -136,6 +142,7 @@ void client_setup() {
     nonexistant_proxy = proxy->create_method<void()>( "foo.what", "nonexistant" );
     multiplereturn_method_proxy = proxy->create_method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>( "foo.what", "multiplereturn" );
     multiplereturn_method_proxy2 = proxy->create_method<DBus::MultipleReturn<int32_t>(int32_t)>( "foo.what", "multiplereturn2" );
+    error_method_proxy = proxy->create_method<std::string()>( "foo.what", "error_method" );
 }
 
 void server_setup() {
@@ -153,6 +160,7 @@ void server_setup() {
     variant_method = object->create_method<void( DBus::Variant )>( "foo.what", "variant_method", sigc::ptr_fun( variant_method_symbol ) );
     multiplereturn_method = object->create_method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>( "foo.what", "multiplereturn", sigc::ptr_fun( multiplereturn_symbol ) );
     multiplereturn_method2 = object->create_method<DBus::MultipleReturn<int32_t>(int32_t)>( "foo.what", "multiplereturn2", sigc::ptr_fun( multiplereturn_symbol2 ) );
+    error_method = object->create_method<std::string()>( "foo.what", "error_method", sigc::ptr_fun( error_method_symbol ) );
 }
 
 bool data_send_integers() {
@@ -283,6 +291,19 @@ bool data_nonexistant_method() {
     return false;
 }
 
+bool data_error_return() {
+    try{
+        std::string str = ( *error_method_proxy )();
+    } catch( DBus::Error e ){
+        std::string what(e.what());
+        if( what == "error_message_here" ){
+            return true;
+        }
+    }
+
+    return false;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = data_##name();\
         } \
@@ -319,6 +340,7 @@ int main( int argc, char** argv ) {
         ADD_TEST( nonexistant_method );
         ADD_TEST(send_multiplereturn);
         ADD_TEST(send_multiplereturn2);
+        ADD_TEST(error_return);
     } else {
         server_setup();
         ret = true;

@@ -121,15 +121,25 @@ public:
 
             sendMessage( connection, retmsg );
         } catch( ErrorInvalidTypecast& e ) {
-            std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUSCXX_ERROR_INVALID_SIGNATURE, e.what() );
+            std::shared_ptr<ErrorMessage> errmsg = message->create_error_reply();
 
             if( !errmsg ) { return HandlerResult::Not_Handled; }
+
+            errmsg->set_name(DBUSCXX_ERROR_INVALID_SIGNATURE);
+            if( e.what() ){
+                errmsg << e.what();
+            }
 
             sendMessage( connection, errmsg );
         } catch( const std::exception& e ) {
-            std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUSCXX_ERROR_FAILED, e.what() );
+            std::shared_ptr<ErrorMessage> errmsg = message->create_error_reply();
 
             if( !errmsg ) { return HandlerResult::Not_Handled; }
+
+            errmsg->set_name(DBUSCXX_ERROR_FAILED);
+            if( e.what() ){
+                errmsg << e.what();
+            }
 
             sendMessage( connection, errmsg );
         } catch( ... ) {
@@ -138,9 +148,12 @@ public:
                 << DBUS_CXX_PACKAGE_MINOR_VERSION << "."
                 << DBUS_CXX_PACKAGE_MICRO_VERSION
                 << ": unknown error(uncaught exception)";
-            std::shared_ptr<ErrorMessage> errmsg = ErrorMessage::create( message, DBUSCXX_ERROR_FAILED, stream.str() );
+            std::shared_ptr<ErrorMessage> errmsg = message->create_error_reply();
 
             if( !errmsg ) { return HandlerResult::Not_Handled; }
+
+            errmsg->set_name(DBUSCXX_ERROR_FAILED);
+            errmsg << stream.str();
 
             sendMessage( connection, errmsg );
         }
