@@ -304,18 +304,18 @@ bool Connection::add_match( const std::string& rule ) {
         throw ErrorDisconnected();
     }
 
-    SIMPLELOGGER_DEBUG( LOGGER_NAME, "Adding the following match: " << rule );
-
     if( m_priv->m_daemonProxy ) {
         std::map<std::string,int>::iterator it =
                 m_priv->m_listeningSignals.find( rule );
         if( it == m_priv->m_listeningSignals.end() ){
+            SIMPLELOGGER_DEBUG( LOGGER_NAME, "Adding the following match: " << rule );
             m_priv->m_listeningSignals[ rule ] = 1;
+            m_priv->m_daemonProxy->AddMatch( rule );
         }else{
             int count = m_priv->m_listeningSignals[ rule ];
             m_priv->m_listeningSignals[ rule ] = count + 1;
+            SIMPLELOGGER_DEBUG( LOGGER_NAME, "Adding match rule: " << rule << " count: " << count + 1 );
         }
-        m_priv->m_daemonProxy->AddMatch( rule );
     }
 
     return true;
@@ -334,6 +334,8 @@ bool Connection::remove_match( const std::string& rule ) {
             int count = m_priv->m_listeningSignals[ rule ];
             count--;
             m_priv->m_listeningSignals[ rule ] = count;
+
+            SIMPLELOGGER_DEBUG( LOGGER_NAME, "Match rule: " << rule << " count: " << count );
 
             if( count == 0 ){
                 m_priv->m_daemonProxy->RemoveMatch( rule );
