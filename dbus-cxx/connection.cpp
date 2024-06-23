@@ -902,6 +902,21 @@ bool Connection::unregister_object( const std::string& path ) {
     return false;
 }
 
+bool Connection::remove_object_proxy( const std::shared_ptr<ObjectProxy> proxy ){
+    std::unique_lock lock( m_priv->m_objectProxiesLock );
+
+    for( auto it = m_priv->m_objectProxies.begin();
+         it != m_priv->m_objectProxies.end();
+         it++ ){
+        if( (*it).handler == proxy ){
+            m_priv->m_objectProxies.erase(it);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 std::shared_ptr<SignalProxyBase> Connection::add_free_signal_proxy( std::shared_ptr<SignalProxyBase> signal, ThreadForCalling calling ) {
     if( !signal ) { return std::shared_ptr<SignalProxyBase>(); }
 

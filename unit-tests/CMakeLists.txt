@@ -130,6 +130,7 @@ add_test( NAME connection-proxy-get-iface COMMAND dbus-wrapper.sh test-connectio
 add_test( NAME connection-proxy-get-iface-name COMMAND dbus-wrapper.sh test-connection get_signal_proxy_by_iface_and_name)
 add_test( NAME connection-proxy-create_signal COMMAND dbus-wrapper.sh test-connection create_void_signal)
 add_test( NAME connection-proxy-create_int_signal COMMAND dbus-wrapper.sh test-connection create_int_signal)
+add_test( NAME connection-proxy-remove_object_proxy COMMAND dbus-wrapper.sh test-connection remove_object_proxy)
 
 #
 # Object Tests
