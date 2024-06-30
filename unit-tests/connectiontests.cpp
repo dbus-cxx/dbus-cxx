@@ -116,11 +116,9 @@ bool connection_remove_object_proxy(){
 
     std::weak_ptr<DBus::ObjectProxy> object_weak;
     {
-        // Check to make sure that once we unregister an object, it is destroyed
+        // Check to make sure that once delete the object proxy, dbus-cxx does not still have a refernce to it
         std::shared_ptr<DBus::ObjectProxy> object = conn->create_object_proxy( "/dbuscxx/example/Calculator", DBus::ThreadForCalling::DispatcherThread );
         object_weak = object;
-
-        conn->remove_object_proxy(object);
     }
 
     if( object_weak.lock() ){
