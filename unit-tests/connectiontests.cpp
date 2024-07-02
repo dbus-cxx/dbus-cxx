@@ -111,6 +111,24 @@ bool connection_test_method_2arg() {
     return true;
 }
 
+bool connection_remove_object_proxy(){
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
+
+    std::weak_ptr<DBus::ObjectProxy> object_weak;
+    {
+        // Check to make sure that once delete the object proxy, dbus-cxx does not still have a refernce to it
+        std::shared_ptr<DBus::ObjectProxy> object = conn->create_object_proxy( "/dbuscxx/example/Calculator", DBus::ThreadForCalling::DispatcherThread );
+        object_weak = object;
+    }
+
+    if( object_weak.lock() ){
+        // removing the object proxy should remove the handling of the object in dbus-cxx,
+        // so with no more hard references it should be destroyed at this point.
+        return false;
+    }
+    return true;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = connection_##name();\
         } \
@@ -133,6 +151,7 @@ int main( int argc, char** argv ) {
     ADD_TEST( get_signal_proxy_by_iface_and_name );
     ADD_TEST( create_void_signal );
     ADD_TEST( create_int_signal );
+    ADD_TEST( remove_object_proxy );
 
     return !ret;
 }

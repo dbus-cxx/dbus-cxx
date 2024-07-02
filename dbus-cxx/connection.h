@@ -302,6 +302,12 @@ public:
     bool register_object_proxy( std::shared_ptr<ObjectProxy> obj,
                                 ThreadForCalling calling = ThreadForCalling::DispatcherThread );
 
+    /**
+     * Unregister an object that has been added with register_object.
+     *
+     * @param path
+     * @return
+     */
     bool unregister_object( const std::string& path );
 
     /**

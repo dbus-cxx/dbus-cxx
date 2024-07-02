@@ -80,7 +80,7 @@ struct PathHandlingEntry {
 };
 
 struct ObjectProxyThreadInfo {
-    std::shared_ptr<ObjectProxy> handler;
+    std::weak_ptr<ObjectProxy> handler;
     std::thread::id handlingThread;
 };
 
@@ -722,10 +722,40 @@ void Connection::process_signal_message( std::shared_ptr<const SignalMessage> ms
 
     std::vector<std::shared_ptr<SignalProxyBase>> proxies;
     {
+        struct ObjectProxyThreadInfoShared {
+            ObjectProxyThreadInfoShared(std::shared_ptr<ObjectProxy> shared, std::thread::id id){
+                handler = shared;
+                handlingThread = id;
+            }
+
+            std::shared_ptr<ObjectProxy> handler;
+            std::thread::id handlingThread;
+        };
+
         // Tell all of our normal ObjectProxy classes to handle it as well
         std::unique_lock lock( m_priv->m_objectProxiesLock );
+        std::vector<ObjectProxyThreadInfoShared> proxies_shared;
 
-        for( ObjectProxyThreadInfo& thrInfo : m_priv->m_objectProxies ){
+        // Remove any ObjectProxies that have been deleted, adding anything that still exists
+        // to our new vector to iterate over
+        m_priv->m_objectProxies.erase(
+                    std::remove_if(m_priv->m_objectProxies.begin(),
+                                   m_priv->m_objectProxies.end(),
+                                   [&proxies_shared](const ObjectProxyThreadInfo& thr){
+            std::shared_ptr<ObjectProxy> proxy = thr.handler.lock();
+            if(!proxy){
+                return true;
+            }
+
+            proxies_shared.emplace_back(proxy, thr.handlingThread);
+
+            return false;
+
+        }
+                                      ),
+                    m_priv->m_objectProxies.end());
+
+        for( ObjectProxyThreadInfoShared& thrInfo : proxies_shared ){
             if( thrInfo.handlingThread != m_priv->m_dispatchingThread ){
                 continue;
             }
@@ -1102,7 +1132,8 @@ bool Connection::change_object_proxy_calling_thread( std::shared_ptr<ObjectProxy
     std::unique_lock lock( m_priv->m_objectProxiesLock );
 
     for( ObjectProxyThreadInfo& thrInfo : m_priv->m_objectProxies ){
-        if( thrInfo.handler == object ){
+        std::shared_ptr<ObjectProxy> shared_obj = thrInfo.handler.lock();
+        if( shared_obj && shared_obj == object ){
             if( calling == ThreadForCalling::CurrentThread ){
                 thrInfo.handlingThread = std::this_thread::get_id();
             }else{
