@@ -339,6 +339,7 @@ bool Connection::remove_match( const std::string& rule ) {
 
             if( count == 0 ){
                 m_priv->m_daemonProxy->RemoveMatch( rule );
+                m_priv->m_listeningSignals.erase(it);
             }
         }
     }
