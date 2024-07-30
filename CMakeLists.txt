@@ -55,6 +55,7 @@ option( ENABLE_ROBUSTNESS_TESTS "Enable extended robustness tests.  These can be
 endif( BUILD_TESTING )
 option( ENABLE_QT_SUPPORT "Build libdbuscxx-qt for integration with Qt applications" OFF )
 option( ENABLE_UV_SUPPORT "Build libdbuscxx-uv for integration with libuv applications" OFF )
+option( UV_STATIC "Link statically with libuv when using it" OFF )
 
 # With glibc >= 2.35, it seems that we no longer need to link with -lrt:
 # https://sourceware.org/pipermail/libc-alpha/2021-August/129718.html
@@ -463,4 +464,4 @@ endif( BUILD_TESTING )
 message(STATUS "Library Support:" )
 message(STATUS "  Qt .............................. : ${ENABLE_QT_SUPPORT}")
 message(STATUS "  GLib ............................ : ${ENABLE_GLIB_SUPPORT}")
-message(STATUS "  libuv ........................... : ${ENABLE_UV_SUPPORT}")
+message(STATUS "  libuv ........................... : ${ENABLE_UV_SUPPORT} (static: ${UV_STATIC})")

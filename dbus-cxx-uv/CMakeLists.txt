@@ -12,7 +12,13 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this software. If not see <http://www.gnu.org/licenses/>.
 
-pkg_search_module( LIBUV REQUIRED libuv )
+if( UV_STATIC )
+  set( LIBUV_PKG_NAME libuv-static )
+else()
+  set( LIBUV_PKG_NAME libuv )
+endif()
+
+pkg_check_modules( libuv REQUIRED IMPORTED_TARGET ${LIBUV_PKG_NAME} )
 
 set( dbus-cxx-uv-headers dbus-cxx-uv.h uvdispatcher.h )
 set( dbus-cxx-uv-sources dbus-cxx-uv.cpp uvdispatcher.cpp )
@@ -27,7 +33,7 @@ target_include_directories( dbus-cxx-uv INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include/dbus-cxx-uv-${DBUS_CXX_INCLUDE_VERSION}>
 )
-target_link_libraries( dbus-cxx-uv PUBLIC ${LIBUV_LIBRARIES} )
+target_link_libraries( dbus-cxx-uv PUBLIC PkgConfig::libuv )
 
 set_property( TARGET dbus-cxx-uv PROPERTY CXX_STANDARD 17 )
 
@@ -51,7 +57,7 @@ SET(PKG_CONFIG_CFLAGS
     "-I\${includedir}"
 )
 SET(PKG_CONFIG_REQUIRES
-    "dbus-cxx-2.0, libuv"
+    "dbus-cxx-2.0, ${LIBUV_PKG_NAME}"
 )
 
 CONFIGURE_FILE(
