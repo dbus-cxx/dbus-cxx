@@ -38,7 +38,7 @@ target_link_libraries( dbus-cxx-uv PUBLIC PkgConfig::libuv )
 set_property( TARGET dbus-cxx-uv PROPERTY CXX_STANDARD 17 )
 
 if( BUILD_TESTING )
-    #add_subdirectory( unit-tests )
+    add_subdirectory( unit-tests )
 endif( BUILD_TESTING )
 
 #
