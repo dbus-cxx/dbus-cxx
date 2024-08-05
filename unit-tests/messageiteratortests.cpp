@@ -1304,7 +1304,7 @@ bool call_message_append_extract_iterator_complex_variants3() {
 
     DBus::Variant result;
     DBus::MessageIterator iter1( message );
-    result = (DBus::Variant) iter1;
+    result = DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter1);
 
     DBus::hexdump(result.marshaled(), &std::cerr);
 
@@ -1392,9 +1392,9 @@ bool call_message_append_extract_iterator_variant_array () {
 
     DBus::Variant result;
     DBus::MessageIterator iter1( message );
-    result = (DBus::Variant) iter1;
+    result = DBUSCXX_MESSAGEITERATOR_OPERATOR_VARIANT(iter1);
 
-    std::vector<uint8_t> macAddress = (std::vector<uint8_t>)result;
+    std::vector<uint8_t> macAddress = result.to_vector<uint8_t>();
 
     if(macAddress.size() != 6){
         return false;
