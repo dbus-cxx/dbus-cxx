@@ -1,6 +1,6 @@
 # Check to see if we want to use the bundled libcppgenerate or not
 if( TOOLS_BUNDLED_CPPGENERATE )
-    add_subdirectory(libcppgenerate)
+    add_subdirectory(libcppgenerate EXCLUDE_FROM_ALL)
 else()
     pkg_check_modules( cppgenerate REQUIRED IMPORTED_TARGET cppgenerate-static )
     add_library(cppgenerate_static ALIAS PkgConfig::cppgenerate)
