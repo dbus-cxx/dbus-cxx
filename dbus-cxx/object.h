@@ -15,6 +15,7 @@
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
+#include <thread>
 #include <string>
 #include "enums.h"
 #include <sigc++/sigc++.h>
@@ -319,6 +320,7 @@ public:
      * @param name The name of the child to test.
      */
     bool has_child( const std::string& name ) const;
+    bool has_child( std::shared_ptr<Object> child ) const;
 
     /** Returns a DBus XML description of this interface */
     std::string introspect( int space_depth = 0 ) const;
@@ -368,6 +370,9 @@ public:
      * @param msg The message to handle; must be a CallMessage or it will not be handled
      */
     HandlerResult handle_message( std::shared_ptr<const Message> msg );
+
+    void set_handling_thread( std::thread::id thr );
+    std::thread::id handling_thread();
 
 private:
     class priv_data;
