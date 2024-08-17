@@ -44,6 +44,7 @@ public:
     Path m_path;
     sigc::signal<void( std::shared_ptr<Connection> ) > m_signal_registered;
     sigc::signal<void( std::shared_ptr<Connection> ) > m_signal_unregistered;
+    std::thread::id m_calling_thread;
 };
 
 Object::Object( const std::string& path ):
@@ -277,6 +278,16 @@ bool Object::has_child( const std::string& name ) const {
     return m_priv->m_children.find( name ) != m_priv->m_children.end();
 }
 
+bool Object::has_child( std::shared_ptr<Object> child ) const {
+    for( auto const& pair : m_priv->m_children ){
+        if( pair.second == child ){
+            return true;
+        }
+    }
+
+    return false;
+}
+
 std::string Object::introspect( int space_depth ) const {
     std::ostringstream sout;
     std::string spaces;
@@ -444,6 +455,13 @@ HandlerResult Object::handle_message( std::shared_ptr<const Message> message ) {
     }
 }
 
+void Object::set_handling_thread( std::thread::id thr ){
+    m_priv->m_calling_thread = thr;
+}
+
+std::thread::id Object::handling_thread(){
+    return m_priv->m_calling_thread;
+}
 
 }
 
