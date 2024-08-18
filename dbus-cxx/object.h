@@ -89,7 +89,9 @@ public:
 
     virtual ~Object();
 
-    /** Returns the path this handler is associated with */
+    /**
+     *  Returns the path this handler is associated with.  Note that this is always an absolute path.
+     */
     const Path& path() const;
 
     /** Returns the connection this handler is registered with */
