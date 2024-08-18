@@ -110,6 +110,40 @@ bool Path::append_element( const std::string& element ) {
     return true;
 }
 
+bool Path::is_root() const {
+    if( this->empty() ) { return false; }
+
+    if( this->size() == 1 && this->operator[]( 0 ) == '/' ) { return true; }
+
+    return false;
+}
+
+Path Path::relative_path( const Path& first, const Path& second ){
+    std::vector<std::string> first_decomposed = first.decomposed();
+    std::vector<std::string> second_decomposed = second.decomposed();
+    size_t max_len = std::max( first_decomposed.size(), second_decomposed.size() );
+    Path ret;
+
+    if( first.is_root() ){
+        ret = second;
+        return ret;
+    }
+
+    for( size_t pos = 0; pos < max_len; pos++ ){
+        if( pos < first_decomposed.size() ){
+            if( first_decomposed[pos] != second_decomposed[pos] ){
+                break;
+            }
+        }
+
+        if( pos >= first_decomposed.size() ){
+            ret.append_element( second_decomposed[pos] );
+        }
+    }
+
+    return ret;
+}
+
 }
 
 

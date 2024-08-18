@@ -654,30 +654,29 @@ void Connection::process_single_message() {
     }
 }
 
-static std::shared_ptr<Object> find_best_match_for_path( Path path, std::vector<std::shared_ptr<Object>> roots ){
-    std::vector<std::string> decomposed = path.decomposed();
+struct PathMatcher{
+    Path path;
+    std::queue<std::string> decomposed;
+    std::shared_ptr<Object> match;
+    std::shared_ptr<Object> deepest;
+};
 
-    if( path == "/" && roots.size() == 1 ){
-        return roots[0];
+static void find_match_for_path( std::shared_ptr<Object> obj, PathMatcher* match ){
+    if( obj->path() == match->path ){
+        match->match = obj;
+        return;
     }
 
-    Path subPath = "/";
-    for( size_t x = 1; x < decomposed.size(); x++ ){
-        subPath += decomposed[x];
-        if( x != decomposed.size() - 1 ){
-            subPath += "/";
-        }
+    match->deepest = obj;
+    if( match->decomposed.empty() || match->match ){
+        return;
     }
 
-    for( std::shared_ptr<Object> obj : roots ){
-        if( obj->path().decomposed()[0] == decomposed[0] ){
-            std::vector<std::shared_ptr<Object>> subVec;
-            subVec.push_back( obj );
-            return find_best_match_for_path( subPath, subVec );
-        }
+    std::string current = match->decomposed.front();
+    if( obj->has_child( current ) ){
+        match->decomposed.pop();
+        find_match_for_path( obj->child( current ), match );
     }
-
-    return std::shared_ptr<Object>();
 }
 
 void Connection::process_call_message( std::shared_ptr<const CallMessage> callmsg ) {
@@ -687,7 +686,15 @@ void Connection::process_call_message( std::shared_ptr<const CallMessage> callms
 
     {
         std::unique_lock<std::mutex> lock( m_priv->m_rootObjectsLock );
-        to_call = find_best_match_for_path( path, m_priv->m_rootObjects );
+        struct PathMatcher matcher;
+        matcher.path = path;
+        for( std::string str : path.decomposed() ){
+            matcher.decomposed.push( str );
+        }
+        for( std::shared_ptr<Object> obj : m_priv->m_rootObjects ){
+            find_match_for_path( obj, &matcher );
+        }
+        to_call = matcher.match;
     }
 
     if( !to_call ){
@@ -891,17 +898,31 @@ RegistrationStatus Connection::register_object( std::shared_ptr<Object> object, 
 
     SIMPLELOGGER_DEBUG( LOGGER_NAME, "Connection::register_object at path " << object->path() );
 
-    std::unique_lock<std::mutex> lock( m_priv->m_rootObjectsLock );
+    {
+        std::unique_lock<std::mutex> lock( m_priv->m_rootObjectsLock );
 
-    std::shared_ptr<Object> parent = find_best_match_for_path( object->path(), m_priv->m_rootObjects );
+        struct PathMatcher matcher;
+        matcher.path = object->path();
+        for( std::string str : matcher.path.decomposed() ){
+            matcher.decomposed.push( str );
+        }
+        for( std::shared_ptr<Object> obj : m_priv->m_rootObjects ){
+            find_match_for_path( obj, &matcher );
+        }
 
-    if( parent && parent->path() == object->path() ) {
-        // TODO I don't think this works correctly
-        return RegistrationStatus::Failed_Path_in_Use;
-    }
+        std::shared_ptr<Object> parent = matcher.deepest;
 
-    if( !parent ){
-        m_priv->m_rootObjects.push_back( object );
+        if( matcher.match ) {
+            // This should not match, that would mean the path is in use
+            return RegistrationStatus::Failed_Path_in_Use;
+        }
+
+        if( !parent ){
+            m_priv->m_rootObjects.push_back( object );
+        }else{
+            Path relative = Path::relative_path( parent->path(), object->path() );
+            parent->add_child( relative, object );
+        }
     }
 
     // TODO need to reparent the object if it does have a parent.
@@ -952,8 +973,20 @@ std::shared_ptr<ObjectProxy> Connection::create_object_proxy( const std::string&
 
 bool Connection::unregister_object( const std::string& path ) {
     std::unique_lock<std::mutex> lock( m_priv->m_rootObjectsLock );
-    Path p = path;
-    std::shared_ptr<Object> obj_to_remove = find_best_match_for_path( p, m_priv->m_rootObjects );
+    struct PathMatcher matcher;
+    matcher.path = path;
+    for( std::string str : matcher.path.decomposed() ){
+        matcher.decomposed.push( str );
+    }
+    for( std::shared_ptr<Object> obj : m_priv->m_rootObjects ){
+        find_match_for_path( obj, &matcher );
+    }
+
+    std::shared_ptr<Object> obj_to_remove = matcher.match;
+    if( !obj_to_remove ){
+        return false;
+    }
+
     std::shared_ptr<Object> obj_parent = parent_of_obj( obj_to_remove );
 
     // First check to make sure this path is not a root path

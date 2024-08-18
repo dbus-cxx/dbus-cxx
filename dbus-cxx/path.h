@@ -39,6 +39,8 @@ public:
 
     bool is_valid() const;
 
+    bool is_root() const;
+
     /**
      * Decomposes the string into its component elements
      *
@@ -61,6 +63,16 @@ public:
      * @return True if the element was succesfully added, false otherwise.
      */
     bool append_element( const std::string& element );
+
+    /**
+     * Create a relative path between the two paths.
+     * The second param must be below the first, e.g. if first is "/first" and second is "/second" this returns a null path.
+     *
+     * @param first
+     * @param second
+     * @return
+     */
+    static Path relative_path( const Path& first, const Path& second );
 
 };
 
