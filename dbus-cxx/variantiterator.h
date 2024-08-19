@@ -115,7 +115,9 @@ public:
     operator std::tuple<T...>() {
         std::tuple<T...> tup;
 
-        VariantIterator subiter = this->recurse();
+        VariantIterator subiter =
+            (is_struct() ? recurse() : *this);
+
         std::apply( [subiter]( auto&& ...arg ) mutable {
             ( subiter >> ... >> arg );
         },
@@ -182,6 +184,9 @@ public:
 
     /** True if the iterator points to a dictionary */
     bool is_dict() const;
+
+    /** True if the iterator points to a struct */
+    bool is_struct() const;
 
 private:
     class priv_data;

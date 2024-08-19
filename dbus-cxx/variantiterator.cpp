@@ -176,6 +176,11 @@ bool VariantIterator::is_dict() const {
     return this->is_array() && this->element_type() == DataType::DICT_ENTRY;
 }
 
+bool VariantIterator::is_struct() const
+{
+    return arg_type() == DataType::STRUCT;
+}
+
 VariantIterator::operator bool() {
     // TODO check for invalid
     switch( this->arg_type() ) {

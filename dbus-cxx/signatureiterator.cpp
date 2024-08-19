@@ -174,6 +174,11 @@ std::string SignatureIterator::iterate_over_subsig( std::shared_ptr<priv::Signat
         return "";
     }
 
+    if ( start->m_dataType == DataType::STRUCT )
+    {
+        retval += "(";
+    }
+
     if( start->m_dataType == DataType::DICT_ENTRY ) {
         retval += "{";
     }
@@ -189,6 +194,11 @@ std::string SignatureIterator::iterate_over_subsig( std::shared_ptr<priv::Signat
         }
 
         retval += iterate_over_subsig( current->m_sub );
+    }
+
+    if ( start->m_dataType == DataType::STRUCT )
+    {
+        retval += ")";
     }
 
     if( start->m_dataType == DataType::DICT_ENTRY ) {
