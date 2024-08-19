@@ -190,26 +190,14 @@ Signature::SignatureNodePointer Signature::create_signature_tree(
             itr++;
             current->m_sub = create_signature_tree( itr, container_stack, ok );
 
+            // Check for unbalanced containers
             if( container_stack->top() != toPush ) {
-                // Unbalanced
                 ok = false;
                 return nullptr;
             }
 
-            // If we're the ending character of a container,
-            // advance the iterator so we go to the next character
-            ending_container = is_ending_container( *itr );
-
-            if( (ending_container) &&
-                 (toPush == ContainerType::STRUCT ) ) {
-                container_stack->pop();
-            }
-            else if( (ending_container) &&
-                      (toPush == ContainerType::DICT_ENTRY) ) {
-                container_stack->pop();
-                itr++;
-                return first;
-            } else if( toPush == ContainerType::ARRAY &&
+            // Handle array (no end of array character)
+            if( toPush == ContainerType::ARRAY &&
                 current->m_sub != nullptr ) {
                 // Note: need to be special about popping and advancing iterator
                 // Assume we have 'aaid' as our signature.  When popping the array
@@ -233,6 +221,27 @@ Signature::SignatureNodePointer Signature::create_signature_tree(
                 }
 
                 break;
+            }
+
+            // Check for missing end of container char
+            if( itr == m_priv->m_signature.cend() ) {
+                ok = false;
+                return nullptr;
+            }
+
+            // If we're the ending character of a container,
+            // advance the iterator so we go to the next character
+            ending_container = is_ending_container( *itr );
+
+            if( (ending_container) &&
+                (toPush == ContainerType::STRUCT) ) {
+                container_stack->pop();
+            }
+            else if( (ending_container) &&
+                     (toPush == ContainerType::DICT_ENTRY) ) {
+                container_stack->pop();
+                itr++;
+                return first;
             } else {
                 ok = false;
                 return nullptr;
