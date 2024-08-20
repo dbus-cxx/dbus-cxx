@@ -376,6 +376,10 @@ public:
     void set_handling_thread( std::thread::id thr );
     std::thread::id handling_thread();
 
+    bool is_lightweight() const;
+
+    static std::shared_ptr<Object> create_lightweight( const std::string& path = std::string() );
+
 private:
     class priv_data;
 

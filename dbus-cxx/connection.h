@@ -432,8 +432,6 @@ private:
 
     std::thread::id thread_id_from_calling( ThreadForCalling calling );
 
-    std::shared_ptr<Object> parent_of_obj( std::shared_ptr<Object> obj );
-
 private:
     class priv_data;
 
