@@ -104,7 +104,7 @@ public:
     std::map<uint32_t, std::shared_ptr<ExpectingResponse>> m_expectingResponses;
     DispatchStatus m_dispatchStatus;
     std::mutex m_rootObjectsLock;
-    std::vector<std::shared_ptr<Object>> m_rootObjects;
+    std::shared_ptr<Object> m_rootObject;
     std::mutex m_threadDispatcherLock;
     std::map<std::thread::id, std::weak_ptr<ThreadDispatcher>> m_threadDispatchers;
     std::shared_ptr<DBusDaemonProxy> m_daemonProxy;
@@ -178,11 +178,17 @@ Connection::Connection( std::string address ) {
 std::shared_ptr<Connection> Connection::create( BusType type ) {
     std::shared_ptr<Connection> p( new Connection( type ) );
 
+    p->m_priv->m_rootObject = Object::create_lightweight( "/" );
+    p->m_priv->m_rootObject->set_connection( p );
+
     return p;
 }
 
 std::shared_ptr<Connection> Connection::create( std::string address ) {
     std::shared_ptr<Connection> p( new Connection( address ) );
+
+    p->m_priv->m_rootObject = Object::create_lightweight( "/" );
+    p->m_priv->m_rootObject->set_connection( p );
 
     return p;
 
@@ -654,47 +660,29 @@ void Connection::process_single_message() {
     }
 }
 
-struct PathMatcher{
-    Path path;
-    std::queue<std::string> decomposed;
-    std::shared_ptr<Object> match;
-    std::shared_ptr<Object> deepest;
-};
-
-static void find_match_for_path( std::shared_ptr<Object> obj, PathMatcher* match ){
-    if( obj->path() == match->path ){
-        match->match = obj;
-        return;
-    }
-
-    match->deepest = obj;
-    if( match->decomposed.empty() || match->match ){
-        return;
-    }
-
-    std::string current = match->decomposed.front();
-    if( obj->has_child( current ) ){
-        match->decomposed.pop();
-        find_match_for_path( obj->child( current ), match );
-    }
-}
-
 void Connection::process_call_message( std::shared_ptr<const CallMessage> callmsg ) {
     Path path = callmsg->path();
     bool error = false;
     std::shared_ptr<Object> to_call;
+    std::shared_ptr<Object> temp = m_priv->m_rootObject;
+    std::vector<std::string> decomposed = path.decomposed();
 
     {
         std::unique_lock<std::mutex> lock( m_priv->m_rootObjectsLock );
-        struct PathMatcher matcher;
-        matcher.path = path;
-        for( std::string str : path.decomposed() ){
-            matcher.decomposed.push( str );
+        for( size_t x = 0; x < decomposed.size() - 1; x++ ){
+            temp = temp->child( decomposed[x] );
+            if( !temp ){
+                break;
+            }
         }
-        for( std::shared_ptr<Object> obj : m_priv->m_rootObjects ){
-            find_match_for_path( obj, &matcher );
+
+        if( temp ){
+            to_call = temp->child( decomposed[ decomposed.size() - 1 ] );
         }
-        to_call = matcher.match;
+
+        if( path.is_root() ){
+            to_call = m_priv->m_rootObject;
+        }
     }
 
     if( !to_call ){
@@ -901,32 +889,49 @@ RegistrationStatus Connection::register_object( std::shared_ptr<Object> object, 
     {
         std::unique_lock<std::mutex> lock( m_priv->m_rootObjectsLock );
 
-        struct PathMatcher matcher;
-        matcher.path = object->path();
-        for( std::string str : matcher.path.decomposed() ){
-            matcher.decomposed.push( str );
-        }
-        for( std::shared_ptr<Object> obj : m_priv->m_rootObjects ){
-            find_match_for_path( obj, &matcher );
-        }
-
-        std::shared_ptr<Object> parent = matcher.deepest;
-
-        if( matcher.match ) {
-            // This should not match, that would mean the path is in use
-            return RegistrationStatus::Failed_Path_in_Use;
-        }
-
-        if( !parent ){
-            m_priv->m_rootObjects.push_back( object );
-        }else{
-            Path relative = Path::relative_path( parent->path(), object->path() );
-            parent->add_child( relative, object );
+        if( object->path().is_root() ){
+            // Replace the root, reparenting everything
+            Object::Children c = m_priv->m_rootObject->children();
+            for( const auto& pair : c ){
+                object->add_child( pair.first, pair.second );
+            }
+            m_priv->m_rootObject = object;
         }
     }
 
-    // TODO need to reparent the object if it does have a parent.
-    // path should always be relative?
+    if( !object->path().is_root() ){
+        // Find where to put this object,
+        // creating all of our parents(if required)
+        std::vector<std::string> decomposed = object->path().decomposed();
+        std::shared_ptr<Object> parent = m_priv->m_rootObject;
+        for( size_t x = 0; x < decomposed.size() - 1; x++ ){
+            if( parent->has_child( decomposed[x] ) ){
+                parent = parent->child( decomposed[x] );
+            }else{
+                std::shared_ptr<Object> new_obj = Object::create_lightweight( decomposed[x] );
+                if( m_priv->m_dispatchingThread != std::thread::id() ){
+                    new_obj->set_handling_thread( m_priv->m_dispatchingThread );
+                }
+                parent->add_child( decomposed[x], new_obj );
+                parent = new_obj;
+            }
+        }
+
+        const std::string& new_path = *(decomposed.end() - 1);
+        if( parent->has_child( new_path ) &&
+                !parent->child( new_path )->is_lightweight() ){
+            // An object is already registered here that is not lightweight,
+            // don't export it again.
+            return RegistrationStatus::Failed_Path_in_Use;
+        }else if( parent->has_child( new_path ) ){
+            Object::Children c = parent->child( new_path )->children();
+            for( const auto& pair : c ){
+                object->add_child( pair.first, pair.second );
+            }
+        }
+
+        parent->add_child( new_path, object );
+    }
 
     std::thread::id calling_thread;
     if( calling == ThreadForCalling::DispatcherThread ) {
@@ -973,73 +978,31 @@ std::shared_ptr<ObjectProxy> Connection::create_object_proxy( const std::string&
 
 bool Connection::unregister_object( const std::string& path ) {
     std::unique_lock<std::mutex> lock( m_priv->m_rootObjectsLock );
-    struct PathMatcher matcher;
-    matcher.path = path;
-    for( std::string str : matcher.path.decomposed() ){
-        matcher.decomposed.push( str );
-    }
-    for( std::shared_ptr<Object> obj : m_priv->m_rootObjects ){
-        find_match_for_path( obj, &matcher );
+    std::shared_ptr<Object> obj_to_remove_parent = m_priv->m_rootObject;
+    Path p = path;
+    if( p.is_root() ){
+        m_priv->m_rootObject = Object::create_lightweight( "/" );
+        if( m_priv->m_dispatchingThread != std::thread::id() ){
+            m_priv->m_rootObject->set_handling_thread( m_priv->m_dispatchingThread );
+        }
+        return true;
     }
 
-    std::shared_ptr<Object> obj_to_remove = matcher.match;
-    if( !obj_to_remove ){
+    std::vector<std::string> decomposed = p.decomposed();
+    const std::string& to_remove = decomposed[decomposed.size() - 1];
+    for( size_t x = 0; x < decomposed.size() - 1; x++ ){
+        if( obj_to_remove_parent->has_child( decomposed[x]) ){
+            obj_to_remove_parent = obj_to_remove_parent->child( decomposed[x] );
+        }else{
+            return false;
+        }
+    }
+
+    if( !obj_to_remove_parent ){
         return false;
     }
 
-    std::shared_ptr<Object> obj_parent = parent_of_obj( obj_to_remove );
-
-    // First check to make sure this path is not a root path
-    for( auto it = m_priv->m_rootObjects.begin();
-         it != m_priv->m_rootObjects.end();
-         it++ ){
-        if( (*it)->path() == path ){
-            m_priv->m_rootObjects.erase( it );
-            return true;
-        }
-    }
-
-    obj_parent->remove_child( obj_to_remove->path() );
-
-    return true;
-}
-
-struct ParentResult{
-    std::shared_ptr<Object> parent;
-    std::shared_ptr<Object> child;
-};
-
-
-static void find_parent( std::shared_ptr<Object> current, ParentResult* res ){
-    if( res->parent ){
-        return;
-    }
-
-    if( current->has_child( res->child ) ){
-        res->parent = current;
-        return;
-    }
-
-    for( const auto& pair : current->children() ){
-        find_parent( pair.second, res );
-        if( res->parent ){
-            return;
-        }
-    }
-}
-
-std::shared_ptr<Object> Connection::parent_of_obj( std::shared_ptr<Object> child ){
-    ParentResult res;
-
-    res.child = child;
-    for( std::shared_ptr<Object> curr : m_priv->m_rootObjects ){
-        find_parent( curr, &res );
-        if( res.parent ){
-            break;
-        }
-    }
-
-    return res.parent;
+    return obj_to_remove_parent->remove_child( to_remove );
 }
 
 std::shared_ptr<SignalProxyBase> Connection::add_free_signal_proxy( std::shared_ptr<SignalProxyBase> signal, ThreadForCalling calling ) {
@@ -1186,8 +1149,23 @@ std::string Connection::introspect( const std::string& destination, const std::s
     return retval;
 }
 
+static void set_lightweight_thread_ids_to_dispatcher( const std::thread::id thread_id,
+                                          std::shared_ptr<Object> obj ){
+    if( obj->is_lightweight() ) {
+        obj->set_handling_thread( thread_id );
+    }
+
+    const Object::Children& children = obj->children();
+    for( const auto& kid : children  ){
+        set_lightweight_thread_ids_to_dispatcher( thread_id, kid.second );
+    }
+}
+
 void Connection::set_dispatching_thread( std::thread::id tid ) {
     m_priv->m_dispatchingThread = tid;
+
+    // We will also go through and set all of our lightweight objects to be the dispatching thread.
+    set_lightweight_thread_ids_to_dispatcher( tid, m_priv->m_rootObject );
 }
 
 void Connection::notify_dispatcher_or_dispatch() {
@@ -1203,6 +1181,20 @@ void Connection::notify_dispatcher_or_dispatch() {
 void Connection::add_thread_dispatcher( std::weak_ptr<ThreadDispatcher> disp ) {
     std::unique_lock<std::mutex> lock( m_priv->m_threadDispatcherLock );
     m_priv->m_threadDispatchers[ std::this_thread::get_id() ] = disp;
+}
+
+static void check_for_invalid_thread_ids( const std::vector<std::thread::id>& invalidThreadIds,
+                                          std::shared_ptr<Object> obj ){
+    if( std::find( invalidThreadIds.begin(),
+                   invalidThreadIds.end(),
+                   obj->handling_thread() ) != invalidThreadIds.end() ) {
+        obj->set_handling_thread( std::thread::id() );
+    }
+
+    const Object::Children& children = obj->children();
+    for( const auto& kid : children  ){
+        check_for_invalid_thread_ids( invalidThreadIds, kid.second );
+    }
 }
 
 void Connection::remove_invalid_threaddispatchers_and_associated_objects() {
@@ -1226,12 +1218,7 @@ void Connection::remove_invalid_threaddispatchers_and_associated_objects() {
 
     {
         std::unique_lock<std::mutex> lock( m_priv->m_rootObjectsLock );
-
-        for( std::shared_ptr<Object> obj : m_priv->m_rootObjects ){
-            if( std::find( invalidThreadIds.begin(), invalidThreadIds.end(), obj->handling_thread() ) != invalidThreadIds.end() ) {
-                obj->set_handling_thread( std::thread::id() );
-            }
-        }
+        check_for_invalid_thread_ids( invalidThreadIds, m_priv->m_rootObject );
     }
 }
 
