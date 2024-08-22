@@ -67,7 +67,17 @@ std::shared_ptr<ObjectProxy> ObjectProxy::create( std::shared_ptr<Connection> co
     return std::shared_ptr<ObjectProxy>( new ObjectProxy( conn, destination, path ) );
 }
 
-ObjectProxy::~ ObjectProxy( ) {
+ObjectProxy::~ObjectProxy()
+{
+    auto connection =
+        m_priv->m_connection.lock();
+
+    if (connection)
+        connection->unregister_object_proxy(this);
+
+    remove_interface(m_priv->m_peerInterface);
+    remove_interface(m_priv->m_introspectableInterface);
+    remove_interface(m_priv->m_propertiesInterface);
 }
 
 std::weak_ptr<Connection> ObjectProxy::connection() const {
