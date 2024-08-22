@@ -37,7 +37,10 @@ bool signature_iterate_int32() {
 
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INT32 );
 
-    return true;
+	// Check the output signature is the same as the input
+	TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
+	return true;
 }
 
 bool signature_iterate_arrayint() {
@@ -54,7 +57,10 @@ bool signature_iterate_arrayint() {
 
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
 
-    return true;
+    // Check the output signature is the same as the input
+	TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
+	return true;
 }
 
 bool signature_iterate_arrayint2() {
@@ -69,7 +75,10 @@ bool signature_iterate_arrayint2() {
 
     TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::INVALID );
 
-    return true;
+    // Check the output signature is the same as the input
+	TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
+	return true;
 }
 
 bool signature_iterate_nested_array() {
@@ -88,7 +97,10 @@ bool signature_iterate_nested_array() {
 
     TEST_EQUALS_RET_FAIL( subit2.type(), DBus::DataType::INVALID );
 
-    return true;
+    // Check the output signature is the same as the input
+	TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
+	return true;
 }
 
 bool signature_iterate_multiple_types() {
@@ -104,7 +116,10 @@ bool signature_iterate_multiple_types() {
     it.next();
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::BOOLEAN );
 
-    return true;
+    // Check the output signature is the same as the input
+	TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
+	return true;
 }
 
 bool signature_iterate_dictionary() {
@@ -123,7 +138,10 @@ bool signature_iterate_dictionary() {
     subsubit.next();
     TEST_EQUALS_RET_FAIL( subsubit.type(), DBus::DataType::INVALID );
 
-    return true;
+    // Check the output signature is the same as the input
+	TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
+	return true;
 }
 
 bool signature_iterate_struct() {
@@ -144,7 +162,10 @@ bool signature_iterate_struct() {
     subit.next();
     TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::INVALID );
 
-    return true;
+    // Check the output signature is the same as the input
+	TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
+	return true;
 }
 
 bool signature_iterate_nested_with_more_data() {
@@ -160,7 +181,10 @@ bool signature_iterate_nested_with_more_data() {
     it.next();
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
 
-    return true;
+    // Check the output signature is the same as the input
+	TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
+	return true;
 }
 
 bool signature_iterate_dict_and_data() {
@@ -176,7 +200,10 @@ bool signature_iterate_dict_and_data() {
     it.next();
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
 
-    return true;
+	// Check the output signature is the same as the input
+	TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
+	return true;
 }
 
 bool signature_iterate_struct_and_data() {
@@ -192,7 +219,10 @@ bool signature_iterate_struct_and_data() {
     it.next();
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
 
-    return true;
+	// Check the output signature is the same as the input
+	TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
+	return true;
 }
 
 bool signature_unbalanced_struct() {
@@ -228,6 +258,9 @@ bool signature_iterate_nested_struct() {
     it.next();
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
 
+	// Check the output signature is the same as the input
+	TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
     return true;
 }
 
@@ -238,7 +271,10 @@ bool signature_single_bool() {
 
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::BOOLEAN );
 
-    return true;
+	// Check the output signature is the same as the input
+	TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
+	return true;
 }
 
 bool signature_create_from_struct_in_array() {
@@ -270,13 +306,13 @@ bool signature_single_type2() {
         } \
     } while( 0 )
 
-int main( int argc, char** argv ) {
-    if( argc < 1 ) {
+int main( int argc, char** argv )
+{
+	if ( argc < 2 )
         return 1;
-    }
 
-    std::string test_name = argv[1];
-    bool ret = false;
+    std::string test_name(argv[1]);
+    bool ret = true;
 
     ADD_TEST( create );
     ADD_TEST( iterate_arrayint );
@@ -297,5 +333,6 @@ int main( int argc, char** argv ) {
     ADD_TEST( single_type1 );
     ADD_TEST( single_type2 );
 
+	std::cout << "Test case \"" + test_name + "\" " + (ret ? "PASSED" : "FAIL") << std::endl;
     return !ret;
 }

@@ -134,78 +134,42 @@ SignatureIterator SignatureIterator::recurse() {
     return subiter;
 }
 
-std::string SignatureIterator::signature() const {
-    std::shared_ptr<priv::SignatureNode> tmpCurrent;
+std::string SignatureIterator::signature() const
+{
+    return iterate_over(m_priv->m_first);
+}
+
+std::string SignatureIterator::iterate_over(
+    std::shared_ptr<priv::SignatureNode> start) const
+{
     std::string signature;
 
-    if( m_priv->m_first == nullptr ) {
-        return "";
-    }
-
-    TypeInfo ti( m_priv->m_first->m_dataType );
-    char dbusChar = ti.to_dbus_char();
-
-    if( dbusChar ) {
-        signature += dbusChar;
-    }
-
-    signature += iterate_over_subsig( m_priv->m_first->m_sub );
-
-    for( tmpCurrent = m_priv->m_first->m_next;
-        tmpCurrent != nullptr;
-        tmpCurrent = tmpCurrent->m_next ) {
-        TypeInfo ti( tmpCurrent->m_dataType );
-        dbusChar = ti.to_dbus_char();
-
-        if( dbusChar ) {
-            signature += dbusChar;
+    for (auto current = start;
+        current != nullptr;
+        current = current->m_next)
+    {
+        if ( current->m_dataType == DataType::STRUCT )
+        {
+            signature += "(" + iterate_over(current->m_sub) + ")";
         }
+        else if ( current->m_dataType == DataType::DICT_ENTRY )
+        {
+            signature += "{" + iterate_over(current->m_sub) + "}";
+        }
+        else
+        {
+            TypeInfo ti(
+                current->m_dataType);
 
-        signature += iterate_over_subsig( tmpCurrent->m_sub );
+            char dbusChar =
+                ti.to_dbus_char();
+
+            if (dbusChar)
+                signature += dbusChar;
+        }
     }
 
     return signature;
-}
-
-std::string SignatureIterator::iterate_over_subsig( std::shared_ptr<priv::SignatureNode> start ) const {
-    std::string retval;
-
-    if( start == nullptr ) {
-        return "";
-    }
-
-    if ( start->m_dataType == DataType::STRUCT )
-    {
-        retval += "(";
-    }
-
-    if( start->m_dataType == DataType::DICT_ENTRY ) {
-        retval += "{";
-    }
-
-    for( std::shared_ptr<priv::SignatureNode> current = start;
-        current != nullptr;
-        current = current->m_next ) {
-        TypeInfo ti( current->m_dataType );
-        char dbusChar = ti.to_dbus_char();
-
-        if( dbusChar ) {
-            retval += dbusChar;
-        }
-
-        retval += iterate_over_subsig( current->m_sub );
-    }
-
-    if ( start->m_dataType == DataType::STRUCT )
-    {
-        retval += ")";
-    }
-
-    if( start->m_dataType == DataType::DICT_ENTRY ) {
-        retval += "}";
-    }
-
-    return retval;
 }
 
 SignatureIterator& SignatureIterator::operator=( const SignatureIterator& other ) {
