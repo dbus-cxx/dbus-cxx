@@ -102,6 +102,7 @@ public:
     std::shared_ptr<priv::Transport> m_transport;
     std::string m_uniqueName;
     std::thread::id m_dispatchingThread;
+    std::mutex m_incomingLock;
     std::queue<std::shared_ptr<Message>> m_incomingMessages;
     std::mutex m_outgoingLock;
     std::queue<OutgoingMessage> m_outgoingMessages;
@@ -118,6 +119,7 @@ public:
     std::vector<FreeSignalThreadInfo> m_freeProxySignals;
     std::mutex m_objectProxiesLock;
     std::vector<ObjectProxyThreadInfo> m_objectProxies;
+    std::mutex m_listeningSignalsLock;
     std::map<std::string,int> m_listeningSignals;
 };
 
@@ -300,6 +302,9 @@ StartReply Connection::start_service( const std::string& name, uint32_t flags ) 
 }
 
 bool Connection::add_match( const std::string& rule ) {
+    std::unique_lock<std::mutex> lock(
+        m_priv->m_listeningSignalsLock);
+
     if( !is_valid() ) {
         throw ErrorDisconnected();
     }
@@ -327,6 +332,9 @@ void Connection::add_match_nonblocking( const std::string& rule ) {
 }
 
 bool Connection::remove_match( const std::string& rule ) {
+    std::unique_lock<std::mutex> lock(
+        m_priv->m_listeningSignalsLock);
+
     if( m_priv->m_daemonProxy ){
         std::map<std::string,int>::iterator it =
                 m_priv->m_listeningSignals.find( rule );
@@ -469,6 +477,9 @@ std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking( std::shared
                 }
 
                 if( !gotReply ) {
+                    std::unique_lock<std::mutex> lock(
+                        m_priv->m_incomingLock);
+
                     m_priv->m_incomingMessages.push( incoming );
                 }
 
@@ -598,6 +609,9 @@ DispatchStatus Connection::dispatch( ) {
         std::shared_ptr<Message> incoming = m_priv->m_transport->readMessage();
 
         if( incoming ) {
+            std::unique_lock<std::mutex> lock(
+                m_priv->m_incomingLock);
+
             m_priv->m_incomingMessages.push( incoming );
         }
     }
@@ -618,10 +632,15 @@ DispatchStatus Connection::dispatch( ) {
 void Connection::process_single_message() {
     std::shared_ptr<Message> msgToProcess;
 
-    if( m_priv->m_incomingMessages.empty() ) { return; }
+    {
+        std::unique_lock<std::mutex> lock(
+            m_priv->m_incomingLock);
 
-    msgToProcess = m_priv->m_incomingMessages.front();
-    m_priv->m_incomingMessages.pop();
+        if( m_priv->m_incomingMessages.empty() ) { return; }
+
+        msgToProcess = m_priv->m_incomingMessages.front();
+        m_priv->m_incomingMessages.pop();
+    }
 
     if( msgToProcess->type() == MessageType::RETURN ||
         msgToProcess->type() == MessageType::ERROR ) {
