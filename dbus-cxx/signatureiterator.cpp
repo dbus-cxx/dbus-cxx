@@ -158,14 +158,15 @@ std::string SignatureIterator::iterate_over(
         }
         else
         {
-            TypeInfo ti(
-                current->m_dataType);
+            char dbus_char =
+                TypeInfo(current->m_dataType).to_dbus_char();
 
-            char dbusChar =
-                ti.to_dbus_char();
+            signature += dbus_char;
 
-            if (dbusChar)
-                signature += dbusChar;
+            if ( current->m_dataType == DataType::ARRAY )
+            {
+                signature += iterate_over(current->m_sub);
+            }
         }
     }
 

@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later OR BSD-3-Clause
-// SPDX-License-Identifier: LGPL-3.0-or-later OR BSD-3-Clause
 /***************************************************************************
  *   Copyright (C) 2019 by Robert Middleton                                *
  *   robert.middleton@rm5248.com                                           *
@@ -18,7 +17,8 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-//#include <dbus-cxx.h>
+// #include <dbus-cxx.h>
+#include <memory>
 #include <unistd.h>
 #include <iostream>
 
@@ -40,6 +40,7 @@ std::shared_ptr<DBus::MethodProxy<void()>> nonexistant_proxy;
 std::shared_ptr<DBus::MethodProxy<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>> multiplereturn_method_proxy;
 std::shared_ptr<DBus::MethodProxy<DBus::MultipleReturn<int32_t>(int32_t)>> multiplereturn_method_proxy2;
 std::shared_ptr<DBus::MethodProxy<std::string()>> error_method_proxy;
+std::shared_ptr<DBus::MethodProxy<bool( std::tuple<int, std::tuple<int, uint32_t>, double, std::string>)>> nested_tuple_method_proxy;
 
 std::shared_ptr<DBus::Object> object;
 std::shared_ptr<DBus::Method<int( int, int )>> int_method;
@@ -52,6 +53,8 @@ std::shared_ptr<DBus::Method<void( DBus::Variant )>> variant_method;
 std::shared_ptr<DBus::Method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>> multiplereturn_method;
 std::shared_ptr<DBus::Method<DBus::MultipleReturn<int32_t>(int32_t)>> multiplereturn_method2;
 std::shared_ptr<DBus::Method<std::string()>> error_method;
+std::shared_ptr<DBus::Method<bool( std::tuple<int, std::tuple<int, uint32_t>, double, std::string>)>> nested_tuple_method;
+
 
 bool tuple_method_symbol( std::tuple<int, double, std::string> tup ) {
     bool retval = true;
@@ -129,6 +132,11 @@ std::string error_method_symbol(){
     throw std::runtime_error("error_message_here");
 }
 
+bool nested_tuple_method_symbol(std::tuple<int, std::tuple<int, uint32_t>, double, std::string> arg)
+{
+    return true;
+}
+
 void client_setup() {
     proxy = conn->create_object_proxy( "dbuscxx.test", "/test" );
 
@@ -143,6 +151,7 @@ void client_setup() {
     multiplereturn_method_proxy = proxy->create_method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>( "foo.what", "multiplereturn" );
     multiplereturn_method_proxy2 = proxy->create_method<DBus::MultipleReturn<int32_t>(int32_t)>( "foo.what", "multiplereturn2" );
     error_method_proxy = proxy->create_method<std::string()>( "foo.what", "error_method" );
+    nested_tuple_method_proxy = proxy->create_method<bool( std::tuple<int, std::tuple<int, uint32_t>, double, std::string>)>( "foo.what", "nested_tuple_method" );
 }
 
 void server_setup() {
@@ -161,6 +170,7 @@ void server_setup() {
     multiplereturn_method = object->create_method<DBus::MultipleReturn<int32_t, int32_t, std::string, std::vector<int>>()>( "foo.what", "multiplereturn", sigc::ptr_fun( multiplereturn_symbol ) );
     multiplereturn_method2 = object->create_method<DBus::MultipleReturn<int32_t>(int32_t)>( "foo.what", "multiplereturn2", sigc::ptr_fun( multiplereturn_symbol2 ) );
     error_method = object->create_method<std::string()>( "foo.what", "error_method", sigc::ptr_fun( error_method_symbol ) );
+    nested_tuple_method = object->create_method<bool( std::tuple<int, std::tuple<int, uint32_t>, double, std::string>)>( "foo.what", "nested_tuple_method", sigc::ptr_fun( nested_tuple_method_symbol ) );
 }
 
 bool data_send_integers() {
@@ -304,13 +314,28 @@ bool data_error_return() {
     return false;
 }
 
+bool data_nested_tuple()
+{
+    std::tuple<int, uint32_t> nested_tuple =
+        std::make_tuple(22, 33);
+
+    std::tuple<int, std::tuple<int, uint32_t>, double, std::string> tuple =
+        std::make_tuple(00, nested_tuple, 1.0, "Dette");
+
+    auto reuslt = (*nested_tuple_method_proxy)(tuple);
+
+    return reuslt;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = data_##name();\
         } \
     } while( 0 )
 
-int main( int argc, char** argv ) {
-    if( argc < 1 ) {
+int main( int argc, char** argv )
+{
+    if ( argc < 3 )
+    {
         return 1;
     }
 
@@ -318,8 +343,8 @@ int main( int argc, char** argv ) {
     bool ret = false;
     bool is_client = std::string( argv[1] ) == "client";
 
-    DBus::set_logging_function( DBus::log_std_err );
-    DBus::set_log_level( SL_TRACE );
+    // DBus::set_logging_function( DBus::log_std_err );
+    // DBus::set_log_level( SL_TRACE );
 
     dispatch = DBus::StandaloneDispatcher::create();
     conn = dispatch->create_connection( DBus::BusType::SESSION );
@@ -341,12 +366,15 @@ int main( int argc, char** argv ) {
         ADD_TEST(send_multiplereturn);
         ADD_TEST(send_multiplereturn2);
         ADD_TEST(error_return);
+        ADD_TEST(nested_tuple);
+
+    std::cout << "Test case \"" + test_name + "\" " + (ret ? "PASSED" : "FAIL") << std::endl;
+
     } else {
         server_setup();
         ret = true;
         sleep( 1 );
     }
-
 
     return !ret;
 }

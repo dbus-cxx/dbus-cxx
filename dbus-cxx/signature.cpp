@@ -6,7 +6,11 @@
  *   This file is part of the dbus-cxx library.                            *
  ***************************************************************************/
 #include "signature.h"
+
+#include <vector>
 #include <stack>
+#include <exception>
+
 #include "dbus-cxx-private.h"
 
 #include "types.h"
@@ -15,15 +19,16 @@ static const char* LOGGER_NAME = "DBus.Signature";
 
 namespace DBus {
 
-const Signature::size_type npos = std::string::npos;
-
-class Signature::priv_data {
+class Signature::priv_data
+{
 public:
     priv_data() :
         m_valid( false )
-    {}
+    {
+    }
 
     std::string m_signature;
+
     std::shared_ptr<priv::SignatureNode> m_startingNode;
     bool m_valid;
 };
@@ -108,54 +113,65 @@ bool Signature::is_singleton() const {
         m_priv->m_startingNode->m_next == nullptr;
 }
 
-std::shared_ptr<priv::SignatureNode> Signature::create_signature_tree( std::string::const_iterator* it,
+Signature::SignatureNodePointer Signature::create_signature_tree(
+    std::string::const_iterator& itr,
     std::stack<ContainerType>* container_stack,
-    bool* ok ) {
-    DataType tmpDataType;
-    std::shared_ptr<priv::SignatureNode> first = nullptr;
-    std::shared_ptr<priv::SignatureNode> current = nullptr;
-    bool ending_container;
+    bool& ok)
+{
+    SignatureNodePointer first;
+    SignatureNodePointer current;
 
-    if( container_stack->size() > 64 ) {
-        *ok = false;
+    if (container_stack->size() > 64)
+    {
+        ok = false;
         return nullptr;
     }
 
-    if( *it == m_priv->m_signature.cend() ) {
+    if (itr == m_priv->m_signature.cend())
+    {
         return nullptr;
     }
 
-    do {
-        tmpDataType = char_to_dbus_type( **it );
-        ending_container = is_ending_container( **it );
+    do
+    {
+        DataType data_type = char_to_dbus_type( *itr );
+        bool ending_container = is_ending_container( *itr );
 
-        if( tmpDataType == DataType::INVALID ) {
-            *ok = false;
+        if ( data_type == DataType::INVALID )
+        {
+            ok = false;
             return nullptr;
         }
 
-        if( ending_container ) {
-            if( container_stack->size() == 0 ) {
-                *ok = false;
+        if ( ending_container )
+        {
+            if ( container_stack->size() == 0 )
+            {
+                ok = false;
                 return nullptr;
             }
 
             ContainerType currentTop = container_stack->top();
 
-            if( currentTop == ContainerType::STRUCT &&
-                tmpDataType == DataType::STRUCT ) {
+            if ( currentTop == ContainerType::STRUCT &&
+                data_type == DataType::STRUCT )
+            {
                 return first;
-            } else if( currentTop == ContainerType::DICT_ENTRY &&
-                tmpDataType == DataType::DICT_ENTRY ) {
+            }
+            else if (currentTop == ContainerType::DICT_ENTRY &&
+                    data_type == DataType::DICT_ENTRY )
+            {
                 return first;
-            } else {
-                *ok = false;
+            }
+            else
+            {
+                ok = false;
                 return nullptr;
             }
         }
 
-
-        std::shared_ptr<priv::SignatureNode> newnode = std::make_shared<priv::SignatureNode>( tmpDataType );
+        SignatureNodePointer newnode =
+            std::make_shared<priv::SignatureNode>( data_type );
 
         if( current != nullptr ) {
             current->m_next = newnode;
@@ -167,49 +183,49 @@ std::shared_ptr<priv::SignatureNode> Signature::create_signature_tree( std::stri
             current = newnode;
         }
 
-        TypeInfo ti( tmpDataType );
+        TypeInfo ti( data_type );
 
         if( !container_stack->empty() &&
             container_stack->top() == ContainerType::ARRAY &&
             ti.is_basic() ) {
             // We just added this basic element to the array
-            ( *it )++;
+            itr++;
             break;
         }
 
-        if( ti.is_container() &&
-            tmpDataType != DataType::VARIANT ) {
-            ContainerType toPush = char_to_container_type( **it );
+        if ( ti.is_container() &&
+            data_type != DataType::VARIANT )
+        {
+            ContainerType toPush = char_to_container_type( *itr );
             container_stack->push( toPush );
-            ( *it )++;
-            current->m_sub = create_signature_tree( it, container_stack, ok );
+            itr++;
+            current->m_sub = create_signature_tree( itr, container_stack, ok );
 
             if( container_stack->top() != toPush ) {
                 // Unbalanced
-                *ok = false;
+                ok = false;
                 return nullptr;
             }
 
             // If we're the ending character of a container,
             // advance the iterator so we go to the next character
-            ending_container = is_ending_container( **it );
+            ending_container = is_ending_container( *itr );
 
-            if( ending_container &&
-                toPush == ContainerType::STRUCT ) {
+            if ( (ending_container) &&
+                 (toPush == ContainerType::STRUCT ) )
+            {
                 container_stack->pop();
-
-                if( !container_stack->empty() ) {
-                    ( *it )++;
-                    return first;
-                }
-
-            } else if( ending_container &&
-                toPush == ContainerType::DICT_ENTRY ) {
+            }
+            else if ( (ending_container) &&
+                      (toPush == ContainerType::DICT_ENTRY) )
+            {
                 container_stack->pop();
-                ( *it )++;
+                itr++;
                 return first;
-            } else if( toPush == ContainerType::ARRAY &&
-                current->m_sub != nullptr ) {
+            }
+            else if ( toPush == ContainerType::ARRAY &&
+                current->m_sub != nullptr )
+            {
                 // Note: need to be special about popping and advancing iterator
                 // Assume we have 'aaid' as our signature.  When popping the array
                 // off of our stack, we only need to advance the iterator once.
@@ -227,27 +243,31 @@ std::shared_ptr<priv::SignatureNode> Signature::create_signature_tree( std::stri
                     isArrayEnd = false;
                 }
 
-                if( isArrayEnd && *it != m_priv->m_signature.cend() ) {
-                    //(*it)++;
+                if( isArrayEnd && itr != m_priv->m_signature.cend() ) {
                     continue;
                 }
 
                 break;
-            } else {
-                *ok = false;
+            }
+            else
+            {
+                ok = false;
                 return nullptr;
             }
         }
 
-        if( *it != m_priv->m_signature.cend() ) { ( *it )++; }
-    } while( *it != m_priv->m_signature.cend() );
+        if ( itr != m_priv->m_signature.cend() )
+        {
+            itr++;
+        }
+    }
+    while (itr != m_priv->m_signature.cend() );
 
     return first;
 }
 
-
 void Signature::print_tree( std::ostream* stream ) const {
-    std::shared_ptr<priv::SignatureNode> current = m_priv->m_startingNode;
+    SignatureNodePointer current = m_priv->m_startingNode;
 
     while( current != nullptr ) {
         *stream << current->m_dataType;
@@ -278,7 +298,8 @@ void Signature::initialize() {
     m_priv->m_valid = true;
     std::stack<ContainerType> containerStack;
     std::string::const_iterator it = m_priv->m_signature.begin();
-    m_priv->m_startingNode = create_signature_tree( &it, &containerStack, &m_priv->m_valid );
+
+    m_priv->m_startingNode = create_signature_tree( it, &containerStack, m_priv->m_valid );
 
     if( !containerStack.empty() ||
         it != m_priv->m_signature.end() ) {
@@ -299,4 +320,3 @@ void Signature::initialize() {
 }
 
 }
-

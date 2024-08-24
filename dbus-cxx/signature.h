@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <stack>
+
 #include "enums.h"
 
 #ifndef DBUSCXX_SIGNATURE_H
@@ -48,17 +49,23 @@ namespace priv {
 /**
  * Represents a single entry in our graph of the signature
  */
-class SignatureNode {
+class SignatureNode
+{
 public:
-    SignatureNode( DataType d ) :
-        m_dataType( d ),
-        m_next( nullptr ),
-        m_sub( nullptr ) {}
+    typedef std::shared_ptr<SignatureNode> SignatureNodePointer;
+
+    SignatureNode(DataType data_type)
+    :    m_dataType(data_type),
+        m_next(),
+        m_sub()
+    {
+    }
 
     DataType m_dataType;
-    std::shared_ptr<priv::SignatureNode> m_next;
-    std::shared_ptr<priv::SignatureNode> m_sub;
+    SignatureNodePointer m_next;
+    SignatureNodePointer m_sub;
 };
+
 }
 
 class FileDescriptor;
@@ -71,9 +78,9 @@ template<typename... T> class MultipleReturn;
  *
  * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
  */
-class Signature {
+class Signature
+{
 public:
-
     typedef SignatureIterator iterator;
 
     typedef const SignatureIterator const_iterator;
@@ -131,14 +138,21 @@ public:
 private:
     void initialize();
 
-    std::shared_ptr<priv::SignatureNode> create_signature_tree( std::string::const_iterator* it,
-        std::stack<ContainerType>* container_stack,
-        bool* ok );
+    typedef priv::SignatureNode::SignatureNodePointer SignatureNodePointer;
 
-    void print_node( std::ostream* stream, priv::SignatureNode* node, int spaces ) const;
+    SignatureNodePointer create_signature_tree(
+        std::string::const_iterator& itr,
+        std::stack<ContainerType>* container_stack,
+        bool& ok);
+
+    void print_node(
+        std::ostream* stream,
+        priv::SignatureNode* node,
+        int spaces) const;
 
 private:
     class priv_data;
+
 
     std::shared_ptr<priv_data> m_priv;
 };
