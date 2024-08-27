@@ -1179,6 +1179,29 @@ bool Connection::register_object_proxy( std::shared_ptr<ObjectProxy> obj, Thread
     return true;
 }
 
+bool Connection::unregister_object_proxy(
+    ObjectProxy* obj) {
+    std::unique_lock lock(m_priv->m_objectProxiesLock);
+
+    for (auto itr = m_priv->m_objectProxies.begin(),
+        end_itr = m_priv->m_objectProxies.end();
+        itr != end_itr;
+        ++itr) {
+        if ( (!itr->handler.expired()) &&
+             (itr->handler.lock().get() == obj) ) {
+            m_priv->m_objectProxies.erase(itr);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Connection::unregister_object_proxy(
+    std::shared_ptr<ObjectProxy> obj) {
+    return unregister_object_proxy(obj.get());
+}
+
 std::thread::id Connection::thread_id_from_calling( ThreadForCalling calling ){
     if( calling == ThreadForCalling::CurrentThread ){
         return std::this_thread::get_id();
