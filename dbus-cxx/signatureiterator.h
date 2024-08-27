@@ -109,7 +109,7 @@ public:
 
 private:
 
-    std::string iterate_over_subsig( std::shared_ptr<priv::SignatureNode> start ) const;
+    std::string iterate_over( std::shared_ptr<priv::SignatureNode> start ) const;
 
 private:
     class priv_data;

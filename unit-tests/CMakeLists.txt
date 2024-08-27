@@ -170,6 +170,7 @@ add_test( NAME multiplereturn COMMAND dbus-wrapper-data-tests.sh send_multiplere
 add_test( NAME multiplereturn2 COMMAND dbus-wrapper-data-tests.sh send_multiplereturn2 )
 add_test( NAME send-complex COMMAND dbus-wrapper-data-tests.sh send_complex )
 add_test( NAME error-return COMMAND dbus-wrapper-data-tests.sh error_return )
+add_test( NAME nested-tuple COMMAND dbus-wrapper-data-tests.sh nested_tuple )
 
 #
 # Signal tests - make sure we can tx and rx singals correctly
@@ -236,6 +237,7 @@ add_test( NAME signature-nested-array COMMAND test-signature iterate_nested_arra
 add_test( NAME signature-multiple-types COMMAND test-signature iterate_multiple_types)
 add_test( NAME signature-dictionary COMMAND test-signature iterate_dictionary)
 add_test( NAME signature-struct COMMAND test-signature iterate_struct)
+add_test( NAME signature-dict COMMAND test-signature iterate_nested_dict)
 add_test( NAME signature-nested-more-data COMMAND test-signature iterate_nested_with_more_data)
 add_test( NAME signature-dict-and-data COMMAND test-signature iterate_dict_and_data)
 add_test( NAME signature-struct-and-data COMMAND test-signature iterate_struct_and_data)
