@@ -172,7 +172,6 @@ public:
     void* tx_control_data;
     int tx_control_capacity;
 
-    std::mutex m_receive_mutex;
     std::mutex m_send_mutex;
 
     void init() {
@@ -348,7 +347,6 @@ ssize_t SendmsgTransport::writeMessage( std::shared_ptr<const DBus::Message> mes
 }
 
 std::shared_ptr<DBus::Message> SendmsgTransport::readMessage() {
-    std::scoped_lock lock(m_priv->m_receive_mutex);
     uint32_t header_array_len;
     ssize_t body_len;
     ssize_t total_len;
