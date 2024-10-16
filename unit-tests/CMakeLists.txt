@@ -249,6 +249,7 @@ add_test( NAME signature-create-from-struct-in-array COMMAND test-signature crea
 
 add_test( NAME signature-single-type1 COMMAND test-signature single_type1)
 add_test( NAME signature-single-type2 COMMAND test-signature single_type2)
+add_test( NAME signature-double-struct COMMAND test-signature double_struct)
 
 #
 # Validation tests - make sure that our validation routines work correctly

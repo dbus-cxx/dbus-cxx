@@ -152,6 +152,8 @@ Signature::SignatureNodePointer Signature::create_signature_tree(
             } else if( currentTop == ContainerType::DICT_ENTRY &&
                 data_type == DataType::DICT_ENTRY ) {
                 return first;
+            } else if (currentTop == ContainerType::ARRAY) {
+                return first;
             } else {
                 ok = false;
                 return nullptr;

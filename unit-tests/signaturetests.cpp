@@ -350,6 +350,39 @@ bool signature_single_type2() {
     return true;
 }
 
+bool signature_double_struct() {
+    DBus::Signature sig( "(sa(us))" );
+
+    DBus::SignatureIterator it = sig.begin();
+
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::STRUCT );
+    auto subit = it.recurse();
+    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::STRING );
+    subit.next();
+    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::ARRAY );
+    auto subit2 = subit.recurse();
+    TEST_EQUALS_RET_FAIL( subit2.type(), DBus::DataType::STRUCT );
+    auto subit3 = subit2.recurse();
+    TEST_EQUALS_RET_FAIL( subit3.type(), DBus::DataType::UINT32 );
+    subit3.next();
+    TEST_EQUALS_RET_FAIL( subit3.type(), DBus::DataType::STRING );
+    subit3.next();
+    TEST_EQUALS_RET_FAIL( subit3.type(), DBus::DataType::INVALID );
+
+    subit2.next();
+    TEST_EQUALS_RET_FAIL( subit2.type(), DBus::DataType::INVALID );
+
+    subit.next();
+    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::INVALID );
+
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
+    // Check the output signature is the same as the input
+    TEST_EQUALS_RET_FAIL( sig.str(), sig.begin().signature() );
+
+    return true;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = signature_##name();\
         } \
@@ -381,6 +414,7 @@ int main( int argc, char** argv ) {
     ADD_TEST( create_from_struct_in_array );
     ADD_TEST( single_type1 );
     ADD_TEST( single_type2 );
+    ADD_TEST( double_struct );
 
     std::cout << "Test case \"" + test_name + "\" " + (ret ? "PASSED" : "FAIL") << std::endl;
     return !ret;
