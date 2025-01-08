@@ -51,14 +51,14 @@ void write_to_fd( int fd ) {
 
 // Server Function
 std::shared_ptr<DBus::FileDescriptor> get_filedescriptor() {
-    std::async( std::launch::async, write_to_fd, pipes[1] );
+    std::async( std::launch::async, write_to_fd, pipes[1] ).wait();
 
     return DBus::FileDescriptor::create( pipes[0] );
 }
 
 // Server Function
 void set_filedescriptor( std::shared_ptr<DBus::FileDescriptor> fd ) {
-    std::async( std::launch::async, write_to_fd, fd->descriptor() );
+    std::async( std::launch::async, write_to_fd, fd->descriptor() ).wait();
 }
 
 // Client Function
