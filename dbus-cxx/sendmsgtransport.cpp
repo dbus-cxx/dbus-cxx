@@ -15,6 +15,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <mutex>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -171,6 +172,8 @@ public:
     void* tx_control_data;
     int tx_control_capacity;
 
+    std::mutex m_send_mutex;
+
     void init() {
         // Setup the RX data msghdr
         rx_msg.msg_iov = &rx_buf;
@@ -258,7 +261,9 @@ std::shared_ptr<SendmsgTransport> SendmsgTransport::create( int fd, bool initial
     return std::shared_ptr<SendmsgTransport>( new SendmsgTransport( fd, initialize ) );
 }
 
-ssize_t SendmsgTransport::writeMessage( std::shared_ptr<const DBus::Message> message, uint32_t serial ) {
+ssize_t SendmsgTransport::writeMessage( std::shared_ptr<const DBus::Message> message, uint32_t serial )
+{
+    std::scoped_lock lock(m_priv->m_send_mutex);
 #ifdef _WIN32
     const std::vector<int> filedescriptors = message->filedescriptors();
 

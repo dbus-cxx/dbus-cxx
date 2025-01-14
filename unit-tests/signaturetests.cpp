@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later OR BSD-3-Clause
-// SPDX-License-Identifier: LGPL-3.0-or-later OR BSD-3-Clause
 /***************************************************************************
  *   Copyright (C) 2020 by Robert Middleton                                *
  *   robert.middleton@rm5248.com                                           *
@@ -37,6 +36,9 @@ bool signature_iterate_int32() {
 
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INT32 );
 
+    // Check the output signature is the same as the input
+    TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
     return true;
 }
 
@@ -54,6 +56,9 @@ bool signature_iterate_arrayint() {
 
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
 
+    // Check the output signature is the same as the input
+    TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
     return true;
 }
 
@@ -68,6 +73,9 @@ bool signature_iterate_arrayint2() {
     subit.next();
 
     TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::INVALID );
+
+    // Check the output signature is the same as the input
+    TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
 
     return true;
 }
@@ -88,6 +96,9 @@ bool signature_iterate_nested_array() {
 
     TEST_EQUALS_RET_FAIL( subit2.type(), DBus::DataType::INVALID );
 
+    // Check the output signature is the same as the input
+    TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
     return true;
 }
 
@@ -104,24 +115,43 @@ bool signature_iterate_multiple_types() {
     it.next();
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::BOOLEAN );
 
+    // Check the output signature is the same as the input
+    TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
     return true;
 }
 
 bool signature_iterate_dictionary() {
-    DBus::Signature sig( "a{yv}" );
+    DBus::Signature sig( "a{yv}ii" );
 
     DBus::SignatureIterator it = sig.begin();
+
     TEST_EQUALS_RET_FAIL( it.is_dict(), true );
+    TEST_EQUALS_RET_FAIL(it.type(), DBus::DataType::ARRAY);
 
     DBus::SignatureIterator subit = it.recurse();
     TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::DICT_ENTRY );
 
     DBus::SignatureIterator subsubit = subit.recurse();
     TEST_EQUALS_RET_FAIL( subsubit.type(), DBus::DataType::BYTE );
+
     subsubit.next();
     TEST_EQUALS_RET_FAIL( subsubit.type(), DBus::DataType::VARIANT );
+
     subsubit.next();
     TEST_EQUALS_RET_FAIL( subsubit.type(), DBus::DataType::INVALID );
+
+    it.next();
+    TEST_EQUALS_RET_FAIL(it.type(), DBus::DataType::INT32);
+
+    it.next();
+    TEST_EQUALS_RET_FAIL(it.type(), DBus::DataType::INT32);
+
+    it.next();
+    TEST_EQUALS_RET_FAIL(it.type(), DBus::DataType::INVALID);
+
+    // Check the output signature is the same as the input
+    TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
 
     return true;
 }
@@ -144,6 +174,9 @@ bool signature_iterate_struct() {
     subit.next();
     TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::INVALID );
 
+    // Check the output signature is the same as the input
+    TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
     return true;
 }
 
@@ -160,6 +193,9 @@ bool signature_iterate_nested_with_more_data() {
     it.next();
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
 
+    // Check the output signature is the same as the input
+    TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
     return true;
 }
 
@@ -169,12 +205,21 @@ bool signature_iterate_dict_and_data() {
     DBus::SignatureIterator it = sig.begin();
 
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::ARRAY );
+
+    DBus::SignatureIterator subit = it.recurse();
+
     it.next();
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INT32 );
     it.next();
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INT64 );
     it.next();
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
+
+    // Check the output signature is the same as the input
+    std::string test =
+        sig.begin().signature();
+
+    TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
 
     return true;
 }
@@ -192,6 +237,9 @@ bool signature_iterate_struct_and_data() {
     it.next();
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
 
+    // Check the output signature is the same as the input
+    TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
+
     return true;
 }
 
@@ -204,9 +252,11 @@ bool signature_unbalanced_struct() {
 }
 
 bool signature_iterate_nested_struct() {
-    DBus::Signature sig( "(i(id))" );
+    DBus::Signature signature( "(i(id)ss)" );
 
-    DBus::SignatureIterator it = sig.begin();
+    TEST_EQUALS_RET_FAIL(signature.is_valid(), true);
+
+    DBus::SignatureIterator it = signature.begin();
 
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::STRUCT );
 
@@ -223,10 +273,42 @@ bool signature_iterate_nested_struct() {
     TEST_EQUALS_RET_FAIL( subit2.type(), DBus::DataType::INVALID );
 
     subit.next();
+    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::STRING);
+
+    subit.next();
+    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::STRING);
+
+    subit.next();
     TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::INVALID );
 
     it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID);
+
+    // Check the output signature is the same as the input
+    TEST_EQUALS_RET_FAIL(signature.str(), signature.begin().signature());
+
+    return true;
+}
+
+bool signature_iterate_nested_dict()
+{
+    DBus::Signature sig( "a{b{bs}}ix" );
+
+    DBus::SignatureIterator it = sig.begin();
+
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::ARRAY );
+
+    DBus::SignatureIterator subit = it.recurse();
+
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INT32 );
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INT64 );
+    it.next();
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
+
+    // Check the output signature is the same as the input
+    TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
 
     return true;
 }
@@ -237,6 +319,9 @@ bool signature_single_bool() {
     DBus::SignatureIterator it = sig.begin();
 
     TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::BOOLEAN );
+
+    // Check the output signature is the same as the input
+    TEST_EQUALS_RET_FAIL(sig.str(), sig.begin().signature());
 
     return true;
 }
@@ -265,17 +350,50 @@ bool signature_single_type2() {
     return true;
 }
 
+bool signature_double_struct() {
+    DBus::Signature sig( "(sa(us))" );
+
+    DBus::SignatureIterator it = sig.begin();
+
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::STRUCT );
+    auto subit = it.recurse();
+    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::STRING );
+    subit.next();
+    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::ARRAY );
+    auto subit2 = subit.recurse();
+    TEST_EQUALS_RET_FAIL( subit2.type(), DBus::DataType::STRUCT );
+    auto subit3 = subit2.recurse();
+    TEST_EQUALS_RET_FAIL( subit3.type(), DBus::DataType::UINT32 );
+    subit3.next();
+    TEST_EQUALS_RET_FAIL( subit3.type(), DBus::DataType::STRING );
+    subit3.next();
+    TEST_EQUALS_RET_FAIL( subit3.type(), DBus::DataType::INVALID );
+
+    subit2.next();
+    TEST_EQUALS_RET_FAIL( subit2.type(), DBus::DataType::INVALID );
+
+    subit.next();
+    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::INVALID );
+
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
+    // Check the output signature is the same as the input
+    TEST_EQUALS_RET_FAIL( sig.str(), sig.begin().signature() );
+
+    return true;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = signature_##name();\
         } \
     } while( 0 )
 
 int main( int argc, char** argv ) {
-    if( argc < 1 ) {
+    if( argc < 2 ) {
         return 1;
     }
 
-    std::string test_name = argv[1];
+    std::string test_name(argv[1]);
     bool ret = false;
 
     ADD_TEST( create );
@@ -289,13 +407,15 @@ int main( int argc, char** argv ) {
     ADD_TEST( iterate_dict_and_data );
     ADD_TEST( iterate_struct_and_data );
     ADD_TEST( iterate_nested_struct );
-
+    ADD_TEST( iterate_nested_dict );
     ADD_TEST( unbalanced_struct );
     ADD_TEST( single_bool );
 
     ADD_TEST( create_from_struct_in_array );
     ADD_TEST( single_type1 );
     ADD_TEST( single_type2 );
+    ADD_TEST( double_struct );
 
+    std::cout << "Test case \"" + test_name + "\" " + (ret ? "PASSED" : "FAIL") << std::endl;
     return !ret;
 }

@@ -72,6 +72,7 @@ add_test( NAME messageiterator-complex-types2 COMMAND test-messageiterator compl
 add_test( NAME messageiterator-complex-types3 COMMAND test-messageiterator complex_variants3)
 add_test( NAME messageiterator-nested-map COMMAND test-messageiterator nested_map)
 add_test( NAME messageiterator-variant-deep COMMAND test-messageiterator variant_deep)
+add_test( NAME messageiterator-signal-message-dict COMMAND test-messageiterator signal_message_dict)
 
 add_test( NAME messageiterator-Bool2 COMMAND test-messageiterator bool-2)
 add_test( NAME messageiterator-Byte2 COMMAND test-messageiterator byte-2)
@@ -173,6 +174,7 @@ add_test( NAME multiplereturn COMMAND dbus-wrapper-data-tests.sh send_multiplere
 add_test( NAME multiplereturn2 COMMAND dbus-wrapper-data-tests.sh send_multiplereturn2 )
 add_test( NAME send-complex COMMAND dbus-wrapper-data-tests.sh send_complex )
 add_test( NAME error-return COMMAND dbus-wrapper-data-tests.sh error_return )
+add_test( NAME nested-tuple COMMAND dbus-wrapper-data-tests.sh nested_tuple )
 
 #
 # Signal tests - make sure we can tx and rx singals correctly
@@ -239,6 +241,7 @@ add_test( NAME signature-nested-array COMMAND test-signature iterate_nested_arra
 add_test( NAME signature-multiple-types COMMAND test-signature iterate_multiple_types)
 add_test( NAME signature-dictionary COMMAND test-signature iterate_dictionary)
 add_test( NAME signature-struct COMMAND test-signature iterate_struct)
+add_test( NAME signature-dict COMMAND test-signature iterate_nested_dict)
 add_test( NAME signature-nested-more-data COMMAND test-signature iterate_nested_with_more_data)
 add_test( NAME signature-dict-and-data COMMAND test-signature iterate_dict_and_data)
 add_test( NAME signature-struct-and-data COMMAND test-signature iterate_struct_and_data)
@@ -250,6 +253,7 @@ add_test( NAME signature-create-from-struct-in-array COMMAND test-signature crea
 
 add_test( NAME signature-single-type1 COMMAND test-signature single_type1)
 add_test( NAME signature-single-type2 COMMAND test-signature single_type2)
+add_test( NAME signature-double-struct COMMAND test-signature double_struct)
 
 #
 # Validation tests - make sure that our validation routines work correctly
