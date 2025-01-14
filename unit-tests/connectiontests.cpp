@@ -139,7 +139,7 @@ bool connection_reparent_1(){
         return false;
     }
 
-    if( obj1->children().at( "/baz" ) == obj2 ){
+    if( obj1->children().at( "baz" ) == obj2 ){
         return true;
     }
 
@@ -156,7 +156,24 @@ bool connection_reparent_2(){
         return false;
     }
 
-    if( obj1->children().at( "/foo/bar/baz" ) == obj2 ){
+    if( obj1->child( "foo" )->child( "bar" )->child( "baz" ) == obj2 ){
+        return true;
+    }
+
+    return false;
+}
+
+bool connection_remove_obj_in_hierarchy(){
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
+
+    std::shared_ptr<DBus::Object> obj1 = conn->create_object( "/foo" );
+    std::shared_ptr<DBus::Object> obj2 = conn->create_object( "/foo/bar" );
+    std::shared_ptr<DBus::Object> obj3 = conn->create_object( "/foo/bar/baz" );
+
+    conn->unregister_object( "/foo/bar" );
+
+    // obj1 should not have any children once we remove obj2 from it
+    if( obj1->children().size() == 0 ){
         return true;
     }
 
@@ -188,6 +205,11 @@ int main( int argc, char** argv ) {
     ADD_TEST( remove_object_proxy );
     ADD_TEST( reparent_1 );
     ADD_TEST( reparent_2 );
+    ADD_TEST( remove_obj_in_hierarchy );
+
+    // TESTS TO ADD:
+    // * Set parent/child relationship before exporting object(not relevant, because all paths must be absolute when creating objects)
+    // * Unexport something in the middle of our hierarchy, make sure it is replaced with a lightweight object
 
     return !ret;
 }

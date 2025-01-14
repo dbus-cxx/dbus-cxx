@@ -82,8 +82,12 @@ public:
     typedef std::map<std::string, std::shared_ptr<Object>> Children;
 
     /**
-     * Creates a named Object that will register as a primary or fallback handler
-     * @param path The path the object will handle
+     * Create an Object that will be exported out onto the bus.  In general you should prefer to use
+     * DBus::Connection::create_object which will set up the object for you.  If you do create the
+     * object directly by calling create, you must then call DBus::Connection::register_object to
+     * make sure that it can be called over the bus.
+     *
+     * @param path The path the object will handle.  This must be an absolute path.
      */
     static std::shared_ptr<Object> create( const std::string& path = std::string() );
 
