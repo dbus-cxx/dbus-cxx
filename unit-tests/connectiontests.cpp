@@ -129,6 +129,57 @@ bool connection_remove_object_proxy(){
     return true;
 }
 
+bool connection_reparent_1(){
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
+
+    std::shared_ptr<DBus::Object> obj1 = conn->create_object( "/foo/bar" );
+    std::shared_ptr<DBus::Object> obj2 = conn->create_object( "/foo/bar/baz" );
+
+    if( obj1->children().size() != 1 ){
+        return false;
+    }
+
+    if( obj1->children().at( "baz" ) == obj2 ){
+        return true;
+    }
+
+    return false;
+}
+
+bool connection_reparent_2(){
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
+
+    std::shared_ptr<DBus::Object> obj1 = conn->create_object( "/" );
+    std::shared_ptr<DBus::Object> obj2 = conn->create_object( "/foo/bar/baz" );
+
+    if( obj1->children().size() != 1 ){
+        return false;
+    }
+
+    if( obj1->child( "foo" )->child( "bar" )->child( "baz" ) == obj2 ){
+        return true;
+    }
+
+    return false;
+}
+
+bool connection_remove_obj_in_hierarchy(){
+    std::shared_ptr<DBus::Connection> conn = dispatch->create_connection( DBus::BusType::SESSION );
+
+    std::shared_ptr<DBus::Object> obj1 = conn->create_object( "/foo" );
+    std::shared_ptr<DBus::Object> obj2 = conn->create_object( "/foo/bar" );
+    std::shared_ptr<DBus::Object> obj3 = conn->create_object( "/foo/bar/baz" );
+
+    conn->unregister_object( "/foo/bar" );
+
+    // obj1 should not have any children once we remove obj2 from it
+    if( obj1->children().size() == 0 ){
+        return true;
+    }
+
+    return false;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = connection_##name();\
         } \
@@ -152,6 +203,9 @@ int main( int argc, char** argv ) {
     ADD_TEST( create_void_signal );
     ADD_TEST( create_int_signal );
     ADD_TEST( remove_object_proxy );
+    ADD_TEST( reparent_1 );
+    ADD_TEST( reparent_2 );
+    ADD_TEST( remove_obj_in_hierarchy );
 
     return !ret;
 }

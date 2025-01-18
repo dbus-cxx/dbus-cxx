@@ -118,6 +118,9 @@ add_test( NAME path-append-invalid-empty COMMAND test-path append_invalid_empty)
 add_test( NAME path-append-invalid-chars COMMAND test-path append_invalid_empty)
 add_test( NAME path-append-invalid-double_slash COMMAND test-path append_invalid_double_slash)
 add_test( NAME path-append-invalid-root COMMAND test-path append_invalid_root)
+add_test( NAME path-relative COMMAND test-path relative1)
+add_test( NAME path-relative-invalid COMMAND test-path relative_invalid)
+add_test( NAME path-relative-root COMMAND test-path relative_root)
 
 add_executable( test-connection connectiontests.cpp )
 target_link_libraries( test-connection ${TEST_LINK} )
@@ -132,6 +135,9 @@ add_test( NAME connection-proxy-get-iface-name COMMAND dbus-wrapper.sh test-conn
 add_test( NAME connection-proxy-create_signal COMMAND dbus-wrapper.sh test-connection create_void_signal)
 add_test( NAME connection-proxy-create_int_signal COMMAND dbus-wrapper.sh test-connection create_int_signal)
 add_test( NAME connection-proxy-remove_object_proxy COMMAND dbus-wrapper.sh test-connection remove_object_proxy)
+add_test( NAME connection-reparent1 COMMAND dbus-wrapper.sh test-connection reparent_1)
+add_test( NAME connection-reparent2 COMMAND dbus-wrapper.sh test-connection reparent_2)
+add_test( NAME connection-remove-obj-hierarchy COMMAND dbus-wrapper.sh test-connection remove_obj_in_hierarchy)
 
 #
 # Object Tests

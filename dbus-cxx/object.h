@@ -15,6 +15,7 @@
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
+#include <thread>
 #include <string>
 #include "enums.h"
 #include <sigc++/sigc++.h>
@@ -81,14 +82,20 @@ public:
     typedef std::map<std::string, std::shared_ptr<Object>> Children;
 
     /**
-     * Creates a named Object that will register as a primary or fallback handler
-     * @param path The path the object will handle
+     * Create an Object that will be exported out onto the bus.  In general you should prefer to use
+     * DBus::Connection::create_object which will set up the object for you.  If you do create the
+     * object directly by calling create, you must then call DBus::Connection::register_object to
+     * make sure that it can be called over the bus.
+     *
+     * @param path The path the object will handle.  This must be an absolute path.
      */
     static std::shared_ptr<Object> create( const std::string& path = std::string() );
 
     virtual ~Object();
 
-    /** Returns the path this handler is associated with */
+    /**
+     *  Returns the path this handler is associated with.  Note that this is always an absolute path.
+     */
     const Path& path() const;
 
     /** Returns the connection this handler is registered with */
@@ -319,6 +326,7 @@ public:
      * @param name The name of the child to test.
      */
     bool has_child( const std::string& name ) const;
+    bool has_child( std::shared_ptr<Object> child ) const;
 
     /** Returns a DBus XML description of this interface */
     std::string introspect( int space_depth = 0 ) const;
@@ -368,6 +376,13 @@ public:
      * @param msg The message to handle; must be a CallMessage or it will not be handled
      */
     HandlerResult handle_message( std::shared_ptr<const Message> msg );
+
+    void set_handling_thread( std::thread::id thr );
+    std::thread::id handling_thread();
+
+    bool is_lightweight() const;
+
+    static std::shared_ptr<Object> create_lightweight( const std::string& path = std::string() );
 
 private:
     class priv_data;

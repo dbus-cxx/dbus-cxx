@@ -44,15 +44,24 @@ public:
     Path m_path;
     sigc::signal<void( std::shared_ptr<Connection> ) > m_signal_registered;
     sigc::signal<void( std::shared_ptr<Connection> ) > m_signal_unregistered;
+    std::thread::id m_calling_thread;
+    bool m_is_lightweight;
 };
 
 Object::Object( const std::string& path ):
     m_priv( std::make_unique<priv_data>() ) {
     m_priv->m_path = path;
+    m_priv->m_is_lightweight = false;
 }
 
 std::shared_ptr<Object> Object::create( const std::string& path ) {
     return std::shared_ptr<Object>( new Object( path ) );
+}
+
+std::shared_ptr<Object> Object::create_lightweight( const std::string& path ){
+    std::shared_ptr<Object> obj = std::shared_ptr<Object>( new Object( path ) );
+    obj->m_priv->m_is_lightweight = true;
+    return obj;
 }
 
 Object::~ Object( ) {
@@ -84,7 +93,10 @@ sigc::signal< void( std::shared_ptr<Connection> )>& Object::signal_unregistered(
 
 void Object::set_connection( std::shared_ptr<Connection> conn ) {
     SIMPLELOGGER_DEBUG( LOGGER_NAME, "Object::set_connection" );
-    unregister();
+    std::shared_ptr<Connection> current = m_priv->m_connection.lock();
+    if( current && (current != conn) ){
+        unregister();
+    }
     m_priv->m_connection = conn;
 
     for( Children::iterator c = m_priv->m_children.begin(); c != m_priv->m_children.end(); c++ ) {
@@ -277,6 +289,16 @@ bool Object::has_child( const std::string& name ) const {
     return m_priv->m_children.find( name ) != m_priv->m_children.end();
 }
 
+bool Object::has_child( std::shared_ptr<Object> child ) const {
+    for( auto const& pair : m_priv->m_children ){
+        if( pair.second == child ){
+            return true;
+        }
+    }
+
+    return false;
+}
+
 std::string Object::introspect( int space_depth ) const {
     std::ostringstream sout;
     std::string spaces;
@@ -285,8 +307,10 @@ std::string Object::introspect( int space_depth ) const {
 
     for( int i = 0; i < space_depth; i++ ) { spaces += " "; }
 
-    sout << spaces << "<node name=\"" << this->path() << "\">\n"
-        << spaces << "  <interface name=\"" << DBUS_CXX_INTROSPECTABLE_INTERFACE << "\">\n"
+    sout << spaces << "<node name=\"" << this->path() << "\">\n";
+
+    if( !m_priv->m_is_lightweight ){
+        sout << spaces << "  <interface name=\"" << DBUS_CXX_INTROSPECTABLE_INTERFACE << "\">\n"
         << spaces << "    <method name=\"Introspect\">\n"
         << spaces << "      <arg name=\"data\" type=\"s\" direction=\"out\"/>\n"
         << spaces << "    </method>\n"
@@ -319,8 +343,9 @@ std::string Object::introspect( int space_depth ) const {
         << spaces << "      </signal>\n"
         << spaces << "  </interface>\n";
 
-    for( i = m_priv->m_interfaces.begin(); i != m_priv->m_interfaces.end(); i++ ) {
-        sout << i->second->introspect( space_depth + 2 );
+        for( i = m_priv->m_interfaces.begin(); i != m_priv->m_interfaces.end(); i++ ) {
+            sout << i->second->introspect( space_depth + 2 );
+        }
     }
 
     for( c = m_priv->m_children.begin(); c != m_priv->m_children.end(); c++ ) {
@@ -444,6 +469,17 @@ HandlerResult Object::handle_message( std::shared_ptr<const Message> message ) {
     }
 }
 
+void Object::set_handling_thread( std::thread::id thr ){
+    m_priv->m_calling_thread = thr;
+}
+
+std::thread::id Object::handling_thread(){
+    return m_priv->m_calling_thread;
+}
+
+bool Object::is_lightweight() const{
+    return m_priv->m_is_lightweight;
+}
 
 }
 

@@ -74,11 +74,6 @@ struct OutgoingMessage {
     uint32_t serial;
 };
 
-struct PathHandlingEntry {
-    std::shared_ptr<Object> handler;
-    std::thread::id handlingThread;
-};
-
 struct ObjectProxyThreadInfo {
     std::weak_ptr<ObjectProxy> handler;
     std::thread::id handlingThread;
@@ -109,8 +104,8 @@ public:
     std::mutex m_expectingResponsesLock;
     std::map<uint32_t, std::shared_ptr<ExpectingResponse>> m_expectingResponses;
     DispatchStatus m_dispatchStatus;
-    std::mutex m_pathHandlerLock;
-    std::map<std::string, PathHandlingEntry> m_path_handler;
+    std::mutex m_rootObjectsLock;
+    std::shared_ptr<Object> m_rootObject;
     std::mutex m_threadDispatcherLock;
     std::map<std::thread::id, std::weak_ptr<ThreadDispatcher>> m_threadDispatchers;
     std::shared_ptr<DBusDaemonProxy> m_daemonProxy;
@@ -185,11 +180,17 @@ Connection::Connection( std::string address ) {
 std::shared_ptr<Connection> Connection::create( BusType type ) {
     std::shared_ptr<Connection> p( new Connection( type ) );
 
+    p->m_priv->m_rootObject = Object::create_lightweight( "/" );
+    p->m_priv->m_rootObject->set_connection( p );
+
     return p;
 }
 
 std::shared_ptr<Connection> Connection::create( std::string address ) {
     std::shared_ptr<Connection> p( new Connection( address ) );
+
+    p->m_priv->m_rootObject = Object::create_lightweight( "/" );
+    p->m_priv->m_rootObject->set_connection( p );
 
     return p;
 
@@ -632,15 +633,10 @@ DispatchStatus Connection::dispatch( ) {
 void Connection::process_single_message() {
     std::shared_ptr<Message> msgToProcess;
 
-    {
-        std::unique_lock<std::mutex> lock(
-            m_priv->m_incomingLock);
+    if( m_priv->m_incomingMessages.empty() ) { return; }
 
-        if( m_priv->m_incomingMessages.empty() ) { return; }
-
-        msgToProcess = m_priv->m_incomingMessages.front();
-        m_priv->m_incomingMessages.pop();
-    }
+    msgToProcess = m_priv->m_incomingMessages.front();
+    m_priv->m_incomingMessages.pop();
 
     if( msgToProcess->type() == MessageType::RETURN ||
         msgToProcess->type() == MessageType::ERROR ) {
@@ -679,20 +675,32 @@ void Connection::process_single_message() {
 }
 
 void Connection::process_call_message( std::shared_ptr<const CallMessage> callmsg ) {
-    std::string path = callmsg->path();
-    PathHandlingEntry entry;
+    Path path = callmsg->path();
     bool error = false;
+    std::shared_ptr<Object> to_call;
+    std::shared_ptr<Object> temp = m_priv->m_rootObject;
+    std::vector<std::string> decomposed = path.decomposed();
 
     {
-        std::unique_lock<std::mutex> lock( m_priv->m_pathHandlerLock );
-        std::map<std::string, PathHandlingEntry>::iterator it;
-        it = m_priv->m_path_handler.find( path );
-
-        if( it != m_priv->m_path_handler.end() ) {
-            entry = it->second;
-        } else {
-            error = true;
+        std::unique_lock<std::mutex> lock( m_priv->m_rootObjectsLock );
+        for( size_t x = 0; x < decomposed.size() - 1; x++ ){
+            temp = temp->child( decomposed[x] );
+            if( !temp ){
+                break;
+            }
         }
+
+        if( temp ){
+            to_call = temp->child( decomposed[ decomposed.size() - 1 ] );
+        }
+
+        if( path.is_root() ){
+            to_call = m_priv->m_rootObject;
+        }
+    }
+
+    if( !to_call ){
+        error = true;
     }
 
     if( error && callmsg ) {
@@ -702,13 +710,20 @@ void Connection::process_call_message( std::shared_ptr<const CallMessage> callms
         return;
     }
 
-    if( entry.handlingThread == m_priv->m_dispatchingThread ) {
+    if( to_call->handling_thread() == std::thread::id() ){
+        std::shared_ptr<ErrorMessage> errMsg =
+            ErrorMessage::create( callmsg, DBUSCXX_ERROR_FAILED, "Object exists but invalid calling thread" );
+        send( errMsg );
+        return;
+    }
+
+    if( to_call->handling_thread() == m_priv->m_dispatchingThread ) {
         // We are in the dispatching thread here, so we can simply call the handle method
-        HandlerResult res = entry.handler->handle_message( callmsg );
+        HandlerResult res = to_call->handle_message( callmsg );
         send_error_on_handler_result( callmsg, res );
     } else {
         // A different thread needs to handle this.
-        std::shared_ptr<ThreadDispatcher> disp = m_priv->m_threadDispatchers[ entry.handlingThread ].lock();
+        std::shared_ptr<ThreadDispatcher> disp = m_priv->m_threadDispatchers[ to_call->handling_thread() ].lock();
 
         if( !disp ) {
             // Remove all invalid thread dispatchers, return an error
@@ -721,7 +736,7 @@ void Connection::process_call_message( std::shared_ptr<const CallMessage> callms
                 return;
             }
         } else {
-            disp->add_message( entry.handler, callmsg );
+            disp->add_message( to_call, callmsg );
         }
     }
 }
@@ -885,23 +900,61 @@ RegistrationStatus Connection::register_object( std::shared_ptr<Object> object, 
 
     SIMPLELOGGER_DEBUG( LOGGER_NAME, "Connection::register_object at path " << object->path() );
 
-    std::unique_lock<std::mutex> lock( m_priv->m_pathHandlerLock );
+    {
+        std::unique_lock<std::mutex> lock( m_priv->m_rootObjectsLock );
 
-    if( m_priv->m_path_handler.find( object->path() ) != m_priv->m_path_handler.end() ) {
-        return RegistrationStatus::Failed_Path_in_Use;
+        if( object->path().is_root() ){
+            // Replace the root, reparenting everything
+            Object::Children c = m_priv->m_rootObject->children();
+            for( const auto& pair : c ){
+                object->add_child( pair.first, pair.second );
+            }
+            m_priv->m_rootObject = object;
+        }
     }
 
-    PathHandlingEntry entry;
-    entry.handler = object;
+    if( !object->path().is_root() ){
+        // Find where to put this object,
+        // creating all of our parents(if required)
+        std::vector<std::string> decomposed = object->path().decomposed();
+        std::shared_ptr<Object> parent = m_priv->m_rootObject;
+        for( size_t x = 0; x < decomposed.size() - 1; x++ ){
+            if( parent->has_child( decomposed[x] ) ){
+                parent = parent->child( decomposed[x] );
+            }else{
+                std::shared_ptr<Object> new_obj = Object::create_lightweight( decomposed[x] );
+                if( m_priv->m_dispatchingThread != std::thread::id() ){
+                    new_obj->set_handling_thread( m_priv->m_dispatchingThread );
+                }
+                parent->add_child( decomposed[x], new_obj );
+                parent = new_obj;
+            }
+        }
 
+        const std::string& new_path = *(decomposed.end() - 1);
+        if( parent->has_child( new_path ) &&
+                !parent->child( new_path )->is_lightweight() ){
+            // An object is already registered here that is not lightweight,
+            // don't export it again.
+            return RegistrationStatus::Failed_Path_in_Use;
+        }else if( parent->has_child( new_path ) ){
+            Object::Children c = parent->child( new_path )->children();
+            for( const auto& pair : c ){
+                object->add_child( pair.first, pair.second );
+            }
+        }
+
+        parent->add_child( new_path, object );
+    }
+
+    std::thread::id calling_thread;
     if( calling == ThreadForCalling::DispatcherThread ) {
-        entry.handlingThread = m_priv->m_dispatchingThread;
+        calling_thread = m_priv->m_dispatchingThread;
     } else {
-        entry.handlingThread = std::this_thread::get_id();
+        calling_thread = std::this_thread::get_id();
     }
 
-    m_priv->m_path_handler[ object->path() ] = entry;
-
+    object->set_handling_thread( calling_thread );
     object->set_connection( shared_from_this() );
 
     return RegistrationStatus::Success;
@@ -909,20 +962,18 @@ RegistrationStatus Connection::register_object( std::shared_ptr<Object> object, 
 
 bool Connection::change_object_calling_thread( std::shared_ptr<Object> object,
                                    ThreadForCalling calling ){
-    std::unique_lock lock( m_priv->m_pathHandlerLock );
-    std::map<std::string,PathHandlingEntry>::iterator it = m_priv->m_path_handler.find( object->path() );
-
-    if( it == m_priv->m_path_handler.end() ) {
+    if( !object ){
         return false;
     }
 
-    PathHandlingEntry entry = it->second;
+    std::thread::id calling_thread;
     if( calling == ThreadForCalling::DispatcherThread ) {
-        entry.handlingThread = m_priv->m_dispatchingThread;
+        calling_thread = m_priv->m_dispatchingThread;
     } else {
-        entry.handlingThread = std::this_thread::get_id();
+        calling_thread = std::this_thread::get_id();
     }
-    m_priv->m_path_handler[ object->path() ] = entry;
+
+    object->set_handling_thread( calling_thread );
 
     return true;
 }
@@ -940,16 +991,32 @@ std::shared_ptr<ObjectProxy> Connection::create_object_proxy( const std::string&
 }
 
 bool Connection::unregister_object( const std::string& path ) {
-    std::unique_lock<std::mutex> lock( m_priv->m_pathHandlerLock );
-    std::map<std::string, PathHandlingEntry>::iterator it;
-    it = m_priv->m_path_handler.find( path );
-
-    if( it != m_priv->m_path_handler.end() ) {
-        m_priv->m_path_handler.erase( it );
+    std::unique_lock<std::mutex> lock( m_priv->m_rootObjectsLock );
+    std::shared_ptr<Object> obj_to_remove_parent = m_priv->m_rootObject;
+    Path p = path;
+    if( p.is_root() ){
+        m_priv->m_rootObject = Object::create_lightweight( "/" );
+        if( m_priv->m_dispatchingThread != std::thread::id() ){
+            m_priv->m_rootObject->set_handling_thread( m_priv->m_dispatchingThread );
+        }
         return true;
     }
 
-    return false;
+    std::vector<std::string> decomposed = p.decomposed();
+    const std::string& to_remove = decomposed[decomposed.size() - 1];
+    for( size_t x = 0; x < decomposed.size() - 1; x++ ){
+        if( obj_to_remove_parent->has_child( decomposed[x]) ){
+            obj_to_remove_parent = obj_to_remove_parent->child( decomposed[x] );
+        }else{
+            return false;
+        }
+    }
+
+    if( !obj_to_remove_parent ){
+        return false;
+    }
+
+    return obj_to_remove_parent->remove_child( to_remove );
 }
 
 std::shared_ptr<SignalProxyBase> Connection::add_free_signal_proxy( std::shared_ptr<SignalProxyBase> signal, ThreadForCalling calling ) {
@@ -1096,8 +1163,23 @@ std::string Connection::introspect( const std::string& destination, const std::s
     return retval;
 }
 
+static void set_lightweight_thread_ids_to_dispatcher( const std::thread::id thread_id,
+                                          std::shared_ptr<Object> obj ){
+    if( obj->is_lightweight() ) {
+        obj->set_handling_thread( thread_id );
+    }
+
+    const Object::Children& children = obj->children();
+    for( const auto& kid : children  ){
+        set_lightweight_thread_ids_to_dispatcher( thread_id, kid.second );
+    }
+}
+
 void Connection::set_dispatching_thread( std::thread::id tid ) {
     m_priv->m_dispatchingThread = tid;
+
+    // We will also go through and set all of our lightweight objects to be the dispatching thread.
+    set_lightweight_thread_ids_to_dispatcher( tid, m_priv->m_rootObject );
 }
 
 void Connection::notify_dispatcher_or_dispatch() {
@@ -1113,6 +1195,20 @@ void Connection::notify_dispatcher_or_dispatch() {
 void Connection::add_thread_dispatcher( std::weak_ptr<ThreadDispatcher> disp ) {
     std::unique_lock<std::mutex> lock( m_priv->m_threadDispatcherLock );
     m_priv->m_threadDispatchers[ std::this_thread::get_id() ] = disp;
+}
+
+static void check_for_invalid_thread_ids( const std::vector<std::thread::id>& invalidThreadIds,
+                                          std::shared_ptr<Object> obj ){
+    if( std::find( invalidThreadIds.begin(),
+                   invalidThreadIds.end(),
+                   obj->handling_thread() ) != invalidThreadIds.end() ) {
+        obj->set_handling_thread( std::thread::id() );
+    }
+
+    const Object::Children& children = obj->children();
+    for( const auto& kid : children  ){
+        check_for_invalid_thread_ids( invalidThreadIds, kid.second );
+    }
 }
 
 void Connection::remove_invalid_threaddispatchers_and_associated_objects() {
@@ -1135,15 +1231,8 @@ void Connection::remove_invalid_threaddispatchers_and_associated_objects() {
     if( invalidThreadIds.empty() ) { return; }
 
     {
-        std::unique_lock<std::mutex> lock( m_priv->m_pathHandlerLock );
-
-        for( auto it = m_priv->m_path_handler.begin(); it != m_priv->m_path_handler.end(); ) {
-            if( std::find( invalidThreadIds.begin(), invalidThreadIds.end(), it->second.handlingThread ) != invalidThreadIds.end() ) {
-                it = m_priv->m_path_handler.erase( it );
-            } else {
-                it++;
-            }
-        }
+        std::unique_lock<std::mutex> lock( m_priv->m_rootObjectsLock );
+        check_for_invalid_thread_ids( invalidThreadIds, m_priv->m_rootObject );
     }
 }
 

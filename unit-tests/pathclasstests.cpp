@@ -150,6 +150,45 @@ bool path_append_invalid_root() {
     return TEST_EQUALS( DBus::Path( "/this/1/is/a/valid/path" ), path );
 }
 
+bool path_relative1(){
+    DBus::Path path1 = "/path/goes/here";
+    DBus::Path path2 = "/path/goes/here/again";
+
+    DBus::Path relative = DBus::Path::relative_path( path1, path2 );
+
+    if( relative == "/again" ){
+        return true;
+    }
+
+    return false;
+}
+
+bool path_relative_invalid(){
+    DBus::Path path1 = "/path/goes/here";
+    DBus::Path path2 = "/foo/path/goes/here/again";
+
+    DBus::Path relative = DBus::Path::relative_path( path1, path2 );
+
+    if( relative.empty() ){
+        return true;
+    }
+
+    return false;
+}
+
+bool path_relative_root(){
+    DBus::Path path1 = "/";
+    DBus::Path path2 = "/foo/path";
+
+    DBus::Path relative = DBus::Path::relative_path( path1, path2 );
+
+    if( relative == "/foo/path" ){
+        return true;
+    }
+
+    return false;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = path_##name();\
         } \
@@ -181,6 +220,9 @@ int main( int argc, char** argv ) {
     ADD_TEST( append_invalid_chars );
     ADD_TEST( append_invalid_double_slash );
     ADD_TEST( append_invalid_root );
+    ADD_TEST( relative1 );
+    ADD_TEST( relative_invalid );
+    ADD_TEST( relative_root );
 
     return !ret;
 }
