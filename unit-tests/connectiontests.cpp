@@ -207,9 +207,5 @@ int main( int argc, char** argv ) {
     ADD_TEST( reparent_2 );
     ADD_TEST( remove_obj_in_hierarchy );
 
-    // TESTS TO ADD:
-    // * Set parent/child relationship before exporting object(not relevant, because all paths must be absolute when creating objects)
-    // * Unexport something in the middle of our hierarchy, make sure it is replaced with a lightweight object
-
     return !ret;
 }
