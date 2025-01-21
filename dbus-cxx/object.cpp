@@ -46,12 +46,14 @@ public:
     sigc::signal<void( std::shared_ptr<Connection> ) > m_signal_unregistered;
     std::thread::id m_calling_thread;
     bool m_is_lightweight;
+    bool m_has_object_manager;
 };
 
 Object::Object( const std::string& path ):
     m_priv( std::make_unique<priv_data>() ) {
     m_priv->m_path = path;
     m_priv->m_is_lightweight = false;
+    m_priv->m_has_object_manager = false;
 }
 
 std::shared_ptr<Object> Object::create( const std::string& path ) {
@@ -340,8 +342,22 @@ std::string Object::introspect( int space_depth ) const {
         << spaces << "       <arg type=\"s\" name=\"interface_name\"/>\n"
         << spaces << "        <arg type=\"a{sv}\" name=\"changed_properties\"/>\n"
         << spaces << "        <arg type=\"as\" name=\"invalidated_properties\"/>\n"
-        << spaces << "      </signal>\n"
-        << spaces << "  </interface>\n";
+        << spaces << "      </signal>\n";
+        if( m_priv->m_has_object_manager ){
+            sout << spaces << "  <interface name=\"" << DBUS_CXX_OBJECT_MANAGER_INTERFACE << "\">\n"
+            << spaces << "    <method name=\"GetManagedObjects\">\n"
+            << spaces << "        <arg type=\"a{oa{sa{sv}}}\" name=\"objpath_interfaces_and_properties\" direction=\"out\"/>\n"
+            << spaces << "      </method>\n"
+            << spaces << "      <signal name=\"InterfacesAdded\">\n"
+            << spaces << "       <arg type=\"o\" name=\"object_path\"/>\n"
+            << spaces << "        <arg type=\"a{sa{sv}}\" name=\"interfaces_and_properties\"/>\n"
+            << spaces << "      </signal>\n"
+            << spaces << "      <signal name=\"InterfacesRemoved\">\n"
+            << spaces << "       <arg type=\"o\" name=\"object_path\"/>\n"
+            << spaces << "        <arg type=\"as\" name=\"interfaces\"/>\n"
+            << spaces << "      </signal>\n";
+        }
+        sout << spaces << "  </interface>\n";
 
         for( i = m_priv->m_interfaces.begin(); i != m_priv->m_interfaces.end(); i++ ) {
             sout << i->second->introspect( space_depth + 2 );
@@ -438,8 +454,22 @@ HandlerResult Object::handle_message( std::shared_ptr<const Message> message ) {
             interface_ptr = iface_iter->second;
             return interface_ptr->handle_properties_message( conn, msg );
         }
-    }
+    } else if( msg->interface_name() == DBUS_CXX_OBJECT_MANAGER_INTERFACE ){
+        SIMPLELOGGER_DEBUG( LOGGER_NAME, "Object::handle_call_message: object manager interface called" );
 
+        if( msg->member() == "GetManagedObjects" ) {
+            std::shared_ptr<ReturnMessage> reply = msg->create_reply();
+            ObjectManagerObjects ret;
+            for( Children::iterator c = m_priv->m_children.begin(); c != m_priv->m_children.end(); c++ ) {
+                c->second->handle_objectmanager( &ret );
+            }
+            reply << ret;
+            conn << reply;
+            return HandlerResult::Handled;
+        }
+
+        return HandlerResult::Invalid_Method;
+    }
     std::shared_lock lock( m_priv->m_interfaces_rwlock );
     Interfaces::iterator iface_iter;
     std::shared_ptr<Interface> interface_ptr;
@@ -479,6 +509,36 @@ std::thread::id Object::handling_thread(){
 
 bool Object::is_lightweight() const{
     return m_priv->m_is_lightweight;
+}
+
+void Object::handle_objectmanager( ObjectManagerObjects* ret ){
+    std::map<std::string,std::map<std::string,DBus::Variant>> interfaces_and_properties;
+
+    {
+        std::shared_lock lock( m_priv->m_interfaces_rwlock );
+        for( std::pair<std::string,std::shared_ptr<Interface>> pair : m_priv->m_interfaces ){
+            std::map<std::string, DBus::Variant> properties;
+            const std::set<std::shared_ptr<PropertyBase>> props = pair.second->properties();
+            for( std::shared_ptr<PropertyBase> prop : props ){
+                properties[ prop->name() ] = prop->variant_value();
+            }
+            interfaces_and_properties[ pair.first ] = properties;
+        }
+    }
+
+    (*ret)[ m_priv->m_path ] = interfaces_and_properties;
+
+    for( Children::iterator c = m_priv->m_children.begin(); c != m_priv->m_children.end(); c++ ) {
+        c->second->handle_objectmanager( ret );
+    }
+}
+
+bool Object::has_objectmanager() const{
+    return m_priv->m_has_object_manager;
+}
+
+void Object::set_has_objectmanager( bool objectmanager ){
+    m_priv->m_has_object_manager = objectmanager;
 }
 
 }

@@ -384,6 +384,13 @@ public:
 
     static std::shared_ptr<Object> create_lightweight( const std::string& path = std::string() );
 
+    bool has_objectmanager() const;
+
+    void set_has_objectmanager( bool objectmanager );
+
+private:
+    void handle_objectmanager( ObjectManagerObjects* ret );
+
 private:
     class priv_data;
 

@@ -353,3 +353,16 @@ add_test( NAME property-set-valid COMMAND dbus-wrapper-property-tests.sh set_val
 add_test( NAME property-set-invalid COMMAND dbus-wrapper-property-tests.sh set_invalid )
 add_test( NAME property-set-readonly COMMAND dbus-wrapper-property-tests.sh set_readonly )
 add_test( NAME property-signal-emitted COMMAND dbus-wrapper-property-tests.sh signal_emitted )
+
+#
+# Object manager tests - make sure that we get the correct data when we have an objectmanager
+#
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/dbus-wrapper-objectmanager-tests.sh
+    ${CMAKE_CURRENT_BINARY_DIR}/dbus-wrapper-objectmanager-tests.sh COPYONLY)
+add_executable( test-objectmanager objectmanagertests.cpp )
+target_link_libraries( test-objectmanager ${TEST_LINK} )
+target_include_directories( test-objectmanager PUBLIC ${CMAKE_SOURCE_DIR} )
+target_include_directories( test-objectmanager PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
+set_property( TARGET test-objectmanager PROPERTY CXX_STANDARD 17 )
+
+add_test( NAME object-manager-get COMMAND dbus-wrapper-objectmanager-tests.sh query )

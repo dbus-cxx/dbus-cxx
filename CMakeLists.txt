@@ -166,6 +166,7 @@ set( DBUS_CXX_SOURCES
     dbus-cxx/standard-interfaces/peerinterfaceproxy.cpp
     dbus-cxx/standard-interfaces/introspectableinterfaceproxy.cpp
     dbus-cxx/standard-interfaces/propertiesinterfaceproxy.cpp
+    dbus-cxx/standard-interfaces/objectmanagerproxy.cpp
 )
 
 # headers that need to go in the include/dbus-cxx directory
@@ -221,6 +222,7 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/standard-interfaces/peerinterfaceproxy.h
     dbus-cxx/standard-interfaces/introspectableinterfaceproxy.h
     dbus-cxx/standard-interfaces/propertiesinterfaceproxy.h
+    dbus-cxx/standard-interfaces/objectmanagerproxy.h
     dbus-cxx/daemon-proxy/DBusDaemonProxy.h
     dbus-cxx/multiplereturn.h
 )
