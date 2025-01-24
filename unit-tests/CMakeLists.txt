@@ -366,3 +366,6 @@ target_include_directories( test-objectmanager PUBLIC ${CMAKE_CURRENT_BINARY_DIR
 set_property( TARGET test-objectmanager PROPERTY CXX_STANDARD 17 )
 
 add_test( NAME object-manager-get COMMAND dbus-wrapper-objectmanager-tests.sh query )
+add_test( NAME object-manager-interfaces-added1 COMMAND dbus-wrapper-objectmanager-tests.sh interfaces_added_signal1 )
+add_test( NAME object-manager-interfaces-added2 COMMAND dbus-wrapper-objectmanager-tests.sh interfaces_added_signal2 )
+add_test( NAME object-manager-interfaces-removed1 COMMAND dbus-wrapper-objectmanager-tests.sh interfaces_removed_signal1 )

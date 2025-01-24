@@ -10,6 +10,10 @@
 
 #include "../interfaceproxy.h"
 #include <memory>
+#include <map>
+#include <vector>
+#include <string>
+#include "../variant.h"
 
 namespace DBus {
 
@@ -22,8 +26,14 @@ public:
 
     ObjectManagerObjects GetManagedObjects();
 
+    DBus::SignalProxy<void(Path, std::map<std::string,std::map<std::string,DBus::Variant>>)>& signal_InterfacesAdded();
+
+    DBus::SignalProxy<void(Path, std::vector<std::string> interfaces)>& signal_InterfacesRemoved();
+
 private:
     std::shared_ptr<MethodProxy<ObjectManagerObjects()>> m_get_managed_objects_method;
+    std::shared_ptr<DBus::SignalProxy<void(Path, std::map<std::string,std::map<std::string,DBus::Variant>>)>> m_signal_interfaces_added;
+    std::shared_ptr<DBus::SignalProxy<void(Path, std::vector<std::string>)>> m_signal_interfaces_removed;
 };
 
 }

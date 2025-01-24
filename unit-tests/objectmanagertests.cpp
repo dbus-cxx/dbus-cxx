@@ -30,6 +30,8 @@ std::shared_ptr<DBus::Connection> conn;
 
 std::shared_ptr<DBus::ObjectProxy> proxy_root;
 
+std::shared_ptr<DBus::Object> root_obj;
+
 void client_setup() {
     proxy_root = conn->create_object_proxy( "dbuscxx.test", "/" );
 }
@@ -39,7 +41,7 @@ void server_setup() {
 
     if( ret != DBus::RequestNameResponse::PrimaryOwner ) { exit( 1 ); }
 
-    std::shared_ptr<DBus::Object> root_obj = conn->create_object( "/" );
+    root_obj = conn->create_object( "/" );
 
     std::shared_ptr<DBus::Object> testobj1 = conn->create_object( "/test" );
     std::shared_ptr<DBus::Interface> interface1 = testobj1->create_interface( "org.bar.fuzz" );
@@ -71,9 +73,106 @@ bool objmanager_query(){
     return true;
 }
 
+bool objmanager_interfaces_added_signal1(){
+    bool received_signal = false;
+
+    proxy_root->getObjectManagerInterface()->signal_InterfacesAdded()
+            .connect( [&received_signal](DBus::Path path, std::map<std::string,std::map<std::string,DBus::Variant>> iface_and_props){
+        if( path.compare( "/test" ) == 0 &&
+                iface_and_props.size() == 1 &&
+                iface_and_props[ "/test" ].size() == 0){
+            received_signal = true;
+        }
+    });
+
+    std::this_thread::sleep_for( std::chrono::seconds( 2 ) );
+
+    return received_signal;
+}
+
+bool objmanager_server_interfaces_added_signal1(){
+    std::this_thread::sleep_for( std::chrono::milliseconds(500) );
+
+    // This should emit the InterfacesAdded signal, but without any properties
+    std::shared_ptr<DBus::Interface> interface1 = root_obj->child( "test" )->create_interface( "fuzzbar" );
+
+    return true;
+}
+
+bool objmanager_interfaces_added_signal2(){
+    bool received_signal = false;
+
+    proxy_root->getObjectManagerInterface()->signal_InterfacesAdded()
+            .connect( [&received_signal](DBus::Path path, std::map<std::string,std::map<std::string,DBus::Variant>> iface_and_props){
+        bool rx_props = false;
+
+        if( path.compare( "/test" ) == 0 &&
+                iface_and_props.size() == 1 &&
+                iface_and_props[ "/test" ].size() == 2 ){
+            received_signal = true;
+        }
+
+        if( received_signal ){
+            std::map<std::string,DBus::Variant> props = iface_and_props[ "/test" ];
+            if( props[ "someprop" ].to_uint32() == 92 &&
+                    props[ "eggscom" ].to_string() == "eyo" ){
+                rx_props = true;
+            }
+        }
+
+        received_signal = received_signal && rx_props;
+    });
+
+    std::this_thread::sleep_for( std::chrono::seconds( 2 ) );
+
+    return received_signal;
+}
+
+bool objmanager_server_interfaces_added_signal2(){
+    std::this_thread::sleep_for( std::chrono::milliseconds(500) );
+
+    std::shared_ptr<DBus::Interface> iface = DBus::Interface::create( "fuzzbar" );
+    iface->create_property<int32_t>( "someprop" )->set_value( 92 );
+    iface->create_property<std::string>( "eggscom" )->set_value( "eyo" );
+    root_obj->child( "test" )->add_interface( iface );
+
+    return true;
+}
+
+bool objmanager_interfaces_removed_signal1(){
+    bool received_signal = false;
+
+    proxy_root->getObjectManagerInterface()->signal_InterfacesRemoved()
+            .connect( [&received_signal](DBus::Path path, std::vector<std::string> interfaces){
+        if( path.compare( "/test" ) == 0 &&
+                interfaces.size() == 1 &&
+                interfaces[0] == "fuzzbar"){
+            received_signal = true;
+        }
+    });
+
+    std::this_thread::sleep_for( std::chrono::seconds( 2 ) );
+
+    return received_signal;
+}
+
+bool objmanager_server_interfaces_removed_signal1(){
+    std::this_thread::sleep_for( std::chrono::milliseconds(500) );
+
+    std::shared_ptr<DBus::Interface> interface1 = root_obj->child( "test" )->create_interface( "fuzzbar" );
+    root_obj->child( "test" )->remove_interface( "fuzzbar" );
+
+    return true;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
         ret = objmanager_##name();\
     } \
+} while( 0 )
+
+#define ADD_TEST_SERVER(name) do{ if( test_name == STRINGIFY(name) ){ \
+    ret = objmanager_server_##name();\
+} \
 } while( 0 )
 
 int main( int argc, char** argv )
@@ -96,13 +195,21 @@ int main( int argc, char** argv )
         client_setup();
 
         ADD_TEST( query );
+        ADD_TEST( interfaces_added_signal1 );
+        ADD_TEST( interfaces_added_signal2 );
+        ADD_TEST( interfaces_removed_signal1 );
 
         std::cout << "Test case \"" + test_name + "\" " + (ret ? "PASSED" : "FAIL") << std::endl;
 
     } else {
         server_setup();
         ret = true;
-        sleep( 1 );
+
+        ADD_TEST_SERVER( interfaces_added_signal1 );
+        ADD_TEST_SERVER( interfaces_added_signal2 );
+        ADD_TEST_SERVER( interfaces_removed_signal1 );
+
+        std::this_thread::sleep_for( std::chrono::seconds(1) );
     }
 
     return !ret;

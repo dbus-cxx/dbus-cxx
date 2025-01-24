@@ -47,6 +47,8 @@ public:
     std::thread::id m_calling_thread;
     bool m_is_lightweight;
     bool m_has_object_manager;
+    std::vector<sigc::connection> m_interface_added_connections;
+    std::vector<sigc::connection> m_interface_removed_connections;
 };
 
 Object::Object( const std::string& path ):
@@ -272,6 +274,11 @@ bool Object::add_child( const std::string& name, std::shared_ptr<Object> child, 
     if( conn ) {
         m_priv->m_children[name] = child;
         child->set_connection( conn );
+
+        if( m_priv->m_has_object_manager ){
+
+        }
+
         return true;
     }
 
@@ -511,7 +518,7 @@ bool Object::is_lightweight() const{
     return m_priv->m_is_lightweight;
 }
 
-void Object::handle_objectmanager( ObjectManagerObjects* ret ){
+std::map<std::string,std::map<std::string,DBus::Variant>> Object::interfaces_and_properties(){
     std::map<std::string,std::map<std::string,DBus::Variant>> interfaces_and_properties;
 
     {
@@ -526,7 +533,11 @@ void Object::handle_objectmanager( ObjectManagerObjects* ret ){
         }
     }
 
-    (*ret)[ m_priv->m_path ] = interfaces_and_properties;
+    return interfaces_and_properties;
+}
+
+void Object::handle_objectmanager( ObjectManagerObjects* ret ){
+    (*ret)[ m_priv->m_path ] = interfaces_and_properties();
 
     for( Children::iterator c = m_priv->m_children.begin(); c != m_priv->m_children.end(); c++ ) {
         c->second->handle_objectmanager( ret );
@@ -539,6 +550,74 @@ bool Object::has_objectmanager() const{
 
 void Object::set_has_objectmanager( bool objectmanager ){
     m_priv->m_has_object_manager = objectmanager;
+
+    if( objectmanager ){
+        // Go through all of our children, making sure that when an interface is
+        // added or removed the correct signal is emitted onto the bus
+        for( Children::iterator c = m_priv->m_children.begin(); c != m_priv->m_children.end(); c++ ) {
+            c->second->add_self_to_objectmanager( this );
+        }
+    }else{
+        for( sigc::connection conn : m_priv->m_interface_added_connections ){
+            conn.disconnect();
+        }
+        for( sigc::connection conn : m_priv->m_interface_removed_connections ){
+            conn.disconnect();
+        }
+
+        m_priv->m_interface_added_connections.clear();
+        m_priv->m_interface_removed_connections.clear();
+    }
+}
+
+void Object::add_self_to_objectmanager( DBus::Object* obj_manager ){
+    sigc::connection added_con = signal_interface_added().connect( sigc::mem_fun( *obj_manager, &Object::child_interface_added ) );
+    obj_manager->m_priv->m_interface_added_connections.push_back( added_con );
+    sigc::connection removed_con = signal_interface_removed().connect( sigc::mem_fun( *obj_manager, &Object::child_interface_removed ) );
+    obj_manager->m_priv->m_interface_removed_connections.push_back( removed_con );
+
+    for( Children::iterator c = m_priv->m_children.begin(); c != m_priv->m_children.end(); c++ ) {
+        c->second->add_self_to_objectmanager( obj_manager );
+    }
+}
+
+void Object::child_interface_removed( std::shared_ptr<DBus::Interface> iface ){
+    std::vector<std::string> removed_interfaces;
+    removed_interfaces.push_back( iface->name() );
+
+
+    std::shared_ptr<DBus::SignalMessage> sig =
+            DBus::SignalMessage::create( m_priv->m_path,
+                                         DBUS_CXX_OBJECT_MANAGER_INTERFACE,
+                                         "InterfacesRemoved" );
+
+    sig << iface->path() << removed_interfaces;
+    std::shared_ptr<Connection> conn = m_priv->m_connection.lock();
+    if( conn ){
+        conn << sig;
+    }
+}
+
+void Object::child_interface_added( std::shared_ptr<DBus::Interface> iface ){
+    std::map<std::string,std::map<std::string,DBus::Variant>> interfaces_and_properties;
+    std::map<std::string, DBus::Variant> properties;
+
+    const std::set<std::shared_ptr<PropertyBase>> props = iface->properties();
+    for( std::shared_ptr<PropertyBase> prop : props ){
+        properties[ prop->name() ] = prop->variant_value();
+    }
+    interfaces_and_properties[ iface->path() ] = properties;
+
+    std::shared_ptr<DBus::SignalMessage> sig =
+            DBus::SignalMessage::create( m_priv->m_path,
+                                         DBUS_CXX_OBJECT_MANAGER_INTERFACE,
+                                         "InterfacesAdded" );
+
+    sig << iface->path() << interfaces_and_properties;
+    std::shared_ptr<Connection> conn = m_priv->m_connection.lock();
+    if( conn ){
+        conn << sig;
+    }
 }
 
 }
