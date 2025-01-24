@@ -11,14 +11,14 @@ about how bus names, paths, and interfaces are related.
 
 ### Bus Names
 
-When an application connects to the DBus, it is always assigned a unique
+When an application connects to the %DBus, it is always assigned a unique
 name.  This unique name will look like `:1.20`.  This unique name can
 be used to send messages to a particular application, but since this
 may change between startups it is not useful for most purposes.  In general,
 we want to request a well-known bus name in the form of
 `com.example.MyProgram`.  Some well-known bus names include
 `org.freedesktop.Notifications` (which displays notifications to the user),
-and `org.freedesktop.DBus`, which is the actual DBus Daemon control
+and `org.freedesktop.DBus`, which is the actual %DBus Daemon control
 interface.
 
 Bus names must consist of at least two dotted sections with at least

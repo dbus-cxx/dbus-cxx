@@ -2,7 +2,7 @@ dbus-cxx-xml2cpp {#xml2cpp}
 ==
 
 ## Summary
-dbus-cxx-xml2cpp generates proxy and adapter interfaces from modified DBus
+dbus-cxx-xml2cpp generates proxy and adapter interfaces from modified %DBus
 XML introspection documents.  By default, will print out a single(header-only)
 class to `stdout`.  When sending to a file with `-f`, will create a .cpp and .h file.
 
@@ -34,7 +34,7 @@ The extended attributes per XML element are:
 
 ## Proxy Example
 
-The following is an example of a DBus introspection document from [Avahi][avahi-server-browser] (with the appropriate
+The following is an example of a %DBus introspection document from [Avahi][avahi-server-browser] (with the appropriate
 dbus-cxx annotations):
 
 ~~~{.xml}
@@ -253,7 +253,7 @@ protected:
 #endif /* ORG_FREEDESKTOP_AVAHI_SERVICEBROWSERINTERFACE_H */
 ~~~
 
-And finally, the pure virtual class that must be implemented in order to have methods that are called over the DBus:
+And finally, the pure virtual class that must be implemented in order to have methods that are called over the %DBus:
 
 ~~~{.cpp}
 #ifndef ORG_FREEDESKTOP_AVAHI_SERVICEBROWSER_H
@@ -268,7 +268,7 @@ public:
 #endif /* ORG_FREEDESKTOP_AVAHI_SERVICEBROWSER_H */
 ~~~
 
-The idea behind the pure virtual class is that any class that needs to be called over the DBus needs only a minimal
+The idea behind the pure virtual class is that any class that needs to be called over the %DBus needs only a minimal
 amount of support in order to add the ability to have methods called over the bus.
 
 [avahi-server-browser]:https://github.com/lathiat/avahi/blob/d1e71b320d96d0f213ecb0885c8313039a09f693/avahi-daemon/org.freedesktop.Avahi.ServiceBrowser.xml

@@ -121,6 +121,7 @@ of use-cases required for %DBus operation.  Some known limitations are:
 * Windows is somewhat supported - some developers have succesfully used it on
  Windows, but this is not well supported at the moment.
 * The API does not always prevent you from doing something incorrectly
+* Variants are fully supported, but are immutable when created
 
 Most of these limitations are generally not an issue, and most have easy
 workarounds.  If you do run into a shortcoming, please open an issue in Github
