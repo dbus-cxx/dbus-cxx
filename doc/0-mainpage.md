@@ -178,7 +178,6 @@ Key sections within the API reference
   - DBus
 - Detailed class documentation in the <a href="hierarchy.html">Class Hierarchy</a>
 - <a href="annotated.html">Class List</a>
-- <a href="examples.html">Examples</a>
 
 ### Getting help
 If you run into problems, you have several options for getting in touch.
