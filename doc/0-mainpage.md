@@ -110,6 +110,21 @@ While these examples show only doubles, all standard types are supported.  See t
 that are supported.
 
 For more information on these examples, look in the `examples/basics/methods` directory.
+
+## Known Limitations
+
+While no library is perfect, I believe that dbus-cxx fulfills the vast majority
+of use-cases required for %DBus operation.  Some known limitations are:
+
+* ObjectManager support may not properly deregister if you are constantly
+ deleting/creating objects.
+* Windows is somewhat supported - some developers have succesfully used it on
+ Windows, but this is not well supported at the moment.
+* The API does not always prevent you from doing something incorrectly
+
+Most of these limitations are generally not an issue, and most have easy
+workarounds.  If you do run into a shortcoming, please open an issue in Github
+and it will be taken a look at.
  
 ---
 ## Download dbus-cxx source code
