@@ -129,6 +129,10 @@ public:
         sout << "\" ";
 
         switch( update_type() ){
+        case DBus::PropertyUpdateType::Updates:
+            /* By default, the signal is emitted with the value included */
+            sout << DBUS_CXX_PROPERTY_EMITS_CHANGE_SIGNAL_ANNOTATION << "=\"true\"";
+            break;
         case DBus::PropertyUpdateType::Const:
             sout << DBUS_CXX_PROPERTY_EMITS_CHANGE_SIGNAL_ANNOTATION << "=\"const\"";
             break;
