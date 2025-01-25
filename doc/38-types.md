@@ -1,9 +1,9 @@
-DBus Types {#dbus-types}
+%DBus Types {#dbus-types}
 ===
 
-DBus-cxx supports all DBus types.  The following table summarizes the type in C++ and in DBus:
+DBus-cxx supports all %DBus types.  The following table summarizes the type in C++ and in %DBus:
 
-|DBus Type(char)|C++ Type|
+|%DBus Type(char)|C++ Type|
 |---------------|--------|
 |BYTE(`y`)      |`uint8_t`|
 |BOOLEAN(`b`)   |`boolean`|
@@ -25,4 +25,4 @@ DBus-cxx supports all DBus types.  The following table summarizes the type in C+
 
 **Note 1:** Structs use `()` on the bus as their signature - meaning `(i)` is a struct containing one INT32, `(dib)` is a struct containing a DOUBLE, INT32, BOOLEAN.
 
-**Note 2:** In DBus, dicts are shown as arrays with curly brackets.  So `a{is}` is a map of integers to strings: `std::map<int32_t,std::string>`
+**Note 2:** In %DBus, dicts are shown as arrays with curly brackets.  So `a{is}` is a map of integers to strings: `std::map<int32_t,std::string>`

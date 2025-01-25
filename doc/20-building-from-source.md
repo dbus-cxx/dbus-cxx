@@ -3,8 +3,8 @@ Building dbus-cxx from source {#building-from-source}
 
 ## 1. What are the requirements to build from source?
 
-DBus-cxx requires support of at least C++17.  As of version 2.0, it is also a full
-implementation of the DBus protocol, and does not depend on libdbus.
+DBus-cxx requires support of at least C++16.  As of version 2.0, it is also a full
+implementation of the %DBus protocol, and does not depend on libdbus.
 
 The requirements are intended to be very low.  In order to build, you will need the 
 following tools to be installed:
@@ -85,7 +85,7 @@ commands(as root/sudo):
 
 There are two tools provided with dbus-cxx:
 
-[dbus-cxx-xml2cpp](@ref xml2cpp) - this generates code based off of a DBus introspection file.
+[dbus-cxx-xml2cpp](@ref xml2cpp) - this generates code based off of a %DBus introspection file.
   An adapter is created when you want to implement a service, while a proxy
   is created when you want to talk with a remote object
 
