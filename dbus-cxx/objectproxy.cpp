@@ -14,6 +14,7 @@
 #include "standard-interfaces/peerinterfaceproxy.h"
 #include "standard-interfaces/introspectableinterfaceproxy.h"
 #include "standard-interfaces/propertiesinterfaceproxy.h"
+#include "standard-interfaces/objectmanagerproxy.h"
 
 namespace DBus {
 class MethodProxyBase;
@@ -28,7 +29,8 @@ public:
         m_path( path ),
         m_peerInterface( PeerInterfaceProxy::create() ),
         m_introspectableInterface( IntrospectableInterfaceProxy::create() ),
-        m_propertiesInterface( PropertiesInterfaceProxy::create() )
+        m_propertiesInterface( PropertiesInterfaceProxy::create() ),
+        m_objectManagerInterface( ObjectManagerProxy::create() )
     {}
 
     std::weak_ptr<Connection> m_connection;
@@ -42,6 +44,7 @@ public:
     std::shared_ptr<PeerInterfaceProxy> m_peerInterface;
     std::shared_ptr<IntrospectableInterfaceProxy> m_introspectableInterface;
     std::shared_ptr<PropertiesInterfaceProxy> m_propertiesInterface;
+    std::shared_ptr<ObjectManagerProxy> m_objectManagerInterface;
 };
 
 ObjectProxy::ObjectProxy( std::shared_ptr<Connection> conn, const std::string& destination, const std::string& path ):
@@ -49,6 +52,7 @@ ObjectProxy::ObjectProxy( std::shared_ptr<Connection> conn, const std::string& d
     add_interface( m_priv->m_peerInterface );
     add_interface( m_priv->m_introspectableInterface );
     add_interface( m_priv->m_propertiesInterface );
+    add_interface( m_priv->m_objectManagerInterface );
 }
 
 std::shared_ptr<ObjectProxy> ObjectProxy::create( const std::string& path ) {
@@ -290,6 +294,10 @@ std::shared_ptr<IntrospectableInterfaceProxy> ObjectProxy::getIntrospectableInte
 
 std::shared_ptr<PropertiesInterfaceProxy> ObjectProxy::getPropertiesInterface(){
     return m_priv->m_propertiesInterface;
+}
+
+std::shared_ptr<ObjectManagerProxy> ObjectProxy::getObjectManagerInterface(){
+    return m_priv->m_objectManagerInterface;
 }
 
 }

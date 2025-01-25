@@ -32,6 +32,7 @@ template <typename signature> class MethodProxy;
 class PeerInterfaceProxy;
 class IntrospectableInterfaceProxy;
 class PropertiesInterfaceProxy;
+class ObjectManagerProxy;
 
 /**
  * Object proxies are local proxies that provide local methods and signals for
@@ -191,6 +192,8 @@ public:
     std::shared_ptr<IntrospectableInterfaceProxy> getIntrospectableInterface();
 
     std::shared_ptr<PropertiesInterfaceProxy> getPropertiesInterface();
+
+    std::shared_ptr<ObjectManagerProxy> getObjectManagerInterface();
 
 private:
     class priv_data;

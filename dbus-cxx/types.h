@@ -19,6 +19,8 @@
 
 namespace DBus {
 
+typedef std::map<DBus::Path,std::map<std::string,std::map<std::string,DBus::Variant>>> ObjectManagerObjects;
+
 class Variant;
 
 inline int typeToDBusType( DataType t ) {

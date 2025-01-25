@@ -384,6 +384,17 @@ public:
 
     static std::shared_ptr<Object> create_lightweight( const std::string& path = std::string() );
 
+    bool has_objectmanager() const;
+
+    void set_has_objectmanager( bool objectmanager );
+
+private:
+    void handle_objectmanager( ObjectManagerObjects* ret );
+    std::map<std::string,std::map<std::string,DBus::Variant>> interfaces_and_properties();
+    void child_interface_removed( std::shared_ptr<DBus::Interface> iface );
+    void child_interface_added( std::shared_ptr<DBus::Interface> iface );
+    void add_self_to_objectmanager( DBus::Object* obj_manager );
+
 private:
     class priv_data;
 

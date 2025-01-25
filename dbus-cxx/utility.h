@@ -29,6 +29,7 @@
 #define DBUS_CXX_INTROSPECTABLE_INTERFACE "org.freedesktop.DBus.Introspectable"
 #define DBUS_CXX_PEER_INTERFACE     "org.freedesktop.DBus.Peer"
 #define DBUS_CXX_PROPERTIES_INTERFACE   "org.freedesktop.DBus.Properties"
+#define DBUS_CXX_OBJECT_MANAGER_INTERFACE "org.freedesktop.DBus.ObjectManager"
 #define DBUS_CXX_PROPERTY_EMITS_CHANGE_SIGNAL_ANNOTATION "org.freedesktop.DBus.Property.EmitsChangedSignal"
 
 /**
