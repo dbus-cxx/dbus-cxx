@@ -174,10 +174,10 @@ template<typename... T>
 inline std::string signature( const DBus::MultipleReturn<T...>& )     { return DBUSCXX_TYPE_INVALID_AS_STRING; }
 
 
-template <typename T> inline std::string signature( const std::vector<T>& ) { T t; return DBUSCXX_TYPE_ARRAY_AS_STRING + signature( t ); }
+template <typename T> inline std::string signature( const std::vector<T>& ) { T t {}; return DBUSCXX_TYPE_ARRAY_AS_STRING + signature( t ); }
 
 template <typename Key, typename Data> inline std::string signature( const std::map<Key, Data>& ) {
-    Key k; Data d;
+    Key k {}; Data d {};
     std::string sig;
     sig = DBUSCXX_TYPE_ARRAY_AS_STRING;
     sig += DBUSCXX_DICT_ENTRY_BEGIN_CHAR_AS_STRING +
@@ -191,7 +191,7 @@ template <typename Key, typename Data> inline std::string signature( const std::
 //However, when we are sending out data, that signature would give us an extra array signature,
 //which is not good.  Hence, this method is only used when we need to send out a dict
 template <typename Key, typename Data> inline std::string signature_dict_data( const std::map<Key, Data>& ) {
-    Key k; Data d;
+    Key k {}; Data d {};
     std::string sig;
     sig = DBUSCXX_DICT_ENTRY_BEGIN_CHAR_AS_STRING +
         signature( k ) + signature( d ) +
@@ -220,7 +220,7 @@ template<typename arg1, typename... argn>
 class dbus_signature<arg1, argn...> : public dbus_signature<argn...> {
 public:
     std::string dbus_sig() const {
-        arg1 arg;
+        arg1 arg {};
         return signature( arg ) + dbus_signature<argn...>::dbus_sig();
     }
 };

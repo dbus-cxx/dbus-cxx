@@ -59,10 +59,11 @@ void log_std_err( const char* logger_name, const struct SL_LogLocation* location
     char buffer[ 4096 ];
     const char* stringLevel;
     std::thread::id this_id = std::this_thread::get_id();
+    std::hash<std::thread::id> hasher;
 
     SL_LOGLEVEL_TO_STRING( stringLevel, level );
 
-    snprintf( buffer, 4096, "0x%08X %s [%s] - %s(%s:%d)", this_id, logger_name, stringLevel, log_string,
+    snprintf( buffer, 4096, "0x%08lX %s [%s] - %s(%s:%d)", hasher(this_id), logger_name, stringLevel, log_string,
         location->file,
         location->line_number );
     std::cerr << buffer << std::endl;

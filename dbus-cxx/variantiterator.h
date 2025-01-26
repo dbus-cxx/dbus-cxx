@@ -75,7 +75,7 @@ public:
         while( subiter.is_valid() ) {
             //NOTE: we don't need to do subiter.next() here, because
             //operator>> does that for us
-            T val;
+            T val {};
             subiter >> val;
             retval.push_back( val );
         }
@@ -90,8 +90,8 @@ public:
         }
 
         std::map<Key, Data> dict;
-        Key val_key;
-        Data val_data;
+        Key val_key {};
+        Data val_data {};
 
         VariantIterator subiter = this->recurse();
 

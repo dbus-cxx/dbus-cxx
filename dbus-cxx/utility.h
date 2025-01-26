@@ -167,7 +167,7 @@ public:
     }
 
     std::string introspect( const std::vector<std::string>& names, int idx, const std::string& spaces ) const {
-        arg1 arg;
+        arg1 arg {};
         std::ostringstream output;
         std::string name = names.size() > idx ? names[idx] : "";
         output << spaces;
@@ -211,7 +211,7 @@ public:
     }
 
     std::string introspect( const std::vector<std::string>& names, int& idx, const std::string& spaces ) const {
-        arg1 arg;
+        arg1 arg {};
         std::ostringstream output;
         std::string name = names.size() > idx ? names[idx] : "";
         output << spaces;
@@ -279,7 +279,7 @@ struct dbus_function_traits<std::function<T_ret( Args... )>> {
 
     std::string introspect( const std::vector<std::string>& names, int idx, const std::string& spaces ) const {
         std::ostringstream sout;
-        T_ret ret_type;
+        T_ret ret_type {};
         std::string name = "";
 
         if( names.size() > 0 ) {
@@ -313,7 +313,7 @@ struct dbus_function_traits<std::function<T_ret( Args... )>> {
             ( void )( i >> ... >> arg );
         },
         tup_args );
-        T_ret retval;
+        T_ret retval {};
 
         retval = std::apply( slot, tup_args );
         retmsg << retval;

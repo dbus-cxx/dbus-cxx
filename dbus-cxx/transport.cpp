@@ -39,6 +39,54 @@ enum class ParsingState {
     Parsing_Value
 };
 
+std::string unescape_transport_value(const std::string& value) {
+    std::string unescaped;
+    std::string hex;
+
+    enum { NORMAL, ESCAPE, HEX1 } state = NORMAL;
+
+    for (const char c : value) {
+        switch (state) {
+        case NORMAL:
+            if (c == '%') {
+                state = ESCAPE;
+            } else {
+                unescaped += c;
+            }
+            break;
+
+        case ESCAPE:
+            if (std::isxdigit(c)) {
+                hex = c;
+                state = HEX1;
+            } else {
+                SIMPLELOGGER_ERROR( LOGGER_NAME, "In D-Bus address, percent character was followed by characters other than hex digits");
+                return value;
+            }
+            break;
+
+        case HEX1:
+            if (std::isxdigit(c)) {
+                hex += c;
+                state = NORMAL;
+
+                unescaped += static_cast<char>(std::stoi(hex, nullptr, 16));
+            } else {
+                SIMPLELOGGER_ERROR( LOGGER_NAME, "In D-Bus address, percent character was followed by characters other than hex digits");
+                return value;
+            }
+            break;
+        };
+    }
+
+    if (state != NORMAL) {
+        SIMPLELOGGER_ERROR( LOGGER_NAME, "In D-Bus address, percent character was not followed by two hex digits");
+        return value;
+    }
+
+    return unescaped;
+}
+
 static std::vector<ParsedTransport> parseTransports( std::string address_str ) {
     std::string tmpTransportName;
     std::string tmpKey;
@@ -70,7 +118,7 @@ static std::vector<ParsedTransport> parseTransports( std::string address_str ) {
         if( state == ParsingState::Parsing_Value ) {
             if( c == ',' ) {
                 state = ParsingState::Parsing_Key;
-                tmpConfig[ tmpKey ] = tmpValue;
+                tmpConfig[ tmpKey ] = unescape_transport_value(tmpValue);
                 tmpKey = "";
                 tmpValue = "";
                 continue;
@@ -78,7 +126,7 @@ static std::vector<ParsedTransport> parseTransports( std::string address_str ) {
 
             if( c == ';' ) {
                 state = ParsingState::Parsing_Transport_Name;
-                tmpConfig[ tmpKey ] = tmpValue;
+                tmpConfig[ tmpKey ] = unescape_transport_value(tmpValue);
 
                 tmpTransport.m_transportName = tmpTransportName;
                 tmpTransport.m_config = tmpConfig;
@@ -97,7 +145,7 @@ static std::vector<ParsedTransport> parseTransports( std::string address_str ) {
         }
     }
 
-    tmpConfig[ tmpKey ] = tmpValue;
+    tmpConfig[ tmpKey ] = unescape_transport_value(tmpValue);
 
     if( !tmpTransportName.empty() ) {
         tmpTransport.m_transportName = tmpTransportName;

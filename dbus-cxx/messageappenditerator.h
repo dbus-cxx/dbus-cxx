@@ -91,7 +91,7 @@ public:
     template <typename T>
     MessageAppendIterator& operator<<( const std::vector<T>& v ) {
         bool success;
-        T type;
+        T type {};
 
         success = this->open_container( ContainerType::ARRAY, DBus::signature( type ) );
 

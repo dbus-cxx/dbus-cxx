@@ -19,6 +19,7 @@
  ***************************************************************************/
 // #include <dbus-cxx.h>
 #include <memory>
+#include <thread>
 #include <unistd.h>
 #include <iostream>
 
@@ -370,7 +371,7 @@ int main( int argc, char** argv )
     } else {
         server_setup();
         ret = true;
-        sleep( 1 );
+        std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
     }
 
     return !ret;
