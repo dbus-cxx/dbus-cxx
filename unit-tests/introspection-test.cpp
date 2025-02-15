@@ -18,6 +18,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this software. If not see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#include <thread>
 #include <unistd.h>
 #include <dbus-cxx.h>
 #include <expat.h>
@@ -312,7 +313,7 @@ int main( int argc, char** argv ) {
     } else {
         server_setup();
         ret = true;
-        sleep( 1 );
+        std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
     }
 
 

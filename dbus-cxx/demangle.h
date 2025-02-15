@@ -25,7 +25,7 @@ template <typename T>
 std::string demangle() {
 #if DBUS_CXX_HAS_CXA_DEMANGLE
     int status;
-    T arg1;
+    T arg1 {};
     char* demangled = abi::__cxa_demangle( typeid( arg1 ).name(), nullptr, nullptr, &status );
     std::string arg1_name( demangled );
     free( demangled );

@@ -217,7 +217,7 @@ public:
         while( subiter.is_valid() ) {
             //NOTE: we don't need to do subiter.next() here, because
             //operator>> does that for us
-            T val;
+            T val {};
             subiter >> val;
             array.push_back( val );
         }
