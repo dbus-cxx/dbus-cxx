@@ -61,7 +61,7 @@ public:
     virtual HandlerResult handle_call_message( std::shared_ptr<Connection> connection, std::shared_ptr<const CallMessage> message ) = 0;
 
     /** Returns a DBus XML description of this interface */
-    virtual std::string introspect( int space_depth = 0 ) const { return std::string(); };
+    virtual std::string introspect( int = 0 ) const { return std::string(); };
 
     std::string arg_name( size_t i ) const;
 

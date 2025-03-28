@@ -65,7 +65,7 @@ public:
      */
     void set_value( Variant value );
 
-    virtual std::string introspect( int spaces ){ return std::string(); }
+    virtual std::string introspect( int ){ return std::string(); }
 
 private:
     void setInterface( Interface* );
