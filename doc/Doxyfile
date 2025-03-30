@@ -310,7 +310,10 @@ HTML_EXTRA_FILES       = images/bug-small.png \
                          images/documents-small.png \
                          images/fedora-logo-tiny.png \
                          images/sourcecode-small.png \
-                         images/mail-bulk-solid.png
+                         images/mail-bulk-solid.png \
+                         images/favicon/favicon.ico \
+                         images/favicon/favicon-96x96.png \
+                         images/favicon/favicon.svg
 
 # This tag specifies a string that should uniquely identify the documentation
 # set bundle. This should be a reverse domain-name style string, e.g.
