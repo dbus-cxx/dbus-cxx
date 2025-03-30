@@ -192,6 +192,9 @@ WARN_IF_UNDOCUMENTED   = NO
 
 INPUT                  = ../dbus-cxx/ \
                          @CMAKE_CURRENT_SOURCE_DIR@/dbus-cxx \
+                         @CMAKE_CURRENT_SOURCE_DIR@/dbus-cxx-glib \
+                         @CMAKE_CURRENT_SOURCE_DIR@/dbus-cxx-qt \
+                         @CMAKE_CURRENT_SOURCE_DIR@/dbus-cxx-uv \
                          @CMAKE_CURRENT_SOURCE_DIR@/doc
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
