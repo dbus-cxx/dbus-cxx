@@ -77,11 +77,11 @@ public:
     //      virtual std::shared_ptr<signal_base> clone() = 0;
 
     /** Returns a DBus XML description of this interface */
-    virtual std::string introspect( int space_depth = 0 ) const { return std::string(); }
+    virtual std::string introspect( int = 0 ) const { return std::string(); }
 
-    virtual std::string arg_name( size_t i ) { return std::string(); }
+    virtual std::string arg_name( size_t ) { return std::string(); }
 
-    virtual void set_arg_name( size_t i, const std::string& name ) { }
+    virtual void set_arg_name( size_t, const std::string& ) { }
 
 protected:
     bool handle_dbus_outgoing( std::shared_ptr<const Message> );
