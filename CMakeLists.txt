@@ -70,10 +70,6 @@ else()
     set(LIBRT "")
 endif()
 
-#
-# Configure our compile options
-#
-configure_file( dbus-cxx-config.h.cmake dbus-cxx/dbus-cxx-config.h )
 if( ${ENABLE_ASAN} )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
             -fsanitize=address \
@@ -111,6 +107,11 @@ try_compile( DBUS_CXX_HAS_PROP_CONST
     "${PROJECT_SOURCE_DIR}/cmake-tests/propagate-const.cpp"
     CMAKE_FLAGS -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_STANDARD_REQUIRED=ON
 )
+
+#
+# Configure our compile options
+#
+configure_file( dbus-cxx-config.h.cmake dbus-cxx/dbus-cxx-config.h )
 
 # Check for compiler flags that we want
 set( UNUSED_RESULT 0 )
