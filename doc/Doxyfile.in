@@ -30,14 +30,14 @@ PROJECT_NAME           = dbus-cxx
 # and the maximum width should not exceed 200 pixels. Doxygen will copy the logo
 # to the output directory.
 
-PROJECT_LOGO           = images/dbus-cxx-logo-doxygen.png
+PROJECT_LOGO           = "@SRCDIR@/doc/images/dbus-cxx-logo-doxygen.png"
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
 # entered, it will be relative to the location where doxygen was started. If
 # left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = reference/
+OUTPUT_DIRECTORY       = "@BUILDDIR@/doc/reference/"
 
 # If the FULL_PATH_NAMES tag is set to YES doxygen will prepend the full path
 # before files name in the file list and in the header files. If set to NO the
@@ -163,12 +163,11 @@ WARN_IF_UNDOCUMENTED   = NO
 # spaces.
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = ../dbus-cxx/ \
-                         @CMAKE_CURRENT_SOURCE_DIR@/dbus-cxx \
-                         @CMAKE_CURRENT_SOURCE_DIR@/dbus-cxx-glib \
-                         @CMAKE_CURRENT_SOURCE_DIR@/dbus-cxx-qt \
-                         @CMAKE_CURRENT_SOURCE_DIR@/dbus-cxx-uv \
-                         @CMAKE_CURRENT_SOURCE_DIR@/doc
+INPUT                  = "@SRCDIR@/dbus-cxx/" \
+                         "@SRCDIR@/dbus-cxx-glib" \
+                         "@SRCDIR@/dbus-cxx-qt" \
+                         "@SRCDIR@/dbus-cxx-uv" \
+                         "@SRCDIR@/doc"
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
 # be searched for input files as well.
@@ -183,13 +182,13 @@ RECURSIVE              = YES
 # Note that relative paths are relative to the directory from which doxygen is
 # run.
 
-EXCLUDE                = @CMAKE_CURRENT_SOURCE_DIR@/dbus-cxx/daemon-proxy/README.md
+EXCLUDE                = "@SRCDIR@/dbus-cxx/daemon-proxy/README.md"
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = @CMAKE_CURRENT_SOURCE_DIR@/examples/
+EXAMPLE_PATH           = "@SRCDIR@/examples/"
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
@@ -211,7 +210,7 @@ EXAMPLE_RECURSIVE      = YES
 # that contain images that are to be included in the documentation (see the
 # \image command).
 
-IMAGE_PATH             = images
+IMAGE_PATH             = "@SRCDIR@/doc/images"
 
 #---------------------------------------------------------------------------
 # Configuration options related to source browsing
@@ -251,7 +250,7 @@ REFERENCES_RELATION    = YES
 # of the possible markers and block names see the documentation.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_HEADER            = doxygen_header.html
+HTML_HEADER            = "@SRCDIR@/doc/doxygen_header.html"
 
 # The HTML_EXTRA_STYLESHEET tag can be used to specify additional user-defined
 # cascading style sheets that are included after the standard style sheets
@@ -264,7 +263,7 @@ HTML_HEADER            = doxygen_header.html
 # list). For an example see the documentation.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_EXTRA_STYLESHEET  = customdoxygen.css
+HTML_EXTRA_STYLESHEET  = "@SRCDIR@/doc/customdoxygen.css"
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
 # other source files which should be copied to the HTML output directory. Note
@@ -274,22 +273,22 @@ HTML_EXTRA_STYLESHEET  = customdoxygen.css
 # files will be copied as-is; there are no commands or markers available.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_EXTRA_FILES       = images/bug-small.png \
-                         images/dbus-cxx-logo-med.png \
-                         images/dbus-cxx-logo.svg \
-                         images/download-small.png \
-                         images/gplv3.png \
-                         images/lgplv3.png \
-                         images/ubuntu-logo-tiny.png \
-                         images/bugs-small.png \
-                         images/dbus-cxx-logo.png \
-                         images/documents-small.png \
-                         images/fedora-logo-tiny.png \
-                         images/sourcecode-small.png \
-                         images/mail-bulk-solid.png \
-                         images/favicon/favicon.ico \
-                         images/favicon/favicon-96x96.png \
-                         images/favicon/favicon.svg
+HTML_EXTRA_FILES       = "@SRCDIR@/doc/images/bug-small.png" \
+                         "@SRCDIR@/doc/images/dbus-cxx-logo-med.png" \
+                         "@SRCDIR@/doc/images/dbus-cxx-logo.svg" \
+                         "@SRCDIR@/doc/images/download-small.png" \
+                         "@SRCDIR@/doc/images/gplv3.png" \
+                         "@SRCDIR@/doc/images/lgplv3.png" \
+                         "@SRCDIR@/doc/images/ubuntu-logo-tiny.png" \
+                         "@SRCDIR@/doc/images/bugs-small.png" \
+                         "@SRCDIR@/doc/images/dbus-cxx-logo.png" \
+                         "@SRCDIR@/doc/images/documents-small.png" \
+                         "@SRCDIR@/doc/images/fedora-logo-tiny.png" \
+                         "@SRCDIR@/doc/images/sourcecode-small.png" \
+                         "@SRCDIR@/doc/images/mail-bulk-solid.png" \
+                         "@SRCDIR@/doc/images/favicon/favicon.ico" \
+                         "@SRCDIR@/doc/images/favicon/favicon-96x96.png" \
+                         "@SRCDIR@/doc/images/favicon/favicon.svg"
 
 # This tag specifies a string that should uniquely identify the documentation
 # set bundle. This should be a reverse domain-name style string, e.g.
@@ -407,7 +406,7 @@ GENERATE_XML           = YES
 # tag file that is based on the input files it reads. See section "Linking to
 # external documentation" for more information about the usage of tag files.
 
-GENERATE_TAGFILE       = dbus-cxx_doxygen_tags
+GENERATE_TAGFILE       = "@BUILDDIR@/doc/dbus-cxx_doxygen_tags"
 
 #---------------------------------------------------------------------------
 # Configuration options related to the dot tool
