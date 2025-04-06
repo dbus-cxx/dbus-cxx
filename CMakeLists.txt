@@ -390,15 +390,14 @@ endif( ENABLE_TOOLS )
 if( BUILD_SITE )
     find_package( Doxygen
                   REQUIRED dot )
-    file( COPY ${PROJECT_SOURCE_DIR}/doc/
-          DESTINATION ${PROJECT_BINARY_DIR}/doc/ )
-    configure_file( ${PROJECT_SOURCE_DIR}/doc/Doxyfile
-                    ${PROJECT_BINARY_DIR}/doc @ONLY )
+    set( SRCDIR "${PROJECT_SOURCE_DIR}" )
+    set( BUILDDIR "${PROJECT_BINARY_DIR}" )
+    configure_file( ${PROJECT_SOURCE_DIR}/doc/Doxyfile.in
+                    ${PROJECT_BINARY_DIR}/doc/Doxyfile @ONLY )
 
     add_custom_target( doc_doxygen ALL
-        COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
+        COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/doc/Doxyfile
         DEPENDS dbus-cxx
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM )
     add_custom_target( tar_site ALL
