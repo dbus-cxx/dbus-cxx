@@ -1,0 +1,22 @@
+---
+IndentPPDirectives: BeforeHash
+IndentWidth: 4
+AccessModifierOffset: -4
+PointerAlignment: Left
+# NOTE: spaces in vec[ 5 ] aren't supported by clang-format
+SpacesInParentheses: true
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterControlStatements: false
+  AfterForeachMacros: false
+  AfterFunctionDeclarationName: false
+  AfterFunctionDefinitionName: false
+  AfterIfMacros: false
+  AfterOverloadedOperator: false
+  BeforeNonEmptyParentheses: false
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortEnumsOnASingleLine: false
+AllowShortLoopsOnASingleLine: true
+PackConstructorInitializers: CurrentLine
+AlwaysBreakTemplateDeclarations: Yes
+Standard: c++17
