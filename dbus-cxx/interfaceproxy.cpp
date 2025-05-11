@@ -224,6 +224,12 @@ std::shared_ptr<const ReturnMessage> InterfaceProxy::call( std::shared_ptr<const
     return m_priv->m_object->call( call_message, timeout_milliseconds );
 }
 
+std::shared_ptr<const ReturnMessage> InterfaceProxy::call_notimeout( std::shared_ptr<const CallMessage> call_message ) const {
+    if( !m_priv->m_object ) { return std::shared_ptr<const ReturnMessage>(); }
+
+    return m_priv->m_object->call_notimeout( call_message );
+}
+
 //  std::shared_ptr<PendingCall> InterfaceProxy::call_async( std::shared_ptr<const CallMessage> call_message, int timeout_milliseconds ) const
 //  {
 //    if ( not m_priv->m_object ) return std::shared_ptr<PendingCall>();

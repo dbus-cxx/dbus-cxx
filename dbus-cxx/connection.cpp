@@ -406,8 +406,7 @@ Connection& Connection::operator <<( std::shared_ptr<const Message> msg ) {
     return *this;
 }
 
-std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking( std::shared_ptr<const CallMessage> message, int timeout_milliseconds ) {
-
+std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking_impl( std::shared_ptr<const CallMessage> message, int timeout_milliseconds, bool disable_timeout ) {
     if( !this->is_valid() ) { throw ErrorDisconnected(); }
 
     if( !message ) { return std::shared_ptr<ReturnMessage>(); }
@@ -415,7 +414,7 @@ std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking( std::shared
     std::shared_ptr<ReturnMessage> retmsg;
     int msToWait = timeout_milliseconds;
 
-    if( msToWait == -1 ) {
+    if( !disable_timeout && msToWait == -1 ) {
         // Use a sane default value
         msToWait = 20000;
     }
@@ -440,13 +439,18 @@ std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking( std::shared
         fds.push_back( m_priv->m_transport->fd() );
 
         do {
-            std::tuple<bool, int, std::vector<int>, std::chrono::milliseconds> fdResponse =
-                DBus::priv::wait_for_fd_activity( fds, msToWait );
+            std::tuple<bool, int, std::vector<int>, std::chrono::milliseconds> fdResponse;
+            if ( disable_timeout ) {
+                fdResponse = DBus::priv::wait_for_fd_activity( fds, -1 );
+            }
+            else {
+                fdResponse = DBus::priv::wait_for_fd_activity( fds, msToWait );
 
-            msToWait -= std::get<3>( fdResponse ).count();
+                msToWait -= std::get<3>( fdResponse ).count();
 
-            if( msToWait <= 0 ) {
-                throw ErrorNoReply( "Did not receive a response in the alotted time" );
+                if( msToWait <= 0 ) {
+                    throw ErrorNoReply( "Did not receive a response in the alotted time" );
+                }
             }
 
             if( !m_priv->m_transport->is_valid() ) {
@@ -517,14 +521,22 @@ std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking( std::shared
              */
             std::chrono::time_point now = std::chrono::steady_clock::now();
             std::unique_lock<std::mutex> lock( ex->cv_lock );
-            bool status = ex->cv.wait_until( lock, now + std::chrono::milliseconds( msToWait ), [this, serial] {
+            bool status;
+            auto predicate = [this, serial] {
                 std::unique_lock<std::mutex> lock( m_priv->m_expectingResponsesLock );
                 std::map<uint32_t, std::shared_ptr<ExpectingResponse>>::iterator it =
                     m_priv->m_expectingResponses.find( serial );
 
                 // return false if the waiting should be continued
                 return ( *it ).second->reply.get() != nullptr;
-            } );
+            };
+            if ( disable_timeout ) {
+                ex->cv.wait( lock, predicate );
+                status = true;
+            }
+            else {
+                status = ex->cv.wait_until( lock, now + std::chrono::milliseconds( msToWait ), predicate );
+            }
             std::shared_ptr<ExpectingResponse> resp;
 
             {
@@ -562,6 +574,14 @@ std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking( std::shared
     }
 
     return retmsg;
+}
+
+std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking( std::shared_ptr<const CallMessage> message, int timeout_milliseconds ) {
+    return this->send_with_reply_blocking_impl( std::move(message), timeout_milliseconds, false );
+}
+
+std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking_notimeout( std::shared_ptr<const CallMessage> message ) {
+    return this->send_with_reply_blocking_impl( std::move(message), -1, true );
 }
 
 void Connection::flush() {

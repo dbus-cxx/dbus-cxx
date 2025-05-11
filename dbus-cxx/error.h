@@ -143,6 +143,19 @@ DBUSCXX_ERROR( ErrorAccessDenied, DBUSCXX_ERROR_ACCESS_DENIED );
 DBUSCXX_ERROR( ErrorAuthFailed, DBUSCXX_ERROR_AUTH_FAILED );
 
 /**
+ * @class ErrorInteractiveAuthorizationRequired
+ * @ingroup errors
+ *
+ * This error is caused attempting to call a D-Bus method which expects
+ * `ALLOW_INTERACTIVE_AUTHORIZATION` to be set when it isn't. See
+ * <https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-messages>.
+ *
+ * This flag can be enabled with @ref
+ * DBus::MethodProxyBase::enable_interactive_authorization().
+ */
+DBUSCXX_ERROR( ErrorInteractiveAuthorizationRequired, DBUSCXX_ERROR_INTERACTIVE_AUTHORIZATION_REQUIRED );
+
+/**
  * @class ErrorNoServer
  * @ingroup errors
  * @author Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
