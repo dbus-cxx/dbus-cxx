@@ -127,6 +127,11 @@ public:
     std::shared_ptr<const ReturnMessage> call( std::shared_ptr<const CallMessage>, int timeout_milliseconds = -1 ) const;
 
     /**
+     * A timeout-less version of @ref call().
+     */
+    std::shared_ptr<const ReturnMessage> call_notimeout( std::shared_ptr<const CallMessage> ) const;
+
+    /**
      * Creates a proxy method with a signature based on the template parameters and adds it to the named interface
      * @return A smart pointer to the newly created method proxy
      * @param interface_name The name of the interface to add this proxy method to
