@@ -18,8 +18,10 @@
 #ifndef DBUSCXX_MESSAGE_H
 #define DBUSCXX_MESSAGE_H
 
-#define DBUSCXX_MESSAGE_NO_REPLY_EXPECTED   0x01
-#define DBUSCXX_MESSAGE_NO_AUTO_START_FLAG  0x02
+#define DBUSCXX_MESSAGE_NO_REPLY_EXPECTED               0x01
+#define DBUSCXX_MESSAGE_NO_AUTO_START_FLAG              0x02
+// This is set in CallMessage only.
+#define DBUSCXX_MESSAGE_ALLOW_INTERACTIVE_AUTHORIZATION 0x04
 
 namespace DBus {
 class ReturnMessage;

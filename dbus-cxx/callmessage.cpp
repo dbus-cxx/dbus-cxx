@@ -142,6 +142,19 @@ void CallMessage::set_no_reply( bool no_reply ) {
     set_flags( newflags );
 }
 
+void CallMessage::set_interactive_authentication( bool allow )
+{
+    uint8_t newflags = flags();
+
+    if( allow ) {
+        newflags |= DBUSCXX_MESSAGE_ALLOW_INTERACTIVE_AUTHORIZATION;
+    } else {
+        newflags &= ( ~DBUSCXX_MESSAGE_ALLOW_INTERACTIVE_AUTHORIZATION );
+    }
+
+    set_flags( newflags );
+}
+
 bool CallMessage::expects_reply() const {
     return flags() & DBUSCXX_MESSAGE_NO_REPLY_EXPECTED;
 }

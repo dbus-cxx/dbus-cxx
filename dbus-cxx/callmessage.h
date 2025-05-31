@@ -88,6 +88,8 @@ public:
 
     void set_no_reply( bool no_reply = true );
 
+    void set_interactive_authentication( bool allow );
+
     bool expects_reply() const;
 
     virtual MessageType type() const;

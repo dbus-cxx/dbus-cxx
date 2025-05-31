@@ -147,6 +147,8 @@ public:
 
     std::shared_ptr<const ReturnMessage> call( std::shared_ptr<const CallMessage>, int timeout_milliseconds = -1 ) const;
 
+    std::shared_ptr<const ReturnMessage> call_notimeout( std::shared_ptr<const CallMessage> ) const;
+
     //      std::shared_ptr<PendingCall> call_async( std::shared_ptr<const CallMessage>, int timeout_milliseconds=-1 ) const;
 
     template <class T_arg>

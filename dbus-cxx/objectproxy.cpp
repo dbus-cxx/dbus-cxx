@@ -276,6 +276,14 @@ std::shared_ptr<const ReturnMessage> ObjectProxy::call( std::shared_ptr<const Ca
     return conn->send_with_reply_blocking( call_message, timeout_milliseconds );
 }
 
+std::shared_ptr<const ReturnMessage> ObjectProxy::call_notimeout( std::shared_ptr<const CallMessage> call_message ) const {
+    std::shared_ptr<Connection> conn = m_priv->m_connection.lock();
+
+    if( !conn ) { return std::shared_ptr<ReturnMessage>(); }
+
+    return conn->send_with_reply_blocking_notimeout( call_message );
+}
+
 sigc::signal< void( std::shared_ptr<InterfaceProxy> )> ObjectProxy::signal_interface_added() {
     return m_priv->m_signal_interface_added;
 }
