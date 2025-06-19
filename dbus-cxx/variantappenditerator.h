@@ -81,9 +81,8 @@ public:
 
     template <typename... T>
     VariantAppendIterator& operator<<( const std::tuple<T...>& tup ) {
-        bool success;
         std::string signature = DBus::signature( tup );
-        success = this->open_container( ContainerType::STRUCT, signature.c_str() );
+        open_container( ContainerType::STRUCT, signature.c_str() );
         VariantAppendIterator* subiter = sub_iterator();
         std::apply( [subiter]( auto&& ...arg ) mutable {
             ( *subiter << ... << arg );
