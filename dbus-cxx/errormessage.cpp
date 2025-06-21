@@ -122,6 +122,12 @@ void ErrorMessage::throw_error() {
     DBUS_ERROR_CHECK( DBUSCXX_ERROR_MATCH_RULE_NOT_FOUND, ErrorMatchRuleNotFound );
     DBUS_ERROR_CHECK( DBUSCXX_ERROR_MATCH_RULE_INVALID, ErrorMatchRuleInvalid );
 
+    if ( name() == DBUSCXX_ERROR_INTERACTIVE_AUTHORIZATION_REQUIRED )
+        throw ErrorInteractiveAuthorizationRequired(
+            message() + " (dbus-cxx developer note: Consider calling "
+            "enable_interactive_authorization() on the method proxy)"
+        );
+
     throw Error( name(), message() );
 }
 

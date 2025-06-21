@@ -195,10 +195,15 @@ public:
      * If a timeout is processed, this will throw ErrorNoReply
      *
      * @param msg The message to send
-     * @param timeout_milliseconds How long to wait for.  If -1, will wait the maximum time
+     * @param timeout_milliseconds How long to wait for. If -1, a "sane default value" is used.
      * @return The return message
      */
     std::shared_ptr<ReturnMessage> send_with_reply_blocking( std::shared_ptr<const CallMessage> msg, int timeout_milliseconds = -1 );
+
+    /**
+     * A timeout-less version of @ref send_with_reply_blocking().
+     */
+    std::shared_ptr<ReturnMessage> send_with_reply_blocking_notimeout( std::shared_ptr<const CallMessage> msg );
 
     /**
      * Flushes all data out to the bus.  This should generally
@@ -419,6 +424,8 @@ private:
     void process_single_message();
 
     void remove_invalid_threaddispatchers_and_associated_objects();
+
+    std::shared_ptr<ReturnMessage> send_with_reply_blocking_impl( std::shared_ptr<const CallMessage> msg, int timeout_milliseconds, bool disable_timeout );
 
     /**
      * Send an error back to the calling application based on HandlerResult.  No-op if the
