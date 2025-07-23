@@ -150,6 +150,7 @@ public:
     std::string to_string() const;
     DBus::Path  to_path() const;
     DBus::Signature to_signature() const;
+    Variant to_variant() const;
 
     operator bool();
     operator uint8_t();
@@ -186,6 +187,13 @@ public:
     static Variant createFromMessage( MessageIterator iter );
 
     static Variant createFromDemarshal( Signature sig, std::shared_ptr<Demarshaling> demarshal, const std::vector<int>& filedescriptors, uint32_t depth );
+
+    /**
+     * Wrap variant 'other' inside of a new variant.
+     * @param other
+     * @return
+     */
+    static Variant createFromVariant( Variant& other );
 
 private:
     void recurseArray( SignatureIterator iter, std::shared_ptr<Demarshaling> demarshal, Marshaling* marshal, const std::vector<int>& filedescriptors, uint32_t depth );
