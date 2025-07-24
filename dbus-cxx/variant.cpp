@@ -228,6 +228,17 @@ Variant Variant::createFromDemarshal( Signature sig, std::shared_ptr<Demarshalin
         v.recurseStruct( sigiter.recurse(), demarshal, &marshal, filedescriptors, depth );
         break;
 
+    case DBus::DataType::VARIANT:
+        // We have a variant inside of a variant.  Whoever creates APIs like this,
+        // I really really don't like you.
+    {
+        Signature sig = demarshal->demarshal_signature();
+        Variant v2 = createFromDemarshal(sig, demarshal, filedescriptors, depth );
+
+        v = Variant::createFromVariant(v2);
+    }
+        break;
+
     default:
         // Not yet supported
     {
@@ -581,6 +592,15 @@ DBus::Signature Variant::to_signature() const {
     return vi.get_signature();
 }
 
+Variant Variant::to_variant() const{
+    if( m_currentType != DataType::VARIANT ) {
+        throw ErrorBadVariantCast();
+    }
+
+    priv::VariantIterator vi( this );
+    return vi.get_variant();
+}
+
 Variant::operator bool(){
     return to_bool();
 }
@@ -709,6 +729,20 @@ std::ostream& operator<<( std::ostream& os, const Variant& var ) {
 
     os << "]";
     return os;
+}
+
+Variant Variant::createFromVariant( Variant& other ){
+    Variant v;
+    TypeInfo ti(DataType::VARIANT);
+
+    v.m_currentType = DataType::VARIANT;
+    v.m_signature = DBus::signature(v);
+    v.m_dataAlignment = ti.alignment();
+
+    Marshaling marshal(&v.m_marshaled, DBus::default_endianess());
+    marshal.marshal(other);
+
+    return v;
 }
 
 }
