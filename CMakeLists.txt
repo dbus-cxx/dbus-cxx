@@ -355,18 +355,29 @@ INSTALL( FILES "${PROJECT_BINARY_DIR}/dbus-cxx-2.0.pc"
 # Support for find_package
 #
 install(EXPORT dbus-cxxTargets
-  FILE        dbus-cxxConfig.cmake
-  NAMESPACE     dbus-cxx::
+  FILE        dbus-cxxTargets.cmake
+  NAMESPACE   dbus-cxx::
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/dbus-cxx
 )
 
 include(CMakePackageConfigHelpers)
-write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/dbus-cxxConfigVersion.cmake"
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxxConfigVersion.cmake"
   VERSION       ${PROJECT_VERSION}
   COMPATIBILITY SameMajorVersion
 )
-install(FILES   "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxxConfigVersion.cmake"
-  DESTINATION   ${CMAKE_INSTALL_LIBDIR}/cmake/dbus-cxx
+
+configure_package_config_file(
+  "${PROJECT_SOURCE_DIR}/cmake/dbus-cxxConfig.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxxConfig.cmake"
+  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/dbus-cxx"
+)
+
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxxConfig.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxxConfigVersion.cmake"
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/dbus-cxx"
 )
 
 #
