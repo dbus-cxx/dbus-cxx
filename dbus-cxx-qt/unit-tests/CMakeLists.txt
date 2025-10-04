@@ -16,13 +16,21 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt6 COMPONENTS Core)
+if(Qt6_FOUND)
+    set(QT_VERSION_MAJOR 6)
+    set(QT_CORE_TARGET Qt6::Core)
+else()
+    find_package(Qt5 COMPONENTS Core REQUIRED)
+    set(QT_VERSION_MAJOR 5)
+    set(QT_CORE_TARGET Qt5::Core)
+endif()
 
 pkg_check_modules( expat REQUIRED IMPORTED_TARGET expat )
 pkg_check_modules( popt REQUIRED IMPORTED_TARGET popt )
 
 set( TEST_INCLUDES ${cppgenerate_INCLUDE_DIRS} )
-set( TEST_LINK dbus-cxx dbus-cxx-qt Qt5::Core PkgConfig::sigc PkgConfig::popt PkgConfig::expat ${LIBRT} )
+set( TEST_LINK dbus-cxx dbus-cxx-qt ${QT_CORE_TARGET} PkgConfig::sigc PkgConfig::popt PkgConfig::expat ${LIBRT} )
 
 link_directories( ${CMAKE_BINARY_DIR} )
 

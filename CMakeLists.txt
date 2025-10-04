@@ -299,6 +299,17 @@ endif( ENABLE_GLIB_SUPPORT )
 # If Qt should be supported, add in the appropriate code
 #
 if( ENABLE_QT_SUPPORT )
+    find_package(Qt6 COMPONENTS Core)
+    if(Qt6_FOUND)
+        set(QT_VERSION_MAJOR 6)
+    else()
+        find_package(Qt5 COMPONENTS Core)
+        if(Qt5_FOUND)
+            set(QT_VERSION_MAJOR 5)
+        else()
+            message(FATAL_ERROR "Qt support requested but neither Qt5 nor Qt6 found")
+        endif()
+    endif()
     add_subdirectory( dbus-cxx-qt )
 endif( ENABLE_QT_SUPPORT )
 
