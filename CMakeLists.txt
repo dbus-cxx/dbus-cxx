@@ -299,6 +299,17 @@ endif( ENABLE_GLIB_SUPPORT )
 # If Qt should be supported, add in the appropriate code
 #
 if( ENABLE_QT_SUPPORT )
+    find_package(Qt6 COMPONENTS Core)
+    if(Qt6_FOUND)
+        set(QT_VERSION_MAJOR 6)
+    else()
+        find_package(Qt5 COMPONENTS Core)
+        if(Qt5_FOUND)
+            set(QT_VERSION_MAJOR 5)
+        else()
+            message(FATAL_ERROR "Qt support requested but neither Qt5 nor Qt6 found")
+        endif()
+    endif()
     add_subdirectory( dbus-cxx-qt )
 endif( ENABLE_QT_SUPPORT )
 
@@ -355,18 +366,29 @@ INSTALL( FILES "${PROJECT_BINARY_DIR}/dbus-cxx-2.0.pc"
 # Support for find_package
 #
 install(EXPORT dbus-cxxTargets
-  FILE        dbus-cxxConfig.cmake
-  NAMESPACE     dbus-cxx::
+  FILE        dbus-cxxTargets.cmake
+  NAMESPACE   dbus-cxx::
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/dbus-cxx
 )
 
 include(CMakePackageConfigHelpers)
-write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/dbus-cxxConfigVersion.cmake"
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxxConfigVersion.cmake"
   VERSION       ${PROJECT_VERSION}
   COMPATIBILITY SameMajorVersion
 )
-install(FILES   "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxxConfigVersion.cmake"
-  DESTINATION   ${CMAKE_INSTALL_LIBDIR}/cmake/dbus-cxx
+
+configure_package_config_file(
+  "${PROJECT_SOURCE_DIR}/cmake/dbus-cxxConfig.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxxConfig.cmake"
+  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/dbus-cxx"
+)
+
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxxConfig.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxxConfigVersion.cmake"
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/dbus-cxx"
 )
 
 #

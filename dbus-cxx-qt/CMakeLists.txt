@@ -16,7 +16,15 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt6 COMPONENTS Core)
+if(Qt6_FOUND)
+    set(QT_VERSION_MAJOR 6)
+    set(QT_CORE_TARGET Qt6::Core)
+else()
+    find_package(Qt5 COMPONENTS Core REQUIRED)
+    set(QT_VERSION_MAJOR 5)
+    set(QT_CORE_TARGET Qt5::Core)
+endif()
 
 set( dbus-cxx-qt-headers dbus-cxx-qt.h qtthreaddispatcher.h qtdispatcher.h )
 set( dbus-cxx-qt-sources dbus-cxx-qt.cpp qtthreaddispatcher.cpp qtdispatcher.cpp )
@@ -28,7 +36,7 @@ set_target_properties( dbus-cxx-qt PROPERTIES
     VERSION 2.0.0 SOVERSION 2
     PUBLIC_HEADER "${dbus-cxx-qt-headers}"
 )
-target_link_libraries( dbus-cxx-qt PUBLIC Qt5::Core dbus-cxx PkgConfig::sigc ${LIBRT} )
+target_link_libraries( dbus-cxx-qt PUBLIC ${QT_CORE_TARGET} dbus-cxx PkgConfig::sigc ${LIBRT} )
 target_include_directories( dbus-cxx-qt INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include/dbus-cxx-qt-${DBUS_CXX_INCLUDE_VERSION}>
@@ -73,6 +81,6 @@ INSTALL( FILES "${CMAKE_CURRENT_BINARY_DIR}/dbus-cxx-qt-2.0.pc"
 install( TARGETS dbus-cxx-qt
     EXPORT dbus-cxxTargets
     COMPONENT qt
-    PUBLIC_HEADER DESTINATION include/dbus-cxx-qt-${DBUS_CXX_INCLUDE_VERSION}
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
+    PUBLIC_HEADER DESTINATION include/dbus-cxx-qt-${DBUS_CXX_INCLUDE_VERSION} COMPONENT qt
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT qt
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT qt)
