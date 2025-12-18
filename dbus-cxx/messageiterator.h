@@ -329,7 +329,7 @@ public:
 
     template<typename T>
     T get(){
-        T ret = (T)(*this);
+        T ret = T(*this);
         this->next();
         return ret;
     }

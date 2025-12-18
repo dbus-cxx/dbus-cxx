@@ -5,6 +5,9 @@
  *                                                                         *
  *   This file is part of the dbus-cxx library.                            *
  ***************************************************************************/
+#ifndef DBUSCXX_PROPERTY_H
+#define DBUSCXX_PROPERTY_H
+
 #include <dbus-cxx/enums.h>
 #include <dbus-cxx/dbus-cxx-config.h>
 #include <dbus-cxx/variant.h>
@@ -13,9 +16,6 @@
 #include <sigc++/sigc++.h>
 #include <memory>
 #include <sstream>
-
-#ifndef DBUSCXX_PROPERTY_H
-#define DBUSCXX_PROPERTY_H
 
 namespace DBus {
 

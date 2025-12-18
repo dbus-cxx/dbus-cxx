@@ -34,7 +34,7 @@ bool test_numeric_call_message_append_extract_iterator( T v ) {
     iter1 << v;
 
     DBus::MessageIterator iter2( msg );
-    v2 = ( T )iter2;
+    v2 = T(iter2);
 
     return TEST_EQUALS( v, v2 );
 }

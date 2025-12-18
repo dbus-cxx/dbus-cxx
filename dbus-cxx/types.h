@@ -166,7 +166,7 @@ inline DataType type( const std::tuple<T...>& ) { return DataType::STRUCT; }
 
 inline
 DataType checked_type_cast( int n ) {
-    return ( DataType )( n );
+    return DataType( n );
 }
 
 /**
