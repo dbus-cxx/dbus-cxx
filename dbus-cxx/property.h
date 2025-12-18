@@ -28,7 +28,7 @@ class PropertyBase {
 protected:
     PropertyBase( std::string name, PropertyAccess access, PropertyUpdateType update );
 
-    ~PropertyBase();
+    virtual ~PropertyBase();
 
 public:
 
