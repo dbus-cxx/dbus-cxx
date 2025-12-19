@@ -28,6 +28,7 @@ class PropertyBase {
 protected:
     PropertyBase( std::string name, PropertyAccess access, PropertyUpdateType update );
 
+    // ABI: Make virtual
     ~PropertyBase();
 
 public:
