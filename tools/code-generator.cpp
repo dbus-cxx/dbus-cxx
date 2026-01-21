@@ -125,7 +125,7 @@ void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& 
     mainProxyClass.setName( mainClassName )
           .setNamespace( m_rootNode.genNamespace() )
           .addSystemInclude( "dbus-cxx.h" )
-          .addSystemInclude( "stdint.h" )
+          .addSystemInclude( "cstdint" )
           .addSystemInclude( "string" )
           .addSystemInclude( "memory" )
           .addParentClass( "DBus::ObjectProxy", cppgenerate::AccessModifier::PUBLIC, "conn, dest, path" );
@@ -183,7 +183,7 @@ void CodeGenerator::generateProxyClasses( bool outputToFile, const std::string& 
         }
         newClass.setName( proxyClassName )
                 .addSystemInclude( "dbus-cxx.h" )
-                .addSystemInclude( "stdint.h" )
+                .addSystemInclude( "cstdint" )
                 .addSystemInclude( "string" )
                 .addSystemInclude( "memory" )
                 .setNamespace( m_rootNode.genNamespace() )
@@ -417,7 +417,7 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
     mainAdapterClass.setName( mainClassName )
           .setNamespace( m_rootNode.genNamespace() )
           .addSystemInclude( "dbus-cxx.h" )
-          .addSystemInclude( "stdint.h" )
+          .addSystemInclude( "cstdint" )
           .addSystemInclude( "string" )
           .addSystemInclude( "memory" )
           .addParentClass( "DBus::Object", cppgenerate::AccessModifier::PUBLIC, "path" );
@@ -518,7 +518,7 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
                 .addParentClass( "DBus::Interface", cppgenerate::AccessModifier::PUBLIC, "name" )
                 .setNamespace( m_rootNode.genNamespace() )
                 .addSystemInclude( "dbus-cxx.h" )
-                .addSystemInclude( "stdint.h" )
+                .addSystemInclude( "cstdint" )
                 .addSystemInclude( "string" )
                 .addSystemInclude( "memory" )
                 .addLocalInclude( interfaceInfo.cppname() + ".h" );

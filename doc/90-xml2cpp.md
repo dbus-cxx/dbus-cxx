@@ -117,7 +117,7 @@ Several files will be output for this introspection file, one `ObjectProxy`:
 
 #include <dbus-cxx.h>
 #include <memory>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include "org_freedesktop_Avahi_ServiceBrowserProxy.h"
 namespace Avahi {
@@ -144,7 +144,7 @@ And one `InterfaceProxy`:
 
 #include <dbus-cxx.h>
 #include <memory>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 namespace Avahi {
 class org_freedesktop_Avahi_ServiceBrowserProxy
@@ -198,7 +198,7 @@ The main adapter class, which is what you will need to export on the bus:
 
 #include <dbus-cxx.h>
 #include <memory>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include "org_freedesktop_Avahi_ServiceBrowserInterface.h"
 namespace Avahi {
@@ -222,7 +222,7 @@ class that implements the methods on this interface:
 
 #include <dbus-cxx.h>
 #include <memory>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include "org_freedesktop_Avahi_ServiceBrowser.h"
 namespace Avahi {
