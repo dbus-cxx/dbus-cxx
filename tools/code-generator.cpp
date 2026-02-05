@@ -544,7 +544,8 @@ void CodeGenerator::generateAdapterClasses( bool outputToFile, const std::string
                           .addLine( "return std::shared_ptr<" + interfaceAdapterName + ">( new " + interfaceAdapterName + "( adaptee, name ) );" ));
 
         interfaceAdapter.addMethod( interfaceCreateMethod );
-        virtualClass.setName( interfaceInfo.cppname() );
+        virtualClass.setName( interfaceInfo.cppname() )
+                .addSystemInclude( "dbus-cxx.h" );
 
         generateAdapterMethods( &interfaceAdapter, &interfaceConstructor, &virtualClass, interfaceInfo.methods() );
         generateAdapterSignals( &interfaceAdapter, &interfaceConstructor, interfaceInfo.signals() );
