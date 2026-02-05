@@ -4,7 +4,7 @@
 
 class MyType : public test_simpletype_interface {
 public:
-    void typesMethod( int first, double second ) {
+    void typesMethod( int first, double second, DBus::Path third, DBus::Variant fourth ) {
     }
 };
 

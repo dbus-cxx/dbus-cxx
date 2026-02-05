@@ -4,6 +4,8 @@
         <method name="typesMethod">
             <arg type="i" name="first" direction="in"/>
             <arg type="d" name="second" direction="in"/>
+            <arg type="o" name="third" direction="in"/>
+            <arg type="v" name="fourth" direction="in"/>
         </method>
     </interface>
 </node>
