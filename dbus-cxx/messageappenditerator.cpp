@@ -23,6 +23,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <iostream>
+
 namespace DBus {
 
 class MessageAppendIterator::priv_data {
@@ -31,14 +33,14 @@ public:
         m_message( nullptr ),
         m_subiter( nullptr ),
         m_currentContainer( ContainerType::None ),
-        m_arrayAlignment( 0 ) {}
+        m_arraySizeLocation( 0 ) {}
 
     Marshaling m_marshaling;
     Message* m_message;
     MessageAppendIterator* m_subiter;
-    std::vector<uint8_t> m_workingBuffer;
     ContainerType m_currentContainer;
-    int32_t m_arrayAlignment;
+    uint32_t m_arraySizeLocation;
+    uint32_t m_arrayStartLocation;
 };
 
 MessageAppendIterator::MessageAppendIterator( ContainerType container ) {
@@ -51,10 +53,6 @@ MessageAppendIterator::MessageAppendIterator( Message& message, ContainerType co
     m_priv->m_marshaling = Marshaling( message.body(), DBus::default_endianess() );
     m_priv->m_message = &message;
     m_priv->m_currentContainer = container;
-
-    if( container != ContainerType::None ) {
-        m_priv->m_marshaling = Marshaling( &m_priv->m_workingBuffer, DBus::default_endianess() );
-    }
 }
 
 MessageAppendIterator::MessageAppendIterator( std::shared_ptr<Message> message, ContainerType container ) {
@@ -64,10 +62,6 @@ MessageAppendIterator::MessageAppendIterator( std::shared_ptr<Message> message, 
 
     if( message ) {
         m_priv->m_marshaling = Marshaling( message->body(), DBus::default_endianess() );
-    }
-
-    if( container != ContainerType::None ) {
-        m_priv->m_marshaling = Marshaling( &m_priv->m_workingBuffer, DBus::default_endianess() );
     }
 }
 
@@ -353,6 +347,7 @@ bool MessageAppendIterator::open_container( ContainerType t, const std::string& 
         signature.append( "(" );
         signature.append( sig );
         signature.append( ")" );
+        m_priv->m_marshaling.align( 8 );
         break;
 
     case ContainerType::ARRAY:
@@ -364,6 +359,14 @@ bool MessageAppendIterator::open_container( ContainerType t, const std::string& 
             SignatureIterator tmpSigIter = tmpSig.begin();
             TypeInfo ti( tmpSigIter.type() );
             array_align = ti.alignment();
+            m_priv->m_marshaling.align(4);
+            m_priv->m_arraySizeLocation = m_priv->m_marshaling.currentOffset();
+            m_priv->m_marshaling.marshal((uint32_t)0);
+            m_priv->m_marshaling.align(array_align);
+            m_priv->m_arrayStartLocation = m_priv->m_marshaling.currentOffset();
+
+
+            std::cerr << "open array sig " << sig << " align " << array_align << "\n";
         }
         break;
 
@@ -372,6 +375,7 @@ bool MessageAppendIterator::open_container( ContainerType t, const std::string& 
         break;
 
     case ContainerType::DICT_ENTRY:
+        m_priv->m_marshaling.align( 8 );
         break;
     }
 
@@ -383,7 +387,7 @@ bool MessageAppendIterator::open_container( ContainerType t, const std::string& 
         }
 
         m_priv->m_subiter = new MessageAppendIterator( *m_priv->m_message, t );
-        m_priv->m_subiter->m_priv->m_arrayAlignment = array_align;
+//        m_priv->m_subiter->m_priv->m_arrayAlignment = array_align;
     } else {
         m_priv->m_subiter = new MessageAppendIterator( t );
     }
@@ -398,29 +402,26 @@ bool MessageAppendIterator::close_container( ) {
     case ContainerType::None: return false;
 
     case ContainerType::ARRAY: {
-        uint32_t arraySize = static_cast<uint32_t>( m_priv->m_subiter->m_priv->m_workingBuffer.size() );
+        uint32_t arraySize = m_priv->m_marshaling.currentOffset() - m_priv->m_arrayStartLocation;
 
         if( arraySize > Validator::maximum_array_size() ) {
             m_priv->m_message->invalidate();
             return true;
         }
 
-        m_priv->m_marshaling.marshal( arraySize );
-        m_priv->m_marshaling.align( m_priv->m_subiter->m_priv->m_arrayAlignment );
+        m_priv->m_marshaling.marshal_at_offset( m_priv->m_arraySizeLocation, arraySize );
+        std::cerr << "array size: " << arraySize << "\n";
+//        DBus::hexdump(&m_priv->m_workingBuffer, &std::cerr);
     }
     break;
 
     case ContainerType::DICT_ENTRY:
     case ContainerType::STRUCT:
-        m_priv->m_marshaling.align( 8 );
+//        m_priv->m_marshaling.align( 8 );
         break;
 
     case ContainerType::VARIANT:
         break;
-    }
-
-    for( const uint8_t& dataByte : m_priv->m_subiter->m_priv->m_workingBuffer ) {
-        m_priv->m_marshaling.marshal( dataByte );
     }
 
     delete m_priv->m_subiter;

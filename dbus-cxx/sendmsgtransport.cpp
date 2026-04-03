@@ -329,6 +329,21 @@ ssize_t SendmsgTransport::writeMessage( std::shared_ptr<const DBus::Message> mes
 
 #endif /* WIN32 */
 
+    if(message->type() == MessageType::SIGNAL &&  message->signature() == "aa{ss}"){
+        SIMPLELOGGER_ERROR( LOGGER_NAME, "bad message!" );
+
+        printf("uint8_t bad_data[] = {\n");
+        int pos = 0;
+        for(uint8_t x : m_priv->m_sendBuffer){
+            printf("0x%02X,", x);
+            pos++;
+            if(pos%8 == 0){
+                printf("\n");
+            }
+        }
+        printf("\n};");
+    }
+
     /* Now we finally send the data! */
     ret = m_priv->send();
 

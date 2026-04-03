@@ -20,6 +20,8 @@
 #include "path.h"
 #include "variant.h"
 
+#include <iostream>
+
 #ifndef DBUSCXX_MESSAGEAPPENDITERATOR_H
 #define DBUSCXX_MESSAGEAPPENDITERATOR_H
 
@@ -114,17 +116,20 @@ public:
 
     template <typename Key, typename Data>
     MessageAppendIterator& operator<<( const std::map<Key, Data>& dictionary ) {
+        std::cerr << "append dict\n";
         std::string sig = signature_dict_data( dictionary );
         typename std::map<Key, Data>::const_iterator it;
         this->open_container( ContainerType::ARRAY, sig );
 
         for( it = dictionary.begin(); it != dictionary.end(); it++ ) {
+            std::cerr << "append entry\n";
             sub_iterator()->open_container( ContainerType::DICT_ENTRY, std::string() );
             *( sub_iterator()->sub_iterator() ) << it->first;
             *( sub_iterator()->sub_iterator() ) << it->second;
             sub_iterator()->close_container();
         }
 
+        std::cerr << "close dict\n";
         this->close_container();
 
         return *this;

@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <cassert>
 
+#include <iostream>
+
 using DBus::Demarshaling;
 
 class Demarshaling::priv_data {
@@ -305,6 +307,7 @@ int64_t Demarshaling::demarshalLongLittle() {
 }
 
 void Demarshaling::is_valid( uint32_t bytesWanted ) {
+    std::cerr << "want " << bytesWanted << " byets\n";
     assert( m_priv->m_data != nullptr );
     assert( ( m_priv->m_dataPos + bytesWanted ) <= m_priv->m_dataLen );
 }
