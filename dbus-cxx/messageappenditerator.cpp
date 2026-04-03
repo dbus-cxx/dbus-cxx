@@ -363,6 +363,7 @@ bool MessageAppendIterator::open_container( ContainerType t, const std::string& 
             m_priv->m_arraySizeLocation = m_priv->m_marshaling.currentOffset();
             m_priv->m_marshaling.marshal((uint32_t)0);
             m_priv->m_marshaling.align(array_align);
+            // array size does not include padding after the array size
             m_priv->m_arrayStartLocation = m_priv->m_marshaling.currentOffset();
 
 

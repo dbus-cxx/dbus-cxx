@@ -73,6 +73,7 @@ add_test( NAME messageiterator-nested-map COMMAND test-messageiterator nested_ma
 add_test( NAME messageiterator-variant-deep COMMAND test-messageiterator variant_deep)
 add_test( NAME messageiterator-signal-message-dict COMMAND test-messageiterator signal_message_dict)
 add_test( NAME messageiterator-variant-inside-variant COMMAND test-messageiterator variant_inside_variant)
+add_test( NAME messageiterator-array_of_dict COMMAND test-messageiterator array_of_dict)
 
 add_test( NAME messageiterator-Bool2 COMMAND test-messageiterator bool-2)
 add_test( NAME messageiterator-Byte2 COMMAND test-messageiterator byte-2)
