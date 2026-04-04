@@ -23,8 +23,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <iostream>
-
 namespace DBus {
 
 class MessageAppendIterator::priv_data {
@@ -365,9 +363,6 @@ bool MessageAppendIterator::open_container( ContainerType t, const std::string& 
             m_priv->m_marshaling.align(array_align);
             // array size does not include padding after the array size
             m_priv->m_arrayStartLocation = m_priv->m_marshaling.currentOffset();
-
-
-            std::cerr << "open array sig " << sig << " align " << array_align << "\n";
         }
         break;
 
@@ -388,7 +383,6 @@ bool MessageAppendIterator::open_container( ContainerType t, const std::string& 
         }
 
         m_priv->m_subiter = new MessageAppendIterator( *m_priv->m_message, t );
-//        m_priv->m_subiter->m_priv->m_arrayAlignment = array_align;
     } else {
         m_priv->m_subiter = new MessageAppendIterator( t );
     }
@@ -411,16 +405,11 @@ bool MessageAppendIterator::close_container( ) {
         }
 
         m_priv->m_marshaling.marshal_at_offset( m_priv->m_arraySizeLocation, arraySize );
-        std::cerr << "array size: " << arraySize << "\n";
-//        DBus::hexdump(&m_priv->m_workingBuffer, &std::cerr);
     }
     break;
 
     case ContainerType::DICT_ENTRY:
     case ContainerType::STRUCT:
-//        m_priv->m_marshaling.align( 8 );
-        break;
-
     case ContainerType::VARIANT:
         break;
     }
