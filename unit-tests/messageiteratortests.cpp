@@ -1666,6 +1666,27 @@ bool variant_inside_variant(){
     return true;
 }
 
+int test_array_of_dict(){
+    std::shared_ptr<DBus::ReturnMessage> retmsg = DBus::ReturnMessage::create();
+
+    std::vector<std::map<std::string,std::string>> data = {{{"foo1", "bar1"},
+                                                            {"foo2", "bar2"}},
+                                                            {{"foo1", "bar1"},
+                                                            {"foo2", "bar2"}}};
+    std::vector<std::map<std::string,std::string>> extracted_return;
+
+    retmsg->set_reply_serial(1);
+    retmsg << data;
+
+    std::vector<uint8_t> serialized;
+    retmsg->serialize_to_vector(&serialized, 1);
+    std::cerr << retmsg;
+
+    retmsg >> extracted_return;
+
+    return 1;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = call_message_append_extract_iterator_##name();\
         } \
@@ -1746,6 +1767,8 @@ int main( int argc, char** argv ) {
         ret = signal_message_dict();
     }else if( test_name == "variant_inside_variant" ){
         ret = variant_inside_variant();
+    }else if( test_name == "array_of_dict" ){
+        ret = test_array_of_dict();
     }
 
 
