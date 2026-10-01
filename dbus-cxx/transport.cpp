@@ -165,7 +165,7 @@ static int open_unix_socket( std::string socketAddress, bool is_abstract ) {
     socklen_t data_len = 0;
 
     memset( &addr, 0, sizeof( struct sockaddr_un ) );
-    fd = ::socket( AF_UNIX, SOCK_STREAM, 0 );
+    fd = ::socket( AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0 );
 
     if( fd < 0 ) {
         std::string errmsg = strerror( errno );

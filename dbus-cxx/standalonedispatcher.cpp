@@ -55,7 +55,7 @@ public:
 StandaloneDispatcher::StandaloneDispatcher( bool is_running ) {
     m_priv = std::make_unique<priv_data>();
 
-    if( socketpair( AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, m_priv->process_fd ) < 0 ) {
+    if( socketpair( AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0, m_priv->process_fd ) < 0 ) {
         SIMPLELOGGER_ERROR( LOGGER_NAME, "error creating socket pair" );
         throw ErrorDispatcherInitFailed();
     }

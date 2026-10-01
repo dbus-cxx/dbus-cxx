@@ -222,7 +222,7 @@ public:
         rx_msg.msg_controllen = control_size;
         rx_msg.msg_namelen = name_size;
 
-        return recvmsg( m_fd, &rx_msg, flags );
+        return recvmsg( m_fd, &rx_msg, flags | MSG_CMSG_CLOEXEC );
     }
 };
 #endif
