@@ -8,6 +8,7 @@ Build-Depends: cmake,
                debhelper (>= 9),
                doxygen,
                graphviz,
+               libdbus-1-dev,
                libglib2.0-dev,
                libcppgenerate-dev,
                libexpat1-dev,
@@ -15,7 +16,7 @@ Build-Depends: cmake,
                libpopt-dev,
                libsigc++-3.0-dev,
                libuv1-dev,
-               qtbase5-dev,
+               qt6-base-dev,
                xsltproc
 Standards-Version: 3.9.5
 Section: libs
