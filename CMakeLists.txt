@@ -56,6 +56,7 @@ endif( BUILD_TESTING )
 option( ENABLE_QT_SUPPORT "Build libdbuscxx-qt for integration with Qt applications" OFF )
 option( ENABLE_UV_SUPPORT "Build libdbuscxx-uv for integration with libuv applications" OFF )
 option( UV_STATIC "Link statically with libuv when using it" OFF )
+option( ENABLE_FUZZING "Build libFuzzer based fuzz tests.  Requires clang" OFF )
 
 # With glibc >= 2.35, it seems that we no longer need to link with -lrt:
 # https://sourceware.org/pipermail/libc-alpha/2021-August/129718.html
@@ -78,6 +79,18 @@ if( ${ENABLE_ASAN} )
             -fsanitize=object-size \
             -fsanitize=bool \
             -fsanitize=enum" )
+endif()
+
+if( ${ENABLE_FUZZING} )
+    if( NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
+        message( FATAL_ERROR "ENABLE_FUZZING requires clang (e.g. CXX=clang++)" )
+    endif()
+    # Instrument everything(including the library) for coverage-guided fuzzing.
+    # The fuzzer executables themselves link with -fsanitize=fuzzer to get main()
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
+        -g \
+        -fno-omit-frame-pointer \
+        -fsanitize=fuzzer-no-link,address,undefined" )
 endif()
 
 if( UNIX )
@@ -441,6 +454,13 @@ if( BUILD_TESTING )
 endif( BUILD_TESTING )
 
 #
+# Fuzz tests
+#
+if( ENABLE_FUZZING )
+    add_subdirectory( fuzz )
+endif( ENABLE_FUZZING )
+
+#
 # See if code coverage is enabled
 #
 if( ENABLE_CODE_COVERAGE_REPORT )
@@ -477,6 +497,7 @@ message(STATUS "  Build tools ..................... : ${ENABLE_TOOLS}")
 message(STATUS "  Use bundled cppgenerate ......... : ${TOOLS_BUNDLED_CPPGENERATE}")
 message(STATUS "  Build website ................... : ${BUILD_SITE}")
 message(STATUS "  Enable code coverage report ..... : ${ENABLE_CODE_COVERAGE_REPORT}")
+message(STATUS "  Build fuzz tests ................ : ${ENABLE_FUZZING}")
 if( CMAKE_BUILD_TYPE MATCHES Debug )
 message(STATUS "  libasan enabled ................. : ${ENABLE_ASAN}")
 endif()
