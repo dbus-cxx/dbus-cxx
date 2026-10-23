@@ -11,6 +11,7 @@
 #include "utility.h"
 #include "validator.h"
 #include "message.h"
+#include "error.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -444,8 +445,13 @@ std::shared_ptr<DBus::Message> SendmsgTransport::readMessage() {
 
 #endif
 
-    std::shared_ptr<DBus::Message> retmsg =
-        DBus::Message::create_from_data( header_raw, m_priv->rx_size(), fds );
+    std::shared_ptr<DBus::Message> retmsg;
+
+    try {
+        retmsg = DBus::Message::create_from_data( header_raw, m_priv->rx_size(), fds );
+    } catch( const DBus::Error& err ) {
+        SIMPLELOGGER_WARN( LOGGER_NAME, "Dropping invalid message: " << err.what() );
+    }
 
     return retmsg;
 }

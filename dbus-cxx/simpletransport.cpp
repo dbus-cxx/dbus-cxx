@@ -10,6 +10,7 @@
 #include "dbus-cxx-private.h"
 #include "demarshaling.h"
 #include "message.h"
+#include "error.h"
 #include "utility.h"
 #include "validator.h"
 
@@ -239,7 +240,11 @@ std::shared_ptr<DBus::Message> SimpleTransport::readMessage() {
             DBus::hexdump( m_priv->m_receiveBuffer, m_priv->m_receiveBufferLocation, &debug_str );
             SIMPLELOGGER_TRACE( LOGGER_NAME, debug_str.str() );
 
-            retmsg = Message::create_from_data( m_priv->m_receiveBuffer, m_priv->m_receiveBufferLocation );
+            try {
+                retmsg = Message::create_from_data( m_priv->m_receiveBuffer, m_priv->m_receiveBufferLocation );
+            } catch( const DBus::Error& err ) {
+                SIMPLELOGGER_WARN( LOGGER_NAME, "Dropping invalid message: " << err.what() );
+            }
 
             m_priv->m_receiveBufferLocation = 0;
             m_priv->m_readingState = ReadingState::FirstHeaderPart;

@@ -148,6 +148,15 @@ public:
 
     const std::vector<int>& filedescriptors() const;
 
+    /**
+     * Parse a message from its raw marshaled form.
+     *
+     * @param data The raw message data
+     * @param data_len The length of data
+     * @param fds The file descriptors that were received with the message
+     * @return The parsed message
+     * @throws ErrorInvalidMessage if the data is not a valid message
+     */
     static std::shared_ptr<Message> create_from_data( uint8_t* data, uint32_t data_len, std::vector<int> fds = std::vector<int>() );
 
 protected:
