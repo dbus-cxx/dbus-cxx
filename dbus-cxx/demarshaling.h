@@ -74,9 +74,10 @@ public:
 
 private:
     /**
-     * Checks to make sure that we're not overruing any array via an assertion.
+     * Checks to make sure that we're not overrunning the data array.
      *
      * @param numBytesWanted The number of bytes that we want to pull out of the array.
+     * @throws ErrorInvalidMessage if there are not enough bytes left in the data
      */
     void is_valid( uint32_t numBytesWanted );
     int16_t demarshalShortBig();

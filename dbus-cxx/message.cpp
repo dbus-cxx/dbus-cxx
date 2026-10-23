@@ -15,6 +15,7 @@
 #include "variant.h"
 #include "marshaling.h"
 #include "demarshaling.h"
+#include "error.h"
 #include <dbus-cxx/dbus-cxx-private.h>
 #include <dbus-cxx/simplelogger.h>
 #include "validator.h"
@@ -258,6 +259,35 @@ bool Message::serialize_to_vector( std::vector<uint8_t>* vec, uint32_t serial ) 
     return true;
 }
 
+/**
+ * The type that the value of each header field must be, from the DBus spec
+ */
+static DataType header_field_type( MessageHeaderFields field ) {
+    switch( field ) {
+    case MessageHeaderFields::Path:
+        return DataType::OBJECT_PATH;
+
+    case MessageHeaderFields::Interface:
+    case MessageHeaderFields::Member:
+    case MessageHeaderFields::Error_Name:
+    case MessageHeaderFields::Destination:
+    case MessageHeaderFields::Sender:
+        return DataType::STRING;
+
+    case MessageHeaderFields::Reply_Serial:
+    case MessageHeaderFields::Unix_FDs:
+        return DataType::UINT32;
+
+    case MessageHeaderFields::Signature:
+        return DataType::SIGNATURE;
+
+    case MessageHeaderFields::Invalid:
+        break;
+    }
+
+    return DataType::INVALID;
+}
+
 std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data_len, std::vector<int> fds ) {
     Demarshaling demarshal( data, data_len, Endianess::Big );
     uint8_t method_type;
@@ -270,10 +300,19 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
     std::map<MessageHeaderFields, Variant> headerMap;
     Endianess msgEndian = Endianess::Big;
     std::vector<int> real_fds;
+    uint8_t endian;
 
-    if( demarshal.demarshal_uint8_t() == 'l' ) {
+    // The fixed-size part of the header is 16 bytes
+    if( data == nullptr || data_len < 16 ) {
+        throw ErrorInvalidMessage( "Message is too short" );
+    }
+
+    endian = demarshal.demarshal_uint8_t();
+    if( endian == 'l' ) {
         demarshal.set_endianess( Endianess::Little );
         msgEndian = Endianess::Little;
+    } else if( endian != 'B' ) {
+        throw ErrorInvalidMessage( "Invalid endianess" );
     }
 
     method_type = demarshal.demarshal_uint8_t();
@@ -283,7 +322,16 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
     serial = demarshal.demarshal_uint32_t();
     arrayLen = demarshal.demarshal_uint32_t();
 
-    while( demarshal.current_offset() < ( 12 + arrayLen ) ) {
+    if( method_type < 1 || method_type > 4 ) {
+        throw ErrorInvalidMessage( "Invalid message type" );
+    }
+
+    // The header array starts right after its length, at offset 16
+    if( arrayLen > data_len - 16 ) {
+        throw ErrorInvalidMessage( "Header array length is longer than the message" );
+    }
+
+    while( demarshal.current_offset() < ( 16 + arrayLen ) ) {
         uint8_t key_demarshal;
         MessageHeaderFields key;
         Variant value;
@@ -303,10 +351,18 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
             continue;
         }
 
-        if( key == MessageHeaderFields::Unix_FDs ) {
-            int total_fds = value.to_uint32();
+        if( value.type() != header_field_type( key ) ) {
+            throw ErrorInvalidMessage( "Header field has the wrong type" );
+        }
 
-            for( int fd_num = 0; fd_num < total_fds; fd_num++ ) {
+        if( key == MessageHeaderFields::Unix_FDs ) {
+            uint32_t total_fds = value.to_uint32();
+
+            if( total_fds > fds.size() ) {
+                throw ErrorInvalidMessage( "Message has more file descriptors than were received" );
+            }
+
+            for( uint32_t fd_num = 0; fd_num < total_fds; fd_num++ ) {
                 real_fds.push_back( fds[ fd_num ] );
             }
         }
@@ -316,6 +372,11 @@ std::shared_ptr<Message> Message::create_from_data( uint8_t* data, uint32_t data
 
     // Make sure we're aligned to an 8-byte boundary
     demarshal.align( 8 );
+
+    if( demarshal.current_offset() > data_len ||
+        bodyLen > data_len - demarshal.current_offset() ) {
+        throw ErrorInvalidMessage( "Body length is longer than the message" );
+    }
 
     switch( method_type ) {
     case 1:

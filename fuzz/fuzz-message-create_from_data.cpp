@@ -26,9 +26,7 @@
  * the wire and attempt to parse it, the same way the transports do.
  */
 extern "C" int LLVMFuzzerTestOneInput( const uint8_t* data, size_t size ) {
-    // The transports always read the 16-byte fixed header before trying to
-    // create a message, so anything smaller can never get here.
-    if( size < 16 || size > UINT32_MAX ) {
+    if( size > UINT32_MAX ) {
         return -1;
     }
 
@@ -39,8 +37,8 @@ extern "C" int LLVMFuzzerTestOneInput( const uint8_t* data, size_t size ) {
     try {
         std::shared_ptr<DBus::Message> msg =
             DBus::Message::create_from_data( buffer.data(), static_cast<uint32_t>( buffer.size() ) );
-    } catch( const DBus::Error& ) {
-        // Rejecting malformed input with a dbus-cxx error is acceptable.
+    } catch( const DBus::ErrorInvalidMessage& ) {
+        // Rejecting malformed input is the expected failure mode.
     }
 
     return 0;

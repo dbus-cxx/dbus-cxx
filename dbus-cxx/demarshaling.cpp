@@ -6,9 +6,15 @@
  *   This file is part of the dbus-cxx library.                            *
  ***************************************************************************/
 #include "demarshaling.h"
+#include "error.h"
 #include <cstring>
 #include <stdint.h>
-#include <cassert>
+
+/*
+ * Maximum number of variants that may be nested inside of each other.  The
+ * DBus specification limits the total nesting depth of a message to 64.
+ */
+static const uint32_t MAX_VARIANT_DEPTH = 64;
 
 using DBus::Demarshaling;
 
@@ -18,12 +24,14 @@ public:
         m_data( nullptr ),
         m_dataLen( 0 ),
         m_dataPos( 0 ),
-        m_endian( Endianess::Big ) {}
+        m_endian( Endianess::Big ),
+        m_variantDepth( 0 ) {}
 
     const uint8_t* m_data;
     uint32_t m_dataLen;
     uint32_t m_dataPos;
     Endianess m_endian;
+    uint32_t m_variantDepth;
 };
 
 Demarshaling::Demarshaling() {
@@ -120,11 +128,15 @@ double Demarshaling::demarshal_double() {
 
 std::string Demarshaling::demarshal_string() {
     uint32_t len = demarshal_uint32_t();
-    is_valid( len + 1 );
+    is_valid( len );
     const char* start = reinterpret_cast<const char*>( m_priv->m_data + m_priv->m_dataPos );
     std::string ret = std::string( start, len );
 
-    m_priv->m_dataPos += len + 1;
+    m_priv->m_dataPos += len;
+
+    // Skip over the nul byte
+    is_valid( 1 );
+    m_priv->m_dataPos += 1;
 
     return ret;
 }
@@ -138,6 +150,7 @@ DBus::Path Demarshaling::demarshal_path() {
 
 DBus::Signature Demarshaling::demarshal_signature() {
     uint8_t len = demarshal_uint8_t();
+    is_valid( static_cast<uint32_t>( len ) + 1 );
     const char* start = reinterpret_cast<const char*>( m_priv->m_data + m_priv->m_dataPos );
     std::string asStr = std::string( start, len );
 
@@ -190,8 +203,24 @@ DBus::Variant Demarshaling::demarshal_variant() {
     case DataType::ARRAY:
 
     //return DBus::Variant( demarshal_uint32_t() );
-    case DataType::VARIANT:
-        return DBus::Variant( demarshal_variant() );
+    case DataType::VARIANT: {
+        if( m_priv->m_variantDepth >= MAX_VARIANT_DEPTH ) {
+            throw ErrorInvalidMessage( "Variants nested too deeply" );
+        }
+
+        m_priv->m_variantDepth++;
+        DBus::Variant nested;
+
+        try {
+            nested = demarshal_variant();
+        } catch( ... ) {
+            m_priv->m_variantDepth--;
+            throw;
+        }
+
+        m_priv->m_variantDepth--;
+        return DBus::Variant( nested );
+    }
 
     case DataType::STRUCT:
 
@@ -305,8 +334,15 @@ int64_t Demarshaling::demarshalLongLittle() {
 }
 
 void Demarshaling::is_valid( uint32_t bytesWanted ) {
-    assert( m_priv->m_data != nullptr );
-    assert( ( m_priv->m_dataPos + bytesWanted ) <= m_priv->m_dataLen );
+    if( m_priv->m_data == nullptr ) {
+        throw ErrorInvalidMessage( "No data to demarshal" );
+    }
+
+    // Written this way so that a large bytesWanted can't overflow
+    if( m_priv->m_dataPos > m_priv->m_dataLen ||
+        bytesWanted > ( m_priv->m_dataLen - m_priv->m_dataPos ) ) {
+        throw ErrorInvalidMessage( "Attempted to read past the end of the data" );
+    }
 }
 
 void Demarshaling::align( int alignment ) {
