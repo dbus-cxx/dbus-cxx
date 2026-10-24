@@ -177,8 +177,8 @@ Signature::SignatureNodePointer Signature::create_signature_tree(
 
         if( !container_stack->empty() &&
             container_stack->top() == ContainerType::ARRAY &&
-            ti.is_basic() ) {
-            // We just added this basic element to the array
+            ( ti.is_basic() || data_type == DataType::VARIANT ) ) {
+            // We just added this single-character element to the array
             itr++;
             break;
         }
@@ -236,6 +236,14 @@ Signature::SignatureNodePointer Signature::create_signature_tree(
             if( (ending_container) &&
                 (toPush == ContainerType::STRUCT) ) {
                 container_stack->pop();
+
+                if( !container_stack->empty() &&
+                    container_stack->top() == ContainerType::ARRAY ) {
+                    // The struct was the element type of an array, so the
+                    // array is complete
+                    itr++;
+                    break;
+                }
             }
             else if( (ending_container) &&
                      (toPush == ContainerType::DICT_ENTRY) ) {
