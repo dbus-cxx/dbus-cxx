@@ -132,6 +132,8 @@ std::string TypeInfo::cppType() const {
 bool TypeInfo::is_basic() const {
     switch( m_type ) {
     case DataType::BYTE:
+    case DataType::BOOLEAN:
+    case DataType::DOUBLE:
     case DataType::INT16:
     case DataType::UINT16:
     case DataType::INT32:

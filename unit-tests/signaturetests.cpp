@@ -383,6 +383,76 @@ bool signature_double_struct() {
     return true;
 }
 
+/*
+ * Check that an array is followed by another type at the top level, and that
+ * the following type is not treated as part of the array.
+ */
+static bool check_array_then_type( const char* signature, DBus::DataType element, DBus::DataType after ) {
+    DBus::Signature sig( signature );
+    DBus::SignatureIterator it = sig.begin();
+
+    TEST_EQUALS_RET_FAIL( sig.is_valid(), true );
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::ARRAY );
+
+    DBus::SignatureIterator subit = it.recurse();
+    TEST_EQUALS_RET_FAIL( subit.type(), element );
+    subit.next();
+    TEST_EQUALS_RET_FAIL( subit.type(), DBus::DataType::INVALID );
+
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), after );
+    it.next();
+    TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::INVALID );
+
+    TEST_EQUALS_RET_FAIL( sig.str(), sig.begin().signature() );
+
+    return true;
+}
+
+bool signature_array_bool_then_int() {
+    return check_array_then_type( "abi", DBus::DataType::BOOLEAN, DBus::DataType::INT32 );
+}
+
+bool signature_array_double_then_int() {
+    return check_array_then_type( "adi", DBus::DataType::DOUBLE, DBus::DataType::INT32 );
+}
+
+bool signature_array_variant_then_int() {
+    return check_array_then_type( "avi", DBus::DataType::VARIANT, DBus::DataType::INT32 );
+}
+
+bool signature_array_struct_then_string() {
+    return check_array_then_type( "a(ii)s", DBus::DataType::STRUCT, DBus::DataType::STRING );
+}
+
+bool signature_many_arrays() {
+    std::string str;
+
+    for( int x = 0; x < 100; x++ ) {
+        str += "ab";
+    }
+
+    DBus::Signature sig( str );
+    TEST_EQUALS_RET_FAIL( sig.is_valid(), true );
+
+    int count = 0;
+    for( DBus::SignatureIterator it = sig.begin(); it.is_valid(); it.next() ) {
+        TEST_EQUALS_RET_FAIL( it.type(), DBus::DataType::ARRAY );
+        count++;
+    }
+
+    TEST_EQUALS_RET_FAIL( count, 100 );
+
+    return true;
+}
+
+bool signature_bool_double_are_basic() {
+    TEST_EQUALS_RET_FAIL( DBus::Signature( "b" ).begin().is_basic(), true );
+    TEST_EQUALS_RET_FAIL( DBus::Signature( "d" ).begin().is_basic(), true );
+
+    return true;
+}
+
 #define ADD_TEST(name) do{ if( test_name == STRINGIFY(name) ){ \
             ret = signature_##name();\
         } \
@@ -415,6 +485,12 @@ int main( int argc, char** argv ) {
     ADD_TEST( single_type1 );
     ADD_TEST( single_type2 );
     ADD_TEST( double_struct );
+    ADD_TEST( array_bool_then_int );
+    ADD_TEST( array_double_then_int );
+    ADD_TEST( array_variant_then_int );
+    ADD_TEST( array_struct_then_string );
+    ADD_TEST( many_arrays );
+    ADD_TEST( bool_double_are_basic );
 
     std::cout << "Test case \"" + test_name + "\" " + (ret ? "PASSED" : "FAIL") << std::endl;
     return !ret;

@@ -258,6 +258,12 @@ add_test( NAME signature-create-from-struct-in-array COMMAND test-signature crea
 add_test( NAME signature-single-type1 COMMAND test-signature single_type1)
 add_test( NAME signature-single-type2 COMMAND test-signature single_type2)
 add_test( NAME signature-double-struct COMMAND test-signature double_struct)
+add_test( NAME signature-array-bool-then-int COMMAND test-signature array_bool_then_int)
+add_test( NAME signature-array-double-then-int COMMAND test-signature array_double_then_int)
+add_test( NAME signature-array-variant-then-int COMMAND test-signature array_variant_then_int)
+add_test( NAME signature-array-struct-then-string COMMAND test-signature array_struct_then_string)
+add_test( NAME signature-many-arrays COMMAND test-signature many_arrays)
+add_test( NAME signature-bool-double-are-basic COMMAND test-signature bool_double_are_basic)
 
 #
 # Validation tests - make sure that our validation routines work correctly
