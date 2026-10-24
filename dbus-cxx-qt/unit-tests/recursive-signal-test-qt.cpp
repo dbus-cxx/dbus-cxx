@@ -76,17 +76,17 @@ int main( int argc, char** argv ) {
         std::shared_ptr<DBus::Signal<void(std::string)>> sig =
                 obj->create_signal<void(std::string)>( "dbuscxx.interface", "some_signal" );
 
-        std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
+        do{
+            std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
+        }while(!conn->name_has_owner("dbuscxx.test.sideB"));
 
         sig->emit( "foobar" );
         conn->flush();
 
-        QTimer::singleShot( 1000, &a, &QCoreApplication::quit );
+        QTimer::singleShot( 5000, &a, &QCoreApplication::quit );
         a.exec();
 
     } else if( argv[ 1 ][ 0 ] == 'B' ) {
-        conn->request_name( "dbuscxx.test.sideB" );
-
         a_side_proxy =
             conn->create_object_proxy( "dbuscxx.test.sideA", "/atest" );
 
@@ -95,8 +95,9 @@ int main( int argc, char** argv ) {
 
         sigproxy->connect( sigc::ptr_fun( some_signal_handler ) );
 
+        conn->request_name( "dbuscxx.test.sideB" );
 
-        QTimer::singleShot( 1000, &a, &QCoreApplication::quit );
+        QTimer::singleShot( 5000, &a, &QCoreApplication::quit );
         a.exec();
 
         if( signal_message != "foobar" ){
