@@ -127,3 +127,117 @@ bool Validator::message_is_small_enough( const std::vector<uint8_t>* data ) {
     return data->size() < maximum_message_size();
 }
 
+/*
+ * Limits from the DBus specification
+ */
+static const std::string::size_type MAX_SIGNATURE_LENGTH = 255;
+static const int MAX_ARRAY_DEPTH = 32;
+static const int MAX_STRUCT_DEPTH = 32;
+
+static bool is_basic_type_code( char c ) {
+    switch( c ) {
+    case 'y': case 'b': case 'n': case 'q': case 'i': case 'u':
+    case 'x': case 't': case 'd': case 's': case 'o': case 'g':
+    case 'h':
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Check that a single complete type starts at pos, following the rules in
+ * the DBus specification.  On success, pos is left after the type.
+ */
+static bool validate_single_complete_type( const std::string& sig,
+    std::string::size_type& pos,
+    int array_depth,
+    int struct_depth ) {
+    if( pos >= sig.size() ) {
+        return false;
+    }
+
+    char c = sig[ pos ];
+
+    if( is_basic_type_code( c ) || c == 'v' ) {
+        pos++;
+        return true;
+    }
+
+    if( c == 'a' ) {
+        if( ++array_depth > MAX_ARRAY_DEPTH ) {
+            return false;
+        }
+
+        pos++;
+
+        if( pos < sig.size() && sig[ pos ] == '{' ) {
+            // Dict entries may only appear as the element type of an array,
+            // and must have exactly two types, the first of which is basic
+            if( ++struct_depth > MAX_STRUCT_DEPTH ) {
+                return false;
+            }
+
+            pos++;
+
+            if( pos >= sig.size() || !is_basic_type_code( sig[ pos ] ) ) {
+                return false;
+            }
+
+            pos++;
+
+            if( !validate_single_complete_type( sig, pos, array_depth, struct_depth ) ) {
+                return false;
+            }
+
+            if( pos >= sig.size() || sig[ pos ] != '}' ) {
+                return false;
+            }
+
+            pos++;
+            return true;
+        }
+
+        return validate_single_complete_type( sig, pos, array_depth, struct_depth );
+    }
+
+    if( c == '(' ) {
+        if( ++struct_depth > MAX_STRUCT_DEPTH ) {
+            return false;
+        }
+
+        pos++;
+
+        // Structs must have at least one member
+        do {
+            if( !validate_single_complete_type( sig, pos, array_depth, struct_depth ) ) {
+                return false;
+            }
+        } while( pos < sig.size() && sig[ pos ] != ')' );
+
+        if( pos >= sig.size() ) {
+            return false;
+        }
+
+        pos++;
+        return true;
+    }
+
+    return false;
+}
+
+bool Validator::validate_signature( const std::string& sig ) {
+    std::string::size_type pos = 0;
+
+    if( sig.size() > MAX_SIGNATURE_LENGTH ) {
+        return false;
+    }
+
+    while( pos < sig.size() ) {
+        if( !validate_single_complete_type( sig, pos, 0, 0 ) ) {
+            return false;
+        }
+    }
+
+    return true;
+}

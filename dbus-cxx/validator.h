@@ -81,6 +81,25 @@ public:
     static bool validate_error_name( std::string name );
 
     /**
+     * Validate a signature.  According to the DBus specification:
+     *
+     * - A signature is a list of zero or more single complete types.
+     * - Structs must contain at least one type.
+     * - Dict entries may only appear as the element type of an array, and
+     * must contain exactly two types, the first of which is a basic type.
+     * - Arrays may be nested at most 32 deep, and structs(including dict
+     * entries) at most 32 deep.
+     * - Signatures must not exceed 255 characters.
+     *
+     * Note that this is stricter than Signature::is_valid(), which accepts
+     * partial signatures such as a lone dict entry.
+     *
+     * @param signature The signature to validate
+     * @return
+     */
+    static bool validate_signature( const std::string& signature );
+
+    /**
      * Checks to make sure that the size of the message(after serialization) is lower
      * than 2^27
      *
