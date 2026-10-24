@@ -7,6 +7,7 @@
  ***************************************************************************/
 #include "demarshaling.h"
 #include "error.h"
+#include "validator.h"
 #include <cstring>
 #include <stdint.h>
 
@@ -155,6 +156,10 @@ DBus::Signature Demarshaling::demarshal_signature() {
     std::string asStr = std::string( start, len );
 
     m_priv->m_dataPos += len + 1;
+
+    if( !Validator::validate_signature( asStr ) ) {
+        throw ErrorInvalidMessage( "Invalid signature" );
+    }
 
     return Signature( asStr );
 }
