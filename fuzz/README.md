@@ -8,6 +8,7 @@ of the unit tests; they are meant to be run manually.
 |--------|---------------|
 | `fuzz-message-create_from_data` | `DBus::Message::create_from_data`, i.e. parsing a raw message received from the bus |
 | `fuzz-message-body` | Extracting every argument from the body of a parsed message with `DBus::MessageIterator`, including variants and nested containers |
+| `fuzz-signature` | Parsing signature strings with `DBus::Signature` and `DBus::SignatureIterator`.  For signatures that `DBus::Validator::validate_signature` accepts, it also checks that the parsed tree has the structure defined by the DBus specification |
 
 ## Building
 
