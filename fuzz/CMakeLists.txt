@@ -25,3 +25,4 @@ function( dbus_cxx_add_fuzzer NAME )
 endfunction()
 
 dbus_cxx_add_fuzzer( fuzz-message-create_from_data )
+dbus_cxx_add_fuzzer( fuzz-message-body )
