@@ -7,6 +7,7 @@ of the unit tests; they are meant to be run manually.
 | Fuzzer | What it tests |
 |--------|---------------|
 | `fuzz-message-create_from_data` | `DBus::Message::create_from_data`, i.e. parsing a raw message received from the bus |
+| `fuzz-message-body` | Extracting every argument from the body of a parsed message with `DBus::MessageIterator`, including variants and nested containers |
 
 ## Building
 
